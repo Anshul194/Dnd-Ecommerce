@@ -1,0 +1,31 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" preserveAspectRatio="none" version="1.1" viewBox="0 0 64 64" id="svg12" sodipodi:docname="shape_pear.svg" inkscape:version="1.2.2 (b0a8486541, 2022-12-01)">
+  <defs id="defs16"/>
+  <sodipodi:namedview id="namedview14" pagecolor="#929292" bordercolor="#666666" borderopacity="1.0" inkscape:pageshadow="2" inkscape:pageopacity="0" inkscape:pagecheckerboard="0" showgrid="true" inkscape:zoom="2.8751785" inkscape:cx="-16.520713" inkscape:cy="27.650457" inkscape:window-width="1493" inkscape:window-height="869" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="g10" inkscape:showpageshadow="2" inkscape:deskcolor="#929292">
+    <inkscape:grid type="xygrid" id="grid1107" empspacing="8"/>
+  </sodipodi:namedview>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g fill="#ffffff" id="g10" inkscape:label="Layer 1">
+    <g fill="none" stroke="#ffffff" stroke-linejoin="round" stroke-width="1.1784" data-name="Group 422" id="g2254" style="stroke-width:0.999768;stroke-dasharray:none" transform="matrix(1.0015578,0,0,-0.99890009,-0.04986929,63.964736)">
+      <path d="M 32.0383,63.5353 C 24.9244,58.102 3.58373,29.9924 9.60472,13.9295 13.1609,4.48042 24.3793,0.464579 32.0383,0.464579 c 7.659,0 18.8769,4.017261 22.4336,13.464921 5.7462,16.0629 -15.3203,44.4087 -22.4336,49.6058 z m 0,-62.831729 -6.5655,7.317039" fill-rule="evenodd" data-name="Path 751" id="path2228" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="M 25.4727,8.02009 17.2653,5.18513 15.6235,14.3974" data-name="Path 752" id="path2230" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="m 15.6247,14.4036 -6.68822,8.5036 6.41082,9.2124" data-name="Path 753" id="path2232" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="m 15.3505,32.1188 1.0951,11.8106 9.3058,6.142" data-name="Path 754" id="path2234" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="M 22.4628,53.1423 25.7463,50.072" data-name="Path 755" id="path2236" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="M 32.0473,63.5353 25.7543,50.0703 19.7354,23.3846" data-name="Path 756" id="path2238" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="m 15.3489,32.1188 4.377,-8.7403 m -4.377,8.7403 16.4141,15.1172 m -6.0189,2.835 6.293,-2.835 M 19.7252,23.3781 15.6206,14.1658 m 0,0.2367 7.1139,-0.2367 m 2.7352,-6.14196 -2.7352,5.90526 m -3.0095,9.4492 3.0095,-9.4492 m 2.7352,-5.90526 6.5655,3.54376 m -9.3058,2.3615 9.0282,-2.3615 M 32.0318,0.702537 38.5973,8.01958" data-name="Path 757" id="path2240" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="M 38.3301,8.02009 46.805,5.18513 48.1726,14.3974" data-name="Path 758" id="path2242" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="m 48.1816,14.4036 6.8186,8.5354 -6.5445,9.1806" data-name="Path 759" id="path2244" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="m 48.4554,32.1188 -1.0951,11.8106 -9.3058,6.142" data-name="Path 760" id="path2246" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="M 41.3406,53.1423 38.057,50.072" data-name="Path 761" id="path2248" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="m 32.0398,63.5353 6.0189,-13.465 6.0189,-26.6857" data-name="Path 762" id="path2250" style="stroke-width:0.999768;stroke-dasharray:none"/>
+      <path d="m 48.4539,32.1188 -4.3771,-8.7403 m 4.3771,8.7403 -16.4171,15.1172 m 6.0189,2.835 -6.293,-2.835 m 12.3119,-23.8579 4.1046,-9.2123 m 0,0.2367 -7.1139,-0.2367 m -2.7352,-6.14196 2.7352,5.90526 m 3.0094,9.4492 -3.0094,-9.4492 M 38.3301,8.02384 31.7646,11.5676 m 9.3058,2.3615 -9.3125,-2.3615" data-name="Path 763" id="path2252" style="stroke-width:0.999768;stroke-dasharray:none"/>
+    </g>
+  </g>
+</svg>

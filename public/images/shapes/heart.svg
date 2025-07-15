@@ -1,0 +1,29 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" preserveAspectRatio="none" version="1.1" viewBox="0 0 64 64" id="svg12" sodipodi:docname="shape_heart.svg" inkscape:version="1.2.2 (b0a8486541, 2022-12-01)">
+  <defs id="defs16"/>
+  <sodipodi:namedview id="namedview14" pagecolor="#929292" bordercolor="#666666" borderopacity="1.0" inkscape:pageshadow="2" inkscape:pageopacity="0" inkscape:pagecheckerboard="0" showgrid="true" inkscape:zoom="10.0625" inkscape:cx="20.670807" inkscape:cy="32.049689" inkscape:window-width="2240" inkscape:window-height="1303" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="g10" inkscape:showpageshadow="2" inkscape:deskcolor="#929292">
+    <inkscape:grid type="xygrid" id="grid1107" empspacing="8"/>
+  </sodipodi:namedview>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g fill="#ffffff" id="g10" inkscape:label="Layer 1">
+    <path d="m 32,63.500012 c 0,0 31.5,-22.081675 31.5,-43.862687 C 63.5,-2.4443443 37.943837,-3.3397931 32,6.5075427 26.056423,-3.3397931 0.49999991,-2.4444741 0.49999991,19.637325 0.49999991,41.71912 32,63.500012 32,63.500012 Z" fill-rule="evenodd" data-name="Path 704" id="path131" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="m 22.19254,0.83389751 9.806164,11.04174549 -17.828917,6.2658 -0.593826,-8.056568 z" data-name="Path 705" id="path133" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="M 9.1207659,3.2209327 13.578903,10.084914 1.9894586,11.576591 8.8247411,22.020286 15.362183,26.794409 32.003888,45.296885 21.896256,55.144222" data-name="Path 706" id="path135" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="m 13.573588,10.084914 18.425116,6.863981 V 6.5052001" data-name="Path 707" id="path137" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="M 0.79459952,23.812616 14.167583,18.143044 15.357025,26.797793 V 48.879461 L 26.648629,50.37114 31.99847,63.500922" data-name="Path 708" id="path139" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="M 7.927722,20.828219 3.4695849,32.167234 25.458928,38.135763 26.648369,50.370228" data-name="Path 709" id="path141" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="M 8.8174825,41.118987 15.057085,35.150458" data-name="Path 710" id="path143" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="M 41.506772,0.83389751 31.99663,11.875643 l 17.828918,6.2658 0.593826,-8.056568 z" data-name="Path 711" id="path145" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="m 54.879754,3.2209327 -4.456321,6.8639813 11.589443,1.491677 -6.835284,10.443695 -6.537438,4.774123 -16.64171,18.502476 10.107631,9.847337" data-name="Path 712" id="path147" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="M 50.421225,10.084914 31.996112,16.948895 V 6.5052001" data-name="Path 713" id="path149" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="M 62.902508,23.812616 49.82762,18.143044 48.639979,26.797793 V 48.879461 L 37.050537,50.37114 31.996721,63.500922" data-name="Path 714" id="path151" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="m 56.066963,20.828219 4.151353,11.339015 -21.989341,5.968529 -1.189441,12.234465" data-name="Path 715" id="path153" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+    <path d="M 54.871975,41.118987 48.63056,35.150458" data-name="Path 716" id="path155" style="fill:none;stroke:#ffffff;stroke-width:1;stroke-linejoin:round;stroke-dasharray:none"/>
+  </g>
+</svg>
