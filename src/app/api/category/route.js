@@ -1,5 +1,6 @@
 import dbConnect from '../../connection/dbConnect';
 import { createCategory,getCategories } from '../../lib/controllers/categoryController';
+import {subCategoryUpdateValidator, subCategoryCreateValidator} from '../../validators/subCategoryValidator.js';
 
 import { NextResponse } from 'next/server';
 // import { verifyAdminAccess } from '../../middleware/commonAuth';
