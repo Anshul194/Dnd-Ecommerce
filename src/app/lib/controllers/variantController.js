@@ -53,12 +53,17 @@ export const updateVariant = async (id, data) => {
 // DELETE /api/variant/[id]
 export const deleteVariant = async (id) => {
   try {
-    const deletedVariant = await variantService.softDelete(id);
-    if (!deletedVariant) {
-      return { success: false, message: 'Variant not found or already deleted', data: null };
-    }
-    return { success: true, message: 'Variant deleted successfully', data: deletedVariant };
+    const variant = await variantService.delete(id);  // was softDelete
+    return {
+      success: true,
+      message: 'Variant deleted successfully',
+      data: variant
+    };
   } catch (err) {
-    return { success: false, message: err.message || 'Failed to delete variant', data: null };
+    return {
+      success: false,
+      message: err.message || 'Failed to delete variant',
+      data: null
+    };
   }
 };
