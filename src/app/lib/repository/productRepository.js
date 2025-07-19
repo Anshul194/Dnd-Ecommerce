@@ -4,23 +4,48 @@ class ProductRepository {
   }
 
   async create(data) {
-    return await this.model.create(data);
+    try {
+      return await this.model.create(data);
+    } catch (error) {
+      console.error("Repository Create Error:", error.message);
+      throw error;
+    }
   }
 
   async findAll() {
-    return await this.model.find().populate('attributeSet.attributeId');
+    try {
+      return await this.model.find().populate('attributeSet.attributeId');
+    } catch (error) {
+      console.error("Repository FindAll Error:", error.message);
+      throw error;
+    }
   }
 
   async findById(id) {
-    return await this.model.findById(id).populate('attributeSet.attributeId');
+    try {
+      return await this.model.findById(id).populate('attributeSet.attributeId');
+    } catch (error) {
+      console.error("Repository FindById Error:", error.message);
+      throw error;
+    }
   }
 
   async update(id, data) {
-    return await this.model.findByIdAndUpdate(id, data, { new: true });
+    try {
+      return await this.model.findByIdAndUpdate(id, data, { new: true });
+    } catch (error) {
+      console.error("Repository Update Error:", error.message);
+      throw error;
+    }
   }
 
   async delete(id) {
-    return await this.model.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+    try {
+      return await this.model.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+    } catch (error) {
+      console.error("Repository Delete Error:", error.message);
+      throw error;
+    }
   }
 }
 

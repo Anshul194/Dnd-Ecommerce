@@ -2,9 +2,10 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import Providers from "../store/Providers";
+import Providers from "./store/Providers"; // ✅ Updated path
 import ClientLayout from "./ClientLayout";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Google Fonts
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -41,7 +42,10 @@ const cullenGinto = localFont({
   display: "swap",
 });
 
-export const metadata = { title: "Diamond", description: "Buy your luxury" };
+export const metadata = {
+  title: "Diamond",
+  description: "Buy your luxury",
+};
 
 export default function RootLayout({ children }) {
   return (
@@ -51,7 +55,6 @@ export default function RootLayout({ children }) {
       >
         <Providers>
           <ClientLayout>
-            {" "}
             <ToastContainer
               position="top-right"
               autoClose={5000}

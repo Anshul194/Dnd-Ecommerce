@@ -16,7 +16,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCategories } from "@/store/slices/categorySlice";
+import { fetchCategories } from "@/app/store/slices/categorySlice";
 import axiosInstance from "@/axiosConfig/axiosInstance";
 import { set } from "mongoose";
 
@@ -29,7 +29,7 @@ const Navbar = () => {
   const [openMenuData, setOpenMenuData] = useState(null);
   const [showContactDropdown, setShowContactDropdown] = useState(false);
   const { isAuthenticated } = useSelector((state) => state.auth);
-  const { data: categories } = useSelector((state) => state.category);
+  const { categories } = useSelector((state) => state.category);
   const [attributesData, setAttributesData] = useState({});
   const [fineJewellerSubCategories, setFineJewellerSubCategories] = useState(
     []
