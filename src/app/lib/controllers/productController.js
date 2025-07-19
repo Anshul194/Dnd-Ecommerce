@@ -6,28 +6,49 @@ class ProductController {
   }
 
   create = async (body) => {
-    const product = await this.service.createProduct(body);
-    return product;
+    try {
+      const product = await this.service.createProduct(body);
+      return { success: true, data: product };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   };
 
   getAll = async () => {
-    const products = await this.service.getAllProducts();
-    return products;
+    try {
+      const products = await this.service.getAllProducts();
+      return { success: true, data: products };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   };
 
   getById = async (id) => {
-    const product = await this.service.getProductById(id);
-    return product;
+    try {
+      const product = await this.service.getProductById(id);
+      if (!product) return { success: false, message: "Product not found" };
+      return { success: true, data: product };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   };
 
   update = async (id, body) => {
-    const product = await this.service.updateProduct(id, body);
-    return product;
+    try {
+      const product = await this.service.updateProduct(id, body);
+      return { success: true, data: product };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   };
 
   delete = async (id) => {
-    await this.service.deleteProduct(id);
-    return { message: 'Product deleted successfully' };
+    try {
+      await this.service.deleteProduct(id);
+      return { success: true, message: 'Product deleted successfully' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   };
 }
 
