@@ -1,4 +1,5 @@
 import VariantRepository from '../repository/variantRepository.js';
+import { validateVariantInput } from '../../validators/variantValidator.js';
 
 class VariantService {
   constructor() {
@@ -6,6 +7,16 @@ class VariantService {
   }
 
   async create(data) {
+    // ✅ Step 1: Validate variant data
+    const errors = await validateVariantInput(data);
+    if (errors.length > 0) {
+      const error = new Error('Validation failed');
+      error.status = 400;
+      error.details = errors;
+      throw error;
+    }
+
+    // ✅ Step 2: Create variant if validation passes
     return await this.variantRepo.createVariant(data);
   }
 
