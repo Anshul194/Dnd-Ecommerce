@@ -6,23 +6,52 @@ const variantSchema = new mongoose.Schema({
     ref: 'Product',
     required: true
   },
-  title: { type: String, required: true },
-  price: { type: Number, required: true },
-  salePrice: { type: Number },
-  stock: { type: Number, required: true },
-  // sku removed
-  images: [{ type: String }],
+  title: {
+    type: String,
+    required: true
+  },
+  sku: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  price: {
+    type: Number,
+    required: true
+  },
+  salePrice: {
+    type: Number
+  },
+  stock: {
+    type: Number,
+    required: true
+  },
+  images: [{
+    type: String
+  }],
   attributes: [
     {
-      name: String,
-      value: String
+      attributeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Attribute',
+        required: true
+      },
+      value: {
+        type: String,
+        required: true,
+        trim: true
+      }
     }
   ],
-  deletedAt: { type: Date, default: null }
+  deletedAt: {
+    type: Date,
+    default: null
+  }
 }, {
   timestamps: true
 });
 
-// ✅ Force recompile model to avoid using old cached one
+// Force recompile model to avoid using old cached one
 delete mongoose.models.Variant;
 export default mongoose.model('Variant', variantSchema);
