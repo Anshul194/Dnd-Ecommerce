@@ -1,6 +1,6 @@
 import dbConnect from '../../connection/dbConnect';
 import { NextResponse } from 'next/server';
-import UserService from '../../lib/controllers/userController.js';
+import UserService from '../../lib/services/userService.js';
 import { Token } from '../../middleware/generateToken.js';
 import bcrypt from 'bcryptjs';
 

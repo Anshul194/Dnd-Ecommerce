@@ -11,7 +11,7 @@ class UserService {
   }
 
   // Create
-  async createUser(data) {
+   async createUser(data) {
     try {
       // Validate data
       if (!data.name || !data.email || !data.passwordHash) {
@@ -28,33 +28,37 @@ class UserService {
       }
       if (data.tenant && !mongoose.Types.ObjectId.isValid(data.tenant)) {
         throw new Error('Invalid tenant ID');
-      }
-
-      if(data?.tenant) {
-        var tenant = await this.tenantRepo.findByTenantId(data.tenant);
+      }   
+      // If tenant is provided, verify it exists
+      let tenant = null;
+      if (data.tenant) {
+        tenant = await this.tenantRepo.findByTenantId(data.tenant);
         if (!tenant) {
           throw new Error('Tenant not found');
         }
-      }
-
-      //check role belongs to that tenant only and role and tenant belong in db
-      if (data.role && data.tenant) {
-        const role = await this.roleRepo.findById({ _id: data.role });
-        console.log('dftgyuhji', role);
-        if (!role || role.tenantId.toString() !== data.tenant) {
-          console.error('Role does not belong to the specified tenant');
-          throw new Error('Role does not belong to the specified tenant');
-        }
-      }
-
-      console.log('Creating user with data:', data);
-
+      }   
+      // If role is provided, verify role exists and matches tenant if applicable
+      if (data.role) {
+        const role = await this.roleRepo.findById({ _id: data.role });   
+        if (!role) {
+          throw new Error('Role not found');
+        }   
+        // If the role is tenant-scoped, ensure it belongs to the correct tenant
+        if (role.scope === 'tenant') {
+          if (!role.tenantId || role.tenantId.toString() !== data.tenant) {
+            throw new Error('Tenant-scoped role does not belong to the specified tenant');
+          }
+        }   
+        // If role is global, tenant may be optional
+      }   
+      console.log('Creating user with data:', data);   
+      // Create user in DB
       return await this.userRepo.createUser(data);
     } catch (error) {
       console.error('UserService createUser error:', error?.message);
       throw error;
     }
-  }
+  }     
 
   // Read all
   async getAllUsers(query = {}) {
