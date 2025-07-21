@@ -17,6 +17,21 @@ export async function createRole(form) {
             };
         }
 
+        // Validate scope
+        if (!['global', 'tenant'].includes(scope)) {
+            return {
+                status: 400,
+                body: errorResponse('Invalid scope', 400),
+            };
+        }
+        // Validate tenantId if scope is tenant
+        if (scope === 'tenant' && !tenantId) {
+            return {
+                status: 400,
+                body: errorResponse('Tenant ID is required for tenant scope', 400),
+            };
+        }
+
         const newRole = await roleService.createRole({
             name,
             scope,
