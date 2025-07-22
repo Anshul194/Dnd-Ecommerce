@@ -7,6 +7,16 @@ class ModuleRepository extends CrudRepository {
         super(Module);
     }
 
+    async findAllActive() {
+    try {
+        return await Module.find({ deletedAt: null });
+    } catch (error) {
+        console.error('ModuleRepo findAllActive error:', error);
+        throw error;
+    }
+}
+
+
     async createModule(data) {
         try {
             // eslint-disable-next-line @next/next/no-assign-module-variable

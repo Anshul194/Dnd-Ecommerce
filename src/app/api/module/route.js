@@ -5,6 +5,7 @@ import {
 createModule,
 updateModule,
 getModule,
+getAllModules,
 deleteModule
 } from '../../lib/controllers/moduleController.js';
 
@@ -23,22 +24,22 @@ try {
 
 // GET: Get a module by id (via ?id=) or all modules (implement getModules if needed)
 export async function GET(request) {
-try {
+  try {
     await dbConnect();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    if (id) {
-        const result = await getModule(id);
-        return NextResponse.json(result.body, { status: result.status });
-    } else {
-        // Optionally implement getModules for listing all modules
-        return NextResponse.json({ success: false, message: 'Module id required' }, { status: 400 });
-    }
-} catch (err) {
+
+    const result = id ? await getModule(id) : await getAllModules();
+
+    // Optionally implement getModules for listing all modules
+    return NextResponse.json(result.body, { status: result.body.status || result.status || 200 });
+  } catch (err) {
     console.error('GET /module error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
+  }
 }
-}
+
+
 
 // PUT: Update a module by id (?id=)
 export async function PUT(request) {

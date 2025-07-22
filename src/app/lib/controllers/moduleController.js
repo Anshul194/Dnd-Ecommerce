@@ -47,16 +47,12 @@ export async function updateModule(id, data) {
 // Get a module by ID
 export async function getModule(id) {
     try {
-        const module = await moduleService.getModuleWithPermissions(id);
-        if (!module) {
-            return {
-                status: 404,
-                body: errorResponse('Module not found', 404),
-            };
-        }
+        const response = await moduleService.getModuleWithPermissions(id);
+
+        // `getModuleWithPermissions` already returns a full successResponse or errorResponse
         return {
-            status: 200,
-            body: successResponse(module, 'Module fetched'),
+            status: response.status || 200,
+            body: response,
         };
     } catch (err) {
         console.error('Get Module error:', err.message);
@@ -66,6 +62,24 @@ export async function getModule(id) {
         };
     }
 }
+
+
+export async function getAllModules() {
+    try {
+        const result = await moduleService.getAllModules();
+        return {
+            status: 200,
+            body: result,
+        };
+    } catch (err) {
+        console.error('Get All Modules error:', err.message);
+        return {
+            status: 500,
+            body: errorResponse('Server error', 500),
+        };
+    }
+}
+
 
 // Delete a module by ID
 export async function deleteModule(id) {

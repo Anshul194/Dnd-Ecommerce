@@ -81,6 +81,17 @@ class ModuleService {
             return errorResponse('Error deleting module', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
         }
     }
+
+
+    async getAllModules() {
+    try {
+        const modules = await this.moduleRepo.findAllActive();
+        return successResponse(modules, 'All modules fetched');
+    } catch (error) {
+        return errorResponse('Error fetching modules', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
+    }
+}
+
 }
 
 export default ModuleService;
