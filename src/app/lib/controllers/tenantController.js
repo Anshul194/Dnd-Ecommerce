@@ -56,7 +56,7 @@ console.log('Tenant creation result:', tenantResult);
           role: user.role,
           tenant: user.tenant,
         },
-        password, // Return password so it can be communicated to the user
+        password,
       },
     };
   } catch (err) {

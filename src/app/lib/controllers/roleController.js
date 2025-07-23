@@ -4,7 +4,7 @@ import { successResponse, errorResponse } from '../../utils/response.js';
 const roleService = new RoleService();
 
 // Create a new role
-export async function createRole(form) {
+export async function createRole(form, currentUser) {
     try {
         const { name, scope, tenantId, modulePermissions } = form;
 
@@ -37,7 +37,7 @@ export async function createRole(form) {
             scope,
             tenantId: tenantId || null,
             modulePermissions: modulePermissions || []
-        });
+        }, currentUser);
 
         return {
             status: 201,
@@ -93,9 +93,10 @@ export async function getRoleById(id) {
 }
 
 // Update a role by ID
-export async function updateRole(id, data) {
+export async function updateRole(id, data, currentUser = null) {
     try {
-        const updated = await roleService.updateRole(id, data);
+        // Pass currentUser to the service
+        const updated = await roleService.updateRole(id, data, currentUser);
         if (!updated) {
             return {
                 status: 404,

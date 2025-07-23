@@ -142,6 +142,50 @@ export function withSuperAdminCreationAuth(handler) {
 }
 
 /**
+ * Verify if User is Super Admin or Role Admin
+ */
+export async function verifySuperAdminOrRoleAdminAccess(request) {
+    const result = await verifyTokenAndUser(request, 'user');
+    if (result.error) return result;
+
+    // Check if user is super admin
+    if (result.user.isSuperAdmin) {
+        return result;
+    }
+
+    // Check if user has 'admin' role (by name or by specific ObjectId)
+    let roleDoc = result.user.role;
+    if (!roleDoc || typeof roleDoc === 'string' || (roleDoc._bsontype === 'ObjectId')) {
+        // Fetch role document if not populated
+        const Role = (await import('../lib/models/role.js')).default;
+        roleDoc = await Role.findById(result.user.role).lean();
+    }
+    if (roleDoc && (roleDoc.name === 'admin' || roleDoc.slug === 'admin')) {
+        return result;
+    }
+
+    return {
+        error: NextResponse.json(
+            { success: false, message: 'Access Denied: Only Super Admin or Role Admin can create roles' },
+            { status: 403 }
+        )
+    };
+}
+
+/**
+ * Route Protection for Super Admin or Role Admin Access (for role creation)
+ */
+export function withSuperAdminOrRoleAdminAuth(handler) {
+    return async function (request, ...args) {
+        const authResult = await verifySuperAdminOrRoleAdminAccess(request);
+        if (authResult.error) return authResult.error;
+
+        request.user = authResult.user;
+        return handler(request, ...args);
+    };
+}
+
+/**
  * Check if user has permission for a module
  * @param {Object} user - User document
  * @param {String} moduleId - Module ObjectId as string
