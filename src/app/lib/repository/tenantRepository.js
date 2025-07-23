@@ -17,6 +17,16 @@ class TenantRepository extends CrudRepository {
     async findBySubdomain(subdomain) {
         return await Tenant.findOne({ subdomain, isDeleted: false });
     }
+
+    async findById(id) {
+        try{
+            return await Tenant.findOne({ _id: id, isDeleted: false });
+        }
+        catch (error) {
+            console.error('TenantRepo findById error:', error);
+            throw error;
+        }   
+    }
     
 
     async softDelete(id) {
