@@ -3,45 +3,57 @@ import User from '../models/User.js';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
-const tenantService = new TenantService();
+const tenantService = new TenantService(); // Import the schema only, not model
 
 export async function createTenant(data) {
-  // Ensure email is provided
   if (!data.email) {
     return {
       status: 400,
       body: { success: false, message: 'Email is required' },
     };
   }
-  // Use provided password or default to `${companyName}@112`
+
   const password = data.password || `${data.companyName || 'name'}@112`;
+
   try {
-    // 1. Create tenant
+    // 1. Create tenant (and global DB entry)
     const tenantResult = await tenantService.createTenant({
       ...data,
-      email: data.email
-      });
-console.log('Tenant creation result:', tenantResult);
-    // If tenant creation failed
-    if (!tenantResult) {
+      email: data.email,
+    });
+
+    console.log('Tenant creation result:', tenantResult);
+
+    if (!tenantResult || !tenantResult.body?.data?.dbUri) {
       return {
         status: 400,
         body: { success: false, message: 'Tenant creation failed' },
       };
     }
 
-    // 2. Create user for this tenant
+    // 2. Connect to tenant DB dynamically
+    const tenantDbUri = tenantResult.body.data.dbUri;
+    const tenantConnection = await mongoose.createConnection(tenantDbUri, {
+
+    });
+
+    // 3. Register the User model on tenant DB
+    const TenantUser = tenantConnection.model('User', User.schema);
+
+    // 4. Create password hash and save user in tenant DB
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = new User({
+
+    const user = new TenantUser({
       name: data.companyName || data.email,
       email: data.email,
       passwordHash,
-      role: new mongoose.Types.ObjectId('687f94a6eb27eefa96f469e4'),
-      tenant: tenantResult?.body?.data?._id,
+      role: new mongoose.Types.ObjectId('687f94a6eb27eefa96f469e4'), // hardcoded role
+      tenant: tenantResult.body.data._id,
       isSuperAdmin: false,
       isActive: true,
       isDeleted: false,
     });
+
     await user.save();
 
     return {
@@ -67,6 +79,7 @@ console.log('Tenant creation result:', tenantResult);
     };
   }
 }
+
 
 export async function getAllTenants(query) {
   try {
