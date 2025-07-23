@@ -8,7 +8,8 @@ const roleSchema = new mongoose.Schema({
         module: { type: mongoose.Schema.Types.ObjectId, ref: 'Module', required: true },
         permissions: [{ type: String }]
     }],
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    deletedAt: { type: Date ,default: null },
 });
 
 const Role = mongoose.models.Role || mongoose.model('Role', roleSchema);
