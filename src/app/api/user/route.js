@@ -3,13 +3,46 @@ import { NextResponse } from 'next/server';
 import UserService from '../../lib/services/userService.js';
 import { Token } from '../../middleware/generateToken.js';
 import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
 
-const userService = new UserService();
+// Helper to extract subdomain from host header
+function getSubdomain(request) {
+  const host = request.headers.get('host') || '';
+  // e.g. tenant1.localhost:5173 or tenant1.example.com
+  const parts = host.split('.');
+  if (parts.length > 2) return parts[0];
+  if (parts.length === 2 && parts[0] !== 'localhost') return parts[0];
+  return null;
+}
+
+// Helper to get tenant DB URI from global DB
+async function getTenantDbUri(subdomain) {
+  // Connect to global DB
+  await dbConnect();
+  // Lazy load Tenant model to avoid circular deps
+  const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', new mongoose.Schema({
+    name: String,
+    dbUri: String,
+    subdomain: String
+  }, { collection: 'tenants' }));
+  const tenant = await Tenant.findOne({ subdomain });
+  return tenant?.dbUri || null;
+}
 
 // Register (Create User)
 export async function POST(request) {
   try {
-    await dbConnect();
+    const subdomain = getSubdomain(request);
+    let dbUri = null;
+    if (subdomain && subdomain !== 'localhost') {
+      dbUri = await getTenantDbUri(subdomain);
+      if (!dbUri) {
+        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+      }
+    }
+    const conn = await dbConnect(dbUri);
+    const userService = new UserService(conn);
+
     const body = await request.json();
     const { name, email, password, role, tenant, isSuperAdmin, isActive, isDeleted } = body;
 
@@ -59,7 +92,17 @@ export async function POST(request) {
 // Login
 export async function PATCH(request) {
   try {
-    await dbConnect();
+    const subdomain = getSubdomain(request);
+    let dbUri = null;
+    if (subdomain && subdomain !== 'localhost') {
+      dbUri = await getTenantDbUri(subdomain);
+      if (!dbUri) {
+        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+      }
+    }
+    const conn = await dbConnect(dbUri);
+    const userService = new UserService(conn);
+
     const body = await request.json();
     const { email, password } = body;
 
@@ -96,7 +139,17 @@ export async function PATCH(request) {
 
 export async function GET(request) {
   try {
-    await dbConnect();
+    const subdomain = getSubdomain(request);
+    let dbUri = null;
+    if (subdomain && subdomain !== 'localhost') {
+      dbUri = await getTenantDbUri(subdomain);
+      if (!dbUri) {
+        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+      }
+    }
+    const conn = await dbConnect(dbUri);
+    const userService = new UserService(conn);
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (id) {
@@ -122,7 +175,17 @@ export async function GET(request) {
 
 export async function PUT(request) {
   try {
-    await dbConnect();
+    const subdomain = getSubdomain(request);
+    let dbUri = null;
+    if (subdomain && subdomain !== 'localhost') {
+      dbUri = await getTenantDbUri(subdomain);
+      if (!dbUri) {
+        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+      }
+    }
+    const conn = await dbConnect(dbUri);
+    const userService = new UserService(conn);
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const body = await request.json();
@@ -136,7 +199,17 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   try {
-    await dbConnect();
+    const subdomain = getSubdomain(request);
+    let dbUri = null;
+    if (subdomain && subdomain !== 'localhost') {
+      dbUri = await getTenantDbUri(subdomain);
+      if (!dbUri) {
+        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+      }
+    }
+    const conn = await dbConnect(dbUri);
+    const userService = new UserService(conn);
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const result = await deleteUser(id);
