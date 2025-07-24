@@ -1,4 +1,4 @@
-import dbConnect from '../../connection/dbConnect';
+import { getSubdomain, getDbConnection } from '../../lib/tenantDb.js';
 import { NextResponse } from 'next/server';
 import {
     createRole,
@@ -11,10 +11,14 @@ import { withSuperAdminOrRoleAdminAuth } from '../../middleware/commonAuth.js';
 
 export const POST = withSuperAdminOrRoleAdminAuth(async function(request) {
     try {
-        await dbConnect();
+        const subdomain = getSubdomain(request);
+        const conn = await getDbConnection(subdomain);
+        if (!conn) {
+            return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+        }
         const body = await request.json();
         // Pass request.user to controller
-        const result = await createRole(body, request.user);
+        const result = await createRole(body, request.user, conn);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
         console.error('POST /role error:', err);
@@ -24,15 +28,19 @@ export const POST = withSuperAdminOrRoleAdminAuth(async function(request) {
 
 export async function GET(request) {
     try {
-        await dbConnect();
+        const subdomain = getSubdomain(request);
+        const conn = await getDbConnection(subdomain);
+        if (!conn) {
+            return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+        }
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
         if (id) {
-            const result = await getRoleById(id);
+            const result = await getRoleById(id, conn);
             return NextResponse.json(result.body, { status: result.status });
         } else {
             const query = Object.fromEntries(searchParams.entries());
-            const result = await getRoles(query);
+            const result = await getRoles(query, conn);
             return NextResponse.json(result.body, { status: result.status });
         }
     } catch (err) {
@@ -43,12 +51,16 @@ export async function GET(request) {
 
 export const PUT = withSuperAdminOrRoleAdminAuth(async function(request) {
     try {
-        await dbConnect();
+        const subdomain = getSubdomain(request);
+        const conn = await getDbConnection(subdomain);
+        if (!conn) {
+            return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+        }
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
         const body = await request.json();
         // Ensure request.user is passed to updateRole
-        const result = await updateRole(id, body, request.user);
+        const result = await updateRole(id, body, request.user, conn);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
         console.error('PUT /role error:', err);
@@ -58,10 +70,14 @@ export const PUT = withSuperAdminOrRoleAdminAuth(async function(request) {
 
 export async function DELETE(request) {
     try {
-        await dbConnect();
+        const subdomain = getSubdomain(request);
+        const conn = await getDbConnection(subdomain);
+        if (!conn) {
+            return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+        }
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
-        const result = await deleteRole(id);
+        const result = await deleteRole(id, conn);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
         console.error('DELETE /role error:', err);

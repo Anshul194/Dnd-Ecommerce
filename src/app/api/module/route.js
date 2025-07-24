@@ -63,7 +63,7 @@ export async function GET(request) {
     } else {
       // Get all modules that this user/role has permissions for (for sidebar)
       const permittedModules = await getPermittedModulesForUser(user);
-      console.log('Permitted modules for user:', permittedModules);
+    //   console.log('Permitted modules for user:', permittedModules);
       
       return NextResponse.json({ success: true, modules: permittedModules, status: 200 });
     }

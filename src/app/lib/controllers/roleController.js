@@ -1,13 +1,14 @@
+
 import RoleService from '../services/roleService.js';
 import { successResponse, errorResponse } from '../../utils/response.js';
 
-const roleService = new RoleService();
-
 // Create a new role
-export async function createRole(form, currentUser) {
+
+export async function createRole(form, currentUser, conn) {
     try {
+        const roleService = new RoleService(conn);
         const { name, scope, tenantId, modulePermissions } = form;
-        const existing = await roleService.findByName(name);
+        const existing = await roleService.findByName(name, conn);
         if (existing) {
             return {
                 status: 400,
@@ -35,7 +36,7 @@ export async function createRole(form, currentUser) {
             scope,
             tenantId: tenantId || null,
             modulePermissions: modulePermissions || []
-        });
+        }, currentUser, conn);
         return {
             status: 201,
             body: successResponse("Role created", newRole),
@@ -50,9 +51,11 @@ export async function createRole(form, currentUser) {
 }
 
 // Get all roles
-export async function getRoles(query) {
+
+export async function getRoles(query, conn) {
     try {
-        const data = await roleService.getRoles(query);
+        const roleService = new RoleService(conn);
+        const data = await roleService.getRoles(query, conn);
         return {
             status: 200,
             body: successResponse("Roles fetched successfully", data),
@@ -67,9 +70,11 @@ export async function getRoles(query) {
 }
 
 // Get a role by ID
-export async function getRoleById(id) {
+
+export async function getRoleById(id, conn) {
     try {
-        const role = await roleService.getRoleById(id);
+        const roleService = new RoleService(conn);
+        const role = await roleService.getRoleById(id, conn);
         if (!role) {
             return {
                 status: 404,
@@ -90,10 +95,12 @@ export async function getRoleById(id) {
 }
 
 // Update a role by ID
-export async function updateRole(id, data, currentUser = null) {
+
+export async function updateRole(id, data, currentUser = null, conn) {
     try {
+        const roleService = new RoleService(conn);
         // Pass currentUser to the service
-        const updated = await roleService.updateRole(id, data, currentUser);
+        const updated = await roleService.updateRole(id, data, currentUser, conn);
         if (!updated) {
             return {
                 status: 404,
@@ -114,9 +121,11 @@ export async function updateRole(id, data, currentUser = null) {
 }
 
 // Delete a role by ID
-export async function deleteRole(id) {
+
+export async function deleteRole(id, conn) {
     try {
-        const deleted = await roleService.deleteRole(id);
+        const roleService = new RoleService(conn);
+        const deleted = await roleService.deleteRole(id, conn);
         if (!deleted) {
             return {
                 status: 404,

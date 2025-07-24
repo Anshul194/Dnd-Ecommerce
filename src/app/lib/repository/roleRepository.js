@@ -1,18 +1,22 @@
 
+
 import roleSchema from '../models/role.js';
-import mongoose from 'mongoose';
 import CrudRepository from './CrudRepository.js';
 
-const Role = mongoose.models.Role || mongoose.model('Role', roleSchema);
 
 class RoleRepository extends CrudRepository {
-    constructor() {
-        super(Role);
+    constructor(conn) {
+        // Use the provided connection for tenant DB, or global mongoose if not provided
+        const connection = conn || require('mongoose');
+        const RoleModel = connection.models.Role || connection.model('Role', roleSchema);
+        super(RoleModel);
+        this.Role = RoleModel;
     }
+
 
     async createRole(data) {
         try {
-            const role = new Role(data);
+            const role = new this.Role(data);
             return await role.save();
         } catch (error) {
             console.error('RoleRepo create error:', error);
@@ -20,21 +24,21 @@ class RoleRepository extends CrudRepository {
         }
     }
 
+
     async findById(id) {
         try {
-            return await Role.findOne({ _id: id, deletedAt: null });
+            return await this.Role.findOne({ _id: id, deletedAt: null });
         } catch (error) {
             console.error('RoleRepo findById error:', error);
             throw error;
         }
     }
 
+
     async update(id, data) {
         try {
-            const RoleModel = mongoose.models.Role;
-            const role = await RoleModel.findById(id);
+            const role = await this.Role.findById(id);
             if (!role) return null;
-
             role.set(data);
             return await role.save();
         } catch (error) {
@@ -43,9 +47,10 @@ class RoleRepository extends CrudRepository {
         }
     }
 
+
     async softDelete(id) {
         try {
-            return await Role.findByIdAndUpdate(
+            return await this.Role.findByIdAndUpdate(
                 id,
                 { deletedAt: new Date() },
                 { new: true }
@@ -56,27 +61,30 @@ class RoleRepository extends CrudRepository {
         }
     }
 
+
     async findByName(name) {
         try {
-            return await Role.findOne({ name, deletedAt: null });
+            return await this.Role.findOne({ name, deletedAt: null });
         } catch (error) {
             console.error('RoleRepo findByName error:', error);
             throw error;
         }
     }
 
+
     async getRoleById(id) {
         try {
-            return await Role.findOne({ _id: id, deletedAt: null });
+            return await this.Role.findOne({ _id: id, deletedAt: null });
         } catch (error) {
             console.error('RoleRepo getRoleById error:', error);
             throw error;
         }
     }
 
+
     async updateRole(id, data) {
         try {
-            const role = await Role.findById(id);
+            const role = await this.Role.findById(id);
             if (!role) return null;
             role.set(data);
             return await role.save();
@@ -86,9 +94,10 @@ class RoleRepository extends CrudRepository {
         }
     }
 
+
     async deleteRole(id) {
         try {
-            return await Role.findByIdAndUpdate(
+            return await this.Role.findByIdAndUpdate(
                 id,
                 { deletedAt: new Date() },
                 { new: true }

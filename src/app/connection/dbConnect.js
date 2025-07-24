@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 async function dbConnect(dbUri) {
+    console.log('Connecting to MongoDB...',dbUri);
     const defaultUri = process.env.MONGODB_URI;
     const uri = dbUri || defaultUri;
     if (!uri) {
