@@ -1,5 +1,5 @@
 import TenantService from '../services/tenantService.js';
-import User from '../models/User.js';
+import UserSchema from '../models/User.js';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
@@ -40,11 +40,14 @@ export async function createTenant(data) {
     });
 
     // 3. Register the User model on tenant DB
-    const TenantUser = tenantConnection.model('User', User.schema);
+    const TenantUser =
+      tenantConnection.models.User ||
+      tenantConnection.model('User', UserSchema);
 
     // 4. Create password hash and save user in tenant DB
     const passwordHash = await bcrypt.hash(password, 10);
 
+    // Create the user in tenant DB
     const user = new TenantUser({
       name: data.companyName || data.email,
       email: data.email,
@@ -57,6 +60,25 @@ export async function createTenant(data) {
     });
 
     await user.save();
+
+    // Use the same _id for global user
+    const GlobalUser =
+      mongoose.models.User ||
+      mongoose.model('User', UserSchema);
+
+    const globalUser = new GlobalUser({
+      _id: user._id, // ensure same _id
+      name: data.companyName || data.email,
+      email: data.email,
+      passwordHash,
+      role: new mongoose.Types.ObjectId('687f94a6eb27eefa96f469e4'),
+      tenant: tenantResult.body.data._id,
+      isSuperAdmin: false,
+      isActive: true,
+      isDeleted: false,
+    });
+
+    await globalUser.save();
 
     return {
       status: tenantResult.status || 201,

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import userSchema from '../lib/models/User.js';
 import mongoose from 'mongoose';
-import Role from '../lib/models/role.js';
+import * as RoleModule from '../lib/models/role.js';
+const Role = RoleModule.default || RoleModule;
 // Helper to get User model from schema
 function getUserModel() {
     return mongoose.models.User || mongoose.model('User', userSchema);
@@ -186,7 +187,8 @@ export async function verifySuperAdminOrRoleAdminAccess(request) {
     console.log('User role:', roleDoc);
     if (!roleDoc || typeof roleDoc === 'string' || (roleDoc._bsontype === 'ObjectId')) {
         // Fetch role document if not populated
-        roleDoc = await Role.findById(result.user.role).lean();
+        const RoleModel = mongoose.models.Role || mongoose.model('Role', Role);
+        roleDoc = await RoleModel.findById(result.user.role).lean();
     }
     if (roleDoc && (roleDoc.name === 'admin' || roleDoc.slug === 'admin')) {
         return result;
