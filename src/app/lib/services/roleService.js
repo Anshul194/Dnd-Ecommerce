@@ -55,6 +55,7 @@ class RoleService {
             const result = await this.roleRepo.getAll(filter, {}, pageNum, limitNum);
             return result;
         } catch (error) {
+            console.error('RoleService.getRoles error:', error);
             throw new Error('Error fetching roles');
         }
     }

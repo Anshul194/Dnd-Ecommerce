@@ -1,8 +1,19 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import User from '../lib/models/User'; 
+import userSchema from '../lib/models/User.js';
+import mongoose from 'mongoose';
+import Role from '../lib/models/role.js';
+// Helper to get User model from schema
+function getUserModel() {
+    return mongoose.models.User || mongoose.model('User', userSchema);
+}
 import dotenv from 'dotenv';
 dotenv.config();
+
+// Helper to extract tenant from request headers
+function getTenantFromRequest(request) {
+    return request.headers.get('x-tenant') || null;
+}
 
 
 const JWT_SECRET = process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET_KEY;
@@ -22,9 +33,24 @@ export async function verifyJwtToken(token) {
 /**
  * Fetch User by ID
  */
-export async function getUserById(userId) {
+// Updated: Accept tenantId
+export async function getUserById(userId, tenantId = null) {
     try {
-        const user = await User.findById(userId).lean();
+        let user = null;
+        if (tenantId === 'localhost') {
+            // Fetch from global DB, ignore tenant field
+            const query = { _id: userId };
+            console.log('[getUserById] Query (global):', query);
+            const UserModel = getUserModel();
+            user = await UserModel.findOne(query).lean();
+        } else {
+            const query = { _id: userId };
+            if (tenantId) query.tenant = tenantId;
+            console.log('[getUserById] Query:', query);
+            const UserModel = getUserModel();
+            user = await UserModel.findOne(query).lean();
+        }
+        console.log('[getUserById] Result:', user);
         return user;
     } catch (err) {
         console.error('Error fetching user:', err.message);
@@ -60,15 +86,17 @@ export async function verifyTokenAndUser(request, userType = 'user') {
         };
     }
 
-    console.log('Decoded JWT payload:', payload);
+    console.log('[verifyTokenAndUser] Decoded JWT payload:', payload);
     // Try all possible id fields
     const userId = payload.userId || payload._id || payload.id;
-    const user = await getUserById(userId);
-
+    const tenantId = payload.tenantId || payload.tenant || getTenantFromRequest(request);
+    console.log('[verifyTokenAndUser] userId:', userId, 'tenantId:', tenantId);
+    const user = await getUserById(userId, tenantId);
     if (!user) {
+        console.error('[verifyTokenAndUser] User not found for query:', { userId, tenantId });
         return {
             error: NextResponse.json(
-                { success: false, message: 'User not found or unauthorized' },
+                { success: false, message: 'User not found or unauthorized', query: { userId, tenantId } },
                 { status: 403 }
             )
         };
@@ -155,9 +183,9 @@ export async function verifySuperAdminOrRoleAdminAccess(request) {
 
     // Check if user has 'admin' role (by name or by specific ObjectId)
     let roleDoc = result.user.role;
+    console.log('User role:', roleDoc);
     if (!roleDoc || typeof roleDoc === 'string' || (roleDoc._bsontype === 'ObjectId')) {
         // Fetch role document if not populated
-        const Role = (await import('../lib/models/role.js')).default;
         roleDoc = await Role.findById(result.user.role).lean();
     }
     if (roleDoc && (roleDoc.name === 'admin' || roleDoc.slug === 'admin')) {

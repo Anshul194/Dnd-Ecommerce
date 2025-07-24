@@ -14,8 +14,6 @@ export async function createRole(form, currentUser) {
                 body: errorResponse('Role with this name already exists', 400),
             };
         }
-<<<<<<< HEAD
-=======
 
         // Validate scope
         if (!['global', 'tenant'].includes(scope)) {
@@ -32,18 +30,12 @@ export async function createRole(form, currentUser) {
             };
         }
 
->>>>>>> a75fadb75168cc9c2f78d21e261b42d2e3536ae6
         const newRole = await roleService.createRole({
             name,
             scope,
             tenantId: tenantId || null,
             modulePermissions: modulePermissions || []
-<<<<<<< HEAD
         });
-=======
-        }, currentUser);
-
->>>>>>> a75fadb75168cc9c2f78d21e261b42d2e3536ae6
         return {
             status: 201,
             body: successResponse("Role created", newRole),
@@ -66,7 +58,7 @@ export async function getRoles(query) {
             body: successResponse("Roles fetched successfully", data),
         };
     } catch (err) {
-        console.error('Get Roles error:', err.message);
+        console.error('Get Roles error:', err);
         return {
             status: 500,
             body: errorResponse('Server error', 500),

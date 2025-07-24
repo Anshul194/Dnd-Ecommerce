@@ -1,16 +1,14 @@
-
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
-import TenantSchema from './src/app/lib/models/Tenant.js';
 
-const globalDbUri = process.env.MONGODB_URI;
-
+// Schemas
 const globalModuleSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   createdAt: { type: Date, default: Date.now },
   deletedAt: { type: Date, default: null }
 });
+
 const globalRoleSchema = new mongoose.Schema({
   name: { type: String, required: true },
   scope: { type: String, enum: ['global', 'tenant'], required: true },
@@ -22,6 +20,7 @@ const globalRoleSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   deletedAt: { type: Date ,default: null },
 });
+
 const globalTenantSchema = new mongoose.Schema({
   tenantId: { type: String, required: true, unique: true },
   companyName: { type: String, required: true },
@@ -39,50 +38,73 @@ const globalTenantSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+// Seed Function
 async function seedTenantDBs() {
+  const globalDbUri = process.env.MONGODB_URI;
+
   // Connect to global DB
   const globalConn = await mongoose.createConnection(globalDbUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+
   const GlobalModule = globalConn.model('Module', globalModuleSchema);
   const GlobalRole = globalConn.model('Role', globalRoleSchema);
   const GlobalTenant = globalConn.model('Tenant', globalTenantSchema);
 
-  // Fetch global modules and roles
+  // Fetch data from global DB
   const globalModules = await GlobalModule.find({});
   const globalRoles = await GlobalRole.find({});
+  const globalModuleIds = globalModules.map(m => m._id.toString());
+  const globalRoleIds = globalRoles.map(r => r._id.toString());
 
-  // Get all tenants from global DB
   const tenants = await GlobalTenant.find();
 
   for (const tenant of tenants) {
     if (!tenant.dbUri) continue;
+
     const tenantConn = await mongoose.createConnection(tenant.dbUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
+
     const Module = tenantConn.model('Module', globalModuleSchema);
     const Role = tenantConn.model('Role', globalRoleSchema);
-    // Insert modules with same _id and data
+
+    // Delete modules not in global list
+    await Module.deleteMany({ _id: { $nin: globalModuleIds } });
+
+    // Upsert all modules
     for (const mod of globalModules) {
-      await Module.updateOne({ _id: mod._id }, mod.toObject(), { upsert: true });
+      await Module.replaceOne({ _id: mod._id }, mod.toObject(), { upsert: true });
     }
-    // Insert roles with same _id and data
+
+    // Delete roles not in global list
+    await Role.deleteMany({ _id: { $nin: globalRoleIds } });
+
+    // Upsert all roles with updated tenantId and full replacement
     for (const role of globalRoles) {
-      await Role.updateOne({ _id: role._id }, { ...role.toObject(), tenantId: tenant._id }, { upsert: true });
+      const roleData = role.toObject();
+      roleData.tenantId = tenant._id; // override tenantId
+
+      await Role.replaceOne({ _id: role._id }, roleData, { upsert: true });
     }
+
     await tenantConn.close();
-    console.log(`Seeded tenant DB: ${tenant.companyName}`);
+    console.log(`✅ Seeded tenant DB: ${tenant.companyName}`);
   }
+
   await globalConn.close();
   mongoose.disconnect();
 }
 
-seedTenantDBs().then(() => {
-  console.log('Seeding complete.');
-  process.exit(0);
-}).catch(err => {
-  console.error('Seeding error:', err);
-  process.exit(1);
-});
+// Run seeding
+seedTenantDBs()
+  .then(() => {
+    console.log('✅ Seeding complete.');
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error('❌ Seeding error:', err);
+    process.exit(1);
+  });

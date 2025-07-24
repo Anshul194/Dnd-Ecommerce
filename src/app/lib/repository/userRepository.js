@@ -17,9 +17,11 @@ class UserRepository {
     }
   }
 
-  async findById(id) {
+  async findById(id, tenantId = null) {
     try {
-      return await this.model.findOne({ _id: id, isDeleted: false });
+      const query = { _id: id, isDeleted: false };
+      if (tenantId) query.tenant = tenantId;
+      return await this.model.findOne(query);
     } catch (error) {
       console.error('UserRepo findById error:', error);
       throw error;

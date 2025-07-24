@@ -10,7 +10,11 @@ deleteModule
 } from '../../lib/controllers/moduleController.js';
 import { withSuperAdminCreationAuth, verifyTokenAndUser, hasModulePermission } from '../../middleware/commonAuth.js';
 import Module from '../../lib/models/Module.js';
-import Role from '../../lib/models/role.js';
+import roleSchema from '../../lib/models/role.js';
+import mongoose from 'mongoose';
+function getRoleModel() {
+    return mongoose.models.Role || mongoose.model('Role', roleSchema);
+}
 // POST: Create a new module (Super Admin creation protected)
 export const POST = withSuperAdminCreationAuth(
     async function(request) {
@@ -87,7 +91,8 @@ export async function getPermittedModulesForUser(user) {
     }
 
     // If role is populated, use directly; otherwise, fetch role document
-    let roleDoc = role.modulePermissions ? role : await Role.findById(role).lean();
+    const RoleModel = getRoleModel();
+    let roleDoc = role.modulePermissions ? role : await RoleModel.findById(role).lean();
     if (!roleDoc || !roleDoc.modulePermissions) return [];
 
     // Get all module IDs that the role has permissions for

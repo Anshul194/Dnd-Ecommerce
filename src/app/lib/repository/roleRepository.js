@@ -1,6 +1,9 @@
-import Role from '../models/role.js';
+
+import roleSchema from '../models/role.js';
 import mongoose from 'mongoose';
 import CrudRepository from './CrudRepository.js';
+
+const Role = mongoose.models.Role || mongoose.model('Role', roleSchema);
 
 class RoleRepository extends CrudRepository {
     constructor() {
