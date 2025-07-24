@@ -7,7 +7,7 @@ class TenantRepository extends CrudRepository {
     }
 
     async findByTenantId(tenantId) {
-        return await Tenant.findOne({ tenantId, isDeleted: false });
+        return await Tenant.findOne({_id: tenantId, isDeleted: false });
     }
 
     async findByName(companyName) {
@@ -16,6 +16,16 @@ class TenantRepository extends CrudRepository {
 
     async findBySubdomain(subdomain) {
         return await Tenant.findOne({ subdomain, isDeleted: false });
+    }
+
+    async findById(id) {
+        try{
+            return await Tenant.findOne({ _id: id, isDeleted: false });
+        }
+        catch (error) {
+            console.error('TenantRepo findById error:', error);
+            throw error;
+        }   
     }
     
 

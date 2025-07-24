@@ -18,7 +18,7 @@ class AttributeRepository {
   }
 
   async delete(id) {
-    return await Attribute.findByIdAndUpdate(id, { deletedAt: new Date(), status: 'inactive' }, { new: true });
+    return await Attribute.findByIdAndDelete(id, { deletedAt: new Date(), status: 'inactive' }, { new: true });
   }
 
   async searchByName(name) {

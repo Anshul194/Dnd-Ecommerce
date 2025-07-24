@@ -7,18 +7,20 @@ import {
     updateRole,
     deleteRole
 } from '../../lib/controllers/roleController.js';
+import { withSuperAdminOrRoleAdminAuth } from '../../middleware/commonAuth.js';
 
-export async function POST(request) {
+export const POST = withSuperAdminOrRoleAdminAuth(async function(request) {
     try {
         await dbConnect();
         const body = await request.json();
-        const result = await createRole(body);
+        // Pass request.user to controller
+        const result = await createRole(body, request.user);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
         console.error('POST /role error:', err);
         return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
     }
-}
+});
 
 export async function GET(request) {
     try {
@@ -39,19 +41,20 @@ export async function GET(request) {
     }
 }
 
-export async function PUT(request) {
+export const PUT = withSuperAdminOrRoleAdminAuth(async function(request) {
     try {
         await dbConnect();
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
         const body = await request.json();
-        const result = await updateRole(id, body);
+        // Ensure request.user is passed to updateRole
+        const result = await updateRole(id, body, request.user);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
         console.error('PUT /role error:', err);
         return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
     }
-}
+});
 
 export async function DELETE(request) {
     try {

@@ -4,7 +4,7 @@ import { successResponse, errorResponse } from '../../utils/response.js';
 const roleService = new RoleService();
 
 // Create a new role
-export async function createRole(form) {
+export async function createRole(form, currentUser) {
     try {
         const { name, scope, tenantId, modulePermissions } = form;
         const existing = await roleService.findByName(name);
@@ -14,12 +14,36 @@ export async function createRole(form) {
                 body: errorResponse('Role with this name already exists', 400),
             };
         }
+<<<<<<< HEAD
+=======
+
+        // Validate scope
+        if (!['global', 'tenant'].includes(scope)) {
+            return {
+                status: 400,
+                body: errorResponse('Invalid scope', 400),
+            };
+        }
+        // Validate tenantId if scope is tenant
+        if (scope === 'tenant' && !tenantId) {
+            return {
+                status: 400,
+                body: errorResponse('Tenant ID is required for tenant scope', 400),
+            };
+        }
+
+>>>>>>> a75fadb75168cc9c2f78d21e261b42d2e3536ae6
         const newRole = await roleService.createRole({
             name,
             scope,
             tenantId: tenantId || null,
             modulePermissions: modulePermissions || []
+<<<<<<< HEAD
         });
+=======
+        }, currentUser);
+
+>>>>>>> a75fadb75168cc9c2f78d21e261b42d2e3536ae6
         return {
             status: 201,
             body: successResponse("Role created", newRole),
@@ -74,9 +98,10 @@ export async function getRoleById(id) {
 }
 
 // Update a role by ID
-export async function updateRole(id, data) {
+export async function updateRole(id, data, currentUser = null) {
     try {
-        const updated = await roleService.updateRole(id, data);
+        // Pass currentUser to the service
+        const updated = await roleService.updateRole(id, data, currentUser);
         if (!updated) {
             return {
                 status: 404,
