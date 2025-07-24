@@ -98,7 +98,7 @@ export async function createCategory(form) {
 
     return {
       status: 201,
-      body: successResponse(newCategory, 'Category created'),
+      body: successResponse("Category created", newCategory),
     };
   } catch (err) {
     console.error('Create Category error:', err.message);
@@ -119,7 +119,7 @@ export async function getCategories(query) {
 
     return {
       status: 200,
-      body: successResponse(result, 'Categories fetched successfully'),
+      body: successResponse("Categories fetched successfully", result),
     };
   } catch (err) {
     console.error('Get Categories error:', err.message);
@@ -138,12 +138,12 @@ export async function getCategoryById(id) {
     if (!category) {
       return {
         status: 404,
-        body: { success: false, message: 'Category not found' }
+        body: errorResponse("Category not found", 404),
       };
     }
     return {
       status: 200,
-      body: { success: true, message: 'Category fetched', data: category }
+      body: successResponse("Category fetched", category),
     };
   } catch (err) {
     console.error('Get Category error:', err.message);
@@ -182,15 +182,13 @@ export async function updateCategory(id, data) {
     if (error) {
       return {
         status: 400,
-        body: { success: false, message: 'Validation error', details: error.details }
+        body: errorResponse("Validation error", 400, error.details),
       };
     }
-
-    const updated = await categoryService.updateCategory(id, value);
     if (!updated) {
       return {
         status: 404,
-        body: { success: false, message: 'Category not found' }
+        body: errorResponse("Category not found", 404),
       };
     }
 
@@ -199,7 +197,7 @@ export async function updateCategory(id, data) {
 
     return {
       status: 200,
-      body: { success: true, message: 'Category updated', data: updated }
+      body: successResponse("Category updated", updated),
     };
   } catch (err) {
     console.error('Update Category error:', err.message);
@@ -216,7 +214,7 @@ export async function deleteCategory(id) {
     if (!deleted) {
       return {
         status: 404,
-        body: { success: false, message: 'Category not found' }
+        body: errorResponse("Category not found", 404),
       };
     }
 
@@ -225,7 +223,7 @@ export async function deleteCategory(id) {
 
     return {
       status: 200,
-      body: { success: true, message: 'Category deleted', data: deleted }
+      body: successResponse("Category deleted", deleted),
     };
   } catch (err) {
     console.error('Delete Category error:', err.message);
@@ -249,7 +247,7 @@ export async function getAttributesByCategoryId(categoryId) {
 
     return {
       status: 200,
-      body: successResponse(attributes, 'Attributes fetched successfully')
+      body: successResponse("Attributes fetched successfully", attributes),
     };
   } catch (err) {
     console.error('Error fetching attributes for category:', err.message);
@@ -293,7 +291,7 @@ export async function getNavbarCategoriesWithAttributes() {
 
     return {
       status: 200,
-      body: successResponse(result, 'Categories with attributes fetched'),
+      body: successResponse("Categories with attributes fetched", result),
     };
   } catch (err) {
     console.error('Navbar fetch error:', err.message);

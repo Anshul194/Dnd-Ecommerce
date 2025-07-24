@@ -35,6 +35,9 @@ class ModuleService {
     async updateModuleWithPermissions(id, data) {
         const { name, permissions, updatedBy } = data;
         try {
+            if (!name) {
+                return errorResponse('Module validation failed: name: Path `name` is required.', StatusCodes.BAD_REQUEST);
+            }
             const module = await this.moduleRepo.update(id, { name });
 
             if (!module) return errorResponse('Module not found', StatusCodes.NOT_FOUND);

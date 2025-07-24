@@ -34,6 +34,20 @@ export async function PATCH(req, context) {
   }
 }
 
+// PUT /api/product/:id
+export async function PUT(req, context) {
+  const params = await context.params;
+  try {
+    const body = await req.json();
+    const response = await controller.update(params.id, body);
+    return NextResponse.json(response, {
+      status: response.success ? 200 : 400,
+    });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 // DELETE /api/product/:id
 export async function DELETE(req, context) {
   const params = await context.params;

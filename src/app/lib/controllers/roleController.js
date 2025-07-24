@@ -7,8 +7,6 @@ const roleService = new RoleService();
 export async function createRole(form) {
     try {
         const { name, scope, tenantId, modulePermissions } = form;
-
-
         const existing = await roleService.findByName(name);
         if (existing) {
             return {
@@ -16,17 +14,15 @@ export async function createRole(form) {
                 body: errorResponse('Role with this name already exists', 400),
             };
         }
-
         const newRole = await roleService.createRole({
             name,
             scope,
             tenantId: tenantId || null,
             modulePermissions: modulePermissions || []
         });
-
         return {
             status: 201,
-            body: successResponse(newRole, 'Role created'),
+            body: successResponse("Role created", newRole),
         };
     } catch (err) {
         console.error('Create Role error:', err.message);
@@ -43,7 +39,7 @@ export async function getRoles(query) {
         const data = await roleService.getRoles(query);
         return {
             status: 200,
-            body: successResponse(data, 'Roles fetched successfully'),
+            body: successResponse("Roles fetched successfully", data),
         };
     } catch (err) {
         console.error('Get Roles error:', err.message);
@@ -66,7 +62,7 @@ export async function getRoleById(id) {
         }
         return {
             status: 200,
-            body: successResponse(role, 'Role fetched'),
+            body: successResponse("Role fetched", role),
         };
     } catch (err) {
         console.error('Get Role error:', err.message);
@@ -89,7 +85,7 @@ export async function updateRole(id, data) {
         }
         return {
             status: 200,
-            body: successResponse(updated, 'Role updated'),
+            body: successResponse("Role updated", updated),
         };
     } catch (err) {
         console.error('Update Role error:', err.message);
@@ -112,7 +108,7 @@ export async function deleteRole(id) {
         }
         return {
             status: 200,
-            body: successResponse(deleted, 'Role deleted'),
+            body: successResponse("Role deleted", deleted),
         };
     } catch (err) {
         console.error('Delete Role error:', err.message);

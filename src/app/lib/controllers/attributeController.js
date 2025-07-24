@@ -50,7 +50,7 @@ export const updateAttribute = async (req, res) => {
 export const deleteAttribute = async (req, res) => {
   try {
     await attributeService.deleteAttribute(req.params.id);
-    return res.json(successResponse("Attribute deleted"));
+    return res.json(successResponse("Attribute deleted", null));
   } catch (err) {
     return res.status(500).json(errorResponse(err.message));
   }

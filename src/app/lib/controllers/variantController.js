@@ -11,17 +11,17 @@ export const createVariant = async (req, res) => {
 
     // Step 1: Validate required fields
     if (!data.title || typeof data.title !== 'string') {
-      return errorResponse(res, 'Validation failed', 400, ['Title is required and must be a string.']);
+      return res.status(400).json(errorResponse('Title is required and must be a string.'));
     }
 
     if (!data.productId || !Array.isArray(data.attributes)) {
-      return errorResponse(res, 'Validation failed', 400, ['Product ID and attributes are required.']);
+      return res.status(400).json(errorResponse('Product ID and attributes are required.'));
     }
 
     // Step 2: Get the product
     const product = await Product.findById(data.productId).lean();
     if (!product) {
-      return errorResponse(res, 'Product not found', 404);
+      return res.status(404).json(errorResponse('Product not found'));
     }
 
     const allowedAttributeIds = product.attributeSet
@@ -35,19 +35,16 @@ export const createVariant = async (req, res) => {
     const invalidAttributes = providedAttributeIds.filter(id => !allowedAttributeIds.includes(id));
 
     if (invalidAttributes.length > 0) {
-      return errorResponse(
-        res,
-        'Validation failed',
-        400,
-        invalidAttributes.map(id => `Attribute ${id || 'undefined'} is not allowed for this product.`)
-      );
+      return res.status(400).json(errorResponse(
+        invalidAttributes.map(id => `Attribute ${id || 'undefined'} is not allowed for this product.`).join(', ')
+      ));
     }
 
     // Step 4: Create the variant
     const variant = await variantService.create(data);
-    return successResponse(res, variant, 'Variant created successfully');
+    return res.status(201).json(successResponse('Variant created successfully', variant));
 
   } catch (err) {
-    return errorResponse(res, err.message || 'Failed to create variant', 400, err.details || []);
+    return res.status(500).json(errorResponse(err.message || 'Failed to create variant'));
   }
 };
