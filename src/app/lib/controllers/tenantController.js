@@ -8,10 +8,8 @@ const tenantService = new TenantService(); // Import the schema only, not model
 export async function createTenant(data) {
   if (!data.email) {
     return {
-<<<<<<< HEAD
       status: 201,
       body: result?.success !== false ? { success: true, message: "Tenant created", data: result } : result,
-=======
       status: 400,
       body: { success: false, message: 'Email is required' },
     };
@@ -74,7 +72,6 @@ export async function createTenant(data) {
         },
         password,
       },
->>>>>>> a75fadb75168cc9c2f78d21e261b42d2e3536ae6
     };
   } catch (err) {
     console.error('Error creating tenant:', err?.message);

@@ -9,7 +9,7 @@ export function middleware(request) {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST,PATCH, PUT, DELETE, OPTIONS',
-'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-access-token, x-refresh-token'
+'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-access-token, x-refresh-token,x-tenant'
       },
     });
   }
@@ -18,7 +18,7 @@ export function middleware(request) {
   const response = NextResponse.next();
   response.headers.set('Access-Control-Allow-Origin', '*');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST,PATCH, PUT, DELETE, OPTIONS');
-response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-access-token, x-refresh-token');
+response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-access-token, x-refresh-token,x-tenant');
   return response;
 }
 

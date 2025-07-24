@@ -57,13 +57,8 @@ export async function getModule(id) {
 
         // `getModuleWithPermissions` already returns a full successResponse or errorResponse
         return {
-<<<<<<< HEAD
             status: 200,
             body: successResponse("Module fetched", module),
-=======
-            status: response.status || 200,
-            body: response,
->>>>>>> a75fadb75168cc9c2f78d21e261b42d2e3536ae6
         };
     } catch (err) {
         console.error('Get Module error:', err.message);
