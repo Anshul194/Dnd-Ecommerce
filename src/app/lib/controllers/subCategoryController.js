@@ -1,16 +1,15 @@
-import SubCategoryService from '../../lib/services/SubCategoryService.js';
+
 import { saveFile, validateImageFile } from '../../config/fileUpload.js';
 import { successResponse, errorResponse } from '../../utils/response.js';
 import { subCategoryCreateValidator, subCategoryUpdateValidator } from '../../validators/subCategoryValidator.js';
 import SubCategory from '../../lib/models/SubCategory.js';
-import Category from '../../lib/models/Category.js'; // ✅ Import Category model
-
-const subCategoryService = new SubCategoryService();
-
-export async function createSubCategory(form) {
+import { categorySchema } from '../models/Category.js';
+export async function createSubCategory(form, conn) {
   try {
     let imageUrl = '';
     let thumbnailUrl = '';
+    const SubCategoryService = (await import('../../lib/services/SubCategoryService.js')).default;
+    const subCategoryService = new SubCategoryService(conn);
 
     const name = form.get('name');
     const slug = form.get('slug');
@@ -24,8 +23,9 @@ export async function createSubCategory(form) {
     const isFeatured = form.get('isFeatured');
     const parentCategory = form.get('parentCategory');
 
-    // ✅ Check if parent category exists
-    const parentExists = await Category.findById(parentCategory);
+    // Ensure Category model is registered on tenant connection
+    const CategoryModel = conn.models.Category || conn.model('Category', categorySchema);
+    const parentExists = await CategoryModel.findById(parentCategory);
     if (!parentExists) {
       return {
         status: 400,
@@ -78,12 +78,9 @@ export async function createSubCategory(form) {
     }
 
     const newSubCategory = await subCategoryService.createSubCategory(value);
-    return {
-      status: 201,
-      body: successResponse("Subcategory created", newSubCategory),
-    };
+    return newSubCategory;
   } catch (err) {
-    console.error('Create Subcategory error:', err.message);
+    console.log('Create Subcategory error:', err.message);
     return {
       status: 500,
       body: errorResponse('Server error', 500),
@@ -91,13 +88,12 @@ export async function createSubCategory(form) {
   }
 }
 
-export async function getSubCategories(query) {
+export async function getSubCategories(query, conn) {
   try {
+    const SubCategoryService = (await import('../../lib/services/SubCategoryService.js')).default;
+    const subCategoryService = new SubCategoryService(conn);
     const result = await subCategoryService.getAllSubCategories(query);
-    return {
-      status: 200,
-      body: successResponse("Subcategories fetched successfully", result),
-    };
+    return result;
   } catch (err) {
     console.error('Get Subcategories error:', err.message);
     return {
@@ -107,19 +103,12 @@ export async function getSubCategories(query) {
   }
 }
 
-export async function getSubCategoryById(id) {
+export async function getSubCategoryById(id, conn) {
   try {
+    const SubCategoryService = (await import('../../lib/services/SubCategoryService.js')).default;
+    const subCategoryService = new SubCategoryService(conn);
     const subCategory = await subCategoryService.getSubCategoryById(id);
-    if (!subCategory) {
-      return {
-        status: 404,
-        body: errorResponse("Subcategory not found", 404),
-      };
-    }
-    return {
-      status: 200,
-      body: successResponse("Subcategory fetched", subCategory),
-    };
+    return subCategory;
   } catch (err) {
     console.error('Get Subcategory error:', err.message);
     return {
@@ -129,10 +118,12 @@ export async function getSubCategoryById(id) {
   }
 }
 
-export async function updateSubCategory(id, data) {
+export async function updateSubCategory(id, data, conn) {
   try {
     let imageUrl = '';
     const { image, ...fields } = data;
+    const SubCategoryService = (await import('../../lib/services/SubCategoryService.js')).default;
+    const subCategoryService = new SubCategoryService(conn);
 
     if (image && image instanceof File) {
       validateImageFile(image);
@@ -154,16 +145,7 @@ export async function updateSubCategory(id, data) {
       };
     }
     const updated = await subCategoryService.updateSubCategory(id, value);
-    if (!updated) {
-      return {
-        status: 404,
-        body: errorResponse("Subcategory not found", 404),
-      };
-    }
-    return {
-      status: 200,
-      body: successResponse("Subcategory updated", updated),
-    };
+    return updated;
   } catch (err) {
     console.error('Update Subcategory error:', err.message);
     return {
@@ -173,19 +155,12 @@ export async function updateSubCategory(id, data) {
   }
 }
 
-export async function deleteSubCategory(id) {
+export async function deleteSubCategory(id, conn) {
   try {
+    const SubCategoryService = (await import('../../lib/services/SubCategoryService.js')).default;
+    const subCategoryService = new SubCategoryService(conn);
     const deleted = await subCategoryService.deleteSubCategory(id);
-    if (!deleted) {
-      return {
-        status: 404,
-        body: errorResponse("Subcategory not found", 404),
-      };
-    }
-    return {
-      status: 200,
-      body: successResponse("Subcategory deleted", deleted),
-    };
+    return deleted;
   } catch (err) {
     console.error('Delete Subcategory error:', err.message);
     return {
