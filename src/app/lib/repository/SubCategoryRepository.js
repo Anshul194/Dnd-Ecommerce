@@ -1,11 +1,15 @@
+
 import slugify from 'slugify';
 import CrudRepository from "./CrudRepository.js";
 import { default as subCategorySchema } from '../models/SubCategory.js';
+import { categorySchema } from '../models/Category.js';
 
 class SubCategoryRepository extends CrudRepository {
   constructor(conn) {
     // Use the provided connection for tenant DB, or global mongoose if not provided
     const connection = conn || require('mongoose');
+    // Ensure Category model is registered on this connection
+    connection.models.Category || connection.model('Category', categorySchema);
     const SubCategoryModel = connection.models.SubCategory || connection.model('SubCategory', subCategorySchema.schema);
     super(SubCategoryModel);
     this.SubCategory = SubCategoryModel;
