@@ -10,6 +10,10 @@ export default {
         arizona: ['ABCArizonaMix', 'sans-serif'],
         gintoNord: ['CullenGinto-Nord', 'sans-serif'],
         gintoNormal: ['CullenGintoNormal', 'sans-serif'],
+        bebas: ['Bebas Neue', 'sans-serif'],
+      },
+      colors: {
+        fontGreen: '#3C950D',
       },
     },
   },
