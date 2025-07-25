@@ -1,12 +1,13 @@
-import CategoryRepository from '../repository/categoryRepository.js';
+
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
-// import SubCategory from '../models/SubCategory.js'; // Ensure this import is correct
 import { successResponse, errorResponse } from '../../utils/response.js';
+import CategoryRepository from '../repository/categoryRepository.js';
 
 class CategoryService {
-  constructor() {
-    this.categoryRepo = new CategoryRepository();
+  constructor(conn) {
+    this.conn = conn;
+    this.categoryRepo = new CategoryRepository(conn);
   }
 
   async getSubCategoriesByCategoryId(categoryId) {
@@ -18,10 +19,9 @@ class CategoryService {
         return errorResponse('Invalid categoryId', StatusCodes.BAD_REQUEST);
       }
 
-    //   const subCategories = await SubCategory.find({ category: categoryId, deletedAt: null });
-      console.log('Subcategories found:', subCategories);
-
-      return successResponse(subCategories, 'Subcategories fetched', StatusCodes.OK);
+      //   const subCategories = await SubCategory.find({ category: categoryId, deletedAt: null });
+      //   console.log('Subcategories found:', subCategories);
+      //   return successResponse(subCategories, 'Subcategories fetched', StatusCodes.OK);
     } catch (error) {
       console.log('Error in getSubCategoriesByCategoryId:', error.message);
       return errorResponse('Cannot fetch subcategories', StatusCodes.INTERNAL_SERVER_ERROR, error.message);

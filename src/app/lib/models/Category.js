@@ -13,10 +13,12 @@ const categorySchema = new mongoose.Schema({
   sortOrder: { type: Number, default: 0 },
   isFeatured: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   
 }, { timestamps: true });
 
 const Category = mongoose.models.Category || mongoose.model('Category', categorySchema);
 
+export { categorySchema };
 export default Category;
 

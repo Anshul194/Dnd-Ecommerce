@@ -4,6 +4,7 @@ async function dbConnect(dbUri) {
     console.log('Connecting to MongoDB...',dbUri);
     const defaultUri = process.env.MONGODB_URI;
     const uri = dbUri || defaultUri;
+    console.log('Using URI:', uri);
     if (!uri) {
         const err = new Error('DB not found');
         err.status = 404;
