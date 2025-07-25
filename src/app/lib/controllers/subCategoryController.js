@@ -80,7 +80,7 @@ export async function createSubCategory(form) {
     const newSubCategory = await subCategoryService.createSubCategory(value);
     return {
       status: 201,
-      body: successResponse(newSubCategory, 'Subcategory created'),
+      body: successResponse("Subcategory created", newSubCategory),
     };
   } catch (err) {
     console.error('Create Subcategory error:', err.message);
@@ -96,7 +96,7 @@ export async function getSubCategories(query) {
     const result = await subCategoryService.getAllSubCategories(query);
     return {
       status: 200,
-      body: successResponse(result, 'Subcategories fetched successfully'),
+      body: successResponse("Subcategories fetched successfully", result),
     };
   } catch (err) {
     console.error('Get Subcategories error:', err.message);
@@ -113,12 +113,12 @@ export async function getSubCategoryById(id) {
     if (!subCategory) {
       return {
         status: 404,
-        body: { success: false, message: 'Subcategory not found' },
+        body: errorResponse("Subcategory not found", 404),
       };
     }
     return {
       status: 200,
-      body: { success: true, message: 'Subcategory fetched', data: subCategory },
+      body: successResponse("Subcategory fetched", subCategory),
     };
   } catch (err) {
     console.error('Get Subcategory error:', err.message);
@@ -150,21 +150,19 @@ export async function updateSubCategory(id, data) {
     if (error) {
       return {
         status: 400,
-        body: { success: false, message: 'Validation error', details: error.details },
+        body: errorResponse("Validation error", 400, error.details),
       };
     }
-
     const updated = await subCategoryService.updateSubCategory(id, value);
     if (!updated) {
       return {
         status: 404,
-        body: { success: false, message: 'Subcategory not found' },
+        body: errorResponse("Subcategory not found", 404),
       };
     }
-
     return {
       status: 200,
-      body: { success: true, message: 'Subcategory updated', data: updated },
+      body: successResponse("Subcategory updated", updated),
     };
   } catch (err) {
     console.error('Update Subcategory error:', err.message);
@@ -181,13 +179,12 @@ export async function deleteSubCategory(id) {
     if (!deleted) {
       return {
         status: 404,
-        body: { success: false, message: 'Subcategory not found' },
+        body: errorResponse("Subcategory not found", 404),
       };
     }
-
     return {
       status: 200,
-      body: { success: true, message: 'Subcategory deleted', data: deleted },
+      body: successResponse("Subcategory deleted", deleted),
     };
   } catch (err) {
     console.error('Delete Subcategory error:', err.message);

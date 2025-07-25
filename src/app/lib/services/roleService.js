@@ -1,20 +1,24 @@
 import Role from '../models/role.js';
 import RoleRepository from '../repository/roleRepository.js';
 
+
 class RoleService {
-    constructor() {
-        this.roleRepo = new RoleRepository();
+    constructor(conn) {
+        this.conn = conn;
+        this.roleRepo = new RoleRepository(conn);
     }
 
+
     // Create
-    async createRole(data, currentUser = null) {
+    async createRole(data, currentUser = null, conn = null) {
         try {
             // If currentUser is tenant admin, restrict permissions
             if (currentUser && !currentUser.isSuperAdmin) {
                 // Fetch current user's role with permissions
                 let userRole = currentUser.role;
+                const repo = new RoleRepository(conn || this.conn);
                 if (!userRole || typeof userRole === 'string' || (userRole._bsontype === 'ObjectId')) {
-                    userRole = await this.roleRepo.getRoleById(currentUser.role);
+                    userRole = await repo.getRoleById(currentUser.role);
                 }
 
                 console.log('Current user role:', userRole);
@@ -34,14 +38,16 @@ class RoleService {
                         }));
                 }
             }
-            return await this.roleRepo.createRole(data);
+            const repo = new RoleRepository(conn || this.conn);
+            return await repo.createRole(data);
         } catch (error) {
             throw new Error('Error creating role');
         }
     }
 
+
     // Read all
-    async getRoles(query = {}) {
+    async getRoles(query = {}, conn = null) {
         try {
             // Extract pagination params from query
             const pageNum = query.page ? parseInt(query.page, 10) : 1;
@@ -52,24 +58,29 @@ class RoleService {
             delete filter.limit;
             // Only fetch non-deleted roles
             filter.deletedAt = null;
-            const result = await this.roleRepo.getAll(filter, {}, pageNum, limitNum);
+            const repo = new RoleRepository(conn || this.conn);
+            const result = await repo.getAll(filter, {}, pageNum, limitNum);
             return result;
         } catch (error) {
+            console.error('RoleService.getRoles error:', error);
             throw new Error('Error fetching roles');
         }
     }
 
+
     // Read one
-    async getRoleById(id) {
+    async getRoleById(id, conn = null) {
         try {
-            return await this.roleRepo.getRoleById(id);
+            const repo = new RoleRepository(conn || this.conn);
+            return await repo.getRoleById(id);
         } catch (error) {
             throw new Error('Error fetching role');
         }
     }
 
+
     // Update
-    async updateRole(id, data, currentUser = null) {
+    async updateRole(id, data, currentUser = null, conn = null) {
         try {
             // Debug: log currentUser at the start
             console.log('updateRole called with currentUser:', currentUser);
@@ -78,8 +89,9 @@ class RoleService {
             if (currentUser && !currentUser.isSuperAdmin) {
                 // Fetch current user's role with permissions
                 let userRole = currentUser.role;
+                const repo = new RoleRepository(conn || this.conn);
                 if (!userRole || typeof userRole === 'string' || (userRole._bsontype === 'ObjectId')) {
-                    userRole = await this.roleRepo.getRoleById(currentUser.role);
+                    userRole = await repo.getRoleById(currentUser.role);
                 }
 
                 // Debug: log admin's allowed permissions
@@ -122,26 +134,31 @@ class RoleService {
             } else {
                 console.log('Current user is super admin or not provided.', currentUser);
             }
-            return await this.roleRepo.updateRole(id, data);
+            const repo = new RoleRepository(conn || this.conn);
+            return await repo.updateRole(id, data);
         } catch (error) {
             console.error('Error in updateRole:', error);
             throw new Error('Error updating role');
         }
     }
 
+
     //findbyname    
-    async findByName(name) {
+    async findByName(name, conn = null) {
         try {
-            return await this.roleRepo.findByName(name);
+            const repo = new RoleRepository(conn || this.conn);
+            return await repo.findByName(name);
         } catch (error) {
             throw new Error('Error fetching role');
         }
     }
 
+
     // Delete
-    async deleteRole(id) {
+    async deleteRole(id, conn = null) {
         try {
-            return await this.roleRepo.deleteRole(id);
+            const repo = new RoleRepository(conn || this.conn);
+            return await repo.deleteRole(id);
         } catch (error) {
             throw new Error('Error deleting role');
         }

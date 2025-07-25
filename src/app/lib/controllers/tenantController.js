@@ -1,5 +1,5 @@
 import TenantService from '../services/tenantService.js';
-import User from '../models/User.js';
+import UserSchema from '../models/User.js';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
@@ -8,6 +8,8 @@ const tenantService = new TenantService(); // Import the schema only, not model
 export async function createTenant(data) {
   if (!data.email) {
     return {
+      status: 201,
+      body: result?.success !== false ? { success: true, message: "Tenant created", data: result } : result,
       status: 400,
       body: { success: false, message: 'Email is required' },
     };
@@ -38,11 +40,14 @@ export async function createTenant(data) {
     });
 
     // 3. Register the User model on tenant DB
-    const TenantUser = tenantConnection.model('User', User.schema);
+    const TenantUser =
+      tenantConnection.models.User ||
+      tenantConnection.model('User', UserSchema);
 
     // 4. Create password hash and save user in tenant DB
     const passwordHash = await bcrypt.hash(password, 10);
 
+    // Create the user in tenant DB
     const user = new TenantUser({
       name: data.companyName || data.email,
       email: data.email,
@@ -55,6 +60,25 @@ export async function createTenant(data) {
     });
 
     await user.save();
+
+    // Use the same _id for global user
+    const GlobalUser =
+      mongoose.models.User ||
+      mongoose.model('User', UserSchema);
+
+    const globalUser = new GlobalUser({
+      _id: user._id, // ensure same _id
+      name: data.companyName || data.email,
+      email: data.email,
+      passwordHash,
+      role: new mongoose.Types.ObjectId('687f94a6eb27eefa96f469e4'),
+      tenant: tenantResult.body.data._id,
+      isSuperAdmin: false,
+      isActive: true,
+      isDeleted: false,
+    });
+
+    await globalUser.save();
 
     return {
       status: tenantResult.status || 201,
@@ -75,7 +99,7 @@ export async function createTenant(data) {
     console.error('Error creating tenant:', err?.message);
     return {
       status: 500,
-      body: { success: false, message: 'Server error' },
+      body: { success: false, message: 'Server error', data: null },
     };
   }
 }
@@ -85,13 +109,13 @@ export async function getAllTenants(query) {
   try {
     const result = await tenantService.getAllTenants(query);
     return {
-      status: result.status || 200,
-      body: result,
+      status: 200,
+      body: { success: true, message: "Tenants fetched", data: result },
     };
   } catch (err) {
     return {
       status: 500,
-      body: { success: false, message: 'Server error' },
+      body: { success: false, message: 'Server error', data: null },
     };
   }
 }
@@ -99,14 +123,20 @@ export async function getAllTenants(query) {
 export async function getTenantById(id) {
   try {
     const result = await tenantService.getTenantById(id);
+    if (!result) {
+      return {
+        status: 404,
+        body: { success: false, message: "Tenant not found", data: null },
+      };
+    }
     return {
-      status: result.status || (result ? 200 : 404),
-      body: result,
+      status: 200,
+      body: { success: true, message: "Tenant fetched", data: result },
     };
   } catch (err) {
     return {
       status: 500,
-      body: { success: false, message: 'Server error' },
+      body: { success: false, message: 'Server error', data: null },
     };
   }
 }
@@ -114,14 +144,20 @@ export async function getTenantById(id) {
 export async function updateTenant(id, data) {
   try {
     const result = await tenantService.updateTenant(id, data);
+    if (!result) {
+      return {
+        status: 404,
+        body: { success: false, message: "Tenant not found", data: null },
+      };
+    }
     return {
-      status: result.status || 200,
-      body: result,
+      status: 200,
+      body: { success: true, message: "Tenant updated", data: result },
     };
   } catch (err) {
     return {
       status: 500,
-      body: { success: false, message: 'Server error' },
+      body: { success: false, message: 'Server error', data: null },
     };
   }
 }
@@ -129,14 +165,20 @@ export async function updateTenant(id, data) {
 export async function deleteTenant(id) {
   try {
     const result = await tenantService.deleteTenant(id);
+    if (!result) {
+      return {
+        status: 404,
+        body: { success: false, message: "Tenant not found", data: null },
+      };
+    }
     return {
-      status: result.status || 200,
-      body: result,
+      status: 200,
+      body: { success: true, message: "Tenant deleted", data: result },
     };
   } catch (err) {
     return {
       status: 500,
-      body: { success: false, message: 'Server error' },
+      body: { success: false, message: 'Server error', data: null },
     };
   }
 }

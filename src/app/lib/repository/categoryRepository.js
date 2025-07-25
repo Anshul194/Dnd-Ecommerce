@@ -1,11 +1,16 @@
-import Category from '../models/Category.js';
-import mongoose from 'mongoose';
+
+
 import slugify from 'slugify';
 import CrudRepository from "./CrudRepository.js";
+import { categorySchema } from '../models/Category.js';
 
 class CategoryRepository extends CrudRepository {
-  constructor() {
-    super(Category);
+  constructor(conn) {
+    // Use the provided connection for tenant DB, or global mongoose if not provided
+    const connection = conn || require('mongoose');
+    const CategoryModel = connection.models.Category || connection.model('Category', categorySchema);
+    super(CategoryModel);
+    this.Category = CategoryModel;
   }
   
 
@@ -13,7 +18,7 @@ class CategoryRepository extends CrudRepository {
 
   async findById(id) {
     try {
-      return await Category.findOne({ _id: id, deletedAt: null });
+      return await this.Category.findOne({ _id: id, deletedAt: null });
     } catch (error) {
       console.error('Repo findById error:', error);
       throw error;
@@ -22,7 +27,7 @@ class CategoryRepository extends CrudRepository {
 
   async create(data) {
     try {
-      const category = new Category(data);
+      const category = new this.Category(data);
       return await category.save();
     } catch (error) {
       console.error('Repo create error:', error);
@@ -32,8 +37,8 @@ class CategoryRepository extends CrudRepository {
 
   async findByName(name) {
     try {
-      var data= await Category.findOne({ name});
-      console.log('data',data);
+      var data = await this.Category.findOne({ name });
+      console.log('data', data);
       return data;
     } catch (error) {
       console.error('Repo findByName error:', error);
@@ -43,8 +48,7 @@ class CategoryRepository extends CrudRepository {
 
   async update(id, data) {
     try {
-      const CategoryModel = mongoose.models.Category;
-      const category = await CategoryModel.findById(id);
+      const category = await this.Category.findById(id);
       if (!category) return null;
 
       category.set(data);
@@ -57,7 +61,7 @@ class CategoryRepository extends CrudRepository {
           const randomNumber = Math.floor(100 + Math.random() * 900);
           uniqueSlug = `${baseSlug}-${randomNumber}`;
         } while (
-          await CategoryModel.exists({
+          await this.Category.exists({
             slug: uniqueSlug,
             deletedAt: null,
             _id: { $ne: category._id },
@@ -77,7 +81,7 @@ class CategoryRepository extends CrudRepository {
   async softDelete(id) {
     try {
       console.log('Repo softDelete called with:', id);
-      return await Category.findByIdAndUpdate(
+      return await this.Category.findByIdAndUpdate(
         id,
         { deletedAt: new Date() },
         { new: true }

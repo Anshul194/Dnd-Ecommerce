@@ -6,17 +6,23 @@ export async function createModule(request) {
     try {
         const body = await request.json();
 
-        const newModule = await moduleService.createModuleWithPermissions(body);
+        if (!body.name) {
+            return {
+                status: 400,
+                body: errorResponse('Module name is required', 400),
+            };
+        }
 
+        const newModule = await moduleService.createModuleWithPermissions(body);
         return {
             status: 201,
-            body: successResponse(newModule, 'Module created'),
+            body: successResponse(newModule, "Module created"),
         };
     } catch (err) {
         console.error('Create Module error:', err.message);
         return {
             status: 500,
-            body: errorResponse('Server error', 500),
+            body: errorResponse('Error creating module', 500, err.message),
         };
     }
 }
@@ -33,7 +39,7 @@ export async function updateModule(id, data) {
         }
         return {
             status: 200,
-            body: successResponse(updated, 'Module updated'),
+            body: successResponse("Module updated", updated),
         };
     } catch (err) {
         console.error('Update Module error:', err.message);
@@ -51,8 +57,8 @@ export async function getModule(id) {
 
         // `getModuleWithPermissions` already returns a full successResponse or errorResponse
         return {
-            status: response.status || 200,
-            body: response,
+            status: 200,
+            body: successResponse("Module fetched", module),
         };
     } catch (err) {
         console.error('Get Module error:', err.message);
@@ -93,7 +99,7 @@ export async function deleteModule(id) {
         }
         return {
             status: 200,
-            body: successResponse(deleted, 'Module deleted'),
+            body: successResponse("Module deleted", deleted),
         };
     } catch (err) {
         console.error('Delete Module error:', err.message);

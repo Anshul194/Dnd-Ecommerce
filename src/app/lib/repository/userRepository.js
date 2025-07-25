@@ -1,9 +1,10 @@
-import User from '../models/User.js';
+import userSchema from '../models/User.js';
 import mongoose from 'mongoose';
-import Role from '../models/role.js';
+import roleSchema from '../models/role.js';
 class UserRepository {
-  constructor() {
-    this.model = User;
+  constructor(conn) {
+    this.model = conn.model('User', userSchema, 'users');
+    this.roleModel = conn.model('Role', roleSchema, 'roles');
   }
 
   async createUser(data) {
@@ -16,9 +17,11 @@ class UserRepository {
     }
   }
 
-  async findById(id) {
+  async findById(id, tenantId = null) {
     try {
-      return await this.model.findOne({ _id: id, isDeleted: false });
+      const query = { _id: id, isDeleted: false };
+      if (tenantId) query.tenant = tenantId;
+      return await this.model.findOne(query);
     } catch (error) {
       console.error('UserRepo findById error:', error);
       throw error;
@@ -73,7 +76,7 @@ class UserRepository {
   }
   async findRoleById(roleId) {
     try {
-      return await Role.findOne({ _id: roleId, isDeleted: false });
+      return await this.roleModel.findOne({ _id: roleId, isDeleted: false });
     } catch (error) {
       console.error('UserRepo findRoleById error:', error);
       throw error;

@@ -1,20 +1,18 @@
+import { getSubdomain } from '@/app/lib/tenantDb';
 import dbConnect from '../../connection/dbConnect';
-import { createCategory,getCategories } from '../../lib/controllers/categoryController';
-import {subCategoryUpdateValidator, subCategoryCreateValidator} from '../../validators/subCategoryValidator.js';
-
+import { getDbConnection } from '../../lib/tenantDb';
+import { createCategory, getCategories } from '../../lib/controllers/categoryController';
 import { NextResponse } from 'next/server';
-// import { verifyAdminAccess } from '../../middleware/commonAuth';
 
 export async function POST(request) {
   try {
-    await dbConnect();
-
-    // // const authResult = await verifyAdminAccess(request);
-    // if (authResult.error) return authResult.error;
-
-    const form = await request.formData(); 
-    const result = await createCategory(form); 
-
+    const subdomain = getSubdomain(request);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+    }
+    const form = await request.formData();
+    const result = await createCategory(form, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     console.error('POST /category error:', err);
@@ -22,18 +20,17 @@ export async function POST(request) {
   }
 }
 
-
 export async function GET(request) {
   try {
-    await dbConnect();
-
+    const subdomain = getSubdomain(request);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+    }
     const { searchParams } = new URL(request.url);
-
     const query = Object.fromEntries(searchParams.entries());
-
-    const result = await getCategories(query);
+    const result = await getCategories(query, conn);
     return NextResponse.json(result.body, { status: result.status });
-
   } catch (err) {
     console.error('GET /category error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });

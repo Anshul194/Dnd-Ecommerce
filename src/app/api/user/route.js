@@ -5,8 +5,11 @@ import { Token } from '../../middleware/generateToken.js';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 
-// Helper to extract subdomain from host header
+// Helper to extract subdomain from x-tenant header or host header
 function getSubdomain(request) {
+  // Prefer x-tenant header if present
+  const xTenant = request.headers.get('x-tenant');
+  if (xTenant) return xTenant;
   const host = request.headers.get('host') || '';
   // e.g. tenant1.localhost:5173 or tenant1.example.com
   const parts = host.split('.');
@@ -15,32 +18,35 @@ function getSubdomain(request) {
   return null;
 }
 
-// Helper to get tenant DB URI from global DB
-async function getTenantDbUri(subdomain) {
-  // Connect to global DB
-  await dbConnect();
-  // Lazy load Tenant model to avoid circular deps
-  const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', new mongoose.Schema({
-    name: String,
-    dbUri: String,
-    subdomain: String
-  }, { collection: 'tenants' }));
-  const tenant = await Tenant.findOne({ subdomain });
-  return tenant?.dbUri || null;
+
+// Helper to get DB connection based on subdomain
+async function getDbConnection(subdomain) {
+  if (!subdomain || subdomain === 'localhost') {
+    // Use default DB (from env)
+    return await dbConnect();
+  } else {
+    // Connect to global DB to get tenant DB URI
+    await dbConnect();
+    const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', new mongoose.Schema({
+      name: String,
+      dbUri: String,
+      subdomain: String
+    }, { collection: 'tenants' }));
+    const tenant = await Tenant.findOne({ subdomain });
+    if (!tenant?.dbUri) return null;
+    // Connect to tenant DB
+    return await dbConnect(tenant.dbUri);
+  }
 }
 
 // Register (Create User)
 export async function POST(request) {
   try {
     const subdomain = getSubdomain(request);
-    let dbUri = null;
-    if (subdomain && subdomain !== 'localhost') {
-      dbUri = await getTenantDbUri(subdomain);
-      if (!dbUri) {
-        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-      }
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const conn = await dbConnect(dbUri);
     const userService = new UserService(conn);
 
     const body = await request.json();
@@ -93,14 +99,10 @@ export async function POST(request) {
 export async function PATCH(request) {
   try {
     const subdomain = getSubdomain(request);
-    let dbUri = null;
-    if (subdomain && subdomain !== 'localhost') {
-      dbUri = await getTenantDbUri(subdomain);
-      if (!dbUri) {
-        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-      }
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const conn = await dbConnect(dbUri);
     const userService = new UserService(conn);
 
     const body = await request.json();
@@ -140,14 +142,10 @@ export async function PATCH(request) {
 export async function GET(request) {
   try {
     const subdomain = getSubdomain(request);
-    let dbUri = null;
-    if (subdomain && subdomain !== 'localhost') {
-      dbUri = await getTenantDbUri(subdomain);
-      if (!dbUri) {
-        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-      }
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const conn = await dbConnect(dbUri);
     const userService = new UserService(conn);
 
     const { searchParams } = new URL(request.url);
@@ -176,14 +174,10 @@ export async function GET(request) {
 export async function PUT(request) {
   try {
     const subdomain = getSubdomain(request);
-    let dbUri = null;
-    if (subdomain && subdomain !== 'localhost') {
-      dbUri = await getTenantDbUri(subdomain);
-      if (!dbUri) {
-        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-      }
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const conn = await dbConnect(dbUri);
     const userService = new UserService(conn);
 
     const { searchParams } = new URL(request.url);
@@ -200,14 +194,10 @@ export async function PUT(request) {
 export async function DELETE(request) {
   try {
     const subdomain = getSubdomain(request);
-    let dbUri = null;
-    if (subdomain && subdomain !== 'localhost') {
-      dbUri = await getTenantDbUri(subdomain);
-      if (!dbUri) {
-        return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-      }
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const conn = await dbConnect(dbUri);
     const userService = new UserService(conn);
 
     const { searchParams } = new URL(request.url);

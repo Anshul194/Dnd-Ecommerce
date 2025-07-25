@@ -4,10 +4,10 @@ import mongoose from 'mongoose';
 import RoleRepository from '../repository/roleRepository.js';
 
 class UserService {
-  constructor() {
-    this.userRepo = new UserRepository();
-    this.tenantRepo = new TenantRepository();
-    this.roleRepo = new RoleRepository(); // Assuming roleRepo is also a UserRepository, adjust if needed
+  constructor(conn) {
+    this.userRepo = new UserRepository(conn);
+    this.tenantRepo = new TenantRepository(conn);
+    this.roleRepo = new RoleRepository(conn); // Assuming roleRepo is also a UserRepository, adjust if needed
   }
 
   // Create
