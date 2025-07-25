@@ -149,18 +149,30 @@ export async function getCategoryById(id, conn) {
     if (!category) {
       return {
         status: 404,
-        body: errorResponse("Category not found", 404),
+        body: {
+          success: false,
+          message: "Category not found",
+          data: null
+        }
       };
     }
     return {
       status: 200,
-      body: successResponse("Category fetched", category),
+      body: {
+        success: true,
+        message: "Category fetched",
+        data: category
+      }
     };
   } catch (err) {
     console.error('Get Category error:', err.message);
     return {
       status: 500,
-      body: { success: false, message: 'Server error' }
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
     };
   }
 }
@@ -178,7 +190,7 @@ export async function updateCategory(id, data, conn) {
       } catch (fileError) {
         return {
           status: 400,
-          body: { success: false, message: 'Image upload error', details: fileError.message }
+          body: { success: false, message: 'Image upload error', details: fileError.message, data: null }
         };
       }
     }
@@ -194,7 +206,7 @@ export async function updateCategory(id, data, conn) {
     if (error) {
       return {
         status: 400,
-        body: errorResponse("Validation error", 400, error.details),
+        body: { success: false, message: "Validation error", data: error.details }
       };
     }
 
@@ -202,7 +214,7 @@ export async function updateCategory(id, data, conn) {
     if (!updated) {
       return {
         status: 404,
-        body: errorResponse("Category not found", 404),
+        body: { success: false, message: "Category not found", data: null }
       };
     }
 
@@ -211,13 +223,13 @@ export async function updateCategory(id, data, conn) {
 
     return {
       status: 200,
-      body: successResponse("Category updated", updated),
+      body: { success: true, message: "Category updated", data: updated }
     };
   } catch (err) {
     console.error('Update Category error:', err.message);
     return {
       status: 500,
-      body: { success: false, message: 'Server error' }
+      body: { success: false, message: 'Server error', data: null }
     };
   }
 }
