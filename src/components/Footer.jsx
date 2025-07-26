@@ -344,7 +344,7 @@ export default function Footer() {
             <div className="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">AMEX</div>
             <div className="bg-black text-white px-2 py-1 rounded text-[10px] font-bold">Apple Pay</div>
             <div className="bg-gray-600 text-white px-2 py-1 rounded text-[10px] font-bold">Generic</div>
-            <div className="bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold">G Pay</div>
+            <div className="bg text-white px-2 py-1 rounded text-[10px] font-bold">G Pay</div>
             <div className="bg-orange-600 text-white px-2 py-1 rounded text-[10px] font-bold">Discover</div>
             <div className="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">MC</div>
             <div className="bg-blue-800 text-white px-2 py-1 rounded text-[10px] font-bold">PayPal</div>
