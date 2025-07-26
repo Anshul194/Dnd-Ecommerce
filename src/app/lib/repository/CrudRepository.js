@@ -99,6 +99,9 @@ class CrudRepository {
 
   async update(id, data) {
     try {
+      console.log('id', id);
+      console.log('data', data);
+      console.log('model', this.model);
       const result = await this.model.findByIdAndUpdate(id, data, { new: true });
       console.log('result',result);
       return result;

@@ -1,47 +1,87 @@
-import { NextResponse } from 'next/server';
-import connectToDB from '../../../connection/dbConnect.js';
-import {
-  getVariantById,
-  updateVariant,
-  deleteVariant
-} from '../../../lib/controllers/variantController.js';
+
+import { getVariantById, updateVariant, deleteVariant } from '@/app/lib/controllers/variantController';
+import { getSubdomain, getDbConnection } from '@/app/lib/tenantDb';
+import { saveFile } from '@/app/config/fileUpload';
+
 
 // GET /api/variant/[id] → Get a variant by ID
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
-    await connectToDB();
+    const subdomain = getSubdomain(req);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return new Response(JSON.stringify({ success: false, message: 'DB not found' }), { status: 404 });
+    }
+    const params = await context.params;
     const { id } = params;
-    const response = await getVariantById(id);
-    return NextResponse.json(response);
+    const result = await getVariantById(id, conn);
+    return new Response(JSON.stringify(result.body), { status: result.status });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
+    return new Response(JSON.stringify({ success: false, message: error.message }), { status: 500 });
   }
 }
+
 
 // PUT /api/variant/[id] → Update a variant by ID
-export async function PUT(req, { params }) {
+export async function PUT(req, context) {
   try {
-    await connectToDB();
+    const subdomain = getSubdomain(req);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return new Response(JSON.stringify({ success: false, message: 'DB not found' }), { status: 404 });
+    }
+    const params = await context.params;
     const { id } = params;
-    const body = await req.json();
-    const response = await updateVariant(id, body);
-    return NextResponse.json(response);
+    const formData = await req.formData();
+    const body = {};
+    for (const [key, value] of formData.entries()) {
+      const match = key.match(/([\w]+)(\[(\d+)\])?(\[(\w+)\])?/);
+      if (match && (match[2] || match[4])) {
+        // e.g. attributes[0][attributeId] or images[0]
+        const arrKey = match[1];
+        const arrIdx = match[3];
+        const objKey = match[5];
+        if (objKey) {
+          // attributes[0][attributeId]
+          if (!body[arrKey]) body[arrKey] = [];
+          if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
+          body[arrKey][arrIdx][objKey] = value;
+        } else if (arrIdx) {
+          // images[0]
+          if (!body[arrKey]) body[arrKey] = [];
+          if (typeof value === 'object' && value.arrayBuffer && value.name) {
+            // Use shared fileUpload.js logic
+            body[arrKey][arrIdx] = await saveFile(value, 'uploads/Variant');
+          } else {
+            // String URL or plain value
+            body[arrKey][arrIdx] = value;
+          }
+        }
+      } else {
+        body[key] = value;
+      }
+    }
+    const result = await updateVariant(id, body, conn);
+    return new Response(JSON.stringify(result.body), { status: result.status });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
+    return new Response(JSON.stringify({ success: false, message: error.message }), { status: 500 });
   }
 }
 
+
 // DELETE /api/variant/[id] → Soft delete a variant by ID
-export async function DELETE(req, { params }) {
+export async function DELETE(req, context) {
   try {
-    await connectToDB();
+    const subdomain = getSubdomain(req);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return new Response(JSON.stringify({ success: false, message: 'DB not found' }), { status: 404 });
+    }
+    const params = await context.params;
     const { id } = params;
-    const response = await deleteVariant(id);
-    return NextResponse.json(response);
+    const result = await deleteVariant(id, conn);
+    return new Response(JSON.stringify(result.body), { status: result.status });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
+    return new Response(JSON.stringify({ success: false, message: error.message }), { status: 500 });
   }
 }
