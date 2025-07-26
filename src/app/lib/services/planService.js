@@ -7,6 +7,19 @@ class PlanService {
         this.planRepo = new PlanRepository();
     }
 
+    //findByName
+    async findByName(name) {
+        try {
+            const plan = await this.planRepo.findByName(name);
+            if (!plan) {
+                return errorResponse('Plan not found', StatusCodes.NOT_FOUND);
+            }
+            return successResponse(plan, 'Plan fetched', StatusCodes.OK);
+        } catch (error) {
+            return errorResponse('Error fetching plan', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
+        }
+    }
+
     async createPlan(data) {
         try {
             const created = await this.planRepo.createPlan(data);

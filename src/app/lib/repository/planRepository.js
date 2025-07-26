@@ -7,6 +7,16 @@ class PlanRepository extends CrudRepository {
         super(Plan);
     }
 
+    //findByName
+    async findByName(name) {
+        try {
+            return await Plan.findOne({ name, deletedAt: null });
+        } catch (error) {
+            console.error('PlanRepo findByName error:', error);
+            throw error;
+        }
+    }
+
     async createPlan(data) {
         try {
             const plan = new Plan(data);
