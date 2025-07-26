@@ -5,21 +5,23 @@ import initRedis from '../../config/redis.js';
 import { categoryCreateValidator, categoryUpdateValidator } from '../../validators/categoryValidator.js';
 import { successResponse, errorResponse } from '../../utils/response.js';
 
-const categoryService = new CategoryService();
+// Remove global instance, always use tenant-based
 const redis = initRedis(); 
 
 // Helper to refresh allCategories cache
-async function refreshCategoriesCache() {
+async function refreshCategoriesCache(conn) {
+  const categoryService = new CategoryService(conn);
   const allCategories = await categoryService.getAllCategories({});
   await redis.set('allCategories', JSON.stringify(allCategories));
 }
 
-export async function createCategory(form) {
+export async function createCategory(form, conn) {
   try {
     let imageUrl = '';
     let thumbnailUrl = '';
+    const categoryService = new CategoryService(conn);
 
-     console.log('Create Category form:', form);
+    console.log('Create Category form:', form);
     const name = form.get('name');
     const slug = form.get('slug');
     const description = form.get('description');
@@ -33,7 +35,7 @@ export async function createCategory(form) {
 
     const existing = await categoryService.findByName(name);
     console.log('Existing Category:', existing?.status);
- 
+
     if (existing?.status !== 404) {
       return {
         status: 400,
@@ -42,7 +44,7 @@ export async function createCategory(form) {
     }
     console.log('Category name:', image);
     console.log('Category description:', image instanceof File);
-    
+
     if (image && image instanceof File) {
       try {
         validateImageFile(image);
@@ -93,12 +95,12 @@ export async function createCategory(form) {
     }
 
     const newCategory = await categoryService.createCategory(value);
-    await refreshCategoriesCache();
+    await refreshCategoriesCache(conn);
     console.log('New Category created:', newCategory);
 
     return {
       status: 201,
-      body: successResponse(newCategory, 'Category created'),
+      body: successResponse("Category created", newCategory),
     };
   } catch (err) {
     console.error('Create Category error:', err.message);
@@ -112,51 +114,73 @@ export async function createCategory(form) {
 
 
 
-export async function getCategories(query) {
+export async function getCategories(query, conn) {
   try {
+    const categoryService = new CategoryService(conn);
     console.log('Get Categories query:', query);
     const result = await categoryService.getAllCategories(query);
-
     return {
       status: 200,
-      body: successResponse(result, 'Categories fetched successfully'),
+      body: {
+        success: true,
+        message: "Categories fetched successfully",
+        data: result
+      }
     };
   } catch (err) {
     console.error('Get Categories error:', err.message);
     return {
       status: 500,
-      body: errorResponse('Server error', 500),
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
     };
   }
 }
 
 
 
-export async function getCategoryById(id) {
+export async function getCategoryById(id, conn) {
   try {
+    const categoryService = new CategoryService(conn);
     const category = await categoryService.getCategoryById(id);
     if (!category) {
       return {
         status: 404,
-        body: { success: false, message: 'Category not found' }
+        body: {
+          success: false,
+          message: "Category not found",
+          data: null
+        }
       };
     }
     return {
       status: 200,
-      body: { success: true, message: 'Category fetched', data: category }
+      body: {
+        success: true,
+        message: "Category fetched",
+        data: category
+      }
     };
   } catch (err) {
     console.error('Get Category error:', err.message);
     return {
       status: 500,
-      body: { success: false, message: 'Server error' }
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
     };
   }
 }
 
-export async function updateCategory(id, data) {
+export async function updateCategory(id, data, conn) {
   try {
     let imageUrl = '';
+    const categoryService = new CategoryService(conn);
     const { image, ...fields } = data;
 
     if (image && image instanceof File) {
@@ -166,7 +190,7 @@ export async function updateCategory(id, data) {
       } catch (fileError) {
         return {
           status: 400,
-          body: { success: false, message: 'Image upload error', details: fileError.message }
+          body: { success: false, message: 'Image upload error', details: fileError.message, data: null }
         };
       }
     }
@@ -182,7 +206,7 @@ export async function updateCategory(id, data) {
     if (error) {
       return {
         status: 400,
-        body: { success: false, message: 'Validation error', details: error.details }
+        body: { success: false, message: "Validation error", data: error.details }
       };
     }
 
@@ -190,42 +214,43 @@ export async function updateCategory(id, data) {
     if (!updated) {
       return {
         status: 404,
-        body: { success: false, message: 'Category not found' }
+        body: { success: false, message: "Category not found", data: null }
       };
     }
 
     // Invalidate and refresh cache
-    await refreshCategoriesCache();
+    await refreshCategoriesCache(conn);
 
     return {
       status: 200,
-      body: { success: true, message: 'Category updated', data: updated }
+      body: { success: true, message: "Category updated", data: updated }
     };
   } catch (err) {
     console.error('Update Category error:', err.message);
     return {
       status: 500,
-      body: { success: false, message: 'Server error' }
+      body: { success: false, message: 'Server error', data: null }
     };
   }
 }
 
-export async function deleteCategory(id) {
+export async function deleteCategory(id, conn) {
   try {
+    const categoryService = new CategoryService(conn);
     const deleted = await categoryService.deleteCategory(id);
     if (!deleted) {
       return {
         status: 404,
-        body: { success: false, message: 'Category not found' }
+        body: errorResponse("Category not found", 404),
       };
     }
 
     // Invalidate and refresh cache
-    await refreshCategoriesCache();
+    await refreshCategoriesCache(conn);
 
     return {
       status: 200,
-      body: { success: true, message: 'Category deleted', data: deleted }
+      body: successResponse("Category deleted", deleted),
     };
   } catch (err) {
     console.error('Delete Category error:', err.message);
@@ -249,7 +274,7 @@ export async function getAttributesByCategoryId(categoryId) {
 
     return {
       status: 200,
-      body: successResponse(attributes, 'Attributes fetched successfully')
+      body: successResponse("Attributes fetched successfully", attributes),
     };
   } catch (err) {
     console.error('Error fetching attributes for category:', err.message);
@@ -293,7 +318,7 @@ export async function getNavbarCategoriesWithAttributes() {
 
     return {
       status: 200,
-      body: successResponse(result, 'Categories with attributes fetched'),
+      body: successResponse("Categories with attributes fetched", result),
     };
   } catch (err) {
     console.error('Navbar fetch error:', err.message);

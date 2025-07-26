@@ -1,310 +1,271 @@
-// import jwt from 'jsonwebtoken';
-// import Admin from '../models/admin.js';
-// import User from '../models/User.js';
-// import dbConnect from '../lib/mongodb.js';
-// import initRedis from '../config/redis.js';
-// import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
+import userSchema from '../lib/models/User.js';
+import mongoose from 'mongoose';
+import * as RoleModule from '../lib/models/role.js';
+const Role = RoleModule.default || RoleModule;
+// Helper to get User model from schema
+function getUserModel() {
+    return mongoose.models.User || mongoose.model('User', userSchema);
+}
+import dotenv from 'dotenv';
+dotenv.config();
 
-// /**
-//  * Common Authentication Middleware for Next.js API Routes
-//  * Verifies token and checks user existence in specified table
-//  */
-// export async function verifyTokenAndUser(request, userType = 'admin') {
-//   try {
-//     // Connect to database
-//     await dbConnect();
-    
-//     // Extract access token from Authorization header
-//     const accessToken = request.headers.get('authorization')?.replace('Bearer ', '');
-    
-//     if (!accessToken) {
-//       return {
-//         error: NextResponse.json(
-//           { success: false, message: 'Access token is required' },
-//           { status: 401 }
-//         )
-//       };
-//     }
+// Helper to extract tenant from request headers
+function getTenantFromRequest(request) {
+    return request.headers.get('x-tenant') || null;
+}
 
-//     // Verify token is valid in Redis
-//     const redis = initRedis();
-//     const tokenStatus = await redis.get(`accessToken:${accessToken}`);
-//     console.log('[Auth] Token status from Redis:', tokenStatus);
-    
-//     if (!tokenStatus || tokenStatus !== 'valid') {
-//       return {
-//         error: NextResponse.json(
-//           { success: false, message: 'Invalid or expired token' },
-//           { status: 401 }
-//         )
-//       };
-//     }
 
-//     // Decode JWT token to get user information
-//     let decoded;
-//     try {
-//       decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-//     } catch (jwtError) {
-//       console.error('JWT Verification Error:', jwtError);
-//       return {
-//         error: NextResponse.json(
-//           { success: false, message: 'Invalid token format' },
-//           { status: 401 }
-//         )
-//       };
-//     }
+const JWT_SECRET = process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET_KEY;
 
-//     // Extract user ID from token
-//     const userId = decoded.id || decoded.userId || decoded.sub;
-//     console.log('[Auth] Extracted userId:', userId);
-    
-//     // if (!userId) {
-//     //   return {
-//     //     error: NextResponse.json(
-//     //       { success: false, message: 'User ID not found in token' },
-//     //       { status: 401 }
-//     //     )
-//     //   };
-//     // }
-//      if (!userId) {
-//       console.log('[Auth] User ID not found in token');
-//       return { error: NextResponse.json({ success: false, message: 'User ID not found in token' }, { status: 401 }) };
-//     }
+/**
+ * Verify JWT Token
+ */
+export async function verifyJwtToken(token) {
+    return new Promise((resolve, reject) => {
+        jwt.verify(token, JWT_SECRET, (err, decoded) => {
+            if (err) return reject(err);
+            resolve(decoded);
+        });
+    });
+}
 
-//     let user;
-//     let userModel;
-    
-//     // Check user existence based on userType
-//     if (userType === 'admin') {
-//       user = await Admin.findById(userId).select('-password');
-//       userModel = 'Admin';
-//     } else if (userType === 'user') {
-//       user = await User.findById(userId).select('-password');
-//       userModel = 'User';
-//     } else {
-//        console.log('[Auth] Invalid user type specified:', userType);
-//       return {
-        
-//         error: NextResponse.json(
-//           { success: false, message: 'Invalid user type specified' },
-//           { status: 500 }
-//         )
-//       };
-//     }
-    
-//      console.log(`[Auth] Found user in ${userModel} collection:`, user);
-//     if (!user) {
-//       console.log(`[Auth] Access denied. ${userModel} not found.`);
-//       return {
-//         error: NextResponse.json(
-//           { 
-//             success: false, 
-//             message: `Access denied. ${userModel} account not found.` 
-//           },
-//           { status: 403 }
-//         )
-//       };
-//     }
+/**
+ * Fetch User by ID
+ */
+// Updated: Accept tenantId
+export async function getUserById(userId, tenantId = null) {
+    try {
+        let user = null;
+        if (tenantId === 'localhost') {
+            // Fetch from global DB, ignore tenant field
+            const query = { _id: userId };
+            console.log('[getUserById] Query (global):', query);
+            const UserModel = getUserModel();
+            user = await UserModel.findOne(query).lean();
+        } else {
+            const query = { _id: userId };
+            if (tenantId) query.tenant = tenantId;
+            console.log('[getUserById] Query:', query);
+            const UserModel = getUserModel();
+            user = await UserModel.findOne(query).lean();
+        }
+        console.log('[getUserById] Result:', user);
+        return user;
+    } catch (err) {
+        console.error('Error fetching user:', err.message);
+        return null;
+    }
+}
 
-//     // Optional: Check if account is active
-//     if (user.status && user.status !== 'active') {
-//       return {
-//         error: NextResponse.json(
-//           { success: false, message: `${userModel} account is inactive` },
-//           { status: 403 }
-//         )
-//       };
-//     }
+/**
+ * Verify Token & User by Role
+ */
+export async function verifyTokenAndUser(request, userType = 'user') {
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return {
+            error: NextResponse.json(
+                { success: false, message: 'Missing or invalid authorization header' },
+                { status: 401 }
+            )
+        };
+    }
 
-//     // Optional: Check if account is deleted (soft delete)
-//     if (user.isDeleted) {
-//       return {
-//         error: NextResponse.json(
-//           { success: false, message: `${userModel} account has been deactivated` },
-//           { status: 403 }
-//         )
-//       };
-//     }
+    const token = authHeader.split(' ')[1];
+    let payload;
+    try {
+        payload = await verifyJwtToken(token);
+    } catch (err) {
+        console.error('JWT verification failed:', err.message);
+        return {
+            error: NextResponse.json(
+                { success: false, message: 'Invalid or expired token' },
+                { status: 401 }
+            )
+        };
+    }
 
-//     // Return user information
-//      console.log('final [Auth] Authentication success for user:', {
-//       id: user._id,
-//       email: user.email,
-//       name: user.name,
-//       userType,
-//       createdAt: user.createdAt,
-//       lastLogin: user.lastLogin,
-//       status: user.status
-//     });
-//     return {
-//       user: {
-//         id: user._id,
-//         email: user.email,
-//         name: user.name,
-//         userType: userType,
-//         createdAt: user.createdAt,
-//         lastLogin: user.lastLogin,
-//         status: user.status
-//       }
-//     };
+    console.log('[verifyTokenAndUser] Decoded JWT payload:', payload);
+    // Try all possible id fields
+    const userId = payload.userId || payload._id || payload.id;
+    const tenantId = payload.tenantId || payload.tenant || getTenantFromRequest(request);
+    console.log('[verifyTokenAndUser] userId:', userId, 'tenantId:', tenantId);
+    const user = await getUserById(userId, tenantId);
+    if (!user) {
+        console.error('[verifyTokenAndUser] User not found for query:', { userId, tenantId });
+        return {
+            error: NextResponse.json(
+                { success: false, message: 'User not found or unauthorized', query: { userId, tenantId } },
+                { status: 403 }
+            )
+        };
+    }
 
-//   } catch (error) {
-//     console.error('Authentication error:', error);
-//     return {
-//       error: NextResponse.json(
-//         { success: false, message: 'Server error during authentication' },
-//         { status: 500 }
-//       )
-//     };
-//   }
-// }
+    return { user };
+}
 
-// /**
-//  * Admin-only middleware
-//  * Specifically checks Admin table
-//  */
-// export async function verifyAdminAccess(request) {
-//   return await verifyTokenAndUser(request, 'admin');
-// }
+/**
+ * Verify if User is Super Admin
+ */
+export async function verifySuperAdminAccess(request) {
+    const result = await verifyTokenAndUser(request, 'user');
+    if (result.error) return result;
 
-// /**
-//  * User-only middleware
-//  * Specifically checks User table
-//  */
-// export async function verifyUserAccess(request) {
-//   return await verifyTokenAndUser(request, 'user');
-// }
+    if (!result.user.isSuperAdmin) {
+        return {
+            error: NextResponse.json(
+                { success: false, message: 'Access Denied: Super Admins only' },
+                { status: 403 }
+            )
+        };
+    }
 
-// /**
-//  * Flexible middleware that checks both tables
-//  * Returns user info with userType indication
-//  */
-// export async function verifyAnyUserAccess(request) {
-//   try {
-//     // First try admin table
-//     const adminResult = await verifyTokenAndUser(request, 'admin');
-//     if (!adminResult.error) {
-//       return {
-//         user: {
-//           ...adminResult.user,
-//           userType: 'admin'
-//         }
-//       };
-//     }
+    return result;
+}
 
-//     // If admin check failed, try user table
-//     const userResult = await verifyTokenAndUser(request, 'user');
-//     if (!userResult.error) {
-//       return {
-//         user: {
-//           ...userResult.user,
-//           userType: 'user'
-//         }
-//       };
-//     }
+/**
+ * Route Protection for Super Admin Access
+ */
+export function withSuperAdminAuth(handler) {
+    return async function (request, ...args) {
+        const authResult = await verifySuperAdminAccess(request);
+        if (authResult.error) return authResult.error;
 
-//     // If both failed, return the admin error (more restrictive)
-//     return adminResult;
+        request.user = authResult.user;
+        return handler(request, ...args);
+    };
+}
 
-//   } catch (error) {
-//     console.error('Flexible authentication error:', error);
-//     return {
-//       error: NextResponse.json(
-//         { success: false, message: 'Server error during authentication' },
-//         { status: 500 }
-//       )
-//     };
-//   }
-// }
+/**
+ * Verify if User can Create Super Admin
+ */
+export async function verifyRoleForSuperAdminCreation(request) {
+    const result = await verifyTokenAndUser(request, 'user');
+    if (result.error) return result;
 
-// /**
-//  * Higher-order function for admin-only routes
-//  */
-// export function withAdminAuth(handler) {
-//   return async function(request, ...args) {
-//     const authResult = await verifyAdminAccess(request);
-    
-//     if (authResult.error) {
-//       return authResult.error;
-//     }
+    if (!result.user.isSuperAdmin) {
+        return {
+            error: NextResponse.json(
+                { success: false, message: 'Only Super Admins can create' },
+                { status: 403 }
+            )
+        };
+    }
 
-//     // Add admin info to request context
-//     request.admin = authResult.user;
-    
-//     return handler(request, ...args);
-//   };
-// }
+    return result;
+}
 
-// /**
-//  * Higher-order function for user-only routes
-//  */
-// export function withUserAuth(handler) {
-//   return async function(request, ...args) {
-//     const authResult = await verifyUserAccess(request);
-    
-//     if (authResult.error) {
-//       return authResult.error;
-//     }
+/**
+ * Route Protection for Super Admin Creation
+ */
+export function withSuperAdminCreationAuth(handler) {
+    return async function (request, ...args) {
+        const authResult = await verifyRoleForSuperAdminCreation(request);
+        if (authResult.error) return authResult.error;
 
-//     // Add user info to request context
-//     request.user = authResult.user;
-    
-//     return handler(request, ...args);
-//   };
-// }
+        request.user = authResult.user;
+        return handler(request, ...args);
+    };
+}
 
-// /**
-//  * Higher-order function for routes accessible by both admin and user
-//  */
-// export function withAnyAuth(handler) {
-//   return async function(request, ...args) {
-//     const authResult = await verifyAnyUserAccess(request);
-    
-//     if (authResult.error) {
-//       return authResult.error;
-//     }
+/**
+ * Verify if User is Super Admin or Role Admin
+ */
+export async function verifySuperAdminOrRoleAdminAccess(request) {
+    const result = await verifyTokenAndUser(request, 'user');
+    if (result.error) return result;
 
-//     // Add user info to request context
-//     if (authResult.user.userType === 'admin') {
-//       request.admin = authResult.user;
-//     } else {
-//       request.user = authResult.user;
-//     }
-    
-//     return handler(request, ...args);
-//   };
-// }
+    // Check if user is super admin
+    if (result.user.isSuperAdmin) {
+        return result;
+    }
 
-// /**
-//  * Utility function to get user info from token without table restriction
-//  * Useful for debugging or logging
-//  */
-// export async function getUserFromToken(accessToken) {
-//   try {
-//     if (!accessToken) return null;
+    // Check if user has 'admin' role (by name or by specific ObjectId)
+    let roleDoc = result.user.role;
+    console.log('User role:', roleDoc);
+    if (!roleDoc || typeof roleDoc === 'string' || (roleDoc._bsontype === 'ObjectId')) {
+        // Fetch role document if not populated
+        const RoleModel = mongoose.models.Role || mongoose.model('Role', Role);
+        roleDoc = await RoleModel.findById(result.user.role).lean();
+    }
+    if (roleDoc && (roleDoc.name === 'admin' || roleDoc.slug === 'admin')) {
+        return result;
+    }
 
-//     const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
-//     const userId = decoded.id || decoded.userId || decoded.sub;
-    
-//     if (!userId) return null;
+    return {
+        error: NextResponse.json(
+            { success: false, message: 'Access Denied: Only Super Admin or Role Admin can create roles' },
+            { status: 403 }
+        )
+    };
+}
 
-//     await dbConnect();
+/**
+ * Route Protection for Super Admin or Role Admin Access (for role creation)
+ */
+export function withSuperAdminOrRoleAdminAuth(handler) {
+    return async function (request, ...args) {
+        const authResult = await verifySuperAdminOrRoleAdminAccess(request);
+        if (authResult.error) return authResult.error;
 
-//     // Try admin first
-//     let user = await Admin.findById(userId).select('-password');
-//     if (user) {
-//       return { ...user.toObject(), userType: 'admin' };
-//     }
+        request.user = authResult.user;
+        return handler(request, ...args);
+    };
+}
 
-//     // Try user table
-//     user = await User.findById(userId).select('-password');
-//     if (user) {
-//       return { ...user.toObject(), userType: 'user' };
-//     }
+/**
+ * Check if user has permission for a module
+ * @param {Object} user - User document
+ * @param {String} moduleId - Module ObjectId as string
+ * @param {String} permission - Permission string (e.g. 'view', 'edit')
+ * @returns {Boolean}
+ */
 
-//     return null;
-//   } catch (error) {
-//     console.error('Error getting user from token:', error);
-//     return null;
-//   }
-// }
+
+export async function hasModulePermission(user, moduleId, permission = null) {
+    // Super Admins have all permissions
+    if (user.isSuperAdmin) return true;
+
+    // Get user's role (populated or id)
+    let role = user.role;
+    if (!role) return false;
+
+    // If role is an ObjectId, convert to string for lookup
+    if (typeof role === 'object' && role._bsontype === 'ObjectId') {
+        role = role.toString();
+    }
+
+    // If role is populated, use directly; otherwise, fetch role document
+    let roleDoc = role.modulePermissions ? role : await (await import('../lib/models/role.js')).default.findById(role).lean();
+    console.log('Role id:', role, 'Role document modulePermissions:', roleDoc?.modulePermissions);
+    if (!roleDoc) return false;
+
+    // Check permission for requested module
+    console?.log('Checking permissions for module:', moduleId, 'and permission:', permission);
+    if (moduleId) {
+        if (permission) {
+            // Check for specific permission
+            return roleDoc.modulePermissions?.some(mp =>
+                mp.module?.toString() == moduleId && mp.permissions?.includes(permission)
+            );
+        } else {
+            // Check for ANY permission (used for sidebar modules)
+            return roleDoc.modulePermissions?.some(mp =>
+                mp.module?.toString() == moduleId && mp.permissions?.length > 0
+            );
+        }
+    } else {
+        // For all modules, require at least one permission
+        if (permission) {
+            return roleDoc.modulePermissions?.some(mp =>
+                mp.permissions?.includes(permission)
+            );
+        } else {
+            return roleDoc.modulePermissions?.some(mp =>
+                mp.permissions?.length > 0
+            );
+        }
+    }
+}

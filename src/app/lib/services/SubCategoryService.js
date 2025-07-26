@@ -4,8 +4,9 @@ import mongoose from 'mongoose';
 import { successResponse, errorResponse } from '../../utils/response.js';
 
 class SubCategoryService {
-  constructor() {
-    this.subCategoryRepo = new SubCategoryRepository();
+  constructor(conn) {
+    this.conn = conn;
+    this.subCategoryRepo = new SubCategoryRepository(conn);
   }
 
   async getSubCategoriesByParentCategoryId(categoryId) {

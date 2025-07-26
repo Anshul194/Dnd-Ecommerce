@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/app/connection/dbConnect';
 import AttributeService from '@/app/lib/services/attributeService';
+import mongoose from 'mongoose';
 
 const attributeService = new AttributeService();
 
@@ -14,6 +15,16 @@ export async function GET(req, context) {
 
   if (!id) {
     return NextResponse.json({ success: false, message: 'ID is missing' }, { status: 400 });
+  }
+
+  // Prevent 'search' from being treated as an ObjectId
+  if (id === 'search') {
+    return NextResponse.json({ success: false, message: 'Use /api/attribute/search for search queries.' }, { status: 400 });
+  }
+
+  // Validate ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ success: false, message: 'Invalid ObjectId' }, { status: 400 });
   }
 
   try {
@@ -80,5 +91,27 @@ export async function DELETE(req, context) {
     return NextResponse.json({ success: true, message: 'Attribute deleted' });
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}
+
+// SEARCH /api/attribute/:id?name=Material
+export async function SEARCH(req, context) {
+  await connectDB();
+  const { params } = context;
+  const id = params?.id;
+  const url = new URL(req.url);
+  const name = url.searchParams.get('name');
+
+  if (id !== 'search') {
+    return NextResponse.json({ success: false, message: 'Invalid search route. Use /api/attribute/search.' }, { status: 400 });
+  }
+  if (!name) {
+    return NextResponse.json({ success: false, message: 'Name query param is required', data: null }, { status: 400 });
+  }
+  try {
+    const results = await attributeService.searchAttributesByName(name);
+    return NextResponse.json({ success: true, message: 'Search complete', data: results });
+  } catch (error) {
+    return NextResponse.json({ success: false, message: error.message, data: null }, { status: 500 });
   }
 }

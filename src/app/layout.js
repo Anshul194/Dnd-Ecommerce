@@ -1,7 +1,7 @@
 // src/app/layout.js
 import { Bebas_Neue } from 'next/font/google';
 import "./globals.css";
-import Providers from "../store/Providers";
+import Providers from "./store/Providers"; // ✅ Updated path
 import ClientLayout from "./ClientLayout";
 import { ToastContainer } from "react-toastify";
 
@@ -18,7 +18,6 @@ export default function RootLayout({ children }) {
       > */}
         <Providers>
           <ClientLayout>
-            {" "}
             <ToastContainer
               position="top-right"
               autoClose={5000}

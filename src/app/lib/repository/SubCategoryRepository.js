@@ -1,16 +1,23 @@
-import SubCategory from '../models/SubCategory.js';
-import mongoose from 'mongoose';
+
 import slugify from 'slugify';
 import CrudRepository from "./CrudRepository.js";
+import { default as subCategorySchema } from '../models/SubCategory.js';
+import { categorySchema } from '../models/Category.js';
 
 class SubCategoryRepository extends CrudRepository {
-  constructor() {
-    super(SubCategory);
+  constructor(conn) {
+    // Use the provided connection for tenant DB, or global mongoose if not provided
+    const connection = conn || require('mongoose');
+    // Ensure Category model is registered on this connection
+    connection.models.Category || connection.model('Category', categorySchema);
+    const SubCategoryModel = connection.models.SubCategory || connection.model('SubCategory', subCategorySchema.schema);
+    super(SubCategoryModel);
+    this.SubCategory = SubCategoryModel;
   }
 
   async findById(id) {
     try {
-      return await SubCategory.findOne({ _id: id, deletedAt: null }).populate('parentCategory');
+      return await this.SubCategory.findOne({ _id: id, deletedAt: null }).populate('parentCategory');
     } catch (error) {
       console.error('SubCategory Repo findById error:', error);
       throw error;
@@ -19,7 +26,7 @@ class SubCategoryRepository extends CrudRepository {
 
   async create(data) {
     try {
-      const subCategory = new SubCategory(data);
+      const subCategory = new this.SubCategory(data);
       return await subCategory.save();
     } catch (error) {
       console.error('SubCategory Repo create error:', error);
@@ -29,7 +36,7 @@ class SubCategoryRepository extends CrudRepository {
 
   async findByName(name) {
     try {
-      return await SubCategory.findOne({ name });
+      return await this.SubCategory.findOne({ name });
     } catch (error) {
       console.error('SubCategory Repo findByName error:', error);
       throw error;
@@ -38,8 +45,7 @@ class SubCategoryRepository extends CrudRepository {
 
   async update(id, data) {
     try {
-      const SubCategoryModel = mongoose.models.SubCategory;
-      const subCategory = await SubCategoryModel.findById(id);
+      const subCategory = await this.SubCategory.findById(id);
       if (!subCategory) return null;
 
       subCategory.set(data);
@@ -52,7 +58,7 @@ class SubCategoryRepository extends CrudRepository {
           const randomNumber = Math.floor(100 + Math.random() * 900);
           uniqueSlug = `${baseSlug}-${randomNumber}`;
         } while (
-          await SubCategoryModel.exists({
+          await this.SubCategory.exists({
             slug: uniqueSlug,
             deletedAt: null,
             _id: { $ne: subCategory._id },
@@ -71,7 +77,7 @@ class SubCategoryRepository extends CrudRepository {
 
   async softDelete(id) {
     try {
-      return await SubCategory.findByIdAndUpdate(
+      return await this.SubCategory.findByIdAndUpdate(
         id,
         { deletedAt: new Date() },
         { new: true }
@@ -84,7 +90,7 @@ class SubCategoryRepository extends CrudRepository {
 
   async findByParentCategory(parentCategoryId) {
     try {
-      return await SubCategory.find({ parentCategory: parentCategoryId, deletedAt: null });
+      return await this.SubCategory.find({ parentCategory: parentCategoryId, deletedAt: null });
     } catch (err) {
       console.error('SubCategory Repo findByParentCategory error:', err);
       throw err;
