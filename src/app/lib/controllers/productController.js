@@ -89,12 +89,20 @@ class ProductController {
     }
   }
 
-  async getAll(conn) {
+  async getAll(query, conn) {
     try {
-      const products = await this.service.getAllProducts(conn);
-      return { success: true, message: "Products fetched", data: products };
+      const products = await this.service.getAllProducts(query, conn);
+      return {
+        success: true,
+        message: "Products fetched",
+        data: products
+      };
     } catch (error) {
-      return { success: false, message: error.message, data: null };
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
     }
   }
 
