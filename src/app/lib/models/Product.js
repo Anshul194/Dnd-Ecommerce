@@ -5,42 +5,52 @@ const productSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trim: true,
+    trim: true
   },
   slug: {
     type: String,
     unique: true,
-    lowercase: true,
+    lowercase: true
   },
   description: {
     type: String,
-    trim: true,
+    trim: true
   },
   category: {
     type: String,
-    required: true,
+    required: true
   },
-  images: [{
-    type: String,
-    trim: true,
-  }],
+  images: [String],
+  thumbnail: String,
+  howToUse: {
+    type: String
+  },
+  highlights: [String],
+  rating: {
+    type: Number,
+    default: 0
+  },
+  reviewCount: {
+    type: Number,
+    default: 0
+  },
   attributeSet: [{
     attributeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Attribute',
-    },
+      ref: 'Attribute'
+    }
   }],
   status: {
     type: String,
     enum: ['active', 'inactive'],
-    default: 'active',
+    default: 'active'
   },
   deletedAt: {
     type: Date,
-    default: null,
-  },
+    default: null
+  }
 }, {
-  timestamps: true,
+  timestamps: true
 });
 
 productSchema.pre('save', function (next) {
