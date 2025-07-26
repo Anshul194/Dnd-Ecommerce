@@ -16,16 +16,43 @@ const productSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+
+  // Category, Subcategory, Brand as references
   category: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
     required: true
   },
-  images: [String],
-  thumbnail: String,
-  howToUse: {
-    type: String
+  subcategory: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Subcategory'
   },
+  brand: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Brand'
+  },
+
+  // Media
+  images: [String],        // Product gallery images
+  thumbnail: String,       // Primary display image
+
+  // How To Use Section
+  howToUseTitle: String,
+  howToUseVideo: String,   // Video URL
+  howToUseSteps: [{
+    title: String,
+    description: String,
+    icon: String // optional icons
+  }],
+
+  // Description Media Section
+  descriptionImages: [String],
+  descriptionVideo: String,
+
+  // Highlights / Features
   highlights: [String],
+
+  // Ratings and Reviews
   rating: {
     type: Number,
     default: 0
@@ -34,12 +61,35 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  reviews: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    name: String,
+    rating: Number,
+    comment: String,
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+
+  // Attributes for variants
   attributeSet: [{
     attributeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Attribute'
     }
   }],
+
+  // Frequently Bought Together
+  frequentlyPurchased: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }],
+
+  // Status and Soft Delete
   status: {
     type: String,
     enum: ['active', 'inactive'],

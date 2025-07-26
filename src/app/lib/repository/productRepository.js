@@ -3,6 +3,10 @@ class ProductRepository {
     this.model = model;
   }
 
+  setModel(model) {
+    this.model = model;
+  }
+
   async create(data) {
     try {
       return await this.model.create(data);
