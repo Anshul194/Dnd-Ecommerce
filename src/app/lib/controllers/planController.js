@@ -30,7 +30,11 @@ export async function createPlan(form) {
         if (existing && existing.status !== 404) {
             return {
                 status: 400,
-                body: errorResponse('Plan with this name already exists', 400),
+                body: {
+                    success: false,
+                    message: 'Plan with this name already exists',
+                    data: null
+                }
             };
         }
 
@@ -54,13 +58,21 @@ export async function createPlan(form) {
 
         return {
             status: 201,
-            body: successResponse("Plan created", newPlan),
+            body: {
+                success: true,
+                message: "Plan created",
+                data: newPlan
+            }
         };
     } catch (err) {
         console.error('Create Plan error:', err.message);
         return {
             status: 500,
-            body: errorResponse('Server error', 500),
+            body: {
+                success: false,
+                message: 'Server error',
+                data: null
+            }
         };
     }
 }
@@ -71,13 +83,21 @@ export async function getPlans(query) {
         const plans = await planService.getPlans(query);
         return {
             status: 200,
-            body: successResponse("Plans fetched successfully", plans),
+            body: {
+                success: true,
+                message: "Plans fetched successfully",
+                data: plans
+            }
         };
     } catch (err) {
         console.error('Get Plans error:', err.message);
         return {
             status: 500,
-            body: errorResponse('Server error', 500),
+            body: {
+                success: false,
+                message: 'Server error',
+                data: null
+            }
         };
     }
 }
@@ -89,18 +109,30 @@ export async function getPlanById(id) {
         if (!plan) {
             return {
                 status: 404,
-                body: errorResponse('Plan not found', 404),
+                body: {
+                    success: false,
+                    message: 'Plan not found',
+                    data: null
+                }
             };
         }
         return {
             status: 200,
-            body: successResponse("Plan fetched", plan),
+            body: {
+                success: true,
+                message: "Plan fetched",
+                data: plan
+            }
         };
     } catch (err) {
         console.error('Get Plan error:', err.message);
         return {
             status: 500,
-            body: errorResponse('Server error', 500),
+            body: {
+                success: false,
+                message: 'Server error',
+                data: null
+            }
         };
     }
 }
@@ -112,18 +144,30 @@ export async function updatePlan(id, data) {
         if (!updated) {
             return {
                 status: 404,
-                body: errorResponse('Plan not found', 404),
+                body: {
+                    success: false,
+                    message: 'Plan not found',
+                    data: null
+                }
             };
         }
         return {
             status: 200,
-            body: successResponse("Plan updated", updated),
+            body: {
+                success: true,
+                message: "Plan updated",
+                data: updated
+            }
         };
     } catch (err) {
         console.error('Update Plan error:', err.message);
         return {
             status: 500,
-            body: errorResponse('Server error', 500),
+            body: {
+                success: false,
+                message: 'Server error',
+                data: null
+            }
         };
     }
 }
@@ -135,18 +179,30 @@ export async function deletePlan(id) {
         if (!deleted) {
             return {
                 status: 404,
-                body: errorResponse('Plan not found', 404),
+                body: {
+                    success: false,
+                    message: 'Plan not found',
+                    data: null
+                }
             };
         }
         return {
             status: 200,
-            body: successResponse("Plan deleted", deleted),
+            body: {
+                success: true,
+                message: "Plan deleted",
+                data: deleted
+            }
         };
     } catch (err) {
         console.error('Delete Plan error:', err.message);
         return {
             status: 500,
-            body: errorResponse('Server error', 500),
+            body: {
+                success: false,
+                message: 'Server error',
+                data: null
+            }
         };
     }
 }
