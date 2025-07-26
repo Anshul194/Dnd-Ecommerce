@@ -6,33 +6,26 @@ const attributeSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    trim: true,
+    trim: true
   },
   slug: {
     type: String,
     unique: true,
-    lowercase: true,
+    lowercase: true
   },
-  description: {
-    type: String,
-    trim: true,
-    default: '',
-  },
-  values: [{
-    type: String,
-    trim: true,
-  }],
+  description: String,
+  values: [String],
   status: {
     type: String,
     enum: ['active', 'inactive'],
-    default: 'active',
+    default: 'active'
   },
   deletedAt: {
     type: Date,
-    default: null,
-  },
+    default: null
+  }
 }, {
-  timestamps: true,
+  timestamps: true
 });
 
 attributeSchema.pre('save', function (next) {
@@ -43,3 +36,4 @@ attributeSchema.pre('save', function (next) {
 });
 
 export default mongoose.models.Attribute || mongoose.model('Attribute', attributeSchema);
+export { attributeSchema };

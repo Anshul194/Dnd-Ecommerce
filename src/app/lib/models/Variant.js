@@ -27,9 +27,7 @@ const variantSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  images: [{
-    type: String
-  }],
+  images: [String],
   attributes: [
     {
       attributeId: {
@@ -39,11 +37,15 @@ const variantSchema = new mongoose.Schema({
       },
       value: {
         type: String,
-        required: true,
-        trim: true
+        required: true
       }
     }
   ],
+  offerTag: String, 
+  isDefault: {
+    type: Boolean,
+    default: false
+  },
   deletedAt: {
     type: Date,
     default: null
@@ -52,6 +54,5 @@ const variantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Force recompile model to avoid using old cached one
 delete mongoose.models.Variant;
 export default mongoose.model('Variant', variantSchema);

@@ -1,43 +1,73 @@
 import VariantRepository from '../repository/variantRepository.js';
-import { validateVariantInput } from '../../validators/variantValidator.js';
 
 class VariantService {
-  constructor() {
-    this.variantRepo = new VariantRepository();
+  constructor(conn) {
+    this.variantRepo = new VariantRepository(conn);
   }
 
-  async create(data) {
-    // ✅ Step 1: Validate variant data
-    const errors = await validateVariantInput(data);
-    if (errors.length > 0) {
-      const error = new Error('Validation failed');
-      error.status = 400;
-      error.details = errors;
-      throw error;
+  async createVariant(data) {
+    return await this.variantRepo.create(data);
+  }
+
+  async getAllVariants(query = {}) {
+    // Support pagination, filtering, search, and sorting
+    const {
+      page = 1,
+      limit = 10,
+      filters = '{}',
+      searchFields = '{}',
+      sort = '{}',
+      populateFields = [],
+      selectFields = {}
+    } = query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const parsedFilters = typeof filters === 'string' ? JSON.parse(filters) : filters;
+    const parsedSearchFields = typeof searchFields === 'string' ? JSON.parse(searchFields) : searchFields;
+    const parsedSort = typeof sort === 'string' ? JSON.parse(sort) : sort;
+
+    // Build filter conditions
+    const filterConditions = { deletedAt: null, ...parsedFilters };
+    // Build search conditions
+    const searchConditions = [];
+    for (const [field, term] of Object.entries(parsedSearchFields)) {
+      searchConditions.push({ [field]: { $regex: term, $options: 'i' } });
+    }
+    if (searchConditions.length > 0) {
+      filterConditions.$or = searchConditions;
+    }
+    // Build sort conditions
+    const sortConditions = {};
+    for (const [field, direction] of Object.entries(parsedSort)) {
+      sortConditions[field] = direction === 'asc' ? 1 : -1;
     }
 
-    // ✅ Step 2: Create variant if validation passes
-    return await this.variantRepo.createVariant(data);
+    // Call repository getAll for paginated, filtered, sorted results
+    return await this.variantRepo.getAll(
+      filterConditions,
+      sortConditions,
+      pageNum,
+      limitNum,
+      populateFields,
+      selectFields
+    );
   }
 
-  async getAll() {
-    return await this.variantRepo.getAllVariants();
+  async getVariantById(id) {
+    return await this.variantRepo.get(id);
   }
 
-  async getById(id) {
-    return await this.variantRepo.getVariantById(id);
+  async updateVariant(id, data) {
+    return await this.variantRepo.update(id, data);
   }
 
-  async getByProductId(productId) {
-    return await this.variantRepo.getVariantsByProductId(productId);
+  async deleteVariant(id) {
+    return await this.variantRepo.delete(id);
   }
 
-  async update(id, data) {
-    return await this.variantRepo.updateVariant(id, data);
-  }
-
-  async delete(id) {
-    return await this.variantRepo.deleteVariant(id);
+  async searchVariantsByTitle(title) {
+    return await this.variantRepo.searchByTitle(title);
   }
 }
 

@@ -1,67 +1,207 @@
 import AttributeService from '../services/attributeService.js';
-import { errorResponse, successResponse } from '../../utils/response.js';
 import { attributeCreateValidator, attributeUpdateValidator } from '../../validators/attributeValidator.js';
 
-const attributeService = new AttributeService();
-
-export const createAttribute = async (req, res) => {
+export async function createAttribute(req, conn) {
   try {
     const { error } = attributeCreateValidator.validate(req.body);
-    if (error) return res.status(400).json(errorResponse(error.details[0].message));
+    if (error) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'Validation error',
+          data: error.details
+        }
+      };
+    }
 
+    const attributeService = new AttributeService(conn);
     const attribute = await attributeService.createAttribute(req.body);
-    return res.status(201).json(successResponse("Attribute created", attribute));
-  } catch (err) {
-    return res.status(500).json(errorResponse(err.message));
-  }
-};
 
-export const getAllAttributes = async (req, res) => {
+    return {
+      status: 201,
+      body: {
+        success: true,
+        message: 'Attribute created successfully',
+        data: attribute
+      }
+    };
+  } catch (err) {
+    console.error('Create Attribute Error:', err.message);
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
+    };
+  }
+}
+
+export async function getAllAttributes(req, conn) {
   try {
-    const attributes = await attributeService.getAllAttributes();
-    return res.json(successResponse("Attributes fetched", attributes));
-  } catch (err) {
-    return res.status(500).json(errorResponse(err.message));
-  }
-};
+    const attributeService = new AttributeService(conn);
+    const query = req.query || {};
+    const attributes = await attributeService.getAllAttributes(query);
 
-export const getAttributeById = async (req, res) => {
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Attributes fetched successfully',
+        data: attributes
+      }
+    };
+  } catch (err) {
+    console.error('Get All Attributes Error:', err.message);
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
+    };
+  }
+}
+
+export async function getAttributeById(id, conn) {
   try {
-    const attribute = await attributeService.getAttributeById(req.params.id);
-    if (!attribute) return res.status(404).json(errorResponse("Attribute not found"));
-    return res.json(successResponse("Attribute found", attribute));
-  } catch (err) {
-    return res.status(500).json(errorResponse(err.message));
-  }
-};
+    const attributeService = new AttributeService(conn);
+    const attribute = await attributeService.getAttributeById(id);
 
-export const updateAttribute = async (req, res) => {
+    if (!attribute) {
+      return {
+        status: 404,
+        body: {
+          success: false,
+          message: 'Attribute not found',
+          data: null
+        }
+      };
+    }
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Attribute found',
+        data: attribute
+      }
+    };
+  } catch (err) {
+    console.error('Get Attribute Error:', err.message);
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
+    };
+  }
+}
+
+export async function updateAttribute(id, data, conn) {
   try {
-    const { error } = attributeUpdateValidator.validate(req.body);
-    if (error) return res.status(400).json(errorResponse(error.details[0].message));
+    const { error } = attributeUpdateValidator.validate(data);
+    if (error) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'Validation error',
+          data: error.details
+        }
+      };
+    }
 
-    const updated = await attributeService.updateAttribute(req.params.id, req.body);
-    return res.json(successResponse("Attribute updated", updated));
+    const attributeService = new AttributeService(conn);
+    const updated = await attributeService.updateAttribute(id, data);
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Attribute updated successfully',
+        data: updated
+      }
+    };
   } catch (err) {
-    return res.status(500).json(errorResponse(err.message));
+    console.error('Update Attribute Error:', err.message);
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
+    };
   }
-};
+}
 
-export const deleteAttribute = async (req, res) => {
+export async function deleteAttribute(id, conn) {
   try {
-    await attributeService.deleteAttribute(req.params.id);
-    return res.json(successResponse("Attribute deleted", null));
-  } catch (err) {
-    return res.status(500).json(errorResponse(err.message));
-  }
-};
+    const attributeService = new AttributeService(conn);
+    const deleted = await attributeService.deleteAttribute(id);
 
-export const searchAttributesByName = async (req, res) => {
-  try {
-    const { name } = req.query;
-    const results = await attributeService.searchAttributesByName(name);
-    return res.json(successResponse("Search complete", results));
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Attribute deleted successfully',
+        data: deleted
+      }
+    };
   } catch (err) {
-    return res.status(500).json(errorResponse(err.message));
+    console.error('Delete Attribute Error:', err.message);
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
+    };
   }
-};
+}
+
+export async function searchAttributesByName(req, conn) {
+  try {
+    const name = req.query.name;
+    if (!name) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'Name query parameter is required',
+          data: null
+        }
+      };
+    }
+
+    const attributeService = new AttributeService(conn);
+    const attributes = await attributeService.searchAttributesByName(name);
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Attributes found',
+        data: attributes
+      }
+    };
+  } catch (err) {
+    console.error('Search Attributes Error:', err.message);
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
+    };
+  }
+}
+

@@ -1,31 +1,25 @@
-import Attribute from '../models/Attribute.js';
+import { attributeSchema } from '../models/Attribute.js';
+import CrudRepository from './CrudRepository.js';
 
-class AttributeRepository {
-  async create(data) {
-    return await Attribute.create(data);
+class AttributeRepository extends CrudRepository {
+  constructor(conn) {
+    const connection = conn || require('mongoose');
+    const AttributeModel = connection.models.Attribute || connection.model('Attribute', attributeSchema);
+    super(AttributeModel);
+    this.Attribute = AttributeModel;
   }
 
-  async findAll() {
-    return await Attribute.find({ deletedAt: null }).sort({ createdAt: -1 });
-  }
-
-  async findById(id) {
-    return await Attribute.findOne({ _id: id, deletedAt: null });
-  }
-
-  async update(id, data) {
-    return await Attribute.findByIdAndUpdate(id, data, { new: true });
-  }
-
-  async delete(id) {
-    return await Attribute.findByIdAndDelete(id, { deletedAt: new Date(), status: 'inactive' }, { new: true });
-  }
-
+  // Custom method for attribute search
   async searchByName(name) {
-    return await Attribute.find({
+    return await this.Attribute.find({
       name: { $regex: name, $options: 'i' },
       deletedAt: null,
     });
+  }
+
+  // Custom soft delete (status inactive)
+  async delete(id) {
+    return await this.Attribute.findByIdAndUpdate(id, { deletedAt: new Date(), status: 'inactive' }, { new: true });
   }
 }
 

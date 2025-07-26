@@ -1,28 +1,23 @@
 import Variant from '../models/Variant.js';
+import CrudRepository from './CrudRepository.js';
 
-class VariantRepository {
-  async createVariant(data) {
-    return await new Variant(data).save();
+class VariantRepository extends CrudRepository {
+  constructor(conn) {
+    const connection = conn || require('mongoose');
+    const VariantModel = connection.models.Variant || connection.model('Variant', Variant.schema);
+    super(VariantModel);
+    this.Variant = VariantModel;
   }
 
-  async getAllVariants() {
-    return await Variant.find({ deletedAt: null });
+  async searchByTitle(title) {
+    return await this.Variant.find({
+      title: { $regex: title, $options: 'i' },
+      deletedAt: null,
+    });
   }
 
-  async getVariantById(id) {
-    return await Variant.findOne({ _id: id, deletedAt: null });
-  }
-
-  async getVariantsByProductId(productId) {
-    return await Variant.find({ productId, deletedAt: null });
-  }
-
-  async updateVariant(id, data) {
-    return await Variant.findByIdAndUpdate(id, data, { new: true });
-  }
-
-  async deleteVariant(id) {
-    return await Variant.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+  async delete(id) {
+    return await this.Variant.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
   }
 }
 
