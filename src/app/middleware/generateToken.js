@@ -10,7 +10,7 @@ export const Token = {
     };
 
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: '15m'  // Short-lived Access Token
+      expiresIn: '15d'  // Short-lived Access Token
     });
 
     const refreshToken = jwt.sign({ id: user._id.toString() }, process.env.REFRESH_TOKEN_SECRET, {

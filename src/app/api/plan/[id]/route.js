@@ -4,12 +4,6 @@ import { NextResponse } from 'next/server';
 import { getSubdomain } from '@/app/lib/tenantDb';
 import { getDbConnection } from '@/app/lib/tenantDb';
 import mongoose from 'mongoose';
-import {
-  getPlanById,
-  updatePlan,
-  deletePlan,
-  searchPlansByName
-} from '@/app/lib/controllers/planController';
 
 // GET /api/plan/:id
 export async function GET(req, context) {
