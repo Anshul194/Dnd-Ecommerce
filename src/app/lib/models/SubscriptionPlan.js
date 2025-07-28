@@ -1,16 +1,14 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const PlanSchema = new mongoose.Schema({
     name: { type: String, required: true, index: true },
     description: { type: String },
     price: { type: Number, required: true, min: 0 },
     currency: { type: String, default: 'INR' },
-    // Change features to key-value pairs
     features: [{
         key: { type: String, required: true },
         value: { type: String, required: true }
     }],
-    // Optional fields for additional metadata
     availability: { type: String, enum: ['daily', 'weekly', 'monthly', 'yearly'], default: 'monthly' },
     duration: { type: Number, default: 3 },
     isActive: { type: Boolean, default: true },
@@ -25,4 +23,6 @@ const PlanSchema = new mongoose.Schema({
 
 PlanSchema.index({ isActive: 1, price: 1 });
 
-module.exports = mongoose.models.Plan || mongoose.model('Plan', PlanSchema);
+const Plan = mongoose.models.Plan || mongoose.model('Plan', PlanSchema);
+
+export default Plan;

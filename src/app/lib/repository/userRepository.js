@@ -32,7 +32,7 @@ class UserRepository {
     try {
       return await this.model.findOne({ email, isDeleted: false });
     } catch (error) {
-      console.error('UserRepo findByEmail error:', error);
+      console.error('UserRepo findByEmail error:', error?.message);
       throw error;
     }
   }

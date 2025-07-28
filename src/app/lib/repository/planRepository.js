@@ -38,9 +38,11 @@ class PlanRepository extends CrudRepository {
 
     async update(id, data) {
         try {
-            const PlanModel = mongoose.models.SubscriptionPlan;
-            const plan = await PlanModel.findById(id);
-            if (!plan) return null;
+            const plan = await Plan.findOne({ _id: id, deletedAt: null });
+            if (!plan) {
+                throw new Error('Plan not found');
+            }
+            
 
             plan.set(data);
             return await plan.save();

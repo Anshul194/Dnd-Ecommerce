@@ -28,6 +28,22 @@ class ProductRepository extends CrudRepository {
       throw error;
     }
   }
+
+
+  async delete(id) {
+    try {
+      console.log('Repo softDelete called with:', id);
+      return await this.model.findByIdAndUpdate(
+        id,
+        { deletedAt: new Date() },
+        { new: true }
+      );
+    } catch (err) {
+      console.error('Repo softDelete error:', err);
+      throw err;
+    }
+  }
+
 }
 
 export default ProductRepository;
