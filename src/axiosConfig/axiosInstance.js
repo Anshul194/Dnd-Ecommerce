@@ -1,5 +1,6 @@
 "use client";
 
+import { getTenantFromURL } from "@/app/utils/getTenantFromURL";
 import axios from "axios";
 
 // API base URL
@@ -10,6 +11,7 @@ const axiosInstance = axios.create({
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
+    "x-tenant": getTenantFromURL(),
   },
 });
 
