@@ -7,9 +7,7 @@ import mongoose from 'mongoose';
 import {
   getPlanById,
   updatePlan,
-  deletePlan,
-  searchPlansByName
-} from '@/app/lib/controllers/planController';
+  deletePlan} from '../../../lib/controllers/planController.js';
 
 // GET /api/plan/:id
 export async function GET(req, context) {
@@ -83,23 +81,3 @@ export async function DELETE(req, context) {
   return NextResponse.json(result.body, { status: result.status });
 }
 
-// SEARCH /api/plan/:id?name=Material
-export async function SEARCH(req, context) {
-  const { params } = context;
-  const id = params?.id;
-  const subdomain = getSubdomain(req);
-  const conn = await getDbConnection(subdomain);
-  if (!conn) {
-    return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-  }
-  const url = new URL(req.url);
-  const name = url.searchParams.get('name');
-  if (id !== 'search') {
-    return NextResponse.json({ success: false, message: 'Invalid search route. Use /api/plan/search.' }, { status: 400 });
-  }
-  if (!name) {
-    return NextResponse.json({ success: false, message: 'Name query param is required', data: null }, { status: 400 });
-  }
-  const result = await searchPlansByName({ query: { name } }, conn);
-  return NextResponse.json(result.body, { status: result.status });
-}
