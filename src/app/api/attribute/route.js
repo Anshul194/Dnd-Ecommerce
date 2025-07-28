@@ -1,6 +1,6 @@
-import { createAttribute, getAllAttributes, searchAttributesByName } from '@/app/lib/controllers/attributeController';
-import { getSubdomain } from '@/app/lib/tenantDb';
-import { getDbConnection } from '@/app/lib/tenantDb';
+import { createAttribute, getAllAttributes, searchAttributesByName } from './../../lib/controllers/attributeController';
+import { getSubdomain } from '../../lib/tenantDb';
+import { getDbConnection } from '../../lib/tenantDb';
 
 const toNextResponse = (data, status = 200) => {
   return new Response(JSON.stringify(data), {

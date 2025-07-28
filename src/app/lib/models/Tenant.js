@@ -1,12 +1,11 @@
-const mongoose = require('mongoose');
+import mongoose, { Schema, models, model } from 'mongoose';
 
-const tenantSchema = new mongoose.Schema({
+const tenantSchema = new Schema({
   tenantId: { type: String, required: true, unique: true },
   companyName: { type: String, required: true },
   subdomain: { type: String, required: true, unique: true },
 
-
-  dbUri: { type: String },  
+  dbUri: { type: String },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
 
   plan: { type: String, enum: ['free', 'basic', 'pro', 'enterprise'], default: 'free' },
@@ -14,14 +13,15 @@ const tenantSchema = new mongoose.Schema({
   trialEndsAt: { type: Date },
   renewalDate: { type: Date },
 
-
   lastAccessedAt: { type: Date },
   notes: { type: String },
 
   isDeleted: { type: Boolean, default: false },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'SuperAdmin' },
+  createdBy: { type: Schema.Types.ObjectId, ref: 'SuperAdmin' },
 
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.models.Tenant || mongoose.model('Tenant', tenantSchema);
+const Tenant = models.Tenant || model('Tenant', tenantSchema);
+
+export default Tenant;

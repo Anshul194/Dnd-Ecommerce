@@ -2,6 +2,7 @@
   "name": "diamond-web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.10",
+    "@types/node": "24.1.0",
     "@types/react": "19.1.8",
     "babel-jest": "^30.0.4",
     "cross-env": "^10.0.0",
