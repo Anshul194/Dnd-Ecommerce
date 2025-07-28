@@ -1,4 +1,3 @@
-// utils/getTenantFromURL.ts
 export const getTenantFromURL = () => {
   if (typeof window === "undefined" || !window.location) {
     return null;
