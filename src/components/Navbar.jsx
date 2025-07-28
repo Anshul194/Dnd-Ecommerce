@@ -168,15 +168,16 @@ const Navbar = () => {
         <div className="hidden md:block border-t border-gray-100 bg-gray-50">
           <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center space-x-8 py-3">
-              {navItems.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-700 hover:text-green-500 text-sm font-medium transition-colors"
-                >
-                  {item.name}
-                </a>
-              ))}
+              {categories?.length > 0 &&
+                categories?.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={`/search?category=${item.slug}`}
+                    className="text-gray-700 cursor-pointer capitalize hover:text-green-500 text-sm font-medium transition-colors"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
             </div>
           </div>
         </div>
@@ -225,23 +226,24 @@ const Navbar = () => {
 
               {/* Mobile Navigation */}
               <div className="space-y-4 mb-6">
-                {navItems.map((item, index) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className="block text-gray-700 hover:text-green-500 py-2 text-sm font-medium transition-all duration-200 hover:translate-x-2 hover:bg-green-50 rounded px-2"
-                    onClick={toggleMenu}
-                    style={{
-                      opacity: isMenuOpen ? 1 : 0,
-                      transform: isMenuOpen
-                        ? "translateY(0)"
-                        : "translateY(20px)",
-                      transition: `all 0.3s ease ${index * 0.05}s`,
-                    }}
-                  >
-                    {item.name}
-                  </a>
-                ))}
+                {categories?.length > 0 &&
+                  categories?.map((item, index) => (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      className="block text-gray-700 cursor-pointer capitalize hover:text-green-500 py-2 text-sm font-medium transition-all duration-200 hover:translate-x-2 hover:bg-green-50 rounded px-2"
+                      onClick={toggleMenu}
+                      style={{
+                        opacity: isMenuOpen ? 1 : 0,
+                        transform: isMenuOpen
+                          ? "translateY(0)"
+                          : "translateY(20px)",
+                        transition: `all 0.3s ease ${index * 0.05}s`,
+                      }}
+                    >
+                      {item.name}
+                    </a>
+                  ))}
               </div>
 
               {/* Mobile Icons */}

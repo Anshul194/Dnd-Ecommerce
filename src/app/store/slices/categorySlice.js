@@ -5,8 +5,8 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 export const fetchCategories = createAsyncThunk(
   "category/fetchCategories",
   async () => {
-    const response = await axiosInstance.get("/api/category");
-    return response.data.data;
+    const response = await axiosInstance.get("/category");
+    return response.data.data.body.data.result;
   }
 );
 

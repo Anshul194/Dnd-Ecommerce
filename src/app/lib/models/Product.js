@@ -1,113 +1,131 @@
-import mongoose from 'mongoose';
-import slugify from 'slugify';
+import mongoose from "mongoose";
+import slugify from "slugify";
+import Attribute from "./Attribute";
 
-const productSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  slug: {
-    type: String,
-    unique: true,
-    lowercase: true
-  },
-  description: {
-    type: String,
-    trim: true
-  },
+// Ensure Attribute model is registered before using it as a ref
+if (!mongoose.models.Attribute) {
+  mongoose.model("Attribute", Attribute.schema || Attribute);
+}
 
-  // Category, Subcategory, Brand as references
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    required: true
-  },
-  subcategory: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Subcategory'
-  },
-  brand: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Brand'
-  },
-
-  // Media
-  images: [String],        // Product gallery images
-  thumbnail: String,       // Primary display image
-
-  // How To Use Section
-  howToUseTitle: String,
-  howToUseVideo: String,   // Video URL
-  howToUseSteps: [{
-    title: String,
-    description: String,
-    icon: String // optional icons
-  }],
-
-  // Description Media Section
-  descriptionImages: [String],
-  descriptionVideo: String,
-
-  // Highlights / Features
-  highlights: [String],
-
-  // Ratings and Reviews
-  rating: {
-    type: Number,
-    default: 0
-  },
-  reviewCount: {
-    type: Number,
-    default: 0
-  },
-  reviews: [{
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+const productSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    name: String,
-    rating: Number,
-    comment: String,
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
+    slug: {
+      type: String,
+      unique: true,
+      lowercase: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
 
-  // Attributes for variants
-  attributeSet: [{
-    attributeId: {
+    // Category, Subcategory, Brand as references
+    category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Attribute'
-    }
-  }],
+      ref: "Category",
+      required: true,
+    },
+    subcategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subcategory",
+    },
+    brand: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
+    },
 
-  // Frequently Bought Together
-  frequentlyPurchased: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product'
-  }],
+    // Media
+    images: [String], // Product gallery images
+    thumbnail: String, // Primary display image
 
-  // Status and Soft Delete
-  status: {
-    type: String,
-    enum: ['active', 'inactive'],
-    default: 'active'
+    // How To Use Section
+    howToUseTitle: String,
+    howToUseVideo: String, // Video URL
+    howToUseSteps: [
+      {
+        title: String,
+        description: String,
+        icon: String, // optional icons
+      },
+    ],
+
+    // Description Media Section
+    descriptionImages: [String],
+    descriptionVideo: String,
+
+    // Highlights / Features
+    highlights: [String],
+
+    // Ratings and Reviews
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    reviewCount: {
+      type: Number,
+      default: 0,
+    },
+    reviews: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        name: String,
+        rating: Number,
+        comment: String,
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    // Attributes for variants
+    attributeSet: [
+      {
+        attributeId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Attribute",
+        },
+      },
+    ],
+
+    // Frequently Bought Together
+    frequentlyPurchased: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
+
+    // Status and Soft Delete
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
-  deletedAt: {
-    type: Date,
-    default: null
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
-productSchema.pre('save', function (next) {
-  if (this.isModified('name')) {
+productSchema.pre("save", function (next) {
+  if (this.isModified("name")) {
     this.slug = slugify(this.name, { lower: true });
   }
   next();
 });
 
-export default mongoose.models.Product || mongoose.model('Product', productSchema);
+export default mongoose.models.Product ||
+  mongoose.model("Product", productSchema);
