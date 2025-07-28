@@ -89,6 +89,7 @@ class UserService {
     try {
       return await this.userRepo.findByEmail(email);
     } catch (error) {
+      console.error('UserService findByEmail error:', error?.message);
       throw error; // Rethrow the original error
     }
   }

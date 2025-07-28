@@ -100,6 +100,9 @@ export async function PATCH(request) {
   try {
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
+    console.log('PATCH /user login subdomain:', subdomain);
+    console.log('PATCH /user login conn:', conn ? 'connected' : 'not connected');
+
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
@@ -134,7 +137,7 @@ export async function PATCH(request) {
       { status: 200 }
     );
   } catch (err) {
-    console.error('PATCH /user login error:', err);
+    console.error('PATCH /user login error:', err?.message);
     return NextResponse.json({ success: false, message: 'Login failed' }, { status: 400 });
   }
 }
