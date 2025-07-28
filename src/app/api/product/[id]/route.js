@@ -1,17 +1,23 @@
 import { NextResponse } from 'next/server';
-import ProductService from '../../../lib/services/productService.js';
+import { getSubdomain, getDbConnection } from '../../../lib/tenantDb.js';
 import ProductRepository from '../../../lib/repository/productRepository.js';
-import Product from '../../../lib/models/Product.js';
+import ProductService from '../../../lib/services/productService.js';
 import ProductController from '../../../lib/controllers/productController.js';
-
-const controller = new ProductController(
-  new ProductService(new ProductRepository(Product))
-);
+import ProductModel from '../../../lib/models/Product.js';
 
 // GET /api/product/:id
 export async function GET(req, { params }) {
   try {
-    const response = await controller.getById(params.id);
+    const subdomain = getSubdomain(req);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+    }
+    const Product = conn.models.Product || conn.model('Product', ProductModel.schema);
+    const productRepo = new ProductRepository(Product);
+    const productService = new ProductService(productRepo);
+    const productController = new ProductController(productService);
+    const response = await productController.getById(params.id, conn);
     return NextResponse.json(response, {
       status: response.success ? 200 : 404,
     });
@@ -21,11 +27,19 @@ export async function GET(req, { params }) {
 }
 
 // PATCH /api/product/:id
-export async function PATCH(req, context) {
-  const params = await context.params;
+export async function PATCH(req, { params }) {
   try {
+    const subdomain = getSubdomain(req);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+    }
+    const Product = conn.models.Product || conn.model('Product', ProductModel.schema);
+    const productRepo = new ProductRepository(Product);
+    const productService = new ProductService(productRepo);
+    const productController = new ProductController(productService);
     const body = await req.json();
-    const response = await controller.update(params.id, body);
+    const response = await productController.update(params.id, body, conn);
     return NextResponse.json(response, {
       status: response.success ? 200 : 400,
     });
@@ -35,11 +49,19 @@ export async function PATCH(req, context) {
 }
 
 // PUT /api/product/:id
-export async function PUT(req, context) {
-  const params = await context.params;
+export async function PUT(req, { params }) {
   try {
+    const subdomain = getSubdomain(req);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+    }
+    const Product = conn.models.Product || conn.model('Product', ProductModel.schema);
+    const productRepo = new ProductRepository(Product);
+    const productService = new ProductService(productRepo);
+    const productController = new ProductController(productService);
     const body = await req.json();
-    const response = await controller.update(params.id, body);
+    const response = await productController.update(params.id, body, conn);
     return NextResponse.json(response, {
       status: response.success ? 200 : 400,
     });
@@ -49,10 +71,18 @@ export async function PUT(req, context) {
 }
 
 // DELETE /api/product/:id
-export async function DELETE(req, context) {
-  const params = await context.params;
+export async function DELETE(req, { params }) {
   try {
-    const response = await controller.delete(params.id);
+    const subdomain = getSubdomain(req);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+    }
+    const Product = conn.models.Product || conn.model('Product', ProductModel.schema);
+    const productRepo = new ProductRepository(Product);
+    const productService = new ProductService(productRepo);
+    const productController = new ProductController(productService);
+    const response = await productController.delete(params.id, conn);
     return NextResponse.json(response, {
       status: response.success ? 200 : 404,
     });
