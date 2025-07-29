@@ -13,10 +13,22 @@ export const addToCart = createAsyncThunk(
         quantity,
         price,
       });
+      // If API returns an error in the data, reject it
+      if (response.data?.data?.error) {
+        return rejectWithValue(response.data.data.error);
+      }
+      // If API returns an error at the top level (not in data), reject it
+      if (response.data?.error) {
+        return rejectWithValue(response.data.error);
+      }
+      if (response.data?.message && response.data?.success === false) {
+        return rejectWithValue(response.data.message);
+      }
       return response.data.data; // Adjust based on API structure
     } catch (error) {
+      console.log("Add to Cart Error:", error);
       return rejectWithValue(
-        error.response?.data?.message || "Add to cart failed"
+        error?.response?.data?.error || "Add to cart failed"
       );
     }
   }
@@ -89,7 +101,9 @@ const cartSlice = createSlice({
       })
       .addCase(addToCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.cartItems.push(action.payload); // Add item to cart state
+        if (action.payload) {
+          state.cartItems.push(action.payload); // Add item to cart state
+        }
       })
       .addCase(addToCart.rejected, (state, action) => {
         state.loading = false;

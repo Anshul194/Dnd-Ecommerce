@@ -10,6 +10,7 @@ import subCategoryReducer from "./slices/subCategorySlice";
 import tenantReducer from "./slices/tenantSlice";
 import variantReducer from "./slices/variantSlice";
 import cartReducer from "./slices/cartSlice";
+import couponReducer from "./slices/couponSlice";
 
 const store = configureStore({
   reducer: {
@@ -23,6 +24,7 @@ const store = configureStore({
     subCategory: subCategoryReducer,
     tenant: tenantReducer,
     variant: variantReducer,
+    coupon: couponReducer,
   },
 });
 

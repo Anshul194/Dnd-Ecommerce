@@ -1,7 +1,7 @@
 "use client";
 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { addToCart, toggleCart } from "../store/slices/cartSlice";
@@ -34,6 +34,12 @@ const ProductCard = ({ product }) => {
     );
     dispatch(toggleCart());
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setShowAuthModal(false);
+    }
+  }, [isAuthenticated]);
 
 
   return (

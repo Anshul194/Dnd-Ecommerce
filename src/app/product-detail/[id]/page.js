@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
+import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import AuthRequiredModal from "@/components/AuthRequiredModal";
 import {
@@ -22,7 +23,7 @@ import Image from "next/image";
 import { addToCart, toggleCart } from "@/app/store/slices/cartSlice";
 
 function ProductPage({ params }) {
-  const { id } = params;
+  const { id } = use(params);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [expandedSection, setExpandedSection] = useState(null);
@@ -91,16 +92,25 @@ function ProductPage({ params }) {
       return;
     }
     const price = data.variants.find((variant) => variant._id === selectedPack);
-    await dispatch(
-      addToCart({
-        product: data._id,
-        quantity,
-        price: price.salePrice || price.price,
-        variant: selectedPack,
-      })
-    );
-    await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
-    dispatch(toggleCart());
+    try {
+      const resultAction = await dispatch(
+        addToCart({
+          product: data._id,
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedPack,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(resultAction.payload || resultAction.error.message || "Failed to add to cart");
+        return;
+      }
+      await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
+      dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
   };
   useEffect(() => {
     getProductData();
@@ -164,13 +174,15 @@ function ProductPage({ params }) {
                     <ChevronRight size={16} />
                   </button>
 
-                  <Image
-                    src={data?.images?.[selectedImage]}
-                    alt="Product Image"
-                    width={400}
-                    height={400}
-                    className=" h-full  bg-gray-200 border border-gray-200 rounded-lg overflow-hidden relative group"
-                  ></Image>
+                  {data?.images?.[selectedImage] ? (
+                    <Image
+                      src={data.images[selectedImage]}
+                      alt="Product Image"
+                      width={400}
+                      height={400}
+                      className=" h-full  bg-gray-200 border border-gray-200 rounded-lg overflow-hidden relative group"
+                    />
+                  ) : null}
                 </div>
               </div>
             </div>

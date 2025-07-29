@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Minus, MapPin } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import { Plus, Minus, MapPin, Tag } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
 import Image from "next/image";
+import { fetchCoupons, setSelectedCoupon, clearSelectedCoupon } from "@/app/store/slices/couponSlice";
 
 export default function CheckoutForm() {
+  const dispatch = useDispatch();
   const [currentStep, setCurrentStep] = useState(1);
   const [quantities, setQuantities] = useState({
     item1: 1,
@@ -15,6 +17,19 @@ export default function CheckoutForm() {
   const [appliedPromo, setAppliedPromo] = useState("SAVE10");
   const [selectedDelivery, setSelectedDelivery] = useState("standard");
   const { loading, cartItems, total } = useSelector((state) => state.cart);
+  const { items: coupons, loading: couponsLoading, error: couponsError, selectedCoupon } = useSelector((state) => state.coupon);
+
+  useEffect(() => {
+    dispatch(fetchCoupons());
+  }, [dispatch]);
+  // Coupon selection handler
+  const handleSelectCoupon = (coupon) => {
+    if (selectedCoupon?._id === coupon._id) {
+      dispatch(clearSelectedCoupon());
+    } else {
+      dispatch(setSelectedCoupon(coupon));
+    }
+  };
 
   const updateQuantity = (item, change) => {
     setQuantities((prev) => ({
@@ -540,6 +555,7 @@ export default function CheckoutForm() {
 
         {/* Right Section - Order Summary */}
         <div className="bg-[#F8F8F8] border-2 border-gray-300 sticky top-10 rounded-lg p-6 h-fit">
+        
           <h2 className="text-lg font-semibold text-gray-900">Current Order</h2>
           <p className="text-xs text-gray-500 mb-6">
             The cost of all total payments for goods there
@@ -621,37 +637,95 @@ export default function CheckoutForm() {
           </div>
 
           {/* Promo Code Section */}
-          <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-900 mb-2">
-              Promo Code
-            </h3>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                placeholder="Enter promo code"
-                className="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-              <button
-                onClick={handleApplyPromo}
-                className="px-3 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-md"
-              >
-                Apply
-              </button>
-            </div>
-            {appliedPromo && (
-              <div className="mt-2 flex items-center justify-between text-xs">
-                <span className="text-green-600">Applied: {appliedPromo}</span>
-                <button
-                  onClick={() => setAppliedPromo("")}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  Remove
-                </button>
-              </div>
-            )}
+         <div className="mb-8 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+  {/* Promo Code Input */}
+  <h3 className="text-base font-semibold text-gray-800 mb-3">Promo Code</h3>
+  <div className="flex gap-2 mb-4">
+    <input
+      type="text"
+      value={promoCode}
+      onChange={(e) => setPromoCode(e.target.value)}
+      placeholder="Enter promo code"
+      className="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+    />
+    <button
+      onClick={handleApplyPromo}
+      className="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-md transition"
+    >
+      Apply
+    </button>
+  </div>
+
+  {/* Promo Applied */}
+  {appliedPromo && (
+    <div className="flex items-center justify-between text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 mb-4">
+      <span>Applied: {appliedPromo}</span>
+      <button
+        onClick={() => setAppliedPromo("")}
+        className="text-red-600 hover:text-red-800 text-xs font-medium"
+      >
+        Remove
+      </button>
+    </div>
+  )}
+
+  {/* Coupon List */}
+  <h3 className="text-base font-semibold text-gray-800 mb-3">Available Coupons</h3>
+  {couponsLoading ? (
+    <div className="text-sm text-gray-500">Loading coupons...</div>
+  ) : couponsError ? (
+    <div className="text-sm text-red-500">{couponsError}</div>
+  ) : coupons && coupons.length > 0 ? (
+    <div className="space-y-2 max-h-40 overflow-y-auto">
+      {coupons.map((coupon) => (
+        <div
+          key={coupon._id}
+          className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-all duration-200 ${
+            selectedCoupon?._id === coupon._id
+              ? "border-green-500 bg-green-50"
+              : "border-gray-200 hover:border-green-400"
+          }`}
+          onClick={() => handleSelectCoupon(coupon)}
+        >
+          <Tag size={18} className="text-green-600" />
+          <div className="flex flex-col text-sm">
+            <span className="font-semibold text-gray-800">{coupon.code}</span>
+            <span className="text-gray-600">
+              {coupon.type === "percent"
+                ? `${coupon.value}% OFF`
+                : `₹${coupon.value} OFF`}{" "}
+              • Min: ₹{coupon.minCartValue || 0}
+            </span>
           </div>
+          {selectedCoupon?._id === coupon._id && (
+            <span className="ml-auto text-green-600 font-semibold text-xs">Selected</span>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="text-sm text-gray-500">No coupons available.</div>
+  )}
+
+  {/* Selected Coupon Display */}
+  {selectedCoupon && (
+    <div className="mt-4 flex items-center justify-between text-sm bg-green-50 border border-green-200 rounded-md px-3 py-2">
+      <span className="text-green-700">
+        Coupon <strong>{selectedCoupon.code}</strong> applied -{" "}
+        {selectedCoupon.type === "percent"
+          ? `${selectedCoupon.value}% OFF`
+          : `₹${selectedCoupon.value} OFF`}
+      </span>
+      <button
+        onClick={() => dispatch(clearSelectedCoupon())}
+        className="text-green-600 hover:text-green-800 text-xs font-medium ml-2"
+      >
+        Remove
+      </button>
+    </div>
+  )}
+</div>
+
 
           {/* Order Summary */}
           <div className="border-t pt-4 space-y-2">
