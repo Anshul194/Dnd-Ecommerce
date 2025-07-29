@@ -1,4 +1,4 @@
-import CrudRepository from './CrudRepository.js';
+import CrudRepository from "./CrudRepository.js";
 
 class ProductRepository extends CrudRepository {
   constructor(model) {
@@ -22,28 +22,28 @@ class ProductRepository extends CrudRepository {
 
   async findById(id) {
     try {
-      return await this.model.findById(id).populate('attributeSet.attributeId');
+      return await this.model.findById(id).populate({
+        path: "attributeSet.attributeId",
+      });
     } catch (error) {
       console.error("Repository FindById Error:", error.message);
       throw error;
     }
   }
 
-
   async delete(id) {
     try {
-      console.log('Repo softDelete called with:', id);
+      console.log("Repo softDelete called with:", id);
       return await this.model.findByIdAndUpdate(
         id,
         { deletedAt: new Date() },
         { new: true }
       );
     } catch (err) {
-      console.error('Repo softDelete error:', err);
+      console.error("Repo softDelete error:", err);
       throw err;
     }
   }
-
 }
 
 export default ProductRepository;

@@ -2,11 +2,6 @@ import mongoose from "mongoose";
 import slugify from "slugify";
 import Attribute from "./Attribute";
 
-// Ensure Attribute model is registered before using it as a ref
-if (!mongoose.models.Attribute) {
-  mongoose.model("Attribute", Attribute.schema || Attribute);
-}
-
 const productSchema = new mongoose.Schema(
   {
     name: {
