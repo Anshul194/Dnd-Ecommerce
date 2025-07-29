@@ -30,20 +30,46 @@ class ProductRepository extends CrudRepository {
       const conn = this.model.db;
       if (!conn.models.Attribute) {
         // Dynamically require the schema to avoid circular imports
-                    const Attribute =mongoose.models.Attribute || mongoose.model("Attribute",attributeSchema);
-        
+        const Attribute = mongoose.models.Attribute || mongoose.model("Attribute", attributeSchema);
         conn.model('Attribute', attributeSchema);
       }
-      //check if it is id or slug using mongoose.Types.ObjectId.isValid(id)
+      // Only populate product attributeSet.attributeId
+      const populateOptions = [
+        { path: 'attributeSet.attributeId' }
+      ];
+      let productDoc;
       if (mongoose.Types.ObjectId.isValid(id)) {
-        return await this.model.findById(id).populate({
-          path: "attributeSet.attributeId",
-        });
+        productDoc = await this.model.findById(id)
+          .populate(populateOptions);
       } else {
-        return await this.model.findOne({ slug: id }).populate('attributeSet.attributeId');
+        productDoc = await this.model.findOne({ slug: id })
+          .populate(populateOptions);
       }
+      if (!productDoc) return null;
+      // Fetch variants for this product with attributes
+      const variants = await this.getVariantsWithAttributes(productDoc._id, conn);
+      // Attach variants to the returned product object (as plain object)
+      const productObj = productDoc.toObject ? productDoc.toObject() : productDoc;
+      productObj.variants = variants;
+      return productObj;
     } catch (error) {
       console.error("Repository FindById Error:", error.message);
+      throw error;
+    }
+  }
+
+  // Helper to fetch all variants for a product, with their attributes populated
+  async getVariantsWithAttributes(productId, conn) {
+    try {
+      // Dynamically require Variant schema/model
+      const Variant = conn.models.Variant || conn.model('Variant', variantSchema);
+      if (!conn.models.Attribute) {
+        conn.model('Attribute', attributeSchema);
+      }
+      return Variant.find({ productId, deletedAt: null })
+        .populate('attributes.attributeId');
+    } catch (error) {
+      console.error('getVariantsWithAttributes error:', error.message);
       throw error;
     }
   }
