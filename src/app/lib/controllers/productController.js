@@ -89,22 +89,23 @@ class ProductController {
     }
   }
 
-  async getAll(query, conn) {
-    try {
-      const products = await this.service.getAllProducts(query, conn);
-      return {
-        success: true,
-        message: "Products fetched",
-        data: products
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.message,
-        data: null
-      };
-    }
+async getAll(query, conn) {
+  console.log('Controller received query:', query); // Log query
+  try {
+    const products = await this.service.getAllProducts(query, conn);
+    return {
+      success: true,
+      message: "Products fetched",
+      data: products
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+      data: null
+    };
   }
+}
 
   async getById(id, conn) {
     try {

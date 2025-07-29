@@ -41,7 +41,7 @@ const variantSchema = new mongoose.Schema({
       }
     }
   ],
-  offerTag: String, 
+  offerTag: String,
   isDefault: {
     type: Boolean,
     default: false
@@ -54,5 +54,11 @@ const variantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-delete mongoose.models.Variant;
-export default mongoose.model('Variant', variantSchema);
+// Export the schema explicitly
+export const VariantSchema = variantSchema;
+
+// Export the model for default connection
+export const VariantModel = mongoose.models.Variant || mongoose.model('Variant', variantSchema);
+
+// Export default for compatibility
+export default VariantModel;
