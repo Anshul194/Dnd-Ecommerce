@@ -89,7 +89,7 @@ class PlanService {
 
     async updatePlan(id, data) {
         try {
-            const updated = await this.planRepo.updatePlan(id, data);
+            const updated = await this.planRepo.update(id, data);
             if (!updated) {
                 return errorResponse('Plan not found', StatusCodes.NOT_FOUND);
             }

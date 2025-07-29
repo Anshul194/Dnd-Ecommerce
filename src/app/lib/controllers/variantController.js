@@ -2,7 +2,46 @@ import VariantService from '../services/VariantService.js';
 
 export async function createVariant(req, conn) {
   try {
-   
+    const { productId, attributes } = req.body;
+    if (!productId || !Array.isArray(attributes)) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'productId and attributes are required',
+          data: null
+        }
+      };
+    }
+
+    // Fetch the product and its attributeSet
+    const ProductModel = conn.models.Product || conn.model('Product');
+    const product = await ProductModel.findById(productId).lean();
+    if (!product) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'Product not found',
+          data: null
+        }
+      };
+    }
+    const allowedAttributeIds = (product.attributeSet || []).map(a => String(a.attributeId));
+    // Validate each attributeId in the variant
+    for (const attr of attributes) {
+      if (!allowedAttributeIds.includes(String(attr.attributeId))) {
+        return {
+          status: 400,
+          body: {
+            success: false,
+            message: `AttributeId ${attr.attributeId} is not allowed for this product`,
+            data: null
+          }
+        };
+      }
+    }
+
     const variantService = new VariantService(conn);
     const variant = await variantService.createVariant(req.body);
     return {

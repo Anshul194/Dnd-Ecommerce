@@ -19,6 +19,7 @@ export async function GET(request) {
     await dbConnect();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    console.log('GET /tenant id:', id);
     if (id) {
       const result = await getTenantById(id);
       return NextResponse.json(result.body, { status: result.status });
@@ -29,6 +30,7 @@ export async function GET(request) {
     }
   } catch (err) {
     console.error('GET /tenant error:', err);
+    console.log('Error details:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }

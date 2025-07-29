@@ -68,7 +68,7 @@ export async function GET(request) {
       return NextResponse.json({ success: true, modules: permittedModules, status: 200 });
     }
   } catch (err) {
-    console.error('GET /module error:', err);
+    console.error('GET /module error:', err.message);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }
