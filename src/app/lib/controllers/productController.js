@@ -1,5 +1,7 @@
 import { categorySchema } from '../models/Category.js';
-import '../models/Attribute.js';
+import { attributeSchema } from '../models/Attribute.js';
+import mongoose from 'mongoose';
+
 
 class ProductController {
   constructor(service) {
@@ -155,7 +157,8 @@ class ProductController {
       if (Array.isArray(body.attributeSet)) {
         for (const attr of body.attributeSet) {
           if (attr.attributeId) {
-            const attrExists = await models.Attribute?.findById(attr.attributeId);
+            const Attribute =mongoose.models.Attribute || mongoose.model("Attribute",attributeSchema);
+            const attrExists = await Attribute.findById(attr.attributeId);
             if (!attrExists) return { success: false, message: `AttributeId ${attr.attributeId} does not exist`, data: null };
           }
         }

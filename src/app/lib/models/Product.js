@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
-import Attribute from "./Attribute";
+
 
 const productSchema = new mongoose.Schema(
   {
