@@ -79,6 +79,7 @@ export async function DELETE(req, context) {
   if (!id) {
     return NextResponse.json({ success: false, message: 'ID is missing' }, { status: 400 });
   }
+  console.log("Deleting attribute with ID:", id);
   const result = await deleteAttribute(id, conn);
   return NextResponse.json(result.body, { status: result.status });
 }
