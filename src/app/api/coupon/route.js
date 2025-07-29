@@ -1,82 +1,88 @@
-import { getSubdomain, getDbConnection } from '../../lib/tenantDb.js';
 import { NextResponse } from 'next/server';
-import Coupon from '../../lib/models/Coupon.js';
-import { withSuperAdminOrRoleAdminAuth } from '../../middleware/commonAuth.js';
+import mongoose from 'mongoose';
+import CouponController from '../../lib/controllers/CouponController.js';
+import CouponService from '../../lib/services/CouponService.js';
+import CouponRepository from '../../lib/repository/CouponRepository.js';
+import { CouponSchema } from '../../lib/models/Coupon.js';
+import dbConnect from '../../connection/dbConnect';
 
-// Create Coupon
-export const POST = withSuperAdminOrRoleAdminAuth(async function(request) {
-  try {
-    const subdomain = getSubdomain(request);
-    const conn = await getDbConnection(subdomain);
-    if (!conn) {
-      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-    }
-    const body = await request.json();
-    const coupon = await Coupon.create(body);
-    return NextResponse.json({ success: true, coupon }, { status: 201 });
-  } catch (err) {
-    return NextResponse.json({ success: false, message: err.message }, { status: 400 });
-  }
-});
 
-// Get all or one coupon
-export async function GET(request) {
-  try {
-    const subdomain = getSubdomain(request);
-    const conn = await getDbConnection(subdomain);
-    if (!conn) {
-      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-    }
-    const { searchParams } = new URL(request.url);
-    const code = searchParams.get('code');
-    if (code) {
-      const coupon = await Coupon.findOne({ code });
-      if (!coupon) return NextResponse.json({ success: false, message: 'Coupon not found' }, { status: 404 });
-      return NextResponse.json({ success: true, coupon });
-    } else {
-      const coupons = await Coupon.find();
-      return NextResponse.json({ success: true, coupons });
-    }
-  } catch (err) {
-    return NextResponse.json({ success: false, message: err.message }, { status: 500 });
+function getSubdomain(request) {
+  // Prefer x-tenant header if present
+  const xTenant = request.headers.get('x-tenant');
+  if (xTenant) return xTenant;
+  const host = request.headers.get('host') || '';
+  // e.g. tenant1.localhost:5173 or tenant1.example.com
+  const parts = host.split('.');
+  if (parts.length > 2) return parts[0];
+  if (parts.length === 2 && parts[0] !== 'localhost') return parts[0];
+  return null;
+}
+
+
+
+async function getDbConnection(subdomain) {
+  if (!subdomain || subdomain === 'localhost') {
+    // Use default DB (from env)
+    return await dbConnect();
+  } else {
+    // Connect to global DB to get tenant DB URI
+    await dbConnect();
+    const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', new mongoose.Schema({
+      name: String,
+      dbUri: String,
+      subdomain: String
+    }, { collection: 'tenants' }));
+    const tenant = await Tenant.findOne({ subdomain });
+    if (!tenant?.dbUri) return null;
+    // Connect to tenant DB
+    return await dbConnect(tenant.dbUri);
   }
 }
 
-// Update Coupon
-export const PUT = withSuperAdminOrRoleAdminAuth(async function(request) {
-  try {
-    const subdomain = getSubdomain(request);
-    const conn = await getDbConnection(subdomain);
-    if (!conn) {
-      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-    }
-    const { searchParams } = new URL(request.url);
-    const code = searchParams.get('code');
-    if (!code) return NextResponse.json({ success: false, message: 'Coupon code required' }, { status: 400 });
-    const body = await request.json();
-    const coupon = await Coupon.findOneAndUpdate({ code }, body, { new: true });
-    if (!coupon) return NextResponse.json({ success: false, message: 'Coupon not found' }, { status: 404 });
-    return NextResponse.json({ success: true, coupon });
-  } catch (err) {
-    return NextResponse.json({ success: false, message: err.message }, { status: 400 });
-  }
-});
+export async function GET(req) {
+  const searchParams = req.nextUrl.searchParams;
+  const query = Object.fromEntries(searchParams.entries());
+  console.log('Route received query:', query);
 
-// Delete Coupon
-export async function DELETE(request) {
   try {
-    const subdomain = getSubdomain(request);
+    const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const { searchParams } = new URL(request.url);
-    const code = searchParams.get('code');
-    if (!code) return NextResponse.json({ success: false, message: 'Coupon code required' }, { status: 400 });
-    const coupon = await Coupon.findOneAndDelete({ code });
-    if (!coupon) return NextResponse.json({ success: false, message: 'Coupon not found' }, { status: 404 });
-    return NextResponse.json({ success: true, message: 'Coupon deleted' });
-  } catch (err) {
-    return NextResponse.json({ success: false, message: err.message }, { status: 400 });
+    const Coupon = conn.models.Coupon || conn.model('Coupon', CouponSchema);
+    const couponRepo = new CouponRepository(Coupon);
+    const couponService = new CouponService(couponRepo);
+    const couponController = new CouponController(couponService);
+    const coupons = await couponController.getAll(query, conn);
+    return NextResponse.json({ success: true, coupons });
+  } catch (error) {
+    console.error('Route GET error:', error.message);
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}
+
+export async function POST(req) {
+  try {
+    const body = await req.json();
+    console.log('Route received body:', body);
+    const subdomain = getSubdomain(req);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+    }
+    const Coupon = conn.models.Coupon || conn.model('Coupon', CouponSchema);
+    const couponRepo = new CouponRepository(Coupon);
+    const couponService = new CouponService(couponRepo);
+    const couponController = new CouponController(couponService);
+    const result = await couponController.create({ body }, conn);
+    if (!result.success) {
+      return NextResponse.json(result, { status: 400 });
+    }
+    return NextResponse.json({ success: true, coupon: result.data }, { status: 201 });
+  } catch (error) {
+    console.error('Route POST error:', error.message);
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
