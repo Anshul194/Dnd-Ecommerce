@@ -143,16 +143,16 @@ const CartSidebar = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(item.id, -1)}
+                          onClick={() => updateQuantity(item?.id, -1)}
                           className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50"
                         >
                           <Minus size={14} />
                         </button>
                         <span className="w-8 text-center text-sm font-medium">
-                          {item.quantity}
+                          {item?.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.id, 1)}
+                          onClick={() => updateQuantity(item?.id, 1)}
                           className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50"
                         >
                           <Plus size={14} />

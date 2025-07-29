@@ -17,8 +17,8 @@ const ProductCard = ({ product }) => {
       addToCart({
         product: product._id,
         quantity: 1,
-        price: 500,
-        variant: product.variants[0]._id,
+        price: product?.variants[0]?.salePrice || product?.price,
+        variant: product?.variants[0]?._id,
       })
     );
     dispatch(toggleCart());
