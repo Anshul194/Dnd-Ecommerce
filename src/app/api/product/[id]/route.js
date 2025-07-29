@@ -22,6 +22,7 @@ export async function GET(req, { params }) {
     const productRepo = new ProductRepository(Product);
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
+    console.log('Fetching product with ID:', params);
     const response = await productController.getById(id, conn);
     return NextResponse.json(response, {
       status: response.success ? 200 : 404,

@@ -1,3 +1,6 @@
+import mongoose from 'mongoose';
+import { attributeSchema } from '../models/Attribute.js';
+
 class ProductService {
   constructor(productRepository) {
     this.productRepository = productRepository;
@@ -59,6 +62,12 @@ class ProductService {
   }
 
   async getProductById(id, conn) {
+    console.log('Fetching product with ID:', id);
+    
+    if (!conn) throw new Error("Database connection is required");
+    if (!conn.models || !conn.models.Product) {
+      throw new Error("Product model not found in the provided connection");
+    }
     if (conn && conn.models && conn.models.Product) {
       this.productRepository.model = conn.models.Product;
     }
