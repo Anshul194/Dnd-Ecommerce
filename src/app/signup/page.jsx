@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Eye, EyeOff, Star } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { signUp } from "../store/slices/authSlice";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -14,6 +14,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,7 +34,12 @@ export default function SignupPage() {
       await dispatch(
         signUp({ ...formData, role: "6888848d897c0923edbed1fb" })
       ).unwrap();
-      router.push("/"); // Redirect to home page after successful signup
+      const redirect = searchParams.get("redirect");
+      if (redirect) {
+        router.push(redirect);
+      } else {
+        router.push("/");
+      }
     } catch (error) {
       console.error("Signup failed:", error);
       alert("Signup failed. Please try again.");

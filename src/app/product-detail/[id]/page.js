@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import AuthRequiredModal from "@/components/AuthRequiredModal";
 import {
   ChevronLeft,
   ChevronRight,
@@ -28,6 +30,9 @@ function ProductPage({ params }) {
   const [quantity, setQuantity] = useState(1);
   const [data, setData] = useState({});
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const router = require("next/navigation").useRouter();
   const productImages = [
     "/api/placeholder/400/400", // Main saffron product image
     "/api/placeholder/400/400", // Additional product images
@@ -80,10 +85,13 @@ function ProductPage({ params }) {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      setAuthModalOpen(true);
+      return;
+    }
     const price = data.variants.find((variant) => variant._id === selectedPack);
-
-    dispatch(
+    await dispatch(
       addToCart({
         product: data._id,
         quantity,
@@ -91,13 +99,27 @@ function ProductPage({ params }) {
         variant: selectedPack,
       })
     );
+    await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
     dispatch(toggleCart());
   };
   useEffect(() => {
     getProductData();
   }, [id]);
   return (
-    <div className="max-w-[90%] mx-auto p-4 bg-white">
+    <>
+      <AuthRequiredModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onLogin={() => {
+          // Redirect to login with callback to this page
+          router.push(`/login?redirect=/product-detail/${id}`);
+        }}
+        onSignup={() => {
+          // Redirect to signup with callback to this page
+          router.push(`/signup?redirect=/product-detail/${id}`);
+        }}
+      />
+          <div className="max-w-[90%] mx-auto p-4 bg-white">
       <div>
         {/* Back Button */}
         <button className="mb-4 px-4 py-2 border border-gray-300 rounded text-sm text flex items-center gap-2 hover:bg-gray-50">
@@ -416,6 +438,7 @@ function ProductPage({ params }) {
         <FrequentlyPurchased />
       </div>
     </div>
+    </>
   );
 }
 

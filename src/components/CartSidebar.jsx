@@ -54,9 +54,12 @@ const CartSidebar = () => {
     }
   };
 
+  // Fetch cart items whenever the cart sidebar is opened
   useEffect(() => {
-    dispatch(getCartItems());
-  }, []);
+    if (isCartOpen) {
+      dispatch(getCartItems());
+    }
+  }, [isCartOpen, dispatch]);
 
   if (!loading && !isCartOpen) {
     return null;
@@ -106,13 +109,15 @@ const CartSidebar = () => {
                   <div className="w-16 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
                     <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
                       <div className="w-12 h-16 bg-white rounded shadow-sm flex items-center justify-center">
-                        <Image
-                          src={item?.product?.thumbnail}
-                          alt={item?.product?.name}
-                          width={48}
-                          height={64}
-                          className="object-cover"
-                        />
+                        {item?.product?.thumbnail ? (
+                          <Image
+                            src={item.product.thumbnail}
+                            alt={item?.product?.name || "Product"}
+                            width={48}
+                            height={64}
+                            className="object-cover"
+                          />
+                        ) : null}
                       </div>
                     </div>
                   </div>
