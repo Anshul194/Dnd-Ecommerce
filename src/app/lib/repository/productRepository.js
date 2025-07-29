@@ -1,4 +1,5 @@
 import CrudRepository from './CrudRepository.js';
+import mongoose from 'mongoose';
 
 class ProductRepository extends CrudRepository {
   constructor(model) {
@@ -22,7 +23,15 @@ class ProductRepository extends CrudRepository {
 
   async findById(id) {
     try {
-      return await this.model.findById(id).populate('attributeSet.attributeId');
+
+      console.log('Repo findById called with:', id);
+      
+      //check if it is id or slug using mongoose.Types.ObjectId.isValid(id)
+      if (mongoose.Types.ObjectId.isValid(id)) {
+        return await this.model.findById(id).populate('attributeSet.attributeId');
+      } else {
+        return await this.model.findOne({ slug: id }).populate('attributeSet.attributeId');
+      }
     } catch (error) {
       console.error("Repository FindById Error:", error.message);
       throw error;
