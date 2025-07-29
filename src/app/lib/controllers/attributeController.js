@@ -66,6 +66,44 @@ export async function getAllAttributes(req, conn) {
   }
 }
 
+//getByProductId
+export async function getByProductId(productId, conn) {
+  try {
+    const attributeService = new AttributeService(conn);
+    const attributes = await attributeService.getAttributesByProductId(productId);
+
+    if (!attributes || attributes.length === 0) {
+      return {
+        status: 404,
+        body: {
+          success: false,
+          message: 'No attributes found for this product',
+          data: null
+        }
+      };
+    }
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Attributes found',
+        data: attributes
+      }
+    };
+  } catch (err) {
+    console.error('Get Attributes by Product ID Error:', err.message);
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null
+      }
+    };
+  }
+}
+
 export async function getAttributeById(id, conn) {
   try {
     const attributeService = new AttributeService(conn);
