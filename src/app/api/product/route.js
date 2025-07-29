@@ -8,6 +8,11 @@ import { saveFile } from '../../config/fileUpload';
 
 // GET /api/product
 export async function GET(req) {
+  // Extract query parameters from req.nextUrl.searchParams
+  const searchParams = req.nextUrl.searchParams;
+  const query = Object.fromEntries(searchParams.entries());
+  console.log('Route received query:', query); // Log the parsed query
+
   try {
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
@@ -18,7 +23,7 @@ export async function GET(req) {
     const productRepo = new ProductRepository(Product);
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
-    const products = await productController.getAll();
+    const products = await productController.getAll(query, conn);
     return NextResponse.json({ success: true, products });
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });

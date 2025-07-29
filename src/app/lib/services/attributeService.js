@@ -59,6 +59,12 @@ class AttributeService {
     return await this.attributeRepo.get(id);
   }
 
+  //getAttributesByProductId
+  async getAttributesByProductId(productId) {
+    // Assuming the repository has a method to find attributes by product ID
+    return await this.attributeRepo.findByProductId(productId);
+  }
+
   async updateAttribute(id, data) {
     return await this.attributeRepo.update(id, data);
   }
