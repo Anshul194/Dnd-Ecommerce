@@ -2,11 +2,17 @@ import { cartSchema } from '../models/Cart';
 
 class CartRepository {
   getCartModel(conn) {
+    if (!conn) {
+      throw new Error('Database connection is required');
+    }
     return conn.models.Cart || conn.model('Cart', cartSchema);
   }
 
   async getCartByUser(userId, conn) {
+    console.log('Fetching cart for user:', conn);
     const Cart = this.getCartModel(conn);
+    console.log('Fetching cart for user:', userId);
+    if (!userId) throw new Error('User ID is required to fetch cart');
     return Cart.findOne({ user: userId }).populate('items.product').populate('items.variant');
   }
 

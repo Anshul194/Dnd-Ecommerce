@@ -9,6 +9,7 @@ import Coupon from '../models/Coupon';
 
 class CartService {
   async getCart(userId, conn) {
+    console.log('Fetching cart for user:', conn);
     return cartRepository.getCartByUser(userId, conn);
   }
 
