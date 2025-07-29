@@ -20,8 +20,7 @@ export const GET = withUserAuth(async function(request) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
     request.user = request.user || {};
-    const result = await cartController.getCart(request, NextResponse);
-    return result;
+    return await cartController.getCart(request, null, null, conn);
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 500 });
   }
@@ -40,8 +39,7 @@ export const POST = withUserAuth(async function(request) {
       return NextResponse.json({ success: false, message: error }, { status: 400 });
     }
     request.user = request.user || {};
-    const result = await cartController.addItem(request, NextResponse, body ,conn);
-    return result;
+    return await cartController.addItem(request, null, body, conn);
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });
   }
@@ -59,8 +57,7 @@ export const DELETE = withUserAuth(async function(request) {
       return NextResponse.json({ success: false, message: 'productId is required' }, { status: 400 });
     }
     request.user = request.user || {};
-    const result = await cartController.removeItem(request, NextResponse, body);
-    return result;
+    return await cartController.removeItem(request, null, body, conn);
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });
   }
@@ -76,8 +73,7 @@ export const PUT = withUserAuth(async function(request) {
     const { action } = Object.fromEntries(new URL(request.url).searchParams.entries());
     if (action === 'clear') {
       request.user = request.user || {};
-      const result = await cartController.clearCart(request, NextResponse);
-      return result;
+      return await cartController.clearCart(request, null, null, conn);
     }
     return NextResponse.json({ success: false, message: 'Invalid action' }, { status: 400 });
   } catch (err) {
