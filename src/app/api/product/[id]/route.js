@@ -76,7 +76,13 @@ export async function PUT(req, { params }) {
     const productRepo = new ProductRepository(Product);
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
-    const body = await req.json();
+
+    const formData = await req.formData();
+    const body = {};
+    for (const [key, value] of formData.entries()) {
+      body[key] = value;
+    }
+
     const response = await productController.update(params.id, body, conn);
     return NextResponse.json(response, {
       status: response.success ? 200 : 400,
