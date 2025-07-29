@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const variantSchema = new mongoose.Schema({
+export const variantSchema = new mongoose.Schema({
   productId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',

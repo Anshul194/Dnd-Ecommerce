@@ -1,25 +1,40 @@
 
+
+
 import cartRepository from '../repository/CartRepository';
-import Product from '../models/Product';
-import Variant from '../models/Variant';
-// Coupon model assumed, create if not exists
+import { productSchema } from '../models/Product';
+import  { variantSchema } from '../models/Variant';
+import mongoose from 'mongoose';
 import Coupon from '../models/Coupon';
 
 class CartService {
-  async getCart(userId) {
-    return cartRepository.getCartByUser(userId);
+  async getCart(userId, conn) {
+    console.log('Fetching cart for user:', conn);
+    return cartRepository.getCartByUser(userId, conn);
   }
 
 
-  async addItem(userId, { product, variant, quantity, price, couponCode }) {
+  async addItem(userId, { product, variant, quantity, price, couponCode }, conn) {
     // Validate product existence
-    const prod = await Product.findById(product);
-    if (!prod) throw new Error('Product not found');
+    const ProductModel = conn.models.Product || conn.model('Product', productSchema);
+    const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
+    console.log('[CartService.addItem] Validating product:', product, 'variant:', variant, 'quantity:', quantity, 'price:', price);
+    // console.log('nm',conn)
+    if (!product) throw new Error('Product is required');
+    if (!mongoose.Types.ObjectId.isValid(product)) throw new Error('Invalid product ID');
+
+    // Always use ObjectId for _id query
+    const productIdObj = new mongoose.Types.ObjectId(product);
+    let prod = await ProductModel.findOne({ 
+      _id: productIdObj,
+      deletedAt: null
+    });
+    if (!prod) throw new Error('Product not found or has been deleted');
 
     // If variant is provided, validate variant existence and stock
     let variantDoc = null;
     if (variant) {
-      variantDoc = await Variant.findById(variant);
+      variantDoc = await VariantModel.findById({ _id: variant });
       if (!variantDoc) throw new Error('Variant not found');
       if (variantDoc.productId.toString() !== product.toString()) throw new Error('Variant does not belong to product');
       if (quantity > variantDoc.stock) throw new Error('Not enough stock for this variant');
@@ -32,7 +47,7 @@ class CartService {
       // Optionally, you can skip this or add a stock field to Product
     }
     if (quantity < 1) throw new Error('Quantity must be at least 1');
-    let cart = await cartRepository.addItem(userId, { product, variant, quantity, price });
+    let cart = await cartRepository.addItem(userId, { product, variant, quantity, price }, conn);
 
     // Coupon logic
     if (couponCode) {
@@ -53,17 +68,19 @@ class CartService {
   }
 
 
-  async removeItem(userId, productId, variantId) {
+  async removeItem(userId, productId, variantId, conn) {
     // Validate product existence
-    const prod = await Product.findById(productId);
+    const ProductModel = conn.models.Product || conn.model('Product', productSchema);
+    const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
+    const prod = await ProductModel.findById(productId);
     if (!prod) throw new Error('Product not found');
     let removedQty = 0;
     if (variantId) {
-      const variantDoc = await Variant.findById(variantId);
+      const variantDoc = await VariantModel.findById(variantId);
       if (!variantDoc) throw new Error('Variant not found');
       if (variantDoc.productId.toString() !== productId.toString()) throw new Error('Variant does not belong to product');
       // Find cart to get quantity being removed
-      const cart = await cartRepository.getCartByUser(userId);
+      const cart = await cartRepository.getCartByUser(userId, conn);
       const item = cart.items.find(i => i.product.equals(productId) && i.variant && i.variant.equals(variantId));
       removedQty = item ? item.quantity : 0;
       // Inventory sync: increment stock
@@ -72,16 +89,17 @@ class CartService {
         await variantDoc.save();
       }
     }
-    return cartRepository.removeItem(userId, productId, variantId);
+    return cartRepository.removeItem(userId, productId, variantId, conn);
   }
 
-  async clearCart(userId) {
+  async clearCart(userId, conn) {
     // Inventory sync: restore all variant stocks
-    const cart = await cartRepository.getCartByUser(userId);
+    const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
+    const cart = await cartRepository.getCartByUser(userId, conn);
     if (cart && cart.items) {
       for (const item of cart.items) {
         if (item.variant) {
-          const variantDoc = await Variant.findById(item.variant);
+          const variantDoc = await VariantModel.findById(item.variant);
           if (variantDoc) {
             variantDoc.stock += item.quantity;
             await variantDoc.save();
@@ -89,7 +107,7 @@ class CartService {
         }
       }
     }
-    return cartRepository.clearCart(userId);
+    return cartRepository.clearCart(userId, conn);
   }
 }
 
