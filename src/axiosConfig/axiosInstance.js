@@ -4,10 +4,9 @@ import { getTenantFromURL } from "@/app/utils/getTenantFromURL";
 import axios from "axios";
 
 // API base URL
-const API_BASE_URL = "http://localhost:3000/";
 
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

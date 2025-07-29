@@ -1,4 +1,4 @@
-import CrudRepository from './CrudRepository.js';
+import CrudRepository from "./CrudRepository.js";
 import mongoose from 'mongoose';
 
 class ProductRepository extends CrudRepository {
@@ -28,7 +28,9 @@ class ProductRepository extends CrudRepository {
       
       //check if it is id or slug using mongoose.Types.ObjectId.isValid(id)
       if (mongoose.Types.ObjectId.isValid(id)) {
-        return await this.model.findById(id).populate('attributeSet.attributeId');
+        return await this.model.findById(id).populate({
+        path: "attributeSet.attributeId",
+      });
       } else {
         return await this.model.findOne({ slug: id }).populate('attributeSet.attributeId');
       }
@@ -38,21 +40,19 @@ class ProductRepository extends CrudRepository {
     }
   }
 
-
   async delete(id) {
     try {
-      console.log('Repo softDelete called with:', id);
+      console.log("Repo softDelete called with:", id);
       return await this.model.findByIdAndUpdate(
         id,
         { deletedAt: new Date() },
         { new: true }
       );
     } catch (err) {
-      console.error('Repo softDelete error:', err);
+      console.error("Repo softDelete error:", err);
       throw err;
     }
   }
-
 }
 
 export default ProductRepository;

@@ -5,7 +5,18 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 export const fetchProducts = createAsyncThunk(
   "product/fetchProducts",
   async () => {
-    const response = await axiosInstance.get("/api/product");
+    const response = await axiosInstance.get("/product");
+    console.log("Products Data:", response.data.products.data.result);
+    return response.data.products.data.result;
+  }
+);
+
+export const fetchProductById = createAsyncThunk(
+  "product/fetchProductById",
+  async (id) => {
+    const response = await axiosInstance.get(`/product/${id}`);
+    console.log("Product Data:", response);
+
     return response.data.data;
   }
 );

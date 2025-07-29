@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 export const Token = {
   generateTokens(user) {
@@ -6,23 +6,33 @@ export const Token = {
       id: user._id.toString(),
       isSuperAdmin: user.isSuperAdmin,
       tenantId: user.tenant || null,
-      role: user.role || null
+      role: user.role || null,
     };
 
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: '15d'  // Short-lived Access Token
+      expiresIn: "30m", // Short-lived Access Token
     });
 
-    const refreshToken = jwt.sign({ id: user._id.toString() }, process.env.REFRESH_TOKEN_SECRET, {
-      expiresIn: '7d'  // Longer-lived Refresh Token
-    });
+    const refreshToken = jwt.sign(
+      { id: user._id.toString() },
+      process.env.REFRESH_TOKEN_SECRET,
+      {
+        expiresIn: "7d", // Longer-lived Refresh Token
+      }
+    );
 
     return { accessToken, refreshToken };
   },
 
   setTokensCookies(res, accessToken, refreshToken) {
-    res.headers.append('Set-Cookie', `accessToken=${accessToken}; Path=/; HttpOnly; Max-Age=900; SameSite=Strict; Secure`);
-    res.headers.append('Set-Cookie', `refreshToken=${refreshToken}; Path=/; HttpOnly; Max-Age=604800; SameSite=Strict; Secure`);
+    res.headers.append(
+      "Set-Cookie",
+      `accessToken=${accessToken}; Path=/; HttpOnly; Max-Age=900; SameSite=Strict; Secure`
+    );
+    res.headers.append(
+      "Set-Cookie",
+      `refreshToken=${refreshToken}; Path=/; HttpOnly; Max-Age=604800; SameSite=Strict; Secure`
+    );
   },
 
   /**
@@ -38,5 +48,5 @@ export const Token = {
     } catch (err) {
       return null;
     }
-  }
+  },
 };
