@@ -29,7 +29,6 @@ class CouponRepository extends CrudRepository {
         query = query.sort(sortConditions);
       }
 
-      // Calculate total count for pagination metadata
       const totalCount = await this.model.countDocuments(filterConditions);
 
       if (page && limit) {
@@ -47,6 +46,28 @@ class CouponRepository extends CrudRepository {
       };
     } catch (error) {
       console.error('CouponRepository getAll Error:', error.message);
+      throw error;
+    }
+  }
+
+  async findByCode(code) {
+    try {
+      return await this.model.findOne({ code, isActive: true });
+    } catch (error) {
+      console.error('CouponRepository findByCode Error:', error.message);
+      throw error;
+    }
+  }
+
+  async incrementUsedCount(couponId) {
+    try {
+      return await this.model.findByIdAndUpdate(
+        couponId,
+        { $inc: { usedCount: 1 } },
+        { new: true }
+      );
+    } catch (error) {
+      console.error('CouponRepository incrementUsedCount Error:', error.message);
       throw error;
     }
   }

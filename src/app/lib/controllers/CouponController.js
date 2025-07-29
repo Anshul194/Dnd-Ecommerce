@@ -32,6 +32,20 @@ class CouponController {
       };
     }
   }
+
+    async apply(req, conn) {
+    console.log('Controller received apply data:', req.body);
+    try {
+      const result = await this.couponService.applyCoupon(req.body, conn);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
 }
 
 export default CouponController;

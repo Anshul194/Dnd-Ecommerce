@@ -104,6 +104,66 @@ class CouponService {
       };
     }
   }
+
+
+  async applyCoupon(data, conn) {
+    try {
+      const { code, cartValue } = data;
+      if (!code || cartValue === undefined) {
+        throw new Error('Coupon code and cart value are required');
+      }
+      if (typeof cartValue !== 'number' || cartValue < 0) {
+        throw new Error('Cart value must be a non-negative number');
+      }
+
+      const coupon = await this.couponRepository.findByCode(code);
+      if (!coupon) {
+        throw new Error('Invalid Coupon');
+      }
+
+      // Check expiration
+      if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
+        throw new Error('Coupon has expired');
+      }
+
+      // Check usage limit
+      if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+        throw new Error('Coupon usage limit exceeded');
+      }
+
+      // Check minimum cart value
+      if (cartValue < coupon.minCartValue) {
+        throw new Error(`Cart value must be at least ${coupon.minCartValue}`);
+      }
+
+      // Calculate discount
+      let discount = 0;
+      if (coupon.type === 'flat') {
+        discount = coupon.value;
+      } else if (coupon.type === 'percent') {
+        discount = (coupon.value / 100) * cartValue;
+      }
+
+      // Increment usedCount
+      await this.couponRepository.incrementUsedCount(coupon._id);
+
+      return {
+        success: true,
+        message: 'Coupon applied successfully',
+        data: {
+          discount,
+          coupon
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
+
 }
 
 export default CouponService;

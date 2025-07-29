@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getSubdomain, getDbConnection } from '../../lib/tenantDb';
 import mongoose from 'mongoose';
 import CouponController from '../../lib/controllers/CouponController.js';
 import CouponService from '../../lib/services/CouponService.js';
@@ -6,39 +7,6 @@ import CouponRepository from '../../lib/repository/CouponRepository.js';
 import { CouponSchema } from '../../lib/models/Coupon.js';
 import dbConnect from '../../connection/dbConnect';
 
-
-function getSubdomain(request) {
-  // Prefer x-tenant header if present
-  const xTenant = request.headers.get('x-tenant');
-  if (xTenant) return xTenant;
-  const host = request.headers.get('host') || '';
-  // e.g. tenant1.localhost:5173 or tenant1.example.com
-  const parts = host.split('.');
-  if (parts.length > 2) return parts[0];
-  if (parts.length === 2 && parts[0] !== 'localhost') return parts[0];
-  return null;
-}
-
-
-
-async function getDbConnection(subdomain) {
-  if (!subdomain || subdomain === 'localhost') {
-    // Use default DB (from env)
-    return await dbConnect();
-  } else {
-    // Connect to global DB to get tenant DB URI
-    await dbConnect();
-    const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', new mongoose.Schema({
-      name: String,
-      dbUri: String,
-      subdomain: String
-    }, { collection: 'tenants' }));
-    const tenant = await Tenant.findOne({ subdomain });
-    if (!tenant?.dbUri) return null;
-    // Connect to tenant DB
-    return await dbConnect(tenant.dbUri);
-  }
-}
 
 export async function GET(req) {
   const searchParams = req.nextUrl.searchParams;
