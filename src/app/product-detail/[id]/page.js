@@ -73,7 +73,7 @@ function ProductPage({ params }) {
     try {
       const response = await dispatch(fetchProductById(id));
       console.log("Fetched Product Data:", response.payload);
-      setSelectedPack(response.payload.variants[0]._id);
+      setSelectedPack(response?.payload?.variants[0]?._id);
       setData(response.payload);
     } catch (error) {
       console.error("Error fetching product data:", error);

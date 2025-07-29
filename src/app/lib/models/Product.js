@@ -25,8 +25,9 @@ export const productSchema = new mongoose.Schema(
       required: true,
     },
     subcategory: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Subcategory",
+      type:String
+      // type: mongoose.Schema.Types.ObjectId,
+      // ref: "Subcategory",
     },
     brand: {
       type: mongoose.Schema.Types.ObjectId,

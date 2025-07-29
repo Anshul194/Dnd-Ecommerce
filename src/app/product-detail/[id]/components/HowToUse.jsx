@@ -5,6 +5,12 @@ const HowToUse = ({ data }) => {
   const sectionRef = useRef(null);
   const [isInView, setIsInView] = useState(false);
 
+    const extractVideoId = (url) => {
+  const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : url;
+};
+
   useEffect(() => {
     const currentVideoRef = videoRef.current;
     const currentSectionRef = sectionRef.current;
@@ -84,18 +90,20 @@ const HowToUse = ({ data }) => {
 
         {/* Video and Steps Grid */}
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-          {/* Video Container */}
-          <div className="relative h-full">
-            <div className="aspect-video sticky top-10 bg-gray-900/5 rounded-2xl overflow-hidden shadow-2xl">
-              <iframe
-                src={data?.howToUseVideo}
-                allowFullScreen
-                className="w-full h-full object-cover rounded-lg"
-              />
+          {data?.howToUseVideo && (
+            <div className="relative h-full">
+              <div className="aspect-video sticky top-10 bg-gray-900/5 rounded-2xl overflow-hidden shadow-2xl">
+                <iframe
+                  src={`https://www.youtube.com/embed/${extractVideoId(data.howToUseVideo)}`}
+                  allowFullScreen
+                  className="w-full h-full object-cover rounded-lg"
+                  style={{ border: 0 }}
+                  title="How To Use Video"
+                  onError={(e) => console.error('Iframe error:', e)}
+                />
+              </div>
             </div>
-          </div>
-
-          {/* Steps Container */}
+          )}
           <div className="space-y-8">
             {data?.howToUseSteps?.map((step, index) => (
               <div key={index} className="flex gap-6 group">

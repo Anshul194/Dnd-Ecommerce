@@ -1,4 +1,10 @@
 export default function DescriptionLayout({ data }) {
+
+  const extractVideoId = (url) => {
+  const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : url;
+};
   return (
     <div className="py-10 lg:py-20 px-4">
       <div className="flex flex-col lg:flex-row gap-6">
@@ -16,12 +22,19 @@ export default function DescriptionLayout({ data }) {
 
             {/* Large Square Image */}
             <div className=" rounded-lg w-full h-[350px] max-h-[400px] overflow-hidden">
-              <iframe
-                src={data?.descriptionVideo}
-                allowFullScreen
-                className="w-full h-full object-cover rounded-lg"
-                frameBorder="0"
-              />
+              {console.log("Description Image:", data?.descriptionVideo)}
+           {data?.descriptionVideo && (
+  <div className="rounded-lg w-full h-[350px] max-h-[400px] overflow-hidden">
+    <iframe
+      src={`https://www.youtube.com/embed/${extractVideoId(data.descriptionVideo)}`}
+      allowFullScreen
+      className="w-full h-full object-cover rounded-lg"
+      style={{ border: 0 }}
+      title="Description Video"
+      onError={(e) => console.error('Iframe error:', e)}
+    />
+  </div>
+)}
             </div>
           </div>
         </div>
