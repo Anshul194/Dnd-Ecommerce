@@ -40,8 +40,7 @@ export const POST = withUserAuth(async function(request) {
       return NextResponse.json({ success: false, message: error }, { status: 400 });
     }
     request.user = request.user || {};
-    request.body = body;
-    const result = await cartController.addItem(request, NextResponse);
+    const result = await cartController.addItem(request, NextResponse, body ,conn);
     return result;
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });
@@ -60,8 +59,7 @@ export const DELETE = withUserAuth(async function(request) {
       return NextResponse.json({ success: false, message: 'productId is required' }, { status: 400 });
     }
     request.user = request.user || {};
-    request.body = body;
-    const result = await cartController.removeItem(request, NextResponse);
+    const result = await cartController.removeItem(request, NextResponse, body);
     return result;
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });

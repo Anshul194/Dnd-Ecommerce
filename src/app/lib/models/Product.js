@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
 
-
-const productSchema = new mongoose.Schema(
+export const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
