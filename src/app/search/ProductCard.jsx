@@ -3,15 +3,32 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { addToCart, toggleCart } from "../store/slices/cartSlice";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
 
 const ProductCard = ({ product }) => {
-  const handleAddToCart = () => {
-    console.log("Added to cart:", product);
-    // Add your cart logic here
+  const router = useRouter();
+  console.log("Product Card Data:", product);
+  const dispatch = useDispatch();
+  const handleAddToCart = (e) => {
+    e.stopPropagation(); // ✅ Prevent navigation
+    dispatch(
+      addToCart({
+        product: product._id,
+        quantity: 1,
+        price: 500,
+        variant: product.variants[0]._id,
+      })
+    );
+    dispatch(toggleCart());
   };
 
   return (
-    <Link href={`/product-detail/${product.slug}`} className="group">
+    <div
+      onClick={() => router.push(`/product-detail/${product.slug}`)}
+      className="group"
+    >
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-[280px]">
         {/* Product Header */}
         <div className="relative bg-gradient-to-br from-orange-100 to-orange-200 rounded-t-2xl">
@@ -77,17 +94,15 @@ const ProductCard = ({ product }) => {
           </div>
 
           {/* Add to Cart Button */}
-          <Link href="/cart">
-            <button
-              onClick={handleAddToCart}
-              className="w-full bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
-            >
-              Add to cart
-            </button>
-          </Link>
+          <button
+            onClick={handleAddToCart}
+            className="w-full bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+          >
+            Add to cart
+          </button>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 

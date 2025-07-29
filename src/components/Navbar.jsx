@@ -3,14 +3,20 @@ import { Search, ShoppingCart, Heart, User, Menu, X, Bell } from "lucide-react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "@/app/store/slices/categorySlice";
+import CartSidebar from "./CartSidebar";
+import { toggleCart } from "@/app/store/slices/cartSlice";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [gsapLoaded, setGsapLoaded] = useState(false);
   const menuRef = useRef(null);
   const backdropRef = useRef(null);
-  const { categories } = useSelector((state) => state.category); // Assuming you might use categories later
+  const { categories } = useSelector((state) => state.category);
+  const { cartItems } = useSelector((state) => state.cart);
+  // Assuming you might use categories later
   const dispatch = useDispatch();
+  const pathname = usePathname();
 
   // Load GSAP
   useEffect(() => {
@@ -98,10 +104,17 @@ const Navbar = () => {
     }
   }, []);
 
-  console.log("Categories:", categories);
+  const handelCartToggle = () => {
+    dispatch(toggleCart());
+  };
+
+  if (pathname.includes("/signup") || pathname.includes("/login")) {
+    return null; // Don't render Navbar on product detail page
+  }
 
   return (
     <>
+      <CartSidebar />
       <nav className="bg-white shadow-sm border-b border-gray-200">
         {/* Top Header Bar */}
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -138,10 +151,13 @@ const Navbar = () => {
                   <button className="text-gray-600 hover:text-green-500 transition-colors">
                     <Heart size={20} />
                   </button>
-                  <button className="text-gray-600 hover:text-green-500 transition-colors relative">
+                  <button
+                    onClick={handelCartToggle}
+                    className="text-gray-600 hover:text-green-500 transition-colors relative"
+                  >
                     <ShoppingCart size={20} />
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      0
+                      {cartItems.length || 0}
                     </span>
                   </button>
                   <button className="text-gray-600 hover:text-green-500 h-8 w-8 rounded-full bg-gray-500 transition-colors">
@@ -256,10 +272,13 @@ const Navbar = () => {
                     <button className="text-gray-600 hover:text-green-500 transition-all duration-200 hover:scale-110">
                       <Heart size={20} />
                     </button>
-                    <button className="text-gray-600 hover:text-green-500 transition-all duration-200 hover:scale-110 relative">
+                    <button
+                      onClick={handelCartToggle}
+                      className="text-gray-600 hover:text-green-500 transition-all duration-200 hover:scale-110 relative"
+                    >
                       <ShoppingCart size={20} />
                       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        0
+                        {cartItems.length || 0}
                       </span>
                     </button>
                     <button className="text-gray-600 hover:text-green-500 h-8 w-8 rounded-full bg-gray-500 transition-all duration-200 hover:scale-110">

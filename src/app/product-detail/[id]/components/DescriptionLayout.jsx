@@ -1,4 +1,4 @@
-export default function DescriptionLayout() {
+export default function DescriptionLayout({ data }) {
   return (
     <div className="py-10 lg:py-20 px-4">
       <div className="flex flex-col lg:flex-row gap-6">
@@ -9,26 +9,47 @@ export default function DescriptionLayout() {
             <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0">
               DESCRIPTION
             </h1>
-            <p className="text-black relative poppins-medium leading-tight text-lg ml-auto mb-8">
-              Lorem ipsum dolor sit amet, <span className="text font-semibold">consectetur</span> eiusmod
-              tempor incididunt ut labore et dolor magna aliquaLorem
-              ipsum dolor sit amet, consectetur.
-            </p>
+            <div
+              className="text-black relative poppins-medium leading-tight text-lg ml-auto mb-8"
+              dangerouslySetInnerHTML={{ __html: data?.description }}
+            />
+
             {/* Large Square Image */}
-            <div className="bg-gray-400 rounded-lg w-full h-[350px] max-h-[400px] overflow-hidden"></div>
+            <div className=" rounded-lg w-full h-[350px] max-h-[400px] overflow-hidden">
+              <iframe
+                src={data?.descriptionVideo}
+                allowFullScreen
+                className="w-full h-full object-cover rounded-lg"
+                frameBorder="0"
+              />
+            </div>
           </div>
         </div>
 
         {/* Right Column */}
         <div className="flex flex-col flex-1 gap-4">
           {/* Top Row - Two Small Squares */}
-          <div className="bg-gray-400 rounded-lg flex-1 aspect-square"></div>
+          <div
+            className="bg-red-400 rounded-lg flex-1 aspect-square"
+            style={{
+              backgroundImage: `url(${data?.descriptionImages?.[0]})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          ></div>
           <div className="flex gap-4">
             <div className="flex flex-col gap-4 flex-1">
-              <div className="bg-gray-400 rounded-lg aspect-square"></div>
-              <div className="bg-gray-400 rounded-lg aspect-square"></div>
-              {/* Bottom Row - One Large Rectangle */}
-              <div className="bg-gray-400 rounded-lg aspect-square w-full"></div>
+              {data.descriptionImages?.slice(1).map((image, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-400 rounded-lg flex-1 aspect-square"
+                  style={{
+                    backgroundImage: `url(${image})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                ></div>
+              ))}
             </div>
           </div>
         </div>

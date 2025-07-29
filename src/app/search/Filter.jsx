@@ -193,7 +193,7 @@ const Filter = ({ onFilterChange }) => {
         <div className="space-y-2">
           {categories.map((category) => (
             <label
-              key={category}
+              key={category._id}
               className="flex items-center space-x-2 cursor-pointer"
             >
               <input
