@@ -121,6 +121,13 @@ productSchema.pre("save", function (next) {
   }
   next();
 });
+productSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if (update.name) {
+    update.slug = slugify(update.name, { lower: true });
+  }
+  next();
+});
 
 export default mongoose.models.Product ||
   mongoose.model("Product", productSchema);
