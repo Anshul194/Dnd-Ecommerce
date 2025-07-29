@@ -52,7 +52,7 @@ export async function createTenant(data) {
       name: data.companyName || data.email,
       email: data.email,
       passwordHash,
-      role: new mongoose.Types.ObjectId('687f94a6eb27eefa96f469e4'), // hardcoded role
+      role: new mongoose.Types.ObjectId('6888d1dd50261784a38dd087'), // hardcoded role
       tenant: tenantResult.body.data._id,
       isSuperAdmin: false,
       isActive: true,
@@ -71,7 +71,7 @@ export async function createTenant(data) {
       name: data.companyName || data.email,
       email: data.email,
       passwordHash,
-      role: new mongoose.Types.ObjectId('687f94a6eb27eefa96f469e4'),
+      role: new mongoose.Types.ObjectId('6888d1dd50261784a38dd087'),
       tenant: tenantResult.body.data._id,
       isSuperAdmin: false,
       isActive: true,
