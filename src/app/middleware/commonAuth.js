@@ -4,9 +4,10 @@ import userSchema from '../lib/models/User.js';
 import mongoose from 'mongoose';
 import * as RoleModule from '../lib/models/role.js';
 const Role = RoleModule.default || RoleModule;
-// Helper to get User model from schema
-function getUserModel() {
-    return mongoose.models.User || mongoose.model('User', userSchema);
+import { getDbConnection, getSubdomain } from '../lib/tenantDb.js';
+// Helper to get User model from schema, using a specific mongoose connection
+function getUserModel(conn) {
+    return conn.models.User || conn.model('User', userSchema);
 }
 import dotenv from 'dotenv';
 dotenv.config();
@@ -32,25 +33,32 @@ export async function verifyJwtToken(token) {
 }
 
 /**
- * Fetch User by ID
+ * Fetch User by ID (using tenant DB connection)
  */
-// Updated: Accept tenantId
-export async function getUserById(userId, tenantId = null) {
+export async function getUserById(userId, tenantId = null, conn = null) {
     try {
         let user = null;
-        if (tenantId === 'localhost') {
-            // Fetch from global DB, ignore tenant field
-            const query = { _id: userId };
-            console.log('[getUserById] Query (global):', query);
-            const UserModel = getUserModel();
-            user = await UserModel.findOne(query).lean();
-        } else {
-            const query = { _id: userId };
-            if (tenantId) query.tenant = tenantId;
-            console.log('[getUserById] Query:', query);
-            const UserModel = getUserModel();
-            user = await UserModel.findOne(query).lean();
+        if (!conn) {
+            // fallback to default connection if not provided
+            conn = mongoose;
         }
+        const UserModel = getUserModel(conn);
+        // Convert userId and tenantId to ObjectId if possible
+        let query = {};
+        try {
+            query._id = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
+        } catch {
+            query._id = userId;
+        }
+        if (tenantId && tenantId !== 'localhost') {
+            try {
+                query.tenant = mongoose.Types.ObjectId.isValid(tenantId) ? new mongoose.Types.ObjectId(tenantId) : tenantId;
+            } catch {
+                query.tenant = tenantId;
+            }
+        }
+        console.log('[getUserById] Query:', query, 'TenantId:', tenantId);
+        user = await UserModel.findOne(query).lean();
         console.log('[getUserById] Result:', user);
         return user;
     } catch (err) {
@@ -90,9 +98,15 @@ export async function verifyTokenAndUser(request, userType = 'user') {
     console.log('[verifyTokenAndUser] Decoded JWT payload:', payload);
     // Try all possible id fields
     const userId = payload.userId || payload._id || payload.id;
-    const tenantId = payload.tenantId || payload.tenant || getTenantFromRequest(request);
+    const tenantId = payload.tenantId || payload.tenant || getTenantFromRequest(request) || getSubdomain(request);
     console.log('[verifyTokenAndUser] userId:', userId, 'tenantId:', tenantId);
-    const user = await getUserById(userId, tenantId);
+
+    // Always get the correct tenant DB connection
+
+    const subdomain = getSubdomain(request);
+    const conn = await getDbConnection(subdomain);    
+    console.log('[verifyTokenAndUser] DB connection established:', conn);
+    const user = await getUserById(userId, tenantId, conn);
     if (!user) {
         console.error('[verifyTokenAndUser] User not found for query:', { userId, tenantId });
         return {
@@ -268,4 +282,18 @@ export async function hasModulePermission(user, moduleId, permission = null) {
             );
         }
     }
+}
+
+
+/**
+ * Route Protection for Authenticated Users (any user)
+ */
+export function withUserAuth(handler) {
+    return async function (request, ...args) {
+        const authResult = await verifyTokenAndUser(request, 'user');
+        if (authResult.error) return authResult.error;
+
+        request.user = authResult.user;
+        return handler(request, ...args);
+    };
 }

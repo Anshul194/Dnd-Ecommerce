@@ -4,6 +4,7 @@ import UserService from '../../lib/services/userService.js';
 import { Token } from '../../middleware/generateToken.js';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
+import roleSchema from '@/app/lib/models/role';
 
 // Helper to extract subdomain from x-tenant header or host header
 function getSubdomain(request) {
@@ -57,6 +58,26 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: 'Name, email, and password are required.' }, { status: 400 });
     }
 
+    const RoleModel = conn.models.Role || conn.model('Role', roleSchema);
+    let finalTenant = tenant || null;
+    let finalRole = role || null;
+
+    // Validate role and tenant IDs if provided
+    if (role) {
+      if (!mongoose.Types.ObjectId.isValid(role)) {
+        return NextResponse.json({ success: false, message: 'Invalid role ID.' }, { status: 400 });
+      }
+      // Fetch the role document
+      const roleDoc = await RoleModel.findById(role);
+      if (!roleDoc) {
+        return NextResponse.json({ success: false, message: 'Role not found.' }, { status: 400 });
+      }
+      console.log("Role document:", roleDoc);
+      if (roleDoc.name == 'Customer') {
+        finalTenant = roleDoc.tenantId || null;
+      }
+    }
+
     // Check if user exists
     const existing = await userService.findByEmail(email);
     if (existing) {
@@ -71,8 +92,8 @@ export async function POST(request) {
       name,
       email,
       passwordHash,
-      role: role || null,
-      tenant: tenant || null,
+      role: finalRole,
+      tenant: finalTenant,
       isSuperAdmin: !!isSuperAdmin,
       isActive: isActive !== undefined ? !!isActive : true,
       isDeleted: isDeleted !== undefined ? !!isDeleted : false
