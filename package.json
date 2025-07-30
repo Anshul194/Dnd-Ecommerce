@@ -35,6 +35,7 @@
     "next": "15.3.2",
     "nodemailer": "^7.0.4",
     "react": "^19.0.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-calendly": "^4.4.0",
     "react-dom": "^19.0.0",
     "react-redux": "^9.2.0",
