@@ -129,5 +129,6 @@ productSchema.pre("findOneAndUpdate", function (next) {
   next();
 });
 
-export default mongoose.models.Product ||
-  mongoose.model("Product", productSchema);
+export const ProductSchema = productSchema;
+export const ProductModel = mongoose.models.Product || mongoose.model('Product', productSchema);
+export default ProductModel;
