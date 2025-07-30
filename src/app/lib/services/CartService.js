@@ -29,7 +29,7 @@ class CartService {
       if (!variantProduct) throw new Error(`Variant ${variant} has no associated product or productId`);
       if (variantProduct.toString() !== product.toString()) throw new Error(`Variant ${variant} does not belong to product ${product}`);
       if (quantity > variantDoc.stock) throw new Error('Not enough stock for this variant');
-      const effectivePrice = variantDoc.salePrice !== undefined && variantDoc.salePrice !== null ? variantDoc.salePrice : variantDoc.price;
+      const effectivePrice = variantDoc.price !== undefined && variantDoc.price !== null ? variantDoc.price : variantDoc.price;
       if (price !== undefined && price !== effectivePrice) throw new Error(`Price mismatch for variant ${variant}: expected ${effectivePrice}, got ${price}`);
       variantDoc.stock -= quantity;
       await variantDoc.save();
