@@ -95,11 +95,11 @@ export async function verifyTokenAndUser(request, userType = 'user') {
         };
     }
 
-    console.log('[verifyTokenAndUser] Decoded JWT payload:', payload);
+    // console.log('[verifyTokenAndUser] Decoded JWT payload:', payload);
     // Try all possible id fields
     const userId = payload.userId || payload._id || payload.id;
     const tenantId = payload.tenantId || payload.tenant || getTenantFromRequest(request) || getSubdomain(request);
-    console.log('[verifyTokenAndUser] userId:', userId, 'tenantId:', tenantId);
+    // console.log('[verifyTokenAndUser] userId:', userId, 'tenantId:', tenantId);
 
     // Always get the correct tenant DB connection
 
@@ -108,7 +108,7 @@ export async function verifyTokenAndUser(request, userType = 'user') {
     console.log('[verifyTokenAndUser] DB connection established:', conn);
     const user = await getUserById(userId, tenantId, conn);
     if (!user) {
-        console.error('[verifyTokenAndUser] User not found for query:', { userId, tenantId });
+        // console.error('[verifyTokenAndUser] User not found for query:', { userId, tenantId });
         return {
             error: NextResponse.json(
                 { success: false, message: 'User not found or unauthorized', query: { userId, tenantId } },

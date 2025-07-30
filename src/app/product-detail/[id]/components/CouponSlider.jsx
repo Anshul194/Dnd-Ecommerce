@@ -1,72 +1,46 @@
-import React, { useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Gift, Tag } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCoupons, setSelectedCoupon, clearSelectedCoupon } from '@/app/store/slices/couponSlice';
 
 const CouponSlider = () => {
-  const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const dispatch = useDispatch();
+  const { items: coupons, loading, error, selectedCoupon } = useSelector((state) => state.coupon);
 
-  const coupons = [
-    {
-      id: 1,
-      code: 'FIRST20',
-      discount: '20% OFF',
-      description: 'First time buyers',
-      minOrder: '₹500',
-      color: 'bg-gradient-to-r from-purple-500 to-pink-500',
-      textColor: 'text-white'
-    },
-    {
-      id: 2,
-      code: 'SAVE15',
-      discount: '15% OFF',
-      description: 'On orders above ₹800',
-      minOrder: '₹800',
-      color: 'bg-gradient-to-r from-blue-500 to-cyan-500',
-      textColor: 'text-white'
-    },
-    {
-      id: 3,
-      code: 'MEGA25',
-      discount: '25% OFF',
-      description: 'Mega discount deal',
-      minOrder: '₹1200',
-      color: 'bg-gradient-to-r from-orange-500 to-red-500',
-      textColor: 'text-white'
-    },
-    {
-      id: 4,
-      code: 'FLAT10',
-      discount: '₹100 OFF',
-      description: 'Flat discount',
-      minOrder: '₹600',
-      color: 'bg-gradient-to-r from-green-500 to-teal-500',
-      textColor: 'text-white'
-    },
-    {
-      id: 5,
-      code: 'SPECIAL30',
-      discount: '30% OFF',
-      description: 'Special offer',
-      minOrder: '₹1500',
-      color: 'bg-gradient-to-r from-indigo-500 to-purple-500',
-      textColor: 'text-white'
-    }
-  ];
+  useEffect(() => {
+    dispatch(fetchCoupons());
+  }, [dispatch]);
 
   const itemsPerView = 2;
-  const maxSlides = Math.max(0, coupons.length - itemsPerView);
+  const maxSlides = Math.max(0, (coupons?.length || 0) - itemsPerView);
 
   const nextSlide = () => {
-    setCurrentSlide(prev => Math.min(prev + 1, maxSlides));
+    setCurrentSlide((prev) => Math.min(prev + 1, maxSlides));
   };
 
   const prevSlide = () => {
-    setCurrentSlide(prev => Math.max(prev - 1, 0));
+    setCurrentSlide((prev) => Math.max(prev - 1, 0));
   };
 
-  const selectCoupon = (coupon) => {
-    setSelectedCoupon(selectedCoupon?.id === coupon.id ? null : coupon);
+  const handleSelectCoupon = (coupon) => {
+    if (selectedCoupon?._id === coupon._id) {
+      dispatch(clearSelectedCoupon());
+    } else {
+      dispatch(setSelectedCoupon(coupon));
+    }
   };
+
+  if (loading) {
+    return <div className="p-4 text-center text-gray-500">Loading coupons...</div>;
+  }
+  if (error) {
+    return <div className="p-4 text-center text-red-500">Failed to load coupons: {error}</div>;
+  }
+  if (!coupons || coupons.length === 0) {
+    return <div className="p-4 text-center text-gray-500">No coupons available.</div>;
+  }
 
   return (
     <div className="relative">
@@ -90,44 +64,50 @@ const CouponSlider = () => {
             className="flex gap-3 transition-transform duration-300 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * (100 / itemsPerView)}%)` }}
           >
-            {coupons.map((coupon) => (
-              <div
-                key={coupon.id}
-                className={`flex-shrink-0 w-1/2 relative cursor-pointer transition-all duration-300 ${
-                  selectedCoupon?.id === coupon.id ? 'scale-105' : 'hover:scale-102'
-                }`}
-                onClick={() => selectCoupon(coupon)}
-              >
-                <div className={`${coupon.color} rounded-lg p-4 relative overflow-hidden`}>
-                  {/* Decorative pattern */}
-                  <div className="absolute top-0 right-0 w-16 h-16 opacity-20">
-                    <Gift size={64} className="transform rotate-12" />
-                  </div>
-                  
-                  {/* Selection indicator */}
-                  {selectedCoupon?.id === coupon.id && (
-                    <div className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            {coupons.map((coupon) => {
+              // Assign color and textColor based on type or code for demo, or use defaults
+              let color = 'bg-gradient-to-r from-green-500 to-teal-500';
+              let textColor = 'text-white';
+              if (coupon.type === 'percent') color = 'bg-gradient-to-r from-blue-500 to-cyan-500';
+              if (coupon.type === 'flat') color = 'bg-gradient-to-r from-orange-500 to-red-500';
+              // Discount string
+              const discount = coupon.type === 'percent' ? `${coupon.value}% OFF` : `₹${coupon.value} OFF`;
+              return (
+                <div
+                  key={coupon._id}
+                  className={`flex-shrink-0 w-1/2 relative cursor-pointer transition-all duration-300 ${
+                    selectedCoupon?._id === coupon._id ? 'scale-105' : 'hover:scale-102'
+                  }`}
+                  onClick={() => handleSelectCoupon(coupon)}
+                >
+                  <div className={`${color} rounded-lg p-4 relative overflow-hidden`}>
+                    {/* Decorative pattern */}
+                    <div className="absolute top-0 right-0 w-16 h-16 opacity-20">
+                      <Gift size={64} className="transform rotate-12" />
                     </div>
-                  )}
-
-                  <div className={`${coupon.textColor} relative z-10`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Tag size={16} />
-                      <span className="font-bold text-sm">{coupon.code}</span>
+                    {/* Selection indicator */}
+                    {selectedCoupon?._id === coupon._id && (
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      </div>
+                    )}
+                    <div className={`${textColor} relative z-10`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Tag size={16} />
+                        <span className="font-bold text-sm">{coupon.code}</span>
+                      </div>
+                      <div className="font-bold text-lg mb-1">{discount}</div>
+                      <div className="text-xs opacity-90 mb-1">{coupon.description || ''}</div>
+                      <div className="text-xs opacity-75">Min order: ₹{coupon.minCartValue || 0}</div>
                     </div>
-                    <div className="font-bold text-lg mb-1">{coupon.discount}</div>
-                    <div className="text-xs opacity-90 mb-1">{coupon.description}</div>
-                    <div className="text-xs opacity-75">Min order: {coupon.minOrder}</div>
+                    {/* Border for selected coupon */}
+                    {selectedCoupon?._id === coupon._id && (
+                      <div className="absolute inset-0 border-3 border-white rounded-lg"></div>
+                    )}
                   </div>
-
-                  {/* Border for selected coupon */}
-                  {selectedCoupon?.id === coupon.id && (
-                    <div className="absolute inset-0 border-3 border-white rounded-lg"></div>
-                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -152,11 +132,11 @@ const CouponSlider = () => {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="text-sm font-medium text-green-700">
-                Coupon {selectedCoupon.code} selected - {selectedCoupon.discount}
+                Coupon {selectedCoupon.code} selected - {selectedCoupon.type === 'percent' ? `${selectedCoupon.value}% OFF` : `₹${selectedCoupon.value} OFF`}
               </span>
             </div>
             <button 
-              onClick={() => setSelectedCoupon(null)}
+              onClick={() => dispatch(clearSelectedCoupon())}
               className="text-green-600 hover:text-green-800 text-sm font-medium"
             >
               Remove

@@ -25,8 +25,9 @@ export const productSchema = new mongoose.Schema(
       required: true,
     },
     subcategory: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Subcategory",
+      type:String
+      // type: mongoose.Schema.Types.ObjectId,
+      // ref: "Subcategory",
     },
     brand: {
       type: mongoose.Schema.Types.ObjectId,
@@ -117,6 +118,13 @@ export const productSchema = new mongoose.Schema(
 productSchema.pre("save", function (next) {
   if (this.isModified("name")) {
     this.slug = slugify(this.name, { lower: true });
+  }
+  next();
+});
+productSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if (update.name) {
+    update.slug = slugify(update.name, { lower: true });
   }
   next();
 });

@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import AuthRequiredModal from "@/components/AuthRequiredModal";
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,16 +19,21 @@ import ProductReview from "./components/ProductReview";
 import FrequentlyPurchased from "./components/FrequentlyPurchased";
 import { useDispatch } from "react-redux";
 import { fetchProductById } from "@/app/store/slices/productSlice";
+import Image from "next/image";
+import { addToCart, toggleCart } from "@/app/store/slices/cartSlice";
 
 function ProductPage({ params }) {
-  const { id } = params;
+  const { id } = use(params);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [expandedSection, setExpandedSection] = useState(null);
-  const [selectedPack, setSelectedPack] = useState("pack2");
+  const [selectedPack, setSelectedPack] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [data, setData] = useState({});
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const router = require("next/navigation").useRouter();
   const productImages = [
     "/api/placeholder/400/400", // Main saffron product image
     "/api/placeholder/400/400", // Additional product images
@@ -70,15 +78,58 @@ function ProductPage({ params }) {
   const getProductData = async () => {
     try {
       const response = await dispatch(fetchProductById(id));
+      console.log("Fetched Product Data:", response.payload);
+      setSelectedPack(response?.payload?.variants[0]?._id);
+      setData(response.payload);
     } catch (error) {
       console.error("Error fetching product data:", error);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      setAuthModalOpen(true);
+      return;
+    }
+    const price = data.variants.find((variant) => variant._id === selectedPack);
+    try {
+      const resultAction = await dispatch(
+        addToCart({
+          product: data._id,
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedPack,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(resultAction.payload || resultAction.error.message || "Failed to add to cart");
+        return;
+      }
+      await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
+      dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
     }
   };
   useEffect(() => {
     getProductData();
   }, [id]);
   return (
-    <div className="max-w-[90%] mx-auto p-4 bg-white">
+    <>
+      <AuthRequiredModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onLogin={() => {
+          // Redirect to login with callback to this page
+          router.push(`/login?redirect=/product-detail/${id}`);
+        }}
+        onSignup={() => {
+          // Redirect to signup with callback to this page
+          router.push(`/signup?redirect=/product-detail/${id}`);
+        }}
+      />
+          <div className="max-w-[90%] mx-auto p-4 bg-white">
       <div>
         {/* Back Button */}
         <button className="mb-4 px-4 py-2 border border-gray-300 rounded text-sm text flex items-center gap-2 hover:bg-gray-50">
@@ -89,25 +140,32 @@ function ProductPage({ params }) {
         <div className="flex gap-8">
           {/* Left Side - Product Images */}
           <div className="flex-1 ">
-            <div className="flex gap-4 max-h-[600px] sticky top-16">
+            <div className="flex gap-4 h-fit sticky top-16">
               {/* Thumbnail Images */}
               <div className="flex flex-col justify-between gap-2">
-                {productImages.map((img, index) => (
-                  <div
-                    key={index}
-                    className={`w-20 h-20 border-2 rounded cursor-pointer overflow-hidden ${
-                      selectedImage === index ? "border" : "border-gray-200"
-                    }`}
-                    onClick={() => setSelectedImage(index)}
-                  >
-                    <div className="w-full h-full flex items-center justify-center"></div>
-                  </div>
-                ))}
+                {data?.images?.length > 0 &&
+                  [...data.images].map((img, index) => (
+                    <div
+                      key={index}
+                      className={`w-20 h-20 border-2 rounded cursor-pointer overflow-hidden ${
+                        selectedImage === index ? "border" : "border-gray-200"
+                      }`}
+                      onClick={() => setSelectedImage(index)}
+                    >
+                      <Image
+                        src={img}
+                        alt={`Product Image ${index + 1}`}
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
               </div>
 
               {/* Main Product Image */}
               <div className="flex-1 relative">
-                <div className=" h-full  bg-gray-200 border border-gray-200 rounded-lg overflow-hidden relative group">
+                <div className=" h-full w-fit bg-gray-200 border border-gray-200 rounded-lg overflow-hidden relative group">
                   {/* Navigation arrows */}
                   <button className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <ChevronLeft size={16} />
@@ -115,17 +173,33 @@ function ProductPage({ params }) {
                   <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <ChevronRight size={16} />
                   </button>
+
+                  {data?.images?.[selectedImage] ? (
+                    <Image
+                      src={data.images[selectedImage]}
+                      alt="Product Image"
+                      width={400}
+                      height={400}
+                      className=" h-full  bg-gray-200 border border-gray-200 rounded-lg overflow-hidden relative group"
+                    />
+                  ) : null}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Side - Product Details */}
-          <div className="flex-1 max-w-xl">
+          <div className="flex-1 max-w-xl ">
             {/* Product Title and Rating */}
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Lorem ipsum dolor sit amet
-            </h1>
+            <div className={!data?.name ? "animate-pulse" : ""}>
+              {data.name ? (
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  {data?.name}
+                </h1>
+              ) : (
+                <div className=" h-8 mb-2 w-full rounded-md bg-black/5"> </div>
+              )}
+            </div>
 
             <div className="flex items-center gap-2 mb-4">
               <div className="flex">
@@ -166,44 +240,47 @@ function ProductPage({ params }) {
             <div className="mb-6">
               <h3 className="font-semibold text-black mb-3">Select Pack</h3>
               <div className="flex gap-3">
-                {Object.entries(packs).map(([key, pack]) => (
-                  <div
-                    key={key}
-                    className={`relative flex-1 border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedPack === key
-                        ? "border-green-600 bg-green-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                    onClick={() => setSelectedPack(key)}
-                  >
+                {data?.variants?.length > 0 &&
+                  data?.variants?.map((variant, index) => (
                     <div
-                      className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${
-                        pack.color === "green"
-                          ? "bg-green-600"
-                          : pack.color === "orange"
-                          ? ""
-                          : ""
+                      key={index}
+                      className={`relative flex-1 border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                        selectedPack === variant._id
+                          ? "border-green-600 bg-green-50"
+                          : "border-gray-300 hover:border-gray-400"
                       }`}
+                      onClick={() => setSelectedPack(variant._id)}
                     >
-                      {pack.discount}
-                    </div>
-                    <div className="text-center">
-                      <div className="font-bold text-lg">{pack.name}</div>
                       <div
-                        className={`font-semibold ${
-                          selectedPack === key
-                            ? "text-green-600"
-                            : "text-gray-900"
+                        className={`absolute -top-2 -right-2 text-black text-xs px-2 py-1 rounded ${
+                          variant.color === "green"
+                            ? "bg-green-600"
+                            : variant.color === "orange"
+                            ? ""
+                            : ""
                         }`}
                       >
-                        ₹{pack.price}
+                        {variant.discount}
                       </div>
-                      <div className="text-sm text-gray-500 line-through">
-                        ₹{pack.originalPrice}
+                      <div className="text-center">
+                        <div className="font-bold text-sm text-black">
+                          {variant.title}
+                        </div>
+                        <div
+                          className={`font-semibold ${
+                            selectedPack === variant._id
+                              ? "text-green-600"
+                              : "text-gray-900"
+                          }`}
+                        >
+                          ₹{variant.price}
+                        </div>
+                        <div className="text-sm text-gray-500 line-through">
+                          ₹{variant.salePrice}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
 
@@ -231,13 +308,16 @@ function ProductPage({ params }) {
 
             {/* Add to Cart Button */}
             <div className="flex gap-2 mb-6">
-              <button className="px-4 py-3 border border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+              <button
+                onClick={handleAddToCart}
+                className="px-4 w-full py-3 border  border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              >
                 <ShoppingCart size={16} />
                 Add to Cart
               </button>
-              <button className="flex-1 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors">
+              {/* <button className="flex-1 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors">
                 Buy Now
-              </button>
+              </button> */}
             </div>
 
             {/* Expandable Sections */}
@@ -259,78 +339,77 @@ function ProductPage({ params }) {
                   />
                 </button>
                 <div
-                  className={`px-4 pb-3 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
+                  className={`px-4  text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
                     expandedSection === "details"
-                      ? "max-h-96 opacity-100"
+                      ? "max-h-96 opacity-100 py-3"
                       : "max-h-0 opacity-0"
                   } overflow-hidden`}
-                >
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                  laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-                  irure dolor in reprehenderit in voluptate velit esse cillum
-                  dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-                  cupidatat non proident, sunt in culpa qui officia deserunt
-                  mollit anim id est laborum.
-                </div>
+                  dangerouslySetInnerHTML={{
+                    __html: data.description || "",
+                  }}
+                ></div>
               </div>
 
               {/* Ingredients */}
-              <div className="border border-gray-200 rounded overflow-hidden">
-                <button
-                  onClick={() => toggleSection("ingredients")}
-                  className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
-                >
-                  <span className="font-medium text-green-700">
-                    Ingredients
-                  </span>
-                  <ChevronDown
-                    className={`text transition-transform duration-300 ${
-                      expandedSection === "ingredients" ? "rotate-180" : ""
-                    }`}
-                    size={16}
-                  />
-                </button>
-                <div
-                  className={`px-4 pb-3 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
-                    expandedSection === "ingredients"
-                      ? "max-h-96 opacity-100"
-                      : "max-h-0 opacity-0"
-                  } overflow-hidden`}
-                >
-                  Premium Kashmir Saffron, Natural extracts, Rose petals
+              {data.ingredients && (
+                <div className="border border-gray-200 rounded overflow-hidden">
+                  <button
+                    onClick={() => toggleSection("ingredients")}
+                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
+                  >
+                    <span className="font-medium text-green-700">
+                      Ingredients
+                    </span>
+                    <ChevronDown
+                      className={`text transition-transform duration-300 ${
+                        expandedSection === "ingredients" ? "rotate-180" : ""
+                      }`}
+                      size={16}
+                    />
+                  </button>
+                  <div
+                    className={`px-4  text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
+                      expandedSection === "ingredients"
+                        ? "max-h-96 opacity-100 py-3"
+                        : "max-h-0 opacity-0"
+                    } overflow-hidden`}
+                    dangerouslySetInnerHTML={{
+                      __html: data.ingredients || "",
+                    }}
+                  ></div>
                 </div>
-              </div>
+              )}
 
               {/* Benefits */}
-              <div className="border border-gray-200 rounded overflow-hidden">
-                <button
-                  onClick={() => toggleSection("benefits")}
-                  className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
-                >
-                  <span className="font-medium text-green-700">Benefits</span>
-                  <ChevronDown
-                    className={`text transition-transform duration-300 ${
-                      expandedSection === "benefits" ? "rotate-180" : ""
-                    }`}
-                    size={16}
-                  />
-                </button>
-                <div
-                  className={`px-4 pb-3 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
-                    expandedSection === "benefits"
-                      ? "max-h-96 opacity-100"
-                      : "max-h-0 opacity-0"
-                  } overflow-hidden`}
-                >
-                  Rich in antioxidants, improves mood, enhances skin health,
-                  supports digestive system
+              {data.benefits && (
+                <div className="border border-gray-200 rounded overflow-hidden">
+                  <button
+                    onClick={() => toggleSection("benefits")}
+                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
+                  >
+                    <span className="font-medium text-green-700">Benefits</span>
+                    <ChevronDown
+                      className={`text transition-transform duration-300 ${
+                        expandedSection === "benefits" ? "rotate-180" : ""
+                      }`}
+                      size={16}
+                    />
+                  </button>
+                  <div
+                    className={`px-4  text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
+                      expandedSection === "benefits"
+                        ? "max-h-96 opacity-100 py-3"
+                        : "max-h-0 opacity-0"
+                    } overflow-hidden`}
+                    dangerouslySetInnerHTML={{
+                      __html: data.benefits || "",
+                    }}
+                  ></div>
                 </div>
-              </div>
+              )}
 
               {/* How to use */}
-              <div className="border border-gray-200 rounded overflow-hidden">
+              {/* <div className="border border-gray-200 rounded overflow-hidden">
                 <button
                   onClick={() => toggleSection("usage")}
                   className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
@@ -344,16 +423,16 @@ function ProductPage({ params }) {
                   />
                 </button>
                 <div
-                  className={`px-4 pb-3 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
+                  className={`px-4 py-3 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
                     expandedSection === "usage"
                       ? "max-h-96 opacity-100"
                       : "max-h-0 opacity-0"
                   } overflow-hidden`}
                 >
-                  Add a pinch to warm milk or tea. Can be used in cooking and
-                  baking. Store in a cool, dry place.
+                    Add a pinch to warm milk or tea. Can be used in cooking and
+                    baking. Store in a cool, dry place.
                 </div>
-              </div>
+              </div> */}
 
               <div className="mt-6">
                 <h3 className="font-semibold text-black mb-3">
@@ -365,12 +444,13 @@ function ProductPage({ params }) {
           </div>
         </div>
 
-        <HowToUse />
-        <DescriptionLayout />
+        <HowToUse data={data} />
+        <DescriptionLayout data={data} />
         <ProductReview />
         <FrequentlyPurchased />
       </div>
     </div>
+    </>
   );
 }
 

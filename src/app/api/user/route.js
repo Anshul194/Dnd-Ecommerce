@@ -61,7 +61,7 @@ export async function POST(request) {
     const RoleModel = conn.models.Role || conn.model('Role', roleSchema);
     let finalTenant = tenant || null;
     let finalRole = role || null;
-
+   
     // Validate role and tenant IDs if provided
     if (role) {
       if (!mongoose.Types.ObjectId.isValid(role)) {

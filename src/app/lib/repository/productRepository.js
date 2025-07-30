@@ -1,9 +1,35 @@
 import CrudRepository from "./CrudRepository.js";
 import mongoose from 'mongoose';
 import { attributeSchema } from '../models/Attribute.js';
-
+import { variantSchema } from '../models/Variant.js'; 
 
 class ProductRepository extends CrudRepository {
+
+  // Fetch all products and attach variants with attributes to each
+  async getAll(filter = {}) {
+    try {
+      const conn = this.model.db;
+      if (!conn.models.Attribute) {
+        const Attribute = mongoose.models.Attribute || mongoose.model("Attribute", attributeSchema);
+        conn.model('Attribute', attributeSchema);
+      }
+      const populateOptions = [
+        { path: 'attributeSet.attributeId' }
+      ];
+      const products = await this.model.find(filter).populate(populateOptions);
+      const results = [];
+      for (const productDoc of products) {
+        const variants = await this.getVariantsWithAttributes(productDoc._id, conn);
+        const productObj = productDoc.toObject ? productDoc.toObject() : productDoc;
+        productObj.variants = variants;
+        results.push(productObj);
+      }
+      return results;
+    } catch (error) {
+      console.error('Repository getAll Error:', error.message);
+      throw error;
+    }
+  }
   constructor(model) {
     super(model);
     this.model = model;
