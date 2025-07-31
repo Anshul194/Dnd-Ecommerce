@@ -54,9 +54,13 @@ export async function POST(req) {
         let curr = obj;
         for (let i = 0; i < path.length - 1; i++) {
           if (curr[path[i]] === undefined) {
-            curr[path[i]] = isNaN(Number(path[i + 1])) ? {} : [];
+            curr[path[i]] = /^\d+$/.test(path[i + 1]) ? [] : {};
           }
           curr = curr[path[i]];
+        }
+        // If setting a property on an array index, always ensure it's an object
+        if (Array.isArray(curr) && typeof curr[path[path.length - 1]] !== 'object') {
+          curr[path[path.length - 1]] = {};
         }
         curr[path[path.length - 1]] = value;
       }
@@ -106,8 +110,17 @@ export async function POST(req) {
       body = await req.json();
     }
 
+    // Fix: Wrap string arrays in objects for embedded fields
+    const arrayObjectFields = ["howToUseSteps", "ingredients", "benefits", "precautions"];
+    for (const field of arrayObjectFields) {
+      if (Array.isArray(body[field]) && body[field].every(v => typeof v === "string")) {
+        body[field] = body[field].map(description => ({ description }));
+      }
+    }
+
+    console.log('Parsed product body:', JSON.stringify(body, null, 2));
     const product = await productController.create(body,conn);
-    return NextResponse.json({ success: true, product }, { status: 201 });
+    return NextResponse.json({ success: true, product}, { status: 201 });
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }

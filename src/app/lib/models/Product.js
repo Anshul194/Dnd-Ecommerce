@@ -49,6 +49,32 @@ export const productSchema = new mongoose.Schema(
       },
     ],
 
+
+    ingredients: [
+      {
+        name: String,
+        quantity: String,
+        description: String,
+        image: String,
+
+      },
+    ],
+
+    benefits: [
+      {
+        title: String,
+        description: String,
+      },
+    ],
+
+    precautions: [
+      {
+        title: String,
+        description: String,
+      },
+    ],
+    
+
     // Description Media Section
     descriptionImages: [String],
     descriptionVideo: String,
@@ -65,6 +91,12 @@ export const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    isTopRated: {
+      type: Boolean,
+      default: false,
+    },
+
     reviews: [
       {
         userId: {

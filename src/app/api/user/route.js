@@ -163,6 +163,7 @@ export async function PATCH(request) {
   }
 }
 
+
 export async function GET(request) {
   try {
     const subdomain = getSubdomain(request);
@@ -171,30 +172,29 @@ export async function GET(request) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
     const userService = new UserService(conn);
-
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+
     if (id) {
-      const result = await userService.getUserById(id);
-    
-      return NextResponse.json(result, { status: result.status });
+      // Get user by ID
+      const user = await userService.findById(id);
+      if (!user) {
+        return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
+      }
+      const userObj = user.toObject();
+      delete userObj.passwordHash;
+      return NextResponse.json({ success: true, user: userObj }, { status: 200 });
     } else {
-      const query = Object.fromEntries(searchParams.entries());
-      const result = await userService.getAllUsers(query);
-      console.log('GET /user result:', result);
-      
-      // If result is an array of documents, map to plain objects
-      const serializableResult = Array.isArray(result.body)
-        ? result.body.map(user => (user && typeof user.toObject === 'function' ? user.toObject() : user))
-        : result.body;
-      return NextResponse.json(serializableResult, { status: result.status });
+      // Get all users
+      const users = await userService.getAllUsers();
+
+      return NextResponse.json({ success: true, users: users }, { status: 200 });
     }
   } catch (err) {
     console.error('GET /user error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }
-
 export async function PUT(request) {
   try {
     const subdomain = getSubdomain(request);
