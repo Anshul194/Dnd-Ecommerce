@@ -106,7 +106,11 @@ export default function Footer() {
     }));
   };
 
-  if (pathname.includes("/signup") || pathname.includes("/login")) {
+  if (
+    pathname.includes("/signup") ||
+    pathname.includes("/login") ||
+    pathname.includes("/builder")
+  ) {
     return null; // Don't render Navbar on product detail page
   }
 

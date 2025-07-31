@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "@/axiosConfig/axiosInstance";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Async thunk to fetch attributes
 export const fetchAttributes = createAsyncThunk(

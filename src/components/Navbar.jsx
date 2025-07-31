@@ -108,7 +108,7 @@ const Navbar = () => {
     dispatch(toggleCart());
   };
 
-  if (pathname.includes("/signup") || pathname.includes("/login")) {
+  if (pathname.includes("/signup") || pathname.includes("/login") || pathname.includes("/builder")) {
     return null; // Don't render Navbar on product detail page
   }
 
