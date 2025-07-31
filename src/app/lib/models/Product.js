@@ -29,6 +29,14 @@ export const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subcategory",
     },
+
+
+searchKeywords: {
+      type: [String],
+      default: [],
+    },
+
+
     brand: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
@@ -73,7 +81,7 @@ export const productSchema = new mongoose.Schema(
         description: String,
       },
     ],
-    
+
 
     // Description Media Section
     descriptionImages: [String],

@@ -65,13 +65,19 @@ export async function POST(req) {
         curr[path[path.length - 1]] = value;
       }
       for (const [key, value] of formData.entries()) {
-        // Match keys like images[0], descriptionImages[1], howToUseSteps[0].title, etc.
+        // Match keys like images[0], descriptionImages[1], howToUseSteps[0].title, ingredients[0].image, etc.
         const arrObjMatch = key.match(/([\w]+)\[(\d+)\](?:\.([\w]+))?/);
         if (arrObjMatch) {
           const arrKey = arrObjMatch[1];
           const arrIdx = arrObjMatch[2];
           const objKey = arrObjMatch[3];
-          if (arrKey === 'images' || arrKey === 'descriptionImages') {
+          // Handle file upload for ingredients[x].image
+          if ((arrKey === 'ingredients' || arrKey === 'benefits' || arrKey === 'precautions') && objKey === 'image' && value instanceof File) {
+            if (!body[arrKey]) body[arrKey] = [];
+            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
+            const url = await saveFile(value, 'uploads/Variant');
+            body[arrKey][arrIdx][objKey] = url;
+          } else if (arrKey === 'images' || arrKey === 'descriptionImages') {
             // File upload for images/descriptionImages
             if (value instanceof File) {
               const url = await saveFile(value, 'uploads/Variant');
