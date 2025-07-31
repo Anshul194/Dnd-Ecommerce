@@ -1,89 +1,62 @@
-
-
-
-import cartRepository from '../repository/CartRepository';
-import { productSchema } from '../models/Product';
-import  { variantSchema } from '../models/Variant';
+import cartRepository from '../repository/CartRepository.js';
+import { productSchema } from '../models/Product.js';
+import { variantSchema } from '../models/Variant.js';
 import mongoose from 'mongoose';
-import Coupon from '../models/Coupon';
+import { CouponModel } from '../models/Coupon.js';
 
 class CartService {
   async getCart(userId, conn) {
-    console.log('Fetching cart for user:', conn);
+    console.log('Fetching cart for user:', userId, 'Connection:', conn.name || 'global mongoose');
     return cartRepository.getCartByUser(userId, conn);
   }
 
-
-  async addItem(userId, { product, variant, quantity, price, couponCode }, conn) {
-    // Validate product existence
+  async addItem(userId, { product, variant, quantity, price }, conn) {
+    console.log('[CartService.addItem] Validating product:', product, 'variant:', variant, 'quantity:', quantity, 'price:', price, 'Connection:', conn.name || 'global mongoose');
     const ProductModel = conn.models.Product || conn.model('Product', productSchema);
     const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
-    console.log('[CartService.addItem] Validating product:', product, 'variant:', variant, 'quantity:', quantity, 'price:', price);
-    // console.log('nm',conn)
     if (!product) throw new Error('Product is required');
     if (!mongoose.Types.ObjectId.isValid(product)) throw new Error('Invalid product ID');
-
-    // Always use ObjectId for _id query
     const productIdObj = new mongoose.Types.ObjectId(product);
-    let prod = await ProductModel.findOne({ 
-      _id: productIdObj,
-      deletedAt: null
-    });
+    const prod = await ProductModel.findOne({ _id: productIdObj, deletedAt: null });
     if (!prod) throw new Error('Product not found or has been deleted');
-
-    // If variant is provided, validate variant existence and stock
     let variantDoc = null;
     if (variant) {
-      variantDoc = await VariantModel.findById({ _id: variant });
-      if (!variantDoc) throw new Error('Variant not found');
-      if (variantDoc.productId.toString() !== product.toString()) throw new Error('Variant does not belong to product');
+      if (!mongoose.Types.ObjectId.isValid(variant)) throw new Error('Invalid variant ID');
+      variantDoc = await VariantModel.findById(variant);
+      console.log('Variant found:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
+      if (!variantDoc) throw new Error(`Variant ${variant} not found`);
+      const variantProduct = variantDoc.product || variantDoc.productId;
+      if (!variantProduct) throw new Error(`Variant ${variant} has no associated product or productId`);
+      if (variantProduct.toString() !== product.toString()) throw new Error(`Variant ${variant} does not belong to product ${product}`);
       if (quantity > variantDoc.stock) throw new Error('Not enough stock for this variant');
-      if (price !== undefined && price !== variantDoc.price && price !== variantDoc.salePrice) throw new Error('Price mismatch for variant');
-      // Inventory sync: decrement stock
+      const effectivePrice = variantDoc.price !== undefined && variantDoc.price !== null ? variantDoc.price : variantDoc.price;
+      if (price !== undefined && price !== effectivePrice) throw new Error(`Price mismatch for variant ${variant}: expected ${effectivePrice}, got ${price}`);
       variantDoc.stock -= quantity;
       await variantDoc.save();
-    } else {
-      // If no variant, check product-level stock if you have such a field (not shown in Product.js)
-      // Optionally, you can skip this or add a stock field to Product
     }
     if (quantity < 1) throw new Error('Quantity must be at least 1');
-    let cart = await cartRepository.addItem(userId, { product, variant, quantity, price }, conn);
-
-    // Coupon logic
-    if (couponCode) {
-      const coupon = await Coupon.findOne({ code: couponCode, isActive: true });
-      if (!coupon) throw new Error('Invalid or expired coupon');
-      // Example: flat or percent discount
-      let discount = 0;
-      if (coupon.type === 'percent') {
-        discount = cart.total * (coupon.value / 100);
-      } else if (coupon.type === 'flat') {
-        discount = coupon.value;
-      }
-      cart.total = Math.max(0, cart.total - discount);
-      cart.coupon = coupon._id;
-      await cart.save();
-    }
-    return cart;
+    return cartRepository.addItem(userId, { product, variant, quantity, price }, conn);
   }
 
-
   async removeItem(userId, productId, variantId, conn) {
-    // Validate product existence
+    console.log('[CartService.removeItem] Removing product:', productId, 'variant:', variantId, 'Connection:', conn.name || 'global mongoose');
     const ProductModel = conn.models.Product || conn.model('Product', productSchema);
     const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
+    if (!mongoose.Types.ObjectId.isValid(productId)) throw new Error('Invalid product ID');
     const prod = await ProductModel.findById(productId);
     if (!prod) throw new Error('Product not found');
     let removedQty = 0;
     if (variantId) {
+      if (!mongoose.Types.ObjectId.isValid(variantId)) throw new Error('Invalid variant ID');
       const variantDoc = await VariantModel.findById(variantId);
-      if (!variantDoc) throw new Error('Variant not found');
-      if (variantDoc.productId.toString() !== productId.toString()) throw new Error('Variant does not belong to product');
-      // Find cart to get quantity being removed
+      console.log('Variant found:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
+      if (!variantDoc) throw new Error(`Variant ${variantId} not found`);
+      const variantProduct = variantDoc.product || variantDoc.productId;
+      if (!variantProduct) throw new Error(`Variant ${variantId} has no associated product or productId`);
+      if (variantProduct.toString() !== productId.toString()) throw new Error(`Variant ${variantId} does not belong to product ${productId}`);
       const cart = await cartRepository.getCartByUser(userId, conn);
-      const item = cart.items.find(i => i.product.equals(productId) && i.variant && i.variant.equals(variantId));
+      const item = cart?.items.find(i => i.product.equals(productId) && i.variant && i.variant.equals(variantId));
       removedQty = item ? item.quantity : 0;
-      // Inventory sync: increment stock
       if (removedQty > 0) {
         variantDoc.stock += removedQty;
         await variantDoc.save();
@@ -92,15 +65,106 @@ class CartService {
     return cartRepository.removeItem(userId, productId, variantId, conn);
   }
 
+  async updateCartById(cartId, userId, items, couponCode, conn) {
+    console.log('[CartService.updateCartById] Updating cart:', cartId, 'for user:', userId, 'Items:', JSON.stringify(items, null, 2), 'Coupon:', couponCode, 'Connection:', conn.name || 'global mongoose');
+    const ProductModel = conn.models.Product || conn.model('Product', productSchema);
+    const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
+    const Coupon = conn.models.Coupon || conn.model('Coupon', CouponModel.schema);
+    
+    console.log('cartRepository.getCartById:', typeof cartRepository.getCartById);
+    
+    // Fetch existing cart to restore stock
+    const existingCart = await cartRepository.getCartById(cartId, userId, conn);
+    for (const item of existingCart.items) {
+      if (item.variant) {
+        const variantDoc = await VariantModel.findById(item.variant);
+        console.log('Restoring stock for variant:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
+        if (variantDoc) {
+          const variantProduct = variantDoc.product || variantDoc.productId;
+          if (!variantProduct) {
+            console.warn(`Variant ${item.variant} has no associated product or productId; skipping stock restoration`);
+            continue;
+          }
+          variantDoc.stock += item.quantity;
+          await variantDoc.save();
+        }
+      }
+    }
+
+    // Validate new items
+    for (const item of items) {
+      if (!item.product) throw new Error('Product is required');
+      if (!mongoose.Types.ObjectId.isValid(item.product)) throw new Error(`Invalid product ID: ${item.product}`);
+      const productIdObj = new mongoose.Types.ObjectId(item.product);
+      const prod = await ProductModel.findOne({ _id: productIdObj, deletedAt: null });
+      if (!prod) throw new Error(`Product ${item.product} not found or has been deleted`);
+      if (item.variant) {
+        if (!mongoose.Types.ObjectId.isValid(item.variant)) throw new Error(`Invalid variant ID: ${item.variant}`);
+        const variantDoc = await VariantModel.findById(item.variant);
+        console.log('Validating variant:', item.variant, 'Found:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
+        if (!variantDoc) throw new Error(`Variant ${item.variant} not found`);
+        const variantProduct = variantDoc.product || variantDoc.productId;
+        if (!variantProduct) throw new Error(`Variant ${item.variant} has no associated product or productId`);
+        if (variantProduct.toString() !== item.product.toString()) throw new Error(`Variant ${item.variant} does not belong to product ${item.product}`);
+        if (item.quantity > variantDoc.stock) throw new Error(`Not enough stock for variant ${item.variant}`);
+        const effectivePrice = variantDoc.salePrice !== undefined && variantDoc.salePrice !== null ? variantDoc.salePrice : variantDoc.price;
+        if (item.price !== undefined && item.price !== effectivePrice) throw new Error(`Price mismatch for variant ${item.variant}: expected ${effectivePrice}, got ${item.price}`);
+        variantDoc.stock -= item.quantity;
+        await variantDoc.save();
+      }
+      if (item.quantity < 1) throw new Error('Quantity must be at least 1');
+      if (item.price == null || isNaN(item.price) || item.price < 0) throw new Error('Price must be a non-negative number');
+    }
+
+    // Update cart
+    const update = {
+      items: items.map(item => ({
+        product: item.product,
+        variant: item.variant || null,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      total: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      coupon: null,
+      discount: 0
+    };
+
+    let cart = await cartRepository.updateCartById(cartId, userId, update, conn);
+    
+    // Apply coupon if provided
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode, isActive: true });
+      console.log('Coupon found:', coupon ? coupon._id.toString() : 'null');
+      if (!coupon) throw new Error('Invalid or expired coupon');
+      let discount = 0;
+      if (coupon.type === 'percent') {
+        discount = cart.total * (coupon.value / 100);
+      } else if (coupon.type === 'flat') {
+        discount = coupon.value;
+      }
+      cart.total = Math.max(0, cart.total - discount);
+      cart.coupon = coupon._id;
+      cart.discount = discount;
+      await cart.save();
+    }
+    return cart;
+  }
+
   async clearCart(userId, conn) {
-    // Inventory sync: restore all variant stocks
+    console.log('[CartService.clearCart] Clearing cart for user:', userId, 'Connection:', conn.name || 'global mongoose');
     const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
     const cart = await cartRepository.getCartByUser(userId, conn);
     if (cart && cart.items) {
       for (const item of cart.items) {
         if (item.variant) {
           const variantDoc = await VariantModel.findById(item.variant);
+          console.log('Restoring stock for variant:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
           if (variantDoc) {
+            const variantProduct = variantDoc.product || variantDoc.productId;
+            if (!variantProduct) {
+              console.warn(`Variant ${item.variant} has no associated product or productId; skipping stock restoration`);
+              continue;
+            }
             variantDoc.stock += item.quantity;
             await variantDoc.save();
           }

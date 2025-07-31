@@ -25,9 +25,9 @@ export const productSchema = new mongoose.Schema(
       required: true,
     },
     subcategory: {
-      type:String
-      // type: mongoose.Schema.Types.ObjectId,
-      // ref: "Subcategory",
+      // type:String
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subcategory",
     },
     brand: {
       type: mongoose.Schema.Types.ObjectId,
@@ -129,5 +129,6 @@ productSchema.pre("findOneAndUpdate", function (next) {
   next();
 });
 
-export default mongoose.models.Product ||
-  mongoose.model("Product", productSchema);
+export const ProductSchema = productSchema;
+export const ProductModel = mongoose.models.Product || mongoose.model('Product', productSchema);
+export default ProductModel;

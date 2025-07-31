@@ -1,49 +1,130 @@
-import cartRepository from '../repository/CartRepository';
-import OrderRepo from '../repository/OrderRepository';
-import { productSchema } from '../models/Product';
-import { variantSchema } from '../models/Variant';
 import mongoose from 'mongoose';
-import Coupon from '../models/Coupon';
-import couponRepository from '../repository/CouponRepository';
+import orderRepository from '../repository/OrderRepository.js';
+import CouponService from './CouponService.js';
 
 class OrderService {
-  async placeOrder(orderData, Order, conn) {
+  constructor(orderRepository, couponService) {
+    this.orderRepository = orderRepository;
+    this.couponService = couponService;
+  }
+
+  async createOrder(data, conn) {
     try {
-      const session = await conn.startSession();
-      session.startTransaction();
+      const {
+        userId,
+        items,
+        couponCode,
+        shippingAddress,
+        billingAddress,
+        paymentDetails,
+        deliveryOption
+      } = data;
 
-        const coupon = await this.couponRepository.findByCode(code);
-        if (!coupon) {
-            throw new Error('Invalid Coupon');
+      // Validate required fields
+      if (!userId || !items || !items.length || !shippingAddress || !billingAddress || !paymentDetails || !deliveryOption) {
+        throw new Error('All required fields must be provided');
+      }
+
+      // Validate userId
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error(`Invalid userId: ${userId}`);
+      }
+
+      // Validate delivery option
+      const validDeliveryOptions = ['standard_delivery', 'express_delivery', 'overnight_delivery'];
+      if (!validDeliveryOptions.includes(deliveryOption)) {
+        throw new Error('Invalid delivery option');
+      }
+
+      // Validate items
+      for (const item of items) {
+        if (!item.productId || !item.quantity || item.quantity <= 0) {
+          throw new Error('Each item must have a valid productId and positive quantity');
+        }
+        if (item.variantId && !mongoose.Types.ObjectId.isValid(item.variantId)) {
+          throw new Error(`Invalid variantId: ${item.variantId}`);
+        }
+      }
+
+      // Validate payment details (basic format)
+      if (!/^\d{16}$/.test(paymentDetails.cardNumber)) {
+        throw new Error('Card number must be 16 digits');
+      }
+      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(paymentDetails.expiryDate)) {
+        throw new Error('Expiry date must be in MM/YY format');
+      }
+      if (!/^\d{3}$/.test(paymentDetails.cvv)) {
+        throw new Error('CVV must be 3 digits');
+      }
+
+      // Calculate subtotal
+      let subtotal = 0;
+      const orderItems = [];
+      for (const item of items) {
+        const { productId, variantId, quantity } = item;
+        let price = 0;
+
+        if (variantId) {
+          const variant = await this.orderRepository.findVariantById(variantId);
+          price = variant.price;
+        } else {
+          const product = await this.orderRepository.findProductById(productId);
+          price = product.price;
         }
 
-        // Check expiration
-        if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
-            throw new Error('Coupon has expired');
+        orderItems.push({
+          product: productId,
+          variant: variantId || null,
+          quantity,
+          price
+        });
+        subtotal += price * quantity;
+      }
+
+      // Apply coupon if provided
+      let discount = 0;
+      let couponId = null;
+      if (couponCode) {
+        const couponResult = await this.couponService.applyCoupon({ code: couponCode, cartValue: subtotal }, conn);
+        if (!couponResult.success) {
+          throw new Error(couponResult.message);
         }
+        discount = couponResult.data.discount;
+        couponId = couponResult.data.coupon._id;
+      }
 
-        // Check usage limit
-        if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
-            throw new Error('Coupon usage limit exceeded');
-        }
+      // Calculate total
+      const total = subtotal - discount;
 
-        // Check minimum cart value
-        if (cart.total < coupon.minCartValue) {
-            throw new Error(`Cart value must be at least ${coupon.minCartValue}`);
-        }
+      // Create order
+      const orderData = {
+        user: userId,
+        items: orderItems,
+        total,
+        coupon: couponId,
+        discount,
+        shippingAddress,
+        billingAddress,
+        paymentDetails,
+        deliveryOption,
+        status: 'pending'
+      };
 
-        const order = await OrderRepo.placeOrder(orderData, Order, conn);
-      await cartRepository.clearCart(orderData.userId, conn);
+      const order = await this.orderRepository.create(orderData);
 
-      await session.commitTransaction();
-      return order;
+      return {
+        success: true,
+        message: 'Order placed successfully',
+        data: { order }
+      };
     } catch (error) {
-      await session.abortTransaction();
-      throw new Error('Failed to place order');
-    } finally {
-      session.endSession();
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
     }
   }
 }
 
-export default new OrderService();
+export default OrderService;
