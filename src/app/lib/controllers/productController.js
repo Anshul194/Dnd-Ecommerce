@@ -256,8 +256,24 @@ async getAll(query, conn) {
       if (Array.isArray(body.attributeSet)) {
         for (const attr of body.attributeSet) {
           if (attr.attributeId) {
-            const Attribute =mongoose.models.Attribute || mongoose.model("Attribute",attributeSchema);
+            const Attribute = conn.models.Attribute || conn.model("Attribute", attributeSchema);
+            console?.log(`Checking if attribute exists: ${Attribute}`);
+            if (!Attribute) {
+              return { success: false, message: "Attribute model not found", data: null };
+            }
+            // check type 
+          console?.log(`Checking attributeId type: ${typeof attr.attributeId}`);
+
+          if (typeof attr.attributeId == "string" && mongoose.Types.ObjectId.isValid(attr.attributeId)) {
+            console?.log(`Converting attributeId to ObjectId: ${attr.attributeId}`);
+            // Convert string to ObjectId
+            attr.attributeId = new mongoose.Types.ObjectId(attr.attributeId);
+          }
+
+          console?.log(`Checking if attribute exists in DB: ${typeof attr.attributeId}, ${attr.attributeId}`);
+
             const attrExists = await Attribute.findById(attr.attributeId);
+            console?.log(`Attribute exists: ${attrExists}`);
             if (!attrExists) return { success: false, message: `AttributeId ${attr.attributeId} does not exist`, data: null };
           }
         }
