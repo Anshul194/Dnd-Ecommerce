@@ -7,22 +7,23 @@ import TestimonialSlider from "@/components/homepage/TestimonialSlider";
 import TryItYourselfSlider from "@/components/homepage/TryItYourselfSliderj";
 import ValidatedSection from "@/components/homepage/ValidatedSection";
 import WhyUs from "@/components/homepage/WhyUs";
-
+import BlogSection from "@/components/BlogSection";
 export default function HomePage() {
   return (
     <main>
-      <LandingBanner/>
+      <LandingBanner />
       <div className="max-w-7xl mx-auto px-4">
-      <Categories/>
+        <Categories />
       </div>
-      <SeasonSaleBanner/>
+      <SeasonSaleBanner />
       <div className="max-w-7xl mx-auto px-4">
-      <TryItYourselfSlider/>
-      <WhyUs/>
-      <TeaPartyBanner/>
-      <TestimonialSlider/>
-      <FAQAccordion/>
-      <ValidatedSection/>
+        <TryItYourselfSlider />
+        <WhyUs />
+        <TeaPartyBanner />
+        <TestimonialSlider />
+        <BlogSection />
+        <FAQAccordion />
+        <ValidatedSection />
       </div>
     </main>
   );

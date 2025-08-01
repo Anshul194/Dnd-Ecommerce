@@ -78,14 +78,10 @@ const SearchPage = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
               <div className="mb-2 sm:mb-0">
                 <p className="text-gray-600 text-sm">
-                  Showing{" "}
-                  {/* <span className="font-semibold">
-                    {startItem} - {endItem}
-                  </span>{" "} */}
-                  items out of{" "}
-                  {/* <span className="font-semibold">{totalItems}</span> possible */}
-                  search results for
-                  <span className="font-semibold text-black"> "Lorem"</span>
+                  Results for
+                  <span className="font-semibold ml-2 text-black">
+                    {products.length}
+                  </span>
                 </p>
               </div>
 
