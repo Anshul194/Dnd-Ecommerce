@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,7 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import AuthRequiredModal from "@/components/AuthRequiredModal";
 import useAuthRedirect from "@/hooks/useAuthRedirect";
-
 
 const ProductCard = ({ product }) => {
   const router = useRouter();
@@ -40,7 +38,6 @@ const ProductCard = ({ product }) => {
       setShowAuthModal(false);
     }
   }, [isAuthenticated]);
-
 
   return (
     <>
@@ -75,8 +72,8 @@ const ProductCard = ({ product }) => {
             {/* Product Image */}
             <div className="flex h-40  justify-center items-center">
               <Image
-                src={product.thumbnail || "/api/placeholder/160/120"}
-                alt={product.name}
+                src={product?.thumbnail?.url || "/api/placeholder/160/120"}
+                alt={product?.thumbnail?.alt || product.name}
                 width={160}
                 height={120}
                 className="object-cover h-full w-full"
@@ -88,7 +85,8 @@ const ProductCard = ({ product }) => {
           <div className="p-2">
             {/* Title */}
             <h3 className="text-xs bg-[#F1FAEE] w-fit p-1 px-3 text poppins-medium  mb-1">
-              {product.name.slice(0, 29)} {product.name.length > 29 ? "..." : ""}
+              {product.name.slice(0, 27)}{" "}
+              {product.name.length > 29 ? "..." : ""}
             </h3>
 
             {/* Description */}
@@ -100,24 +98,34 @@ const ProductCard = ({ product }) => {
             ></div>
 
             {/* Price and Rating */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-start mb-4">
               <div className="flex flex-col">
-                {product?.variants[0]?.salePrice && product?.variants[0]?.price ? (
+                {product?.variants[0]?.salePrice &&
+                product?.variants[0]?.price ? (
                   <>
                     <span className="text-lg font-bold text-gray-800">
                       Rs {product?.variants[0]?.salePrice}
                     </span>
-                    <span className="text-xs text-gray-400 line-through">
+                    <span className="text-xs text-gray-400 h-5  line-through">
                       Rs {product?.variants[0]?.price}
                     </span>
                   </>
                 ) : (
-                  <span className="text-lg font-bold text-gray-800">
-                    Rs {product?.variants[0]?.salePrice || product?.variants[0]?.price || 200}
-                  </span>
+                  <>
+                    {" "}
+                    <span className="text-lg font-bold text-gray-800">
+                      Rs{" "}
+                      {product?.variants[0]?.salePrice ||
+                        product?.variants[0]?.price ||
+                        200}
+                    </span>
+                    <span className="text-lg h-5  font-bold text-gray-800">
+                      {product?.variants[0]?.salePrice}
+                    </span>
+                  </>
                 )}
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 pt-1">
                 <span className="text-orange-400 text-sm">⭐</span>
                 <span className="text-sm font-medium text-gray-700">
                   {product.rating || 4.5} ({product.reviewCount || 1} reviews)

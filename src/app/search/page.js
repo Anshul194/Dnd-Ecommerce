@@ -33,23 +33,34 @@ const SearchPage = () => {
   };
 
   useEffect(() => {
-    if (products.length === 0) {
-      const payload = {};
-      if (paramCategories) {
-        payload.category = paramCategories;
-      }
-      if (minPrice) {
-        payload.minPrice = minPrice;
-      }
-      if (maxPrice) {
-        payload.maxPrice = maxPrice;
-      }
-      if (paramSearchTerm) {
-        payload.searchTerm = paramSearchTerm;
-      }
-      dispatch(fetchProducts(payload));
+    const payload = {};
+    if (paramCategories) {
+      payload.category = paramCategories;
     }
-  }, []);
+    if (minPrice) {
+      payload.minPrice = minPrice;
+    }
+    if (maxPrice) {
+      payload.maxPrice = maxPrice;
+    }
+    if (paramSearchTerm) {
+      payload.searchTerm = paramSearchTerm;
+    }
+    payload.page = currentPage;
+    payload.sortBy = sortBy;
+    payload.limit = 20; // Adjust as needed
+
+    dispatch(fetchProducts(payload));
+  }, [
+    paramCategories,
+    minPrice,
+    maxPrice,
+    paramSearchTerm,
+    currentPage,
+    sortBy,
+    dispatch,
+    products.length,
+  ]);
 
   console.log("Products:", products);
   return (
@@ -100,10 +111,10 @@ const SearchPage = () => {
             </div>
 
             {/* No Results */}
-            {filteredProducts.length === 0 && (
+            {products.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">
-                  {/* No products found matching your criteria. */}
+                  No products found matching your criteria.
                 </p>
               </div>
             )}

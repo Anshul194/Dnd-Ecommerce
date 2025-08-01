@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "@/app/store/slices/categorySlice";
 import CartSidebar from "./CartSidebar";
-import { toggleCart } from "@/app/store/slices/cartSlice";
+import { getCartItems, toggleCart } from "@/app/store/slices/cartSlice";
 import { usePathname } from "next/navigation";
 
 const Navbar = () => {
@@ -102,13 +102,18 @@ const Navbar = () => {
     if (!categories || categories.length === 0) {
       dispatch(fetchCategories());
     }
+    dispatch(getCartItems());
   }, []);
 
   const handelCartToggle = () => {
     dispatch(toggleCart());
   };
 
-  if (pathname.includes("/signup") || pathname.includes("/login") || pathname.includes("/builder")) {
+  if (
+    pathname.includes("/signup") ||
+    pathname.includes("/login") ||
+    pathname.includes("/builder")
+  ) {
     return null; // Don't render Navbar on product detail page
   }
 
