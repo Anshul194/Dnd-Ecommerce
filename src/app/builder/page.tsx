@@ -45,7 +45,9 @@ import {
   COMPONENT_TYPES,
   COMPONENT_VARIANTS,
   ComponentRenderer,
-} from "./componentVariants";
+} from "./ComponentVariants";
+import { fetchProductById } from "../store/slices/productSlice";
+import { useDispatch } from "react-redux";
 
 // Sample product data
 const sampleProduct = {
@@ -134,7 +136,7 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       style={style}
-      className={`${COLUMN_WIDTHS[width].flex} ${
+      className={`${COLUMN_WIDTHS[width]?.flex} ${
         isPreviewMode ? "min-h-0" : "min-h-96"
       } ${
         isPreviewMode ? "" : "p-2 border-2 border-dashed"
@@ -1476,13 +1478,16 @@ export default function ProductPageBuilder() {
   }, [sections]);
 
   const [componentSettings, setComponentSettings] = useState({});
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const isPreviewMode = true;
   const [draggedComponent, setDraggedComponent] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [columnGap, setColumnGap] = useState(2); // Gap between columns (0-8)
   const [componentGap, setComponentGap] = useState(2); // Gap between components (0-8)
   const [rowGap, setRowGap] = useState(4); // Gap between rows (0-8)
-
+  const [product, setProduct] = useState(null);
+  const [templateData, setTemplateData] = useState(null);
+  const [templateId, setTemplateId] = useState("688b2517677656ae9f8a73aa"); // Default template ID
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   // Use ref to track current sections for drag operations
   const sectionsRef = useRef(sections);
 
@@ -2095,6 +2100,285 @@ export default function ProductPageBuilder() {
     alert("Page configuration saved! Check console for details.");
   }, [sections, componentSettings, columnGap, componentGap, rowGap]);
 
+  const dispatch = useDispatch();
+  const getProductData = useCallback(async () => {
+    try {
+      const response = await dispatch(
+        fetchProductById("vedicroots-ginger-green-tea")
+      );
+
+      console.log("Fetched Product Data:", response.payload);
+      setProduct(response.payload);
+    } catch (error) {
+      console.error("Error fetching product data:", error);
+    }
+  }, [dispatch]);
+
+  // Function to transform template data to sections format
+  const transformTemplateToSections = useCallback((template) => {
+    console.log("transformTemplateToSections called with:", template);
+
+    if (!template || !template.columns) {
+      console.error("Invalid template data:", template);
+      console.error("Template is null:", !template);
+      console.error("Template columns missing:", template && !template.columns);
+      return;
+    }
+
+    console.log("Template has", template.columns.length, "columns");
+    template.columns.forEach((col, index) => {
+      console.log(`Column ${index}:`, col);
+      console.log(`Column ${index} components:`, col.components);
+    });
+
+    // Helper function to map template component types to existing component types
+    const mapTemplateComponentType = (templateType) => {
+      const typeMapping = {
+        gallery: COMPONENT_TYPES.IMAGES,
+        images: COMPONENT_TYPES.IMAGES,
+        carousel: COMPONENT_TYPES.IMAGES,
+        heading: COMPONENT_TYPES.DETAILS,
+        price: COMPONENT_TYPES.DETAILS,
+        rating: COMPONENT_TYPES.DETAILS,
+        details: COMPONENT_TYPES.DETAILS,
+        description: COMPONENT_TYPES.DETAILS,
+        text: COMPONENT_TYPES.DETAILS,
+        quantity: COMPONENT_TYPES.HOW_TO_USE,
+        button: COMPONENT_TYPES.HOW_TO_USE,
+        howToUse: COMPONENT_TYPES.HOW_TO_USE,
+        instructions: COMPONENT_TYPES.HOW_TO_USE,
+        actions: COMPONENT_TYPES.HOW_TO_USE,
+        reviews: COMPONENT_TYPES.REVIEWS,
+        testimonial: COMPONENT_TYPES.REVIEWS,
+        stars: COMPONENT_TYPES.REVIEWS,
+      };
+      return typeMapping[templateType] || COMPONENT_TYPES.DETAILS;
+    };
+
+    // Helper function to get component title based on type
+    const getComponentTitle = (templateType) => {
+      const titleMapping = {
+        gallery: "Product Images",
+        images: "Product Images",
+        carousel: "Product Images",
+        heading: "Product Details",
+        price: "Product Details",
+        rating: "Product Details",
+        details: "Product Details",
+        description: "Product Details",
+        text: "Product Details",
+        quantity: "How to Use",
+        button: "How to Use",
+        howToUse: "How to Use",
+        instructions: "How to Use",
+        actions: "How to Use",
+        reviews: "Reviews",
+        testimonial: "Reviews",
+        stars: "Reviews",
+      };
+      return titleMapping[templateType] || "Product Details";
+    };
+
+    // Update gaps from template
+    setColumnGap(Math.min(Math.max(template.columnGap || 20, 0) / 4, 8)); // Convert px to tailwind scale
+    setComponentGap(Math.min(Math.max(template.componentGap || 16, 0) / 4, 8));
+    setRowGap(Math.min(Math.max(template.rowGap || 24, 0) / 4, 8));
+
+    // Create new section based on template
+    const newSection = {
+      id: `section-template-${Date.now()}`,
+      type: "columns",
+      order: 0,
+      columns: template.columns.map((templateColumn, index) => ({
+        id: `column-template-${index + 1}`,
+        width: Math.ceil((templateColumn.columnWidth || 33) / 33), // Convert percentage to 1-3 scale
+        components: templateColumn.components.map(
+          (templateComponent, compIndex) => ({
+            id: `component-template-${index}-${compIndex}`,
+            type: mapTemplateComponentType(templateComponent.componentType),
+            title: getComponentTitle(templateComponent.componentType),
+            span: Math.min(
+              Math.max(
+                Math.ceil((templateComponent.componentSpan || 12) / 4),
+                1
+              ),
+              3
+            ), // Convert 12-grid to 3-grid
+            order: templateComponent.sortOrder || compIndex,
+            templateSettings: templateComponent.settings || {},
+            isVisible: templateComponent.isVisible !== false,
+            variant: templateComponent.componentVariant || "default",
+          })
+        ),
+      })),
+    };
+
+    // Replace current sections with template-based section
+    console.log("New section created:", newSection);
+    setSections([newSection]);
+    console.log("Sections updated with template data");
+
+    // Set component settings based on template
+    const newComponentSettings = {};
+    template.columns.forEach((templateColumn, columnIndex) => {
+      templateColumn.components.forEach((templateComponent, compIndex) => {
+        const componentId = `component-template-${columnIndex}-${compIndex}`;
+        newComponentSettings[componentId] = {
+          variant: templateComponent.componentVariant || "default",
+          ...templateComponent.settings,
+        };
+      });
+    });
+    console.log("New component settings:", newComponentSettings);
+    setComponentSettings(newComponentSettings);
+  }, []);
+
+  // Function to fetch template data from API
+  const fetchTemplateData = useCallback(
+    async (templateId) => {
+      setIsLoadingTemplate(true);
+      try {
+        const response = await fetch(`/api/template/${templateId}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch template: ${response.statusText}`);
+        }
+        const templateData = await response.json();
+        console.log("Fetched Template Data:", templateData);
+        console.log("Template data type:", typeof templateData);
+        console.log("Template columns:", templateData?.columns);
+        console.log(
+          "Template structure:",
+          JSON.stringify(templateData, null, 2)
+        );
+        setTemplateData(templateData);
+
+        // Check if templateData has the expected structure
+        if (templateData && templateData.data) {
+          // If API returns data wrapped in a 'data' property
+          transformTemplateToSections(templateData.data);
+        } else if (templateData) {
+          // If API returns template data directly
+          transformTemplateToSections(templateData);
+        } else {
+          console.error("Template data is null or undefined");
+          alert("Invalid template data received");
+        }
+      } catch (error) {
+        console.error("Error fetching template data:", error);
+        alert("Failed to load template. Please try again.");
+      } finally {
+        setIsLoadingTemplate(false);
+      }
+    },
+    [transformTemplateToSections]
+  );
+
+  // Function to load template (can be called from UI)
+  const loadTemplate = useCallback(() => {
+    if (templateId) {
+      fetchTemplateData(templateId);
+    } else {
+      alert("Please enter a template ID");
+    }
+  }, [templateId, fetchTemplateData]);
+
+  // Test function to load mock template data for debugging
+  const loadMockTemplate = useCallback(() => {
+    const mockTemplateData = {
+      productId: 67890,
+      layoutId: 2,
+      layoutName: "Advanced Product Layout",
+      totalColumns: 3,
+      columnGap: 30,
+      componentGap: 20,
+      rowGap: 30,
+      columns: [
+        {
+          columnIndex: 0,
+          columnWidth: 50,
+          columnTitle: "Product Gallery",
+          components: [
+            {
+              componentType: "gallery",
+              componentVariant: "carousel",
+              componentSpan: 12,
+              sortOrder: 1,
+              isVisible: true,
+              settings: {
+                autoplay: true,
+                showThumbnails: true,
+                transition: "slide",
+              },
+            },
+          ],
+        },
+        {
+          columnIndex: 1,
+          columnWidth: 30,
+          columnTitle: "Product Details",
+          components: [
+            {
+              componentType: "heading",
+              componentVariant: "h1",
+              componentSpan: 12,
+              sortOrder: 1,
+              isVisible: true,
+              settings: {
+                fontSize: "28px",
+                fontWeight: "bold",
+                margin: "0 0 16px 0",
+              },
+            },
+            {
+              componentType: "price",
+              componentVariant: "standard",
+              componentSpan: 12,
+              sortOrder: 2,
+              isVisible: true,
+              settings: {
+                currency: "USD",
+                showDiscount: true,
+                fontSize: "24px",
+              },
+            },
+          ],
+        },
+        {
+          columnIndex: 2,
+          columnWidth: 20,
+          columnTitle: "Actions",
+          components: [
+            {
+              componentType: "button",
+              componentVariant: "primary",
+              componentSpan: 12,
+              sortOrder: 1,
+              isVisible: true,
+              settings: {
+                text: "Add to Cart",
+                size: "large",
+                fullWidth: true,
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    console.log("Loading mock template data:", mockTemplateData);
+    setTemplateData(mockTemplateData);
+    transformTemplateToSections(mockTemplateData);
+  }, [transformTemplateToSections]);
+
+  useEffect(() => {
+    getProductData();
+    // Auto-load template on page load
+    // setIsPreviewMode(true); // Always start in preview mode
+    if (templateId) {
+      fetchTemplateData(templateId);
+    }
+  }, [getProductData, templateId, fetchTemplateData]);
+
   return (
     <div
       className={`min-h-screen ${
@@ -2188,8 +2472,40 @@ export default function ProductPageBuilder() {
                   </button>
                 </>
               )}
-              <button
-                onClick={() => setIsPreviewMode(!isPreviewMode)}
+              {/* Template Loading Controls */}
+              <div className="flex items-center gap-2 border-l pl-4">
+                <input
+                  type="text"
+                  value={templateId}
+                  onChange={(e) => setTemplateId(e.target.value)}
+                  placeholder="Template ID"
+                  className="text-sm border border-gray-300 rounded px-2 py-1 w-40"
+                  disabled={isLoadingTemplate}
+                />
+                <button
+                  onClick={loadTemplate}
+                  disabled={isLoadingTemplate || !templateId}
+                  className="flex items-center gap-2 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  title="Load template from API"
+                >
+                  {isLoadingTemplate ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Layout size={16} />
+                  )}
+                  {isLoadingTemplate ? "Loading..." : "Load Template"}
+                </button>
+                <button
+                  onClick={loadMockTemplate}
+                  className="flex items-center gap-2 px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+                  title="Load mock template for testing"
+                >
+                  <Layout size={16} />
+                  Test Mock
+                </button>
+              </div>
+              {/* <button
+                // onClick={() => setIsPreviewMode(!isPreviewMode)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   isPreviewMode
                     ? "bg-gray-200 text-gray-800"
@@ -2205,7 +2521,7 @@ export default function ProductPageBuilder() {
               >
                 <Save size={20} />
                 Save
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -2259,7 +2575,7 @@ export default function ProductPageBuilder() {
                             )}
                             <ComponentRenderer
                               component={row.component}
-                              product={sampleProduct}
+                              product={product}
                               settings={componentSettings}
                               onUpdateSettings={updateComponentSettings}
                               onUpdateSpan={updateComponentSpan}
@@ -2346,7 +2662,7 @@ export default function ProductPageBuilder() {
                                     )}
                                     <ComponentRenderer
                                       component={component}
-                                      product={sampleProduct}
+                                      product={product}
                                       settings={componentSettings}
                                       onUpdateSettings={updateComponentSettings}
                                       onUpdateSpan={updateComponentSpan}
