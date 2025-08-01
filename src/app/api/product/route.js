@@ -54,20 +54,30 @@ export async function POST(req) {
         let curr = obj;
         for (let i = 0; i < path.length - 1; i++) {
           if (curr[path[i]] === undefined) {
-            curr[path[i]] = isNaN(Number(path[i + 1])) ? {} : [];
+            curr[path[i]] = /^\d+$/.test(path[i + 1]) ? [] : {};
           }
           curr = curr[path[i]];
+        }
+        // If setting a property on an array index, always ensure it's an object
+        if (Array.isArray(curr) && typeof curr[path[path.length - 1]] !== 'object') {
+          curr[path[path.length - 1]] = {};
         }
         curr[path[path.length - 1]] = value;
       }
       for (const [key, value] of formData.entries()) {
-        // Match keys like images[0], descriptionImages[1], howToUseSteps[0].title, etc.
+        // Match keys like images[0], descriptionImages[1], howToUseSteps[0].title, ingredients[0].image, etc.
         const arrObjMatch = key.match(/([\w]+)\[(\d+)\](?:\.([\w]+))?/);
         if (arrObjMatch) {
           const arrKey = arrObjMatch[1];
           const arrIdx = arrObjMatch[2];
           const objKey = arrObjMatch[3];
-          if (arrKey === 'images' || arrKey === 'descriptionImages') {
+          // Handle file upload for ingredients[x].image
+          if ((arrKey === 'ingredients' || arrKey === 'benefits' || arrKey === 'precautions') && objKey === 'image' && value instanceof File) {
+            if (!body[arrKey]) body[arrKey] = [];
+            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
+            const url = await saveFile(value, 'uploads/Variant');
+            body[arrKey][arrIdx][objKey] = url;
+          } else if (arrKey === 'images' || arrKey === 'descriptionImages') {
             // File upload for images/descriptionImages
             if (value instanceof File) {
               const url = await saveFile(value, 'uploads/Variant');
@@ -106,8 +116,17 @@ export async function POST(req) {
       body = await req.json();
     }
 
+    // Fix: Wrap string arrays in objects for embedded fields
+    const arrayObjectFields = ["howToUseSteps", "ingredients", "benefits", "precautions"];
+    for (const field of arrayObjectFields) {
+      if (Array.isArray(body[field]) && body[field].every(v => typeof v === "string")) {
+        body[field] = body[field].map(description => ({ description }));
+      }
+    }
+
+    console.log('Parsed product body:', JSON.stringify(body, null, 2));
     const product = await productController.create(body,conn);
-    return NextResponse.json({ success: true, product }, { status: 201 });
+    return NextResponse.json({ success: true, product}, { status: 201 });
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }

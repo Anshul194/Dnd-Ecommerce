@@ -3,12 +3,45 @@ import { attributeSchema } from '../models/Attribute.js';
 import mongoose from 'mongoose';
 
 
+function normalizeProductBody(body) {
+  // Parse JSON arrays/objects if sent as strings (from FormData)
+  const arrayFields = [
+    "howToUseSteps",
+    "ingredients",
+    "benefits",
+    "precautions",
+    "attributeSet",
+    "frequentlyPurchased",
+    "highlights"
+  ];
+  arrayFields.forEach((field) => {
+    if (typeof body[field] === "string") {
+      try {
+        body[field] = JSON.parse(body[field]);
+      } catch {
+        // fallback: wrap single value in array of object if needed
+        if (["howToUseSteps", "ingredients", "benefits", "precautions"].includes(field)) {
+          body[field] = [ { description: body[field] } ];
+        } else {
+          body[field] = [body[field]];
+        }
+      }
+    }
+  });
+  // Convert boolean fields
+  if (typeof body.isTopRated === "string") {
+    body.isTopRated = body.isTopRated === "true";
+  }
+  return body;
+}
+
 class ProductController {
   constructor(service) {
     this.service = service;
   }
 
   async create(body, conn) {
+    body = normalizeProductBody(body);
     try {
       // Basic validation
       console.log("Creating product with body:", conn);
@@ -163,6 +196,7 @@ async getAll(query, conn) {
   }
 
   async update(id, body, conn) {
+    body = normalizeProductBody(body);
     try {
       // Check if product exists
       const existing = await this.service.getProductById(id, conn);

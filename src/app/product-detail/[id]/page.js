@@ -351,37 +351,33 @@ function ProductPage({ params }) {
               </div>
 
               {/* Ingredients */}
-              {data.ingredients && (
+              {/* Ingredients Accordion */}
+              {Array.isArray(data.ingredients) && data.ingredients.length > 0 && (
                 <div className="border border-gray-200 rounded overflow-hidden">
                   <button
                     onClick={() => toggleSection("ingredients")}
                     className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
                   >
-                    <span className="font-medium text-green-700">
-                      Ingredients
-                    </span>
+                    <span className="font-medium text-green-700">Ingredients</span>
                     <ChevronDown
-                      className={`text transition-transform duration-300 ${
-                        expandedSection === "ingredients" ? "rotate-180" : ""
-                      }`}
+                      className={`text transition-transform duration-300 ${expandedSection === "ingredients" ? "rotate-180" : ""}`}
                       size={16}
                     />
                   </button>
                   <div
-                    className={`px-4  text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
-                      expandedSection === "ingredients"
-                        ? "max-h-96 opacity-100 py-3"
-                        : "max-h-0 opacity-0"
-                    } overflow-hidden`}
-                    dangerouslySetInnerHTML={{
-                      __html: data.ingredients || "",
-                    }}
-                  ></div>
+                    className={`px-4 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${expandedSection === "ingredients" ? "max-h-96 opacity-100 py-3" : "max-h-0 opacity-0"} overflow-hidden`}
+                  >
+                    <ul className="list-disc ml-4">
+                      {data.ingredients.map((item, idx) => (
+                        <li key={item._id || idx}>{item.description}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
 
-              {/* Benefits */}
-              {data.benefits && (
+              {/* Benefits Accordion */}
+              {Array.isArray(data.benefits) && data.benefits.length > 0 && (
                 <div className="border border-gray-200 rounded overflow-hidden">
                   <button
                     onClick={() => toggleSection("benefits")}
@@ -389,27 +385,49 @@ function ProductPage({ params }) {
                   >
                     <span className="font-medium text-green-700">Benefits</span>
                     <ChevronDown
-                      className={`text transition-transform duration-300 ${
-                        expandedSection === "benefits" ? "rotate-180" : ""
-                      }`}
+                      className={`text transition-transform duration-300 ${expandedSection === "benefits" ? "rotate-180" : ""}`}
                       size={16}
                     />
                   </button>
                   <div
-                    className={`px-4  text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
-                      expandedSection === "benefits"
-                        ? "max-h-96 opacity-100 py-3"
-                        : "max-h-0 opacity-0"
-                    } overflow-hidden`}
-                    dangerouslySetInnerHTML={{
-                      __html: data.benefits || "",
-                    }}
-                  ></div>
+                    className={`px-4 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${expandedSection === "benefits" ? "max-h-96 opacity-100 py-3" : "max-h-0 opacity-0"} overflow-hidden`}
+                  >
+                    <ul className="list-disc ml-4">
+                      {data.benefits.map((item, idx) => (
+                        <li key={item._id || idx}>{item.description}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Precautions Accordion */}
+              {Array.isArray(data.precautions) && data.precautions.length > 0 && (
+                <div className="border border-gray-200 rounded overflow-hidden">
+                  <button
+                    onClick={() => toggleSection("precautions")}
+                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
+                  >
+                    <span className="font-medium text-green-700">Precautions</span>
+                    <ChevronDown
+                      className={`text transition-transform duration-300 ${expandedSection === "precautions" ? "rotate-180" : ""}`}
+                      size={16}
+                    />
+                  </button>
+                  <div
+                    className={`px-4 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${expandedSection === "precautions" ? "max-h-96 opacity-100 py-3" : "max-h-0 opacity-0"} overflow-hidden`}
+                  >
+                    <ul className="list-disc ml-4">
+                      {data.precautions.map((item, idx) => (
+                        <li key={item._id || idx}>{item.description}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
 
               {/* How to use */}
-              {/* <div className="border border-gray-200 rounded overflow-hidden">
+              <div className="border border-gray-200 rounded overflow-hidden">
                 <button
                   onClick={() => toggleSection("usage")}
                   className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
@@ -432,7 +450,7 @@ function ProductPage({ params }) {
                     Add a pinch to warm milk or tea. Can be used in cooking and
                     baking. Store in a cool, dry place.
                 </div>
-              </div> */}
+              </div>
 
               <div className="mt-6">
                 <h3 className="font-semibold text-black mb-3">
