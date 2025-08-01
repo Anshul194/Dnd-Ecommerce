@@ -69,8 +69,16 @@ export async function handleGetBlogs(query, conn) {
     // Support both page/pageNum and limit/limitNum
     const pageNum = parseInt(query.page || query.pageNum || 1);
     const limitNum = parseInt(query.limit || query.limitNum || 10);
-    // Remove pagination and sort params from filter
-    const { pageNum: _p, limitNum: _l, page: _pg, limit: _lt, sortOrder, sortBy, ...filterCon } = query;
+    // Remove pagination, sort, and search params from filter
+    const { pageNum: _p, limitNum: _l, page: _pg, limit: _lt, sortOrder, sortBy, search, ...filterCon } = query;
+
+    // Add search filter if present
+    if (search) {
+      filterCon.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } }
+      ];
+    }
 
     // Map sortBy and sortOrder to sort object
     let sortCon = {};
