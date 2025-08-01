@@ -43,8 +43,16 @@ searchKeywords: {
     },
 
     // Media
-    images: [String], // Product gallery images
-    thumbnail: String, // Primary display image
+    images: [
+      {
+      url: String, // Image URL
+      alt: String, // Alt text for accessibility/SEO
+      },
+    ], // Product gallery images
+    thumbnail: {
+      url: String, // Primary display image URL
+      alt: String, // Alt text for thumbnail
+    },
 
     // How To Use Section
     howToUseTitle: String,
@@ -64,7 +72,7 @@ searchKeywords: {
         quantity: String,
         description: String,
         image: String,
-
+        alt: String,
       },
     ],
 
@@ -72,6 +80,8 @@ searchKeywords: {
       {
         title: String,
         description: String,
+        image: String,
+        alt: String,
       },
     ],
 
@@ -79,12 +89,19 @@ searchKeywords: {
       {
         title: String,
         description: String,
+        image: String,
+        alt: String,
       },
     ],
 
 
     // Description Media Section
-    descriptionImages: [String],
+    descriptionImages: [
+      {
+      url: String,
+      alt: String,
+      },
+    ],
     descriptionVideo: String,
 
     // Highlights / Features
