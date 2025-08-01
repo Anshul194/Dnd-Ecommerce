@@ -1,0 +1,29 @@
+
+import { handleCreateBlog, handleGetBlogs } from '../services/blogService';
+
+export async function createBlogController(form, conn) {
+  try {
+    const blog = await handleCreateBlog(form, conn);
+    return { status: 201, body: { success: true, data: blog } };
+  } catch (err) {
+    return { status: 400, body: { success: false, message: err.message || 'Failed to create blog' } };
+  }
+}
+
+export async function getBlogsController(query, conn) {
+  try {
+    const blogs = await handleGetBlogs(query, conn);
+    return {
+      status: 200,
+      body: {
+        success: true,
+        data: blogs.result,
+        currentPage: blogs.currentPage,
+        totalPages: blogs.totalPages,
+        totalDocuments: blogs.totalDocuments,
+      },
+    };
+  } catch (err) {
+    return { status: 500, body: { success: false, message: err.message || 'Failed to fetch blogs' } };
+  }
+}
