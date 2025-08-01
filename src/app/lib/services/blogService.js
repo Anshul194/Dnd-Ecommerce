@@ -70,13 +70,16 @@ export async function handleGetBlogs(query, conn) {
     const pageNum = parseInt(query.page || query.pageNum || 1);
     const limitNum = parseInt(query.limit || query.limitNum || 10);
     // Remove pagination and sort params from filter
-    const { pageNum: _p, limitNum: _l, page: _pg, limit: _lt, sortOrder, ...filterCon } = query;
+    const { pageNum: _p, limitNum: _l, page: _pg, limit: _lt, sortOrder, sortBy, ...filterCon } = query;
 
-    // Map sortOrder to sort object
+    // Map sortBy and sortOrder to sort object
     let sortCon = {};
+    const sortField = sortBy || 'createdAt';
     if (sortOrder) {
-      if (sortOrder === 'desc') sortCon = { createdAt: -1 };
-      else if (sortOrder === 'asc') sortCon = { createdAt: 1 };
+      if (sortOrder === 'desc') sortCon[sortField] = -1;
+      else if (sortOrder === 'asc') sortCon[sortField] = 1;
+    } else {
+      sortCon[sortField] = -1; // default to descending
     }
 
     const result = await repo.getAll(filterCon, sortCon, pageNum, limitNum);
