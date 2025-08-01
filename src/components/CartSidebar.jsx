@@ -7,6 +7,7 @@ import {
   getCartItems,
   removeItemFromCart,
   toggleCart,
+  updateCartItemQuantity,
 } from "@/app/store/slices/cartSlice";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -29,8 +30,8 @@ const CartSidebar = () => {
     dispatch(toggleCart());
   };
 
-  const removeItem = async (productId, variantId) => {
-    await dispatch(removeItemFromCart({ productId, variantId }));
+  const removeItem = async (cartId) => {
+    await dispatch(removeItemFromCart(cartId));
     dispatch(getCartItems());
   };
 
@@ -40,18 +41,22 @@ const CartSidebar = () => {
 
     const newQuantity = item.quantity + change;
     if (newQuantity <= 0) {
-      await removeItem(item.product._id, item.variant?._id);
+      // await removeItem(itemId);
+      return;
     } else {
       await dispatch(
-        addToCart({
-          product: item.product._id,
+        updateCartItemQuantity({
+          itemId: item.id,
           quantity: newQuantity,
-          price: item.price,
-          variant: item.variant?._id,
         })
       );
       dispatch(getCartItems());
     }
+  };
+
+  const handelRedirect = (e, item) => {
+    e.preventDefault();
+    route.push(`/product-detail/${item?.product?.id}`);
   };
 
   // Fetch cart items whenever the cart sidebar is opened
@@ -100,22 +105,23 @@ const CartSidebar = () => {
         <div className="flex-1 overflow-y-auto">
           {/* Cart Items */}
           <div className="p-6">
-            {cartItems?.length > 0 &&
+            {cartItems?.length > 0 ? (
               cartItems.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-4 pb-6 border-b border-gray-200"
+                  onClick={(e) => handelRedirect(e, item)}
+                  className="flex items-center cursor-pointer gap-4 pb-6 border-b border-gray-200"
                 >
                   <div className="w-16 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
                     <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                      <div className="w-12 h-16 bg-white rounded shadow-sm flex items-center justify-center">
-                        {item?.product?.thumbnail ? (
+                      <div className="w-12 h-16 bg-white rounded-sm overflow-hidden shadow-sm flex items-center justify-center">
+                        {item?.product ? (
                           <Image
-                            src={item.product.thumbnail}
+                            src={item?.product?.image}
                             alt={item?.product?.name || "Product"}
                             width={48}
                             height={64}
-                            className="object-cover"
+                            className="object-cover h-full w-full "
                           />
                         ) : null}
                       </div>
@@ -133,12 +139,7 @@ const CartSidebar = () => {
                       </p> */}
                       </div>
                       <button
-                        onClick={() =>
-                          removeItem(
-                            item?.product?._id,
-                            item?.variant || item?.variant?._id
-                          )
-                        }
+                        onClick={() => removeItem(item?.id)}
                         className="text-gray-400 hover:text-gray-600 p-1"
                       >
                         <X size={16} />
@@ -149,7 +150,11 @@ const CartSidebar = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => updateQuantity(item?.id, -1)}
-                          className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50"
+                          className={`${
+                            item?.quantity === 1
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          } w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50`}
                         >
                           <Minus size={14} />
                         </button>
@@ -158,7 +163,11 @@ const CartSidebar = () => {
                         </span>
                         <button
                           onClick={() => updateQuantity(item?.id, 1)}
-                          className="w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50"
+                          className={`${
+                            item?.quantity === item?.product?.stock
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          } w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50`}
                         >
                           <Plus size={14} />
                         </button>
@@ -169,12 +178,23 @@ const CartSidebar = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+            ) : (
+              <div className="mt-[40%] w-full flex items-center justify-center">
+                <h2 className="text-gray-500/20 font-semibold text-2xl">
+                  Your cart is empty
+                </h2>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="border-t bg-white p-6 space-y-4">
+        <div
+          className={`${
+            cartItems?.length > 0 ? "" : "opacity-40 cursor-not-allowed"
+          } *: border-t bg-white p-6 space-y-4`}
+        >
           {/* Shipping */}
           <div className="flex justify-between items-center">
             <span className="text-lg font-medium">Shipping</span>
@@ -193,8 +213,10 @@ const CartSidebar = () => {
           {/* Checkout Button */}
           <button
             onClick={() => {
-              route.push("/checkout");
-              dispatch(toggleCart());
+              if (cartItems?.length > 0) {
+                route.push("/checkout");
+                dispatch(toggleCart());
+              }
             }}
             className="w-full bg-green-500 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors"
           >
