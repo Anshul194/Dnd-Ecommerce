@@ -66,12 +66,20 @@ export async function handleCreateBlog(form, conn) {
 export async function handleGetBlogs(query, conn) {
   try {
     const repo = new BlogRepository(conn);
-    // Pagination params
-    const pageNum = parseInt(query.pageNum) || 1;
-    const limitNum = parseInt(query.limitNum) || 10;
-    // Remove pagination params from filter
-    const { pageNum: _p, limitNum: _l, ...filterCon } = query;
-    const result = await repo.getAll(filterCon, {}, pageNum, limitNum);
+    // Support both page/pageNum and limit/limitNum
+    const pageNum = parseInt(query.page || query.pageNum || 1);
+    const limitNum = parseInt(query.limit || query.limitNum || 10);
+    // Remove pagination and sort params from filter
+    const { pageNum: _p, limitNum: _l, page: _pg, limit: _lt, sortOrder, ...filterCon } = query;
+
+    // Map sortOrder to sort object
+    let sortCon = {};
+    if (sortOrder) {
+      if (sortOrder === 'desc') sortCon = { createdAt: -1 };
+      else if (sortOrder === 'asc') sortCon = { createdAt: 1 };
+    }
+
+    const result = await repo.getAll(filterCon, sortCon, pageNum, limitNum);
     return result;
   } catch (err) {
     throw err;
