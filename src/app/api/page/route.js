@@ -31,9 +31,11 @@ export async function GET(request) {
     const query = Object.fromEntries(searchParams.entries());
     const pageService = new PageService(conn);
     const result = await pageService.getAllPages(query);
+    // If groupByMainTitle param is set, change message
+    const isGrouped = query.groupByMainTitle === 'true' || query.groupByMainTitle === true;
     return NextResponse.json({
       success: true,
-      message: 'Pages fetched successfully',
+      message: isGrouped ? 'Pages grouped by mainTitle' : 'Pages fetched successfully',
       data: result.data
     }, { status: 200 });
   } catch (err) {
