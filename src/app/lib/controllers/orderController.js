@@ -32,7 +32,20 @@ class OrderController {
       };
     }
   }
-  
+
+  async getOrderDetails(request, conn, params) {
+    console.log('Controller received get order details request for orderId:', params.id);
+    try {
+      const result = await this.orderService.getOrderDetails(request, conn, params);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
 }
 
 export default OrderController;
