@@ -86,6 +86,46 @@ class OrderRepository extends CrudRepository {
       throw error;
     }
   }
+
+   async getUserOrders(userId, filterConditions = {}, sortConditions = {}, page, limit, populateFields = [], selectFields = {}) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error(`Invalid userId: ${userId}`);
+      }
+
+      const queryFilters = { ...filterConditions, user: userId };
+      let query = this.model.find(queryFilters).select(selectFields);
+
+      if (populateFields.length > 0) {
+        populateFields.forEach(field => {
+          query = query.populate(field);
+        });
+      }
+
+      if (Object.keys(sortConditions).length > 0) {
+        query = query.sort(sortConditions);
+      }
+
+      const totalCount = await this.model.countDocuments(queryFilters);
+
+      if (page && limit) {
+        const skip = (page - 1) * limit;
+        query = query.skip(skip).limit(limit);
+      }
+
+      const results = await query.exec();
+
+      return {
+        results,
+        totalCount,
+        currentPage: page || 1,
+        pageSize: limit || 10
+      };
+    } catch (error) {
+      console.error('OrderRepository getUserOrders Error:', error.message);
+      throw error;
+    }
+  }
 }
 
 export default OrderRepository;

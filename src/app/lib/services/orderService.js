@@ -125,6 +125,72 @@ class OrderService {
       };
     }
   }
+
+   async getUserOrders(request, conn) {
+    try {
+
+      console.log("request user",request.user);
+      const userId = request.user?._id;
+
+      console.log('User ID:', userId);
+      if (!userId) {
+        throw new Error('User authentication required');
+      }
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error(`Invalid userId: ${userId}`);
+      }
+
+      const searchParams = request.nextUrl.searchParams;
+      const {
+        page = 1,
+        limit = 10,
+        filters = '{}',
+        sort = '{}',
+        populateFields = ['items.product', 'items.variant', 'coupon'],
+        selectFields = {}
+      } = Object.fromEntries(searchParams.entries());
+
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      const parsedFilters = typeof filters === 'string' ? JSON.parse(filters) : filters;
+      const parsedSort = typeof sort === 'string' ? JSON.parse(sort) : sort;
+
+      const filterConditions = { ...parsedFilters };
+      const sortConditions = {};
+      for (const [field, direction] of Object.entries(parsedSort)) {
+        sortConditions[field] = direction === 'asc' ? 1 : -1;
+      }
+
+      const { results, totalCount, currentPage, pageSize } = await this.orderRepository.getUserOrders(
+        userId,
+        filterConditions,
+        sortConditions,
+        pageNum,
+        limitNum,
+        populateFields,
+        selectFields
+      );
+
+      const totalPages = Math.ceil(totalCount / limitNum);
+
+      return {
+        success: true,
+        message: 'Orders fetched successfully',
+        data: results,
+        currentPage,
+        totalPages,
+        totalCount
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
+
+
 }
 
 export default OrderService;
