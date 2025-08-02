@@ -1,5 +1,3 @@
-// ...existing code...
-
 import { BlogRepository } from '../repository/blogRepository';
 import { saveFile } from '../../config/fileUpload';
 
@@ -72,14 +70,16 @@ export async function handleGetBlogs(query, conn) {
     // Remove pagination, sort, and search params from filter
     const { pageNum: _p, limitNum: _l, page: _pg, limit: _lt, sortOrder, sortBy, search, ...filterCon } = query;
 
+    // Always filter for deletedAt: null
+    const filterConditions = { deletedAt: null, ...filterCon };
+
     // Add search filter if present
     if (search) {
-      filterCon.$or = [
+      filterConditions.$or = [
         { title: { $regex: search, $options: 'i' } },
         { content: { $regex: search, $options: 'i' } }
       ];
     }
-
     // Map sortBy and sortOrder to sort object
     let sortCon = {};
     const sortField = sortBy || 'createdAt';
@@ -90,7 +90,9 @@ export async function handleGetBlogs(query, conn) {
       sortCon[sortField] = -1; // default to descending
     }
 
-    const result = await repo.getAll(filterCon, sortCon, pageNum, limitNum);
+    var result = await repo.getAll(filterConditions, sortCon, pageNum, limitNum);
+    console.log('result', result);
+  
     return result;
   } catch (err) {
     throw err;
