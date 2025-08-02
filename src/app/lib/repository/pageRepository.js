@@ -1,4 +1,6 @@
 
+
+
 import CrudRepository from './CrudRepository.js';
 import { PageSchema } from '../models/Page.js';
 
@@ -35,6 +37,22 @@ class PageRepository extends CrudRepository {
       return await page.save();
     } catch (err) {
       throw err;
+    }
+  }
+
+    async groupByMainTitle() {
+    try {
+      // Group all non-deleted pages by mainTitle
+      return await this.Page.aggregate([
+        { $match: { deleted: false, deletedAt: null } },
+        { $group: {
+            _id: "$mainTitle",
+            pages: { $push: "$$ROOT" }
+        } },
+        { $sort: { _id: 1 } }
+      ]);
+    } catch (error) {
+      throw error;
     }
   }
 

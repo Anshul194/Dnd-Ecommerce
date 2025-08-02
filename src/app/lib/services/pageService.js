@@ -45,6 +45,12 @@ class PageService {
 
   async getAllPages(query = {}) {
     try {
+      // If groupByMainTitle param is set, use aggregation
+      if (query.groupByMainTitle === 'true' || query.groupByMainTitle === true) {
+        const grouped = await this.pageRepo.groupByMainTitle();
+        return { data: grouped };
+      }
+
       const {
         page = 1,
         limit = 10,

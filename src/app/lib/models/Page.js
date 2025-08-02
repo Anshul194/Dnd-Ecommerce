@@ -1,11 +1,24 @@
 import mongoose from 'mongoose';
 
 const pageSchema = new mongoose.Schema({
+      mainTitle: { type: String, default: null }, 
+
     title: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
     content: { type: String, required: true }, // HTML/Markdown
     metaTitle: { type: String, default: null },
     metaDescription: { type: String, default: null },
+    isContactPage: { type: Boolean, default: false },
+    contactData: {
+    phone: { type: String },
+    email: { type: String },
+    appointmentNote: { type: String },
+    contactHours: {
+      monWed: { type: String },
+      thuFri: { type: String },
+      sat: { type: String }
+    }
+  },
     status: { type: String, enum: ['published', 'draft'], default: 'draft' },
     showInFooter: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
