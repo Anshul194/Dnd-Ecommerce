@@ -33,7 +33,16 @@ const couponSchema = new mongoose.Schema({
   minCartValue: {
     type: Number,
     default: 0
+  },
+  deletedAt: {
+    type: Date,
+    default: null
+  },
+  deleted:{
+    type: Boolean,
+    default: false
   }
+
 }, {
   timestamps: true
 });
