@@ -4,6 +4,7 @@ import React, { useState, useEffect, use } from "react";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import AuthRequiredModal from "@/components/AuthRequiredModal";
+import Ingredient from "./components/Incredients"
 import {
   ChevronLeft,
   ChevronRight,
@@ -34,38 +35,6 @@ function ProductPage({ params }) {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const router = require("next/navigation").useRouter();
-  const productImages = [
-    "/api/placeholder/400/400", // Main saffron product image
-    "/api/placeholder/400/400", // Additional product images
-    "/api/placeholder/400/400",
-    "/api/placeholder/400/400",
-    "/api/placeholder/400/400",
-    "/api/placeholder/400/400",
-  ];
-
-  const packs = {
-    pack2: {
-      name: "Pack of 2",
-      price: 664.16,
-      originalPrice: 830.2,
-      discount: "20% OFF",
-      color: "green",
-    },
-    pack4: {
-      name: "Pack of 4",
-      price: 1245.3,
-      originalPrice: 1660.4,
-      discount: "25% OFF",
-      color: "orange",
-    },
-    pack6: {
-      name: "Pack of 6",
-      price: 1743.42,
-      originalPrice: 2490.6,
-      discount: "30% OFF",
-      color: "red",
-    },
-  };
 
   const toggleSection = (section) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -73,6 +42,18 @@ function ProductPage({ params }) {
 
   const handleQuantityChange = (change) => {
     setQuantity(Math.max(1, quantity + change));
+  };
+
+  const nextImage = () => {
+    if (data?.images?.length > 0) {
+      setSelectedImage((prev) => (prev + 1) % data.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (data?.images?.length > 0) {
+      setSelectedImage((prev) => (prev - 1 + data.images.length) % data.images.length);
+    }
   };
 
   const getProductData = async () => {
@@ -122,9 +103,11 @@ function ProductPage({ params }) {
       toast.error(error?.message || "Failed to add to cart");
     }
   };
+
   useEffect(() => {
     getProductData();
   }, [id]);
+
   return (
     <>
       <AuthRequiredModal
@@ -139,26 +122,28 @@ function ProductPage({ params }) {
           router.push(`/signup?redirect=/product-detail/${id}`);
         }}
       />
-      <div className="max-w-[90%] mx-auto p-4 bg-white">
+      <div className="w-full md:max-w-[90%] mx-auto p-4 bg-white">
         <div>
           {/* Back Button */}
-          <button className="mb-4 px-4 py-2 border border-gray-300 rounded text-sm text flex items-center gap-2 hover:bg-gray-50">
+          <button className="mb-4 px-4 py-2 border border-gray-300 rounded text-sm flex items-center gap-2 hover:bg-gray-50">
             <ChevronLeft size={16} />
             Back
           </button>
 
-          <div className="flex gap-8">
+          <div className="flex flex-col md:flex-row gap-8">
             {/* Left Side - Product Images */}
-            <div className="flex-1 ">
+            <div className="flex-1 w-full md:w-1/2">
               <div className="flex gap-4 h-fit sticky top-16">
                 {/* Thumbnail Images */}
-                <div className="flex flex-col justify-between gap-2">
+                <div className="flex flex-col gap-3">
                   {data?.images?.length > 0 &&
                     [...data.images].map((img, index) => (
                       <div
                         key={index}
-                        className={`w-20 h-20 border-2 rounded cursor-pointer overflow-hidden ${
-                          selectedImage === index ? "border" : "border-gray-200"
+                        className={`w-20 h-20 border-2 rounded-lg cursor-pointer overflow-hidden transition-all ${
+                          selectedImage === index 
+                            ? "border-green-500 shadow-md" 
+                            : "border-gray-200 hover:border-gray-300"
                         }`}
                         onClick={() => setSelectedImage(index)}
                       >
@@ -175,13 +160,19 @@ function ProductPage({ params }) {
 
                 {/* Main Product Image */}
                 <div className="flex-1 relative">
-                  <div className=" h-full w-fit bg-gray-200 border border-gray-200 rounded-lg overflow-hidden relative group">
+                  <div className="aspect-square bg-gray-50 border border-gray-200 rounded-xl overflow-hidden relative group">
                     {/* Navigation arrows */}
-                    <button className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ChevronLeft size={16} />
+                    <button 
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 z-10"
+                    >
+                      <ChevronLeft size={20} />
                     </button>
-                    <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ChevronRight size={16} />
+                    <button 
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 z-10"
+                    >
+                      <ChevronRight size={20} />
                     </button>
 
                     {data?.images?.[selectedImage] ? (
@@ -190,16 +181,30 @@ function ProductPage({ params }) {
                         alt={data.images[selectedImage].alt || "Product Image"}
                         width={400}
                         height={400}
-                        className=" h-full  bg-gray-200 border border-gray-200 rounded-lg overflow-hidden relative group"
+                        className="w-full h-full object-cover"
                       />
                     ) : null}
+
+                    {/* Image indicator dots */}
+                    {data?.images?.length > 1 && (
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        {data.images.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`w-2 h-2 rounded-full transition-all ${
+                              selectedImage === index ? "bg-green-500" : "bg-white/50"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Right Side - Product Details */}
-            <div className="flex-1 max-w-xl ">
+            <div className="lg:max-w-xl w-full md:w-1/2">
               {/* Product Title and Rating */}
               <div className={!data?.name ? "animate-pulse" : ""}>
                 {data.name ? (
@@ -207,7 +212,7 @@ function ProductPage({ params }) {
                     {data?.name}
                   </h1>
                 ) : (
-                  <div className=" h-8 mb-2 w-full rounded-md bg-black/5">
+                  <div className="h-8 mb-2 w-full rounded-md bg-black/5">
                     {" "}
                   </div>
                 )}
@@ -249,7 +254,7 @@ function ProductPage({ params }) {
               </div>
 
               {/* Pack Selection */}
-              <div className="mb-6">
+              <div className="mb-6 relative">
                 <h3 className="font-semibold text-black mb-3">Select Pack</h3>
                 <div className="flex gap-3">
                   {data?.variants?.length > 0 &&
@@ -264,12 +269,12 @@ function ProductPage({ params }) {
                         onClick={() => setSelectedPack(variant._id)}
                       >
                         <div
-                          className={`absolute -top-2 -right-2 text-black text-xs px-2 py-1 rounded ${
+                          className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${
                             variant.color === "green"
                               ? "bg-green-600"
                               : variant.color === "orange"
-                              ? ""
-                              : ""
+                              ? "bg-orange-500"
+                              : "bg-blue-500"
                           }`}
                         >
                           {variant.discount}
@@ -322,7 +327,7 @@ function ProductPage({ params }) {
               <div className="flex gap-2 mb-6">
                 <button
                   onClick={handleAddToCart}
-                  className="px-4 w-full py-3 border  border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                  className="px-4 w-full py-3 border border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={16} />
                   Add to Cart
@@ -333,101 +338,142 @@ function ProductPage({ params }) {
               </div>
 
               {/* Expandable Sections */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {/* Product Details */}
-                <div className="border border-gray-200 rounded overflow-hidden">
+                <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <button
                     onClick={() => toggleSection("details")}
-                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
+                    className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
+                      expandedSection === "details"
+                        ? "bg-green-50 hover:bg-green-100"
+                        : "hover:bg-gray-50"
+                    }`}
                   >
-                    <span className="font-medium text-green-700">
+                    <span className={`font-semibold text-base ${
+                      expandedSection === "details" ? "text-green-700" : "text-green-600"
+                    }`}>
                       Product Details
                     </span>
-                    <ChevronRight
-                      className={`text transition-transform duration-300 ${
-                        expandedSection === "details" ? "rotate-90" : ""
-                      }`}
-                      size={16}
-                    />
+                    <div className={`p-1 rounded-full transition-all duration-300 ${
+                      expandedSection === "details" ? "bg-green-200 rotate-180" : "bg-gray-100"
+                    }`}>
+                      <ChevronDown
+                        className={`transition-colors duration-200 ${
+                          expandedSection === "details" ? "text-green-700" : "text-gray-600"
+                        }`}
+                        size={18}
+                      />
+                    </div>
                   </button>
                   <div
-                    className={`px-4  text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
+                    className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
                       expandedSection === "details"
-                        ? "max-h-96 opacity-100 py-3"
+                        ? "max-h-96 opacity-100"
                         : "max-h-0 opacity-0"
                     } overflow-hidden`}
-                    dangerouslySetInnerHTML={{
-                      __html: data.description || "",
-                    }}
-                  ></div>
+                  >
+                    <div 
+                      className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50"
+                      dangerouslySetInnerHTML={{
+                        __html: data.description || "",
+                      }}
+                    ></div>
+                  </div>
                 </div>
 
-                {/* Ingredients */}
                 {/* Ingredients Accordion */}
                 {Array.isArray(data.ingredients) &&
                   data.ingredients.length > 0 && (
-                    <div className="border border-gray-200 rounded overflow-hidden">
+                    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                       <button
                         onClick={() => toggleSection("ingredients")}
-                        className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
+                        className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
+                          expandedSection === "ingredients"
+                            ? "bg-green-50 hover:bg-green-100"
+                            : "hover:bg-gray-50"
+                        }`}
                       >
-                        <span className="font-medium text-green-700">
+                        <span className={`font-semibold text-base ${
+                          expandedSection === "ingredients" ? "text-green-700" : "text-green-600"
+                        }`}>
                           Ingredients
                         </span>
-                        <ChevronDown
-                          className={`text transition-transform duration-300 ${
-                            expandedSection === "ingredients"
-                              ? "rotate-180"
-                              : ""
-                          }`}
-                          size={16}
-                        />
+                        <div className={`p-1 rounded-full transition-all duration-300 ${
+                          expandedSection === "ingredients" ? "bg-green-200 rotate-180" : "bg-gray-100"
+                        }`}>
+                          <ChevronDown
+                            className={`transition-colors duration-200 ${
+                              expandedSection === "ingredients" ? "text-green-700" : "text-gray-600"
+                            }`}
+                            size={18}
+                          />
+                        </div>
                       </button>
                       <div
-                        className={`px-4 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
+                        className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
                           expandedSection === "ingredients"
-                            ? "max-h-96 opacity-100 py-3"
+                            ? "max-h-96 opacity-100"
                             : "max-h-0 opacity-0"
                         } overflow-hidden`}
                       >
-                        <ul className="list-disc ml-4">
-                          {data.ingredients.map((item, idx) => (
-                            <li key={item._id || idx}>{item.description}</li>
-                          ))}
-                        </ul>
+                        <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
+                          <ul className="space-y-2">
+                            {data.ingredients.map((item, idx) => (
+                              <li key={item._id || idx} className="flex items-start gap-2">
+                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                                <span className="leading-relaxed">{item.description}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   )}
 
                 {/* Benefits Accordion */}
                 {Array.isArray(data.benefits) && data.benefits.length > 0 && (
-                  <div className="border border-gray-200 rounded overflow-hidden">
+                  <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     <button
                       onClick={() => toggleSection("benefits")}
-                      className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
+                      className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
+                        expandedSection === "benefits"
+                          ? "bg-green-50 hover:bg-green-100"
+                          : "hover:bg-gray-50"
+                      }`}
                     >
-                      <span className="font-medium text-green-700">
+                      <span className={`font-semibold text-base ${
+                        expandedSection === "benefits" ? "text-green-700" : "text-green-600"
+                      }`}>
                         Benefits
                       </span>
-                      <ChevronDown
-                        className={`text transition-transform duration-300 ${
-                          expandedSection === "benefits" ? "rotate-180" : ""
-                        }`}
-                        size={16}
-                      />
+                      <div className={`p-1 rounded-full transition-all duration-300 ${
+                        expandedSection === "benefits" ? "bg-green-200 rotate-180" : "bg-gray-100"
+                      }`}>
+                        <ChevronDown
+                          className={`transition-colors duration-200 ${
+                            expandedSection === "benefits" ? "text-green-700" : "text-gray-600"
+                          }`}
+                          size={18}
+                        />
+                      </div>
                     </button>
                     <div
-                      className={`px-4 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
+                      className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
                         expandedSection === "benefits"
-                          ? "max-h-96 opacity-100 py-3"
+                          ? "max-h-96 opacity-100"
                           : "max-h-0 opacity-0"
                       } overflow-hidden`}
                     >
-                      <ul className="list-disc ml-4">
-                        {data.benefits.map((item, idx) => (
-                          <li key={item._id || idx}>{item.description}</li>
-                        ))}
-                      </ul>
+                      <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
+                        <ul className="space-y-2">
+                          {data.benefits.map((item, idx) => (
+                            <li key={item._id || idx} className="flex items-start gap-2">
+                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                              <span className="leading-relaxed">{item.description}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -435,64 +481,89 @@ function ProductPage({ params }) {
                 {/* Precautions Accordion */}
                 {Array.isArray(data.precautions) &&
                   data.precautions.length > 0 && (
-                    <div className="border border-gray-200 rounded overflow-hidden">
+                    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                       <button
                         onClick={() => toggleSection("precautions")}
-                        className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
+                        className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
+                          expandedSection === "precautions"
+                            ? "bg-green-50 hover:bg-green-100"
+                            : "hover:bg-gray-50"
+                        }`}
                       >
-                        <span className="font-medium text-green-700">
+                        <span className={`font-semibold text-base ${
+                          expandedSection === "precautions" ? "text-green-700" : "text-green-600"
+                        }`}>
                           Precautions
                         </span>
-                        <ChevronDown
-                          className={`text transition-transform duration-300 ${
-                            expandedSection === "precautions"
-                              ? "rotate-180"
-                              : ""
-                          }`}
-                          size={16}
-                        />
+                        <div className={`p-1 rounded-full transition-all duration-300 ${
+                          expandedSection === "precautions" ? "bg-green-200 rotate-180" : "bg-gray-100"
+                        }`}>
+                          <ChevronDown
+                            className={`transition-colors duration-200 ${
+                              expandedSection === "precautions" ? "text-green-700" : "text-gray-600"
+                            }`}
+                            size={18}
+                          />
+                        </div>
                       </button>
                       <div
-                        className={`px-4 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
+                        className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
                           expandedSection === "precautions"
-                            ? "max-h-96 opacity-100 py-3"
+                            ? "max-h-96 opacity-100"
                             : "max-h-0 opacity-0"
                         } overflow-hidden`}
                       >
-                        <ul className="list-disc ml-4">
-                          {data.precautions.map((item, idx) => (
-                            <li key={item._id || idx}>{item.description}</li>
-                          ))}
-                        </ul>
+                        <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
+                          <ul className="space-y-2">
+                            {data.precautions.map((item, idx) => (
+                              <li key={item._id || idx} className="flex items-start gap-2">
+                                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                                <span className="leading-relaxed">{item.description}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   )}
 
                 {/* How to use */}
-                <div className="border border-gray-200 rounded overflow-hidden">
+                <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <button
                     onClick={() => toggleSection("usage")}
-                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
+                    className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
+                      expandedSection === "usage"
+                        ? "bg-green-50 hover:bg-green-100"
+                        : "hover:bg-gray-50"
+                    }`}
                   >
-                    <span className="font-medium text-green-700">
+                    <span className={`font-semibold text-base ${
+                      expandedSection === "usage" ? "text-green-700" : "text-green-600"
+                    }`}>
                       How to use
                     </span>
-                    <ChevronDown
-                      className={`text transition-transform duration-300 ${
-                        expandedSection === "usage" ? "rotate-180" : ""
-                      }`}
-                      size={16}
-                    />
+                    <div className={`p-1 rounded-full transition-all duration-300 ${
+                      expandedSection === "usage" ? "bg-green-200 rotate-180" : "bg-gray-100"
+                    }`}>
+                      <ChevronDown
+                        className={`transition-colors duration-200 ${
+                          expandedSection === "usage" ? "text-green-700" : "text-gray-600"
+                        }`}
+                        size={18}
+                      />
+                    </div>
                   </button>
                   <div
-                    className={`px-4 py-3 text-sm text-gray-600 border-t transition-all duration-300 ease-in-out ${
+                    className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
                       expandedSection === "usage"
                         ? "max-h-96 opacity-100"
                         : "max-h-0 opacity-0"
                     } overflow-hidden`}
                   >
-                    Add a pinch to warm milk or tea. Can be used in cooking and
-                    baking. Store in a cool, dry place.
+                    <div className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50">
+                      Add a pinch to warm milk or tea. Can be used in cooking and
+                      baking. Store in a cool, dry place.
+                    </div>
                   </div>
                 </div>
 
@@ -507,6 +578,7 @@ function ProductPage({ params }) {
           </div>
 
           <HowToUse data={data} />
+          <Ingredient/>
           <DescriptionLayout data={data} />
           <ProductReview />
           <FrequentlyPurchased />
