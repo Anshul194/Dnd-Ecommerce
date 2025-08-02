@@ -10,6 +10,7 @@ import { CouponSchema } from '../../../lib/models/Coupon.js';
 import { ProductSchema } from '../../../lib/models/Product.js';
 import { VariantSchema } from '../../../lib/models/Variant.js';
 import { getSubdomain, getDbConnection } from '../../../lib/tenantDb';
+import { withUserAuth } from '../../../middleware/commonAuth.js';
 
 export async function POST(req) {
   try {
@@ -43,3 +44,40 @@ export async function POST(req) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
+
+
+export const GET = withUserAuth(async function (request) {
+  try {
+    const subdomain = getSubdomain(request);
+    console.log('Subdomain:', subdomain);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      console.error('No database connection established');
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+    }
+    console.log('Connection name in route:', conn.name);
+    const Order = conn.models.Order || conn.model('Order', OrderSchema);
+    const Coupon = conn.models.Coupon || conn.model('Coupon', CouponSchema);
+    const Product = conn.models.Product || conn.model('Product', ProductSchema);
+    const Variant = conn.models.Variant || conn.model('Variant', VariantSchema);
+    const orderRepo = new OrderRepository(Order, conn);
+    const couponRepo = new CouponRepository(Coupon);
+    const couponService = new CouponService(couponRepo);
+    const orderService = new OrderService(orderRepo, couponService);
+    const orderController = new OrderController(orderService);
+    const result = await orderController.getUserOrders(request, conn);
+    return NextResponse.json({
+      success: true,
+      message: result.message,
+      data: result.data,
+      currentPage: result.currentPage,
+      totalPages: result.totalPages,
+      totalCount: result.totalCount
+    });
+  } catch (error) {
+    console.error('Route GET my orders error:', error.message, error.stack);
+    return NextResponse.json({ success: false, message: error.message }, { status: 400 });
+  }
+});
+
+
