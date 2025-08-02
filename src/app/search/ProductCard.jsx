@@ -43,9 +43,9 @@ const ProductCard = ({ product }) => {
     <>
       <div
         onClick={() => router.push(`/product-detail/${product.slug}`)}
-        className="group"
+        className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all"
       >
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-[320px]">
+        <div className="bg-white flex flex-col justify-between border h-96 border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-[320px]">
           {/* Product Header */}
           <div className="relative bg-gradient-to-br from-orange-100 to-orange-200 rounded-t-2xl">
             {/* Heart Icon */}
@@ -81,11 +81,10 @@ const ProductCard = ({ product }) => {
             </div>
           </div>
 
-          {/* Product Info */}
-          <div className="p-2">
+           <div className="p-2">
             {/* Title */}
-            <h3 className="text-xs bg-[#F1FAEE] w-fit p-1 px-3 text poppins-medium  mb-1">
-              {product.name.slice(0, 27)}{" "}
+            <h3 className="text-xs  bg-[#F1FAEE] w-fit p-1 px-3 text poppins-medium  mb-1">
+              {product.name.slice(0, 27)}{""}
               {product.name.length > 29 ? "..." : ""}
             </h3>
 
@@ -96,8 +95,12 @@ const ProductCard = ({ product }) => {
                 __html: product.description.slice(0, 50),
               }}
             ></div>
+           </div>
 
-            {/* Price and Rating */}
+          {/* Product Info */}
+          <div className="p-2">
+            <div>
+              {/* Price and Rating */}
             <div className="flex justify-between items-start mb-4">
               <div className="flex flex-col">
                 {product?.variants[0]?.salePrice &&
@@ -138,6 +141,7 @@ const ProductCard = ({ product }) => {
             >
               Add to cart
             </button>
+            </div>
           </div>
         </div>
       </div>
