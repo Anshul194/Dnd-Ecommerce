@@ -33,7 +33,35 @@ class CouponController {
     }
   }
 
-    async apply(req, conn) {
+  async update(req, conn) {
+    // req: { id, body }
+    try {
+      const result = await this.couponService.updateCoupon(req.id, req.body, conn);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
+
+  async delete(req, conn) {
+    // req: { id }
+    try {
+      const result = await this.couponService.deleteCoupon(req.id, conn);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
+
+  async apply(req, conn) {
     console.log('Controller received apply data:', req.body);
     try {
       const result = await this.couponService.applyCoupon(req.body, conn);

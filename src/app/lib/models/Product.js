@@ -29,14 +29,30 @@ export const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subcategory",
     },
+
+
+searchKeywords: {
+      type: [String],
+      default: [],
+    },
+
+
     brand: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
     },
 
     // Media
-    images: [String], // Product gallery images
-    thumbnail: String, // Primary display image
+    images: [
+      {
+      url: String, // Image URL
+      alt: String, // Alt text for accessibility/SEO
+      },
+    ], // Product gallery images
+    thumbnail: {
+      url: String, // Primary display image URL
+      alt: String, // Alt text for thumbnail
+    },
 
     // How To Use Section
     howToUseTitle: String,
@@ -49,8 +65,43 @@ export const productSchema = new mongoose.Schema(
       },
     ],
 
+
+    ingredients: [
+      {
+        name: String,
+        quantity: String,
+        description: String,
+        image: String,
+        alt: String,
+      },
+    ],
+
+    benefits: [
+      {
+        title: String,
+        description: String,
+        image: String,
+        alt: String,
+      },
+    ],
+
+    precautions: [
+      {
+        title: String,
+        description: String,
+        image: String,
+        alt: String,
+      },
+    ],
+
+
     // Description Media Section
-    descriptionImages: [String],
+    descriptionImages: [
+      {
+      url: String,
+      alt: String,
+      },
+    ],
     descriptionVideo: String,
 
     // Highlights / Features
@@ -65,6 +116,12 @@ export const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    isTopRated: {
+      type: Boolean,
+      default: false,
+    },
+
     reviews: [
       {
         userId: {

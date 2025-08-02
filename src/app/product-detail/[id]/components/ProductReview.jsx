@@ -47,7 +47,7 @@ export default function ProductReview() {
 
   return (
     <div className="py-10 lg:py-20 px-4">
-      <div className="flex justify-between gap-12">
+      <div className="flex justify-between flex-col md:flex-row gap-12">
         {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-12"> */}
         {/* Left Column */}
         <div className="max-w-2xl">

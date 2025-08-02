@@ -33,23 +33,34 @@ const SearchPage = () => {
   };
 
   useEffect(() => {
-    if (products.length === 0) {
-      const payload = {};
-      if (paramCategories) {
-        payload.category = paramCategories;
-      }
-      if (minPrice) {
-        payload.minPrice = minPrice;
-      }
-      if (maxPrice) {
-        payload.maxPrice = maxPrice;
-      }
-      if (paramSearchTerm) {
-        payload.searchTerm = paramSearchTerm;
-      }
-      dispatch(fetchProducts(payload));
+    const payload = {};
+    if (paramCategories) {
+      payload.category = paramCategories;
     }
-  }, []);
+    if (minPrice) {
+      payload.minPrice = minPrice;
+    }
+    if (maxPrice) {
+      payload.maxPrice = maxPrice;
+    }
+    if (paramSearchTerm) {
+      payload.searchTerm = paramSearchTerm;
+    }
+    payload.page = currentPage;
+    payload.sortBy = sortBy;
+    payload.limit = 20; // Adjust as needed
+
+    dispatch(fetchProducts(payload));
+  }, [
+    paramCategories,
+    minPrice,
+    maxPrice,
+    paramSearchTerm,
+    currentPage,
+    sortBy,
+    dispatch,
+    products.length,
+  ]);
 
   console.log("Products:", products);
   return (
@@ -67,14 +78,10 @@ const SearchPage = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
               <div className="mb-2 sm:mb-0">
                 <p className="text-gray-600 text-sm">
-                  Showing{" "}
-                  {/* <span className="font-semibold">
-                    {startItem} - {endItem}
-                  </span>{" "} */}
-                  items out of{" "}
-                  {/* <span className="font-semibold">{totalItems}</span> possible */}
-                  search results for
-                  <span className="font-semibold text-black"> "Lorem"</span>
+                  Results for
+                  <span className="font-semibold ml-2 text-black">
+                    {products.length}
+                  </span>
                 </p>
               </div>
 
@@ -100,10 +107,10 @@ const SearchPage = () => {
             </div>
 
             {/* No Results */}
-            {filteredProducts.length === 0 && (
+            {products.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">
-                  {/* No products found matching your criteria. */}
+                  No products found matching your criteria.
                 </p>
               </div>
             )}

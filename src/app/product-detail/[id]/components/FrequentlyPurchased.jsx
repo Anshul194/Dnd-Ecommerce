@@ -63,7 +63,7 @@ export default function FrequentlyPurchased() {
   );
 
   return (
-    <div className="p-8 bg-white">
+    <div className="py-10 lg:py-20 px-4">
       {/* Header Section */}
       <div className="mb-8">
         <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0">

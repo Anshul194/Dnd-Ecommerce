@@ -1,8 +1,52 @@
+
 import CouponRepository from '../repository/CouponRepository.js';
+
 
 class CouponService {
   constructor(couponRepository) {
     this.couponRepository = couponRepository;
+  }
+
+  async getByIdCoupon(id, conn) {
+    try {
+      if (!id) throw new Error('Coupon id is required');
+      const coupon = await this.couponRepository.model.findOne({ _id: id, deletedAt: null });
+      if (!coupon) {
+        return { success: false, message: 'Coupon not found', data: null };
+      }
+      return { success: true, message: 'Coupon fetched successfully', data: coupon };
+    } catch (error) {
+      return { success: false, message: error.message, data: null };
+    }
+  }
+
+  async updateCoupon(id, data, conn) {
+    try {
+      if (!id) throw new Error('Coupon id is required');
+      const coupon = await this.couponRepository.model.findById(id);
+      if (!coupon) {
+        return { success: false, message: 'Coupon not found', data: null };
+      }
+      Object.assign(coupon, data);
+      await coupon.save();
+      return { success: true, message: 'Coupon updated', data: coupon };
+    } catch (error) {
+      return { success: false, message: error.message, data: null };
+    }
+  }
+
+  async deleteCoupon(id, conn) {
+    try {
+      if (!id) throw new Error('Coupon id is required');
+      const coupon = await this.couponRepository.model.findById(id);
+      if (!coupon) {
+        return { success: false, message: 'Coupon not found', data: null };
+      }
+      await this.couponRepository.softDelete(id);
+      return { success: true, message: 'Coupon deleted' };
+    } catch (error) {
+      return { success: false, message: error.message, data: null };
+    }
   }
 
   async createCoupon(data, conn) {
@@ -68,6 +112,8 @@ class CouponService {
       if (isActive !== undefined) {
         filterConditions.isActive = isActive === 'true' || isActive === true;
       }
+
+      filterConditions.deletedAt = null;
 
       // Build sort conditions
       const sortConditions = {};

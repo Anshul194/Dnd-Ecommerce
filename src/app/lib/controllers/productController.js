@@ -3,12 +3,45 @@ import { attributeSchema } from '../models/Attribute.js';
 import mongoose from 'mongoose';
 
 
+function normalizeProductBody(body) {
+  // Parse JSON arrays/objects if sent as strings (from FormData)
+  const arrayFields = [
+    "howToUseSteps",
+    "ingredients",
+    "benefits",
+    "precautions",
+    "attributeSet",
+    "frequentlyPurchased",
+    "highlights"
+  ];
+  arrayFields.forEach((field) => {
+    if (typeof body[field] === "string") {
+      try {
+        body[field] = JSON.parse(body[field]);
+      } catch {
+        // fallback: wrap single value in array of object if needed
+        if (["howToUseSteps", "ingredients", "benefits", "precautions"].includes(field)) {
+          body[field] = [ { description: body[field] } ];
+        } else {
+          body[field] = [body[field]];
+        }
+      }
+    }
+  });
+  // Convert boolean fields
+  if (typeof body.isTopRated === "string") {
+    body.isTopRated = body.isTopRated === "true";
+  }
+  return body;
+}
+
 class ProductController {
   constructor(service) {
     this.service = service;
   }
 
   async create(body, conn) {
+    body = normalizeProductBody(body);
     try {
       // Basic validation
       console.log("Creating product with body:", conn);
@@ -163,6 +196,7 @@ async getAll(query, conn) {
   }
 
   async update(id, body, conn) {
+    body = normalizeProductBody(body);
     try {
       // Check if product exists
       const existing = await this.service.getProductById(id, conn);
@@ -222,8 +256,24 @@ async getAll(query, conn) {
       if (Array.isArray(body.attributeSet)) {
         for (const attr of body.attributeSet) {
           if (attr.attributeId) {
-            const Attribute =mongoose.models.Attribute || mongoose.model("Attribute",attributeSchema);
+            const Attribute = conn.models.Attribute || conn.model("Attribute", attributeSchema);
+            console?.log(`Checking if attribute exists: ${Attribute}`);
+            if (!Attribute) {
+              return { success: false, message: "Attribute model not found", data: null };
+            }
+            // check type 
+          console?.log(`Checking attributeId type: ${typeof attr.attributeId}`);
+
+          if (typeof attr.attributeId == "string" && mongoose.Types.ObjectId.isValid(attr.attributeId)) {
+            console?.log(`Converting attributeId to ObjectId: ${attr.attributeId}`);
+            // Convert string to ObjectId
+            attr.attributeId = new mongoose.Types.ObjectId(attr.attributeId);
+          }
+
+          console?.log(`Checking if attribute exists in DB: ${typeof attr.attributeId}, ${attr.attributeId}`);
+
             const attrExists = await Attribute.findById(attr.attributeId);
+            console?.log(`Attribute exists: ${attrExists}`);
             if (!attrExists) return { success: false, message: `AttributeId ${attr.attributeId} does not exist`, data: null };
           }
         }

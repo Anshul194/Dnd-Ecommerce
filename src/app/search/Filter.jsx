@@ -200,8 +200,8 @@ const Filter = ({ onFilterChange }) => {
                 type="radio"
                 name="category"
                 value={category}
-                checked={selectedCategory === category.slug}
-                onChange={() => handleCategoryChange(category.slug)}
+                checked={selectedCategory === category._id}
+                onChange={() => handleCategoryChange(category._id)}
                 className="w-4 h-4 text-green-600 focus:ring-green-500"
               />
               <span className="text-sm text-gray-700">{category.name}</span>

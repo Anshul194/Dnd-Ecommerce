@@ -59,6 +59,19 @@ class CouponRepository extends CrudRepository {
     }
   }
 
+  async softDelete(couponId) {
+    try {
+      return await this.model.findByIdAndUpdate(
+        couponId,
+        { isDeleted: true },
+        { new: true }
+      );
+    } catch (error) {
+      console.error('CouponRepository softDelete Error:', error.message);
+      throw error;
+    }
+  }
+
   async incrementUsedCount(couponId) {
     try {
       return await this.model.findByIdAndUpdate(

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "@/app/store/slices/categorySlice";
 import CartSidebar from "./CartSidebar";
-import { toggleCart } from "@/app/store/slices/cartSlice";
+import { getCartItems, toggleCart } from "@/app/store/slices/cartSlice";
 import { usePathname } from "next/navigation";
 
 const Navbar = () => {
@@ -102,13 +102,18 @@ const Navbar = () => {
     if (!categories || categories.length === 0) {
       dispatch(fetchCategories());
     }
+    dispatch(getCartItems());
   }, []);
 
   const handelCartToggle = () => {
     dispatch(toggleCart());
   };
 
-  if (pathname.includes("/signup") || pathname.includes("/login")) {
+  if (
+    pathname.includes("/signup") ||
+    pathname.includes("/login") ||
+    pathname.includes("/builder")
+  ) {
     return null; // Don't render Navbar on product detail page
   }
 
@@ -121,9 +126,11 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <div className=" text-black py-1 rounded text-lg font-bold">
-                YOUR LOGO
-              </div>
+              <Link href="/" className="text-black">
+                <div className=" text-black py-1 rounded text-lg font-bold">
+                  YOUR LOGO
+                </div>
+              </Link>
             </div>
 
             {/* Search Bar */}
@@ -188,7 +195,7 @@ const Navbar = () => {
                 categories?.map((item) => (
                   <Link
                     key={item.name}
-                    href={`/search?category=${item.slug}`}
+                    href={`/search?category=${item._id}`}
                     className="text-gray-700 cursor-pointer capitalize hover:text-green-500 text-sm font-medium transition-colors"
                   >
                     {item.name}
@@ -216,9 +223,11 @@ const Navbar = () => {
             style={{ transform: "translateX(100%)" }}
           >
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <div className=" text-black px-3 py-1 rounded text-lg font-bold">
-                YOUR LOGO
-              </div>
+              <Link href="/" className="text-black">
+                <div className=" text-black px-3 py-1 rounded text-lg font-bold">
+                  YOUR LOGO
+                </div>
+              </Link>
               <button
                 onClick={toggleMenu}
                 className="text-gray-600 hover:text-green-500 transition-transform duration-200 hover:scale-110 hover:rotate-90"
