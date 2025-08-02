@@ -194,31 +194,40 @@ export async function PUT(req) {
       const formData = await req.formData();
       body = {};
       for (const [key, value] of formData.entries()) {
-        // images[0].url, images[0].alt, thumbnail.url, thumbnail.alt, descriptionImages[0].url, descriptionImages[0].alt
-        const arrObjMatch = key.match(/([\w]+)\[(\d+)\](?:\.([\w]+))?/);
-        const objObjMatch = key.match(/([\w]+)\.(\w+)/); // thumbnail.url, thumbnail.alt
+        // Support .file keys for images, descriptionImages, thumbnail, etc.
+        const arrObjMatch = key.match(/([\w]+)\[(\d+)\](?:\.([\w]+|file))?/);
+        const objObjMatch = key.match(/([\w]+)\.(\w+)/); // thumbnail.url, thumbnail.alt, thumbnail.file
         if (arrObjMatch) {
           const arrKey = arrObjMatch[1];
           const arrIdx = arrObjMatch[2];
           const objKey = arrObjMatch[3];
-          if ((arrKey === 'images' || arrKey === 'descriptionImages') && objKey === 'url' && value instanceof File) {
+          // Handle .file for images/descriptionImages
+          if ((arrKey === 'images' || arrKey === 'descriptionImages') && objKey === 'file' && value instanceof File) {
             if (!body[arrKey]) body[arrKey] = [];
-            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
+            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = { url: '', alt: '' };
             const url = await saveFile(value, 'uploads/Variant');
-            body[arrKey][arrIdx][objKey] = url;
+            body[arrKey][arrIdx].url = url;
           } else if ((arrKey === 'images' || arrKey === 'descriptionImages') && objKey) {
             if (!body[arrKey]) body[arrKey] = [];
-            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
+            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = { url: '', alt: '' };
             body[arrKey][arrIdx][objKey] = value;
+          } else if (["attributeSet", "ingredients", "benefits", "precautions", "howToUseSteps"].includes(arrKey) && objKey) {
+            if (!body[arrKey]) body[arrKey] = [];
+            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
+            if (["image", "url"].includes(objKey) && value instanceof File) {
+              const url = await saveFile(value, 'uploads/Variant');
+              body[arrKey][arrIdx][objKey] = url;
+            } else {
+              body[arrKey][arrIdx][objKey] = value;
+            }
           } else if ((arrKey === 'ingredients' || arrKey === 'benefits' || arrKey === 'precautions') && objKey === 'image' && value instanceof File) {
             if (!body[arrKey]) body[arrKey] = [];
             if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
             const url = await saveFile(value, 'uploads/Variant');
             body[arrKey][arrIdx][objKey] = url;
-          } else if ((arrKey === 'ingredients' || arrKey === 'benefits' || arrKey === 'precautions') && objKey) {
+          } else if (["attributeSet"].includes(arrKey) && !objKey) {
             if (!body[arrKey]) body[arrKey] = [];
-            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
-            body[arrKey][arrIdx][objKey] = value;
+            body[arrKey][arrIdx] = { attributeId: value };
           } else {
             if (!body[arrKey]) body[arrKey] = [];
             body[arrKey][arrIdx] = value;
@@ -226,11 +235,12 @@ export async function PUT(req) {
         } else if (objObjMatch) {
           const objKey = objObjMatch[1];
           const prop = objObjMatch[2];
-          if ((objKey === 'thumbnail') && prop === 'url' && value instanceof File) {
-            if (!body.thumbnail) body.thumbnail = {};
+          // Handle thumbnail.file
+          if (objKey === 'thumbnail' && prop === 'file' && value instanceof File) {
+            if (!body.thumbnail) body.thumbnail = { url: '', alt: '' };
             body.thumbnail.url = await saveFile(value, 'uploads/Variant');
           } else if ((objKey === 'thumbnail') && prop) {
-            if (!body.thumbnail) body.thumbnail = {};
+            if (!body.thumbnail) body.thumbnail = { url: '', alt: '' };
             body.thumbnail[prop] = value;
           } else {
             body[key] = value;
@@ -239,8 +249,16 @@ export async function PUT(req) {
           body[key] = value;
         }
       }
-      if (body.images) body.images = body.images.filter(Boolean);
-      if (body.descriptionImages) body.descriptionImages = body.descriptionImages.filter(Boolean);
+      // Normalize images and descriptionImages to always have url and alt
+      if (body.images) {
+        body.images = body.images.filter(Boolean).map(img => ({ url: img.url || '', alt: img.alt || '' }));
+      }
+      if (body.descriptionImages) {
+        body.descriptionImages = body.descriptionImages.filter(Boolean).map(img => ({ url: img.url || '', alt: img.alt || '' }));
+      }
+      if (body.thumbnail) {
+        body.thumbnail = { url: body.thumbnail.url || '', alt: body.thumbnail.alt || '' };
+      }
     } else {
       body = await req.json();
     }
@@ -253,8 +271,62 @@ export async function PUT(req) {
       }
     }
 
-    const updatedProduct = await productController.update(id, body, conn);
-    return NextResponse.json({ success: true, updatedProduct });
+    const updateResult = await productController.update(id, body, conn);
+    // Always fetch the full updated product after update
+    let fullProduct = null;
+    if (updateResult && updateResult.success) {
+      const getResult = await productController.getById(id, conn);
+      if (getResult && getResult.success) {
+        fullProduct = getResult.data;
+        // Normalize images
+        if (Array.isArray(fullProduct.images)) {
+          fullProduct.images = fullProduct.images.map(img => {
+            if (typeof img === 'string') {
+              return { url: img, alt: '' };
+            } else if (img && typeof img === 'object') {
+              return { url: img.url || '', alt: img.alt || '' };
+            } else {
+              return { url: '', alt: '' };
+            }
+          });
+        }
+        // Normalize descriptionImages
+        if (Array.isArray(fullProduct.descriptionImages)) {
+          fullProduct.descriptionImages = fullProduct.descriptionImages.map(img => {
+            if (typeof img === 'string') {
+              return { url: img, alt: '' };
+            } else if (img && typeof img === 'object') {
+              return { url: img.url || '', alt: img.alt || '' };
+            } else {
+              return { url: '', alt: '' };
+            }
+          });
+        }
+        // Normalize thumbnail
+        if (fullProduct.thumbnail && typeof fullProduct.thumbnail === 'string') {
+          fullProduct.thumbnail = { url: fullProduct.thumbnail, alt: '' };
+        } else if (fullProduct.thumbnail && typeof fullProduct.thumbnail === 'object') {
+          fullProduct.thumbnail = { url: fullProduct.thumbnail.url || '', alt: fullProduct.thumbnail.alt || '' };
+        }
+        // Normalize nested image fields for ingredients, benefits, precautions
+        const nestedImageFields = ['ingredients', 'benefits', 'precautions'];
+        for (const field of nestedImageFields) {
+          if (Array.isArray(fullProduct[field])) {
+            fullProduct[field] = fullProduct[field].map(item => {
+              if (!item) return item;
+              // If image is a string, convert to { url, alt }
+              if (typeof item.image === 'string') {
+                item.image = { url: item.image, alt: item.alt || '' };
+              } else if (item.image && typeof item.image === 'object') {
+                item.image = { url: item.image.url || '', alt: item.image.alt || item.alt || '' };
+              }
+              return item;
+            });
+          }
+        }
+      }
+    }
+    return NextResponse.json({ success: true, product: fullProduct });
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
