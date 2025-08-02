@@ -31,7 +31,11 @@ export async function GET(request) {
     const query = Object.fromEntries(searchParams.entries());
     const pageService = new PageService(conn);
     const result = await pageService.getAllPages(query);
-    return NextResponse.json({ success: true, data: result.data }, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      message: 'Pages fetched successfully',
+      data: result.data
+    }, { status: 200 });
   } catch (err) {
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
