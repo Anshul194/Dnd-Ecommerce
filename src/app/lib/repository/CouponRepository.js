@@ -63,7 +63,10 @@ class CouponRepository extends CrudRepository {
     try {
       return await this.model.findByIdAndUpdate(
         couponId,
-        { isDeleted: true },
+        { deletedAt: new Date() },
+
+        { deleted: true },
+
         { new: true }
       );
     } catch (error) {
