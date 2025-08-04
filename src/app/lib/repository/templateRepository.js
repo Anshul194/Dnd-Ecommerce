@@ -26,9 +26,8 @@ class TemplateRepository extends CrudRepository {
 
   async findById(id) {
     try {
-      return await this.Template.findById(id);
+      return await this.Template.findOne({ _id: id, deletedAt: null });
     } catch (error) {
-      console.error("TemplateRepository findById error:", error);
       throw error;
     }
   }
@@ -42,30 +41,7 @@ class TemplateRepository extends CrudRepository {
     }
   }
 
-  async getAll(filter = {}, page = 1, limit = 10) {
-    try {
-      const skip = (page - 1) * limit;
-      const templates = await this.Template.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
-
-      const total = await this.Template.countDocuments(filter);
-
-      return {
-        templates,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
-      };
-    } catch (error) {
-      console.error("TemplateRepository getAll error:", error);
-      throw error;
-    }
-  }
+ 
 
   async update(id, data) {
     try {

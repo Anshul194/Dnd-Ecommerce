@@ -9,6 +9,7 @@ import {
 } from "../../lib/controllers/templateController.js";
 import { NextResponse } from "next/server";
 import { getSubdomain, getDbConnection } from "../../lib/tenantDb.js";
+import TemplateService from "../../lib/services/templateService.js";
 
 // POST: Create a new template
 export async function POST(request) {
@@ -60,16 +61,19 @@ export async function GET(request) {
       return NextResponse.json(result.body, { status: result.status });
     } else {
       const query = Object.fromEntries(searchParams.entries());
-      const result = await getAllTemplates(query, conn);
-      return NextResponse.json(result.body, { status: result.status });
+      const templateService = new TemplateService(conn);
+      const result = await templateService.getAllTemplates(query);
+      console.log("GET /template result:", result);
+      return NextResponse.json({
+        success: true,
+        message: 'Templates fetched successfully',
+        data: result.data
+      }, { status: 200 });
     }
   } catch (err) {
     console.error("GET /template error:", err);
-    console.log("Error details:", err);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
+    console.log("Error details:", err.message);
+    return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }
 
