@@ -40,5 +40,6 @@ const templateSchema = new mongoose.Schema(
   }
 );
 
+export { templateSchema };
 export default mongoose.models.Template ||
   mongoose.model("Template", templateSchema);

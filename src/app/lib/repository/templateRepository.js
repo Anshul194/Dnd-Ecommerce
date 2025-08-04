@@ -1,5 +1,5 @@
 import CrudRepository from "./CrudRepository.js";
-import Template from "../models/Template.js";
+import { templateSchema } from "../models/Template.js";
 import mongoose from "mongoose";
 
 class TemplateRepository extends CrudRepository {
@@ -7,7 +7,8 @@ class TemplateRepository extends CrudRepository {
     // Use the provided connection for tenant DB, or global mongoose if not provided
     const connection = conn || mongoose;
     const TemplateModel =
-      connection.models.Template || connection.model("Template", Template);
+      connection.models.Template ||
+      connection.model("Template", templateSchema);
     super(TemplateModel);
     this.Template = TemplateModel;
     this.connection = connection;

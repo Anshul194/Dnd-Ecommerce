@@ -1,10 +1,15 @@
 "use client";
 
+import { fetchBlogs } from "@/app/store/slices/blogSclie";
 import { Heart, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function BlogSection() {
+  const { items, loading } = useSelector((state) => state.blogs);
+  const dispatch = useDispatch();
   const scrollLeft = () => {
     const container = document.getElementById("products-slider");
     container.scrollBy({ left: -300, behavior: "smooth" });
@@ -82,6 +87,12 @@ export default function BlogSection() {
     </div>
   );
 
+  useEffect(() => {
+    if (!items.length > 0) {
+      dispatch(fetchBlogs());
+    }
+  }, []);
+
   return (
     <div className="p-8 bg-white">
       {/* Header Section */}
@@ -117,17 +128,29 @@ export default function BlogSection() {
 
         <div id="products-slider" className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-4 justify-between pb-4 w-full">
-            {products.map((product) => (
-              <Link href={`/blogs`} key={product.id} className="w-full">
+            {items.map((product) => (
+              <Link
+                href={`/blogs/${product._id}`}
+                key={product._id}
+                className="w-full"
+              >
                 <div
-                  key={product.id}
+                  key={product._id}
                   className="bg-gray-50/80 group hover:bg-gray-100 cursor-pointer rounded-b-md flex-shrink-0 min-w-64 max-w-[300px] w-full"
                 >
                   {/* Product Image */}
                   <div className="relative bg-gray-400 overflow-hidden rounded-t-md w-full h-48 mb-1 ">
                     <Image
-                      src="/images/teabanner.jpg"
-                      alt={product.name}
+                      src={
+                        product?.thumbnail?.url ||
+                        product?.images[0]?.url ||
+                        "/placeholder.png"
+                      }
+                      alt={
+                        product?.thumbnail?.alt ||
+                        product?.images[0]?.alt ||
+                        "/placeholder.png"
+                      }
                       layout="fill"
                       objectFit="cover"
                       className="rounded-md group-hover:scale-[1.05] transition-transform duration-300"
@@ -137,11 +160,14 @@ export default function BlogSection() {
                   {/* Product Info */}
                   <div className="px-3 py-1 pb-4">
                     <h3 className="font-medium poppins text-black mb-1 ">
-                      {product.name}
+                      {product.title}
                     </h3>
-                    <p className="text-sm poppins text-black">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                    </p>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: product.content.slice(0, 90),
+                      }}
+                      className="text-sm poppins text-black"
+                    ></div>
                   </div>
                 </div>
               </Link>

@@ -12,7 +12,7 @@ export default function HomePage() {
   return (
     <main>
       <LandingBanner />
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4"div>
         <Categories />
       </div>
       <SeasonSaleBanner />

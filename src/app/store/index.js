@@ -11,6 +11,7 @@ import tenantReducer from "./slices/tenantSlice";
 import variantReducer from "./slices/variantSlice";
 import cartReducer from "./slices/cartSlice";
 import couponReducer from "./slices/couponSlice";
+import blogSlice from "./slices/blogSclie";
 
 const store = configureStore({
   reducer: {
@@ -25,6 +26,7 @@ const store = configureStore({
     tenant: tenantReducer,
     variant: variantReducer,
     coupon: couponReducer,
+    blogs: blogSlice,
   },
 });
 
