@@ -109,14 +109,6 @@ export default function Footer() {
     }));
   };
 
-  if (
-    pathname.includes("/signup") ||
-    pathname.includes("/login") ||
-    pathname.includes("/builder")
-  ) {
-    return null; // Don't render Navbar on product detail page
-  }
-
   const getData = async () => {
     try {
       const response = await axiosInstance.get("/page?groupByMainTitle=true");
@@ -135,6 +127,15 @@ export default function Footer() {
   useEffect(() => {
     getData();
   }, []);
+
+  if (
+    pathname.includes("/signup") ||
+    pathname.includes("/login") ||
+    pathname.includes("/builder")
+  ) {
+    return null; // Don't render Navbar on product detail page
+  }
+
   return (
     <footer className="bg-[#236339] text-white">
       {/* Top Features Section */}
