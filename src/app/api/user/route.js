@@ -177,7 +177,7 @@ export async function GET(request) {
 
     if (id) {
       // Get user by ID
-      const user = await userService.findById(id);
+      const user = await userService.getUserById(id);
       if (!user) {
         return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
       }
@@ -185,35 +185,67 @@ export async function GET(request) {
       delete userObj.passwordHash;
       return NextResponse.json({ success: true, user: userObj }, { status: 200 });
     } else {
-      // Get all users
-      const users = await userService.getAllUsers();
+      // Get users with filters
+      const query = {};
+      for (const [key, value] of searchParams.entries()) {
+        query[key] = value;
+      }
 
-      return NextResponse.json({ success: true, users: users }, { status: 200 });
+      const { users, total, page, limit } = await userService.getAllUsers(query);
+
+      const sanitizedUsers = users.map(u => {
+        const userObj = u.toObject();
+        delete userObj.passwordHash;
+        return userObj;
+      });
+
+      return NextResponse.json({
+        success: true,
+        users: sanitizedUsers,
+        total,
+        page,
+        limit,
+      }, { status: 200 });
     }
   } catch (err) {
     console.error('GET /user error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }
+
 export async function PUT(request) {
   try {
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
+    console.log('PUT /user subdomain:', subdomain);
+    console.log('PUT /user db connection:', conn ? 'connected' : 'not connected');
+
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const userService = new UserService(conn);
 
+    const userService = new UserService(conn);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    console.log('PUT /user id:', id);
+
     const body = await request.json();
-    const result = await updateUser(id, body);
-    return NextResponse.json(result.body, { status: result.status });
+    console.log('PUT /user update body:', body);
+
+    const result = await userService.updateUser(id, body);
+
+    if (!result) {
+      return NextResponse.json({ success: false, message: 'User not found or deleted' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, data: result }, { status: 200 });
+
   } catch (err) {
     console.error('PUT /user error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
   }
 }
+
 
 export async function DELETE(request) {
   try {
@@ -226,7 +258,7 @@ export async function DELETE(request) {
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const result = await deleteUser(id);
+    const result = await userService.deleteUser(id);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     console.error('DELETE /user error:', err);
