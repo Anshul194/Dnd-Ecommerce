@@ -130,7 +130,16 @@ export async function PATCH(request) {
     const userService = new UserService(conn);
 
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, phone } = body;
+
+    // Support both email/password and phone-based login
+    if (phone) {
+      // Phone-based login - should use OTP flow instead
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Phone login requires OTP verification. Use /auth/request-otp endpoint.' 
+      }, { status: 400 });
+    }
 
     if (!email || !password) {
       return NextResponse.json({ success: false, message: 'Email and password are required.' }, { status: 400 });
@@ -259,7 +268,11 @@ export async function DELETE(request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const result = await userService.deleteUser(id);
-    return NextResponse.json(result.body, { status: result.status });
+    console.log('DELETE /user result here conoling:', result);
+    if (!result) {
+      return NextResponse.json({ success: false, message: 'User not found or could not be deleted' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, message: 'User deleted successfully',result }, { status: 200 });
   } catch (err) {
     console.error('DELETE /user error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });

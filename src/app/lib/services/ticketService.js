@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
-import TicketRepository from '../repository/ticketRepository.js';
+import TicketRepository from '../repository/ticketRepository';
 
 class TicketService {
   constructor(conn) {
+    this.conn = conn; // Store conn for tenant-specific operations
     this.repo = new TicketRepository(conn);
   }
 
@@ -118,6 +119,17 @@ async getTicketById(id) {
     }
   }
 
+  async getTicketsByCustomer(customerId, conn = this.conn) {
+    return await this.repo.findByCustomer(customerId, conn);
+  }
+
+  async getRecentTickets(conn = this.conn) {
+    try {
+      const tickets = await this.repo.getRecentTickets(5, ['customer', 'assignedTo'], conn);
+      return tickets;
+    } catch (error) {
+      throw new Error(`Failed to fetch recent tickets: ${error.message}`);
+    }
   async getTicketsByCustomer(customerId) {
     try {
       return await this.repo.findByCustomer(customerId);

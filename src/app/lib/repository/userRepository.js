@@ -1,11 +1,13 @@
 import mongoose from 'mongoose';
-import userSchema from '../models/User.js';
+import { UserSchema } from '../models/User.js';
 import roleSchema from '../models/role.js';
+import CrudRepository from './CrudRepository.js';
 
-class UserRepository {
+class UserRepository extends CrudRepository {
   constructor(conn) {
-    this.model = conn.models.User || conn.model('User', userSchema, 'users');
-    this.roleModel = conn.models.Role || conn.model('Role', roleSchema, 'roles');
+    const userModel = conn.model('User', UserSchema, 'users');
+    super(userModel);
+    this.roleModel = conn.model('Role', roleSchema, 'roles');
   }
 
   async createUser(data) {
@@ -20,7 +22,7 @@ class UserRepository {
 
   async findById(id, tenantId = null) {
     try {
-      const query = { _id: id, isDeleted: false };
+      const query = { _id: id, deleted: { $ne: true } };
       if (tenantId) {
         query.tenant = new mongoose.Types.ObjectId(tenantId);
       }
@@ -35,38 +37,18 @@ class UserRepository {
 
   async findByEmail(email) {
     try {
-      return await this.model.findOne({ email, isDeleted: false });
+      return await this.model.findOne({ email, deleted: { $ne: true } });
     } catch (error) {
       console.error('UserRepo findByEmail error:', error?.message);
       throw error;
     }
   }
 
-  async getAll(filter = {}, page = 1, limit = 10) {
+  async findByPhone(phone) {
     try {
-      const query = { ...filter, isDeleted: false };
-
-      // Convert role name to ID if needed
-      if (query.role) {
-        if (mongoose.Types.ObjectId.isValid(query.role)) {
-          query.role = new mongoose.Types.ObjectId(query.role);
-        } else {
-          const roleDoc = await this.roleModel.findOne({ name: query.role, isDeleted: false });
-          if (roleDoc) {
-            query.role = roleDoc._id;
-          } else {
-            return { users: [], total: 0, page, limit };
-          }
-        }
-      }
-
-      const skip = (page - 1) * limit;
-      const users = await this.model.find(query).skip(skip).limit(limit).populate('role');
-      const total = await this.model.countDocuments(query);
-
-      return { users, total, page, limit };
+      return await this.model.findOne({ phone, deleted: { $ne: true } });
     } catch (error) {
-      console.error('UserRepo getAll error:', error);
+      console.error('UserRepo findByPhone error:', error?.message);
       throw error;
     }
   }
@@ -77,7 +59,7 @@ class UserRepository {
       const user = await this.model.findById(id);
       console.log('User found:', user); // ✅ Debug log
 
-      if (!user || user.isDeleted) return null;
+      if (!user || user.deleted) return null;
 
       user.set(data);
       return await user.save();
@@ -92,7 +74,8 @@ class UserRepository {
       // ✅ Use `$set` to ensure both fields are updated properly
       const doc = await this.model.findByIdAndUpdate(
         id,
-        { $set: { isDeleted: true, isActive: false } },
+        { deleted: true },
+        { deletedAt: new Date(), updatedAt: new Date() },
         { new: true }
       );
 
@@ -104,7 +87,7 @@ class UserRepository {
       console.log('Soft deleted user:', doc); // ✅ Debug log
       return doc.toObject(); // ✅ Convert to plain object
     } catch (error) {
-      console.error('UserRepo softDelete error:', error);
+      console.error('UserRepo softDelete error:', error?.message);
       throw error;
     }
   }

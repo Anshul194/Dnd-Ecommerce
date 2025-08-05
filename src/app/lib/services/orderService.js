@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import orderRepository from '../repository/OrderRepository.js';
-import CouponService from './CouponService.js';
+import OrderRepository from '../repository/OrderRepository';
+import CouponService from './CouponService';
 
 class OrderService {
   constructor(orderRepository, couponService) {
@@ -126,10 +126,9 @@ class OrderService {
     }
   }
 
-   async getUserOrders(request, conn) {
+  async getUserOrders(request, conn) {
     try {
-
-      console.log("request user",request.user);
+      console.log("request user", request.user);
       const userId = request.user?._id;
 
       console.log('User ID:', userId);
@@ -190,7 +189,7 @@ class OrderService {
     }
   }
 
-    async getOrderDetails(request, conn, params) {
+  async getOrderDetails(request, conn, params) {
     try {
       const userId = request.user?._id;
       if (!userId) {
@@ -229,7 +228,23 @@ class OrderService {
     }
   }
 
+  async getRecentOrders(conn) {
+    try {
+      const orders = await this.orderRepository.getRecentOrders(5, ['items.product', 'items.variant', 'user']);
+      return orders;
+    } catch (error) {
+      throw new Error(`Failed to fetch recent orders: ${error.message}`);
+    }
+  }
 
+  async calculateIncome(filterConditions, conn) {
+    try {
+      const income = await this.orderRepository.calculateIncome(filterConditions);
+      return income;
+    } catch (error) {
+      throw new Error(`Failed to calculate income: ${error.message}`);
+    }
+  }
 }
 
 export default OrderService;

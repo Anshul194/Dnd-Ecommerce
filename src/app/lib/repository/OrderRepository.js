@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import CrudRepository from './CrudRepository.js';
-import { ProductSchema } from '../models/Product.js';
-import { VariantSchema } from '../models/Variant.js';
+import CrudRepository from './CrudRepository';
+import { ProductSchema } from '../models/Product';
+import { VariantSchema } from '../models/Variant';
 
 class OrderRepository extends CrudRepository {
   constructor(model, connection) {
@@ -32,12 +32,6 @@ class OrderRepository extends CrudRepository {
       console.log('Using Product model:', Product.modelName);
       console.log('Database:', this.connection.name || 'global mongoose');
 
-      // Log all available product IDs
-      const allProducts = await Product.find({}, '_id');
-      const allProductIds = allProducts.map(p => p._id.toString());
-      console.log('All available product IDs:', allProductIds);
-      console.log('Total products:', allProductIds.length);
-
       if (!mongoose.Types.ObjectId.isValid(productId)) {
         throw new Error(`Invalid productId: ${productId}`);
       }
@@ -65,12 +59,6 @@ class OrderRepository extends CrudRepository {
       console.log('Using Variant model:', Variant.modelName);
       console.log('Database:', this.connection.name || 'global mongoose');
 
-      // Log all available variant IDs
-      const allVariants = await Variant.find({}, '_id');
-      const allVariantIds = allVariants.map(v => v._id.toString());
-      console.log('All available variant IDs:', allVariantIds);
-      console.log('Total variants:', allVariantIds.length);
-
       if (!mongoose.Types.ObjectId.isValid(variantId)) {
         throw new Error(`Invalid variantId: ${variantId}`);
       }
@@ -87,7 +75,7 @@ class OrderRepository extends CrudRepository {
     }
   }
 
-   async getUserOrders(userId, filterConditions = {}, sortConditions = {}, page, limit, populateFields = [], selectFields = {}) {
+  async getUserOrders(userId, filterConditions = {}, sortConditions = {}, page, limit, populateFields = [], selectFields = {}) {
     try {
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new Error(`Invalid userId: ${userId}`);
@@ -127,7 +115,7 @@ class OrderRepository extends CrudRepository {
     }
   }
 
-    async getOrderById(orderId, userId, populateFields = [], selectFields = {}) {
+  async getOrderById(orderId, userId, populateFields = [], selectFields = {}) {
     try {
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
@@ -152,6 +140,37 @@ class OrderRepository extends CrudRepository {
       return order;
     } catch (error) {
       console.error('OrderRepository getOrderById Error:', error.message);
+      throw error;
+    }
+  }
+
+  async getRecentOrders(limit = 5, populateFields = []) {
+    try {
+      let query = this.model.find({})
+        .sort({ createdAt: -1 })
+        .limit(limit);
+
+      if (populateFields.length > 0) {
+        populateFields.forEach(field => {
+          query = query.populate(field);
+        });
+      }
+
+      const orders = await query.exec();
+      return orders;
+    } catch (error) {
+      console.error('OrderRepository getRecentOrders Error:', error.message);
+      throw error;
+    }
+  }
+
+  async calculateIncome(filterConditions = {}) {
+    try {
+      const orders = await this.model.find(filterConditions).select('total');
+      const totalIncome = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+      return totalIncome;
+    } catch (error) {
+      console.error('OrderRepository calculateIncome Error:', error.message);
       throw error;
     }
   }
