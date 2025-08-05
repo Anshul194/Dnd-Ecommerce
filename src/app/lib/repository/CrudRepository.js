@@ -85,6 +85,8 @@ class CrudRepository {
       query = query.populate(field);
       });
     }
+
+    console.log('query', query);
     const result = await query;
     // Get the total count of documents matching the filter
     const totalDocuments = await this.model.countDocuments(filterCon);

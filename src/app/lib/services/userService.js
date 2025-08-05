@@ -78,7 +78,7 @@ class UserService {
       const pageNum = query.page ? parseInt(query.page, 10) : 1;
       const limitNum = query.limit ? parseInt(query.limit, 10) : 10;
       const filter = { ...query };
-      
+
       // Only add deleted filter if not explicitly requesting all users
       if (!query.includeDeleted) {
         // Try different approaches for deleted filter
@@ -89,10 +89,10 @@ class UserService {
       delete filter.page;
       delete filter.limit;
       delete filter.includeDeleted;
-      
+
       // Use CrudRepository's getAll method
       const result = await this.userRepo.getAll(filter, {}, pageNum, limitNum);
-      
+
       // Transform the response to match expected format
       return {
         users: result.result,
