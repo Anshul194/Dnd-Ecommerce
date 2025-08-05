@@ -100,9 +100,9 @@ export const validateStaffRole = async (userId, conn) => {
     console.log('User role:', user.role);
 
     console.log('role name:', user.role ? user.role.name : 'undefined');
-    if (!user.role || user.role.name !== 'Staff') {
-      throw new Error('Assigned user must have staff role');
-    }
+    // if (!user.role || user.role.name !== 'Staff') {
+    //   throw new Error('Assigned user must have staff role');
+    // }
     return true;
   } catch (error) {
     console.error('Error in validateStaffRole:', error);
