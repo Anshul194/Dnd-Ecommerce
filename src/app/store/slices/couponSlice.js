@@ -1,51 +1,79 @@
-import axiosInstance from '@/axiosConfig/axiosInstance';
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axiosInstance from "@/axiosConfig/axiosInstance";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Async thunk to fetch coupons
 export const fetchCoupons = createAsyncThunk(
-    'coupons/fetchCoupons',
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await axiosInstance.get('/coupon');
-            console.log('Fetched coupons:', response.data);
-            return response.data?.coupons?.data || [];
-        } catch (error) {
-            return rejectWithValue(error.response?.data || error.message);
-        }
+  "coupons/fetchCoupons",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/coupon");
+      console.log("Fetched coupons:", response.data);
+      return response.data?.coupons?.data || [];
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
     }
+  }
+);
+
+export const applyCoupon = createAsyncThunk(
+  "coupons/applyCoupon",
+  async ({ code, total }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/coupon/apply", {
+        code,
+        cartValue: total,
+      });
+      console.log("Coupon applied:", response.data.data);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
 );
 
 const couponSlice = createSlice({
-    name: 'coupons',
-    initialState: {
-        items: [],
-        loading: false,
-        error: null,
-        selectedCoupon: null,
+  name: "coupons",
+  initialState: {
+    items: [],
+    loading: false,
+    error: null,
+    selectedCoupon: null,
+  },
+  reducers: {
+    setSelectedCoupon: (state, action) => {
+      state.selectedCoupon = action.payload;
     },
-    reducers: {
-        setSelectedCoupon: (state, action) => {
-            state.selectedCoupon = action.payload;
-        },
-        clearSelectedCoupon: (state) => {
-            state.selectedCoupon = null;
-        },
+    clearSelectedCoupon: (state) => {
+      state.selectedCoupon = null;
     },
-    extraReducers: (builder) => {
-        builder
-            .addCase(fetchCoupons.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(fetchCoupons.fulfilled, (state, action) => {
-                state.loading = false;
-                state.items = action.payload;
-            })
-            .addCase(fetchCoupons.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            });
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchCoupons.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCoupons.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload;
+      })
+      .addCase(fetchCoupons.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(applyCoupon.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(applyCoupon.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedCoupon = action.payload;
+      })
+      .addCase(applyCoupon.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
 });
 
 export const { setSelectedCoupon, clearSelectedCoupon } = couponSlice.actions;

@@ -18,20 +18,58 @@ export const createLead = async (data, conn) => {
 };
 
 // ✅ Read All
-export const getLeads = async (conn) => {
+export const getLeads = async (query, conn) => {
   try {
     const Lead = getModel(conn, 'Lead', leadSchema);
-    const User = getModel(conn, 'User', userSchema);
-    return await Lead.find()
-      .populate('assignedTo')
-      .populate('convertedTo')
-      .populate('notes.createdBy')
-      .sort({ createdAt: -1 });
+
+    const {
+      search = '',
+      status,
+      source,
+      assignedTo,
+      page = 1,
+      limit = 10,
+    } = query;
+
+    const filter = {};
+
+    if (search) {
+      filter.$or = [
+        { fullName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (status) filter.status = status;
+    if (source) filter.source = source;
+    if (assignedTo) filter.assignedTo = assignedTo;
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [leads, totalDocuments] = await Promise.all([
+      Lead.find(filter)
+        .populate('assignedTo')
+        .populate('convertedTo')
+        .populate('notes.createdBy')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      Lead.countDocuments(filter),
+    ]);
+
+    return {
+      leads,
+      totalDocuments,
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalDocuments / Number(limit)),
+    };
   } catch (error) {
     console.error('Error in getLeads:', error);
     throw error;
   }
 };
+
 
 // ✅ Read by ID
 export const getLeadById = async (id, conn) => {
