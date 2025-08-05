@@ -45,3 +45,12 @@ export const getLeadByIdService = async (id, conn) => {
     throw error;
   }
 };
+
+export const bulkAssignLeadsService = async (leadIds, assignedTo, conn) => {
+  try {
+    return await leadRepo.bulkAssignLeads(leadIds, assignedTo, conn);
+  } catch (error) {
+    console.error('Error in bulkAssignLeadsService:', error);
+    throw error;
+  }
+};

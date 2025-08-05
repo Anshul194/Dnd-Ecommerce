@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { UserSchema } from '../models/User.js';
+import UserSchema from '../models/User.js';
 import roleSchema from '../models/role.js';
 import CrudRepository from './CrudRepository.js';
 

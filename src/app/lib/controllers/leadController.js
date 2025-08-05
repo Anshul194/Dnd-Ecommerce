@@ -6,6 +6,10 @@ import {
   updateLeadService,
   deleteLeadService,
 } from '../services/leadService.js';
+import { bulkAssignLeadsService } from '../services/leadService.js';
+import mongoose from 'mongoose';
+
+
 
 export const createLeadController = async (body, conn) => {
   try {
@@ -186,5 +190,78 @@ export const convertLeadController = async (leadId, customerId, conn) => {
         error: error?.message || 'Something went wrong',
       },
     };
+  }
+};
+
+export const assignLeadController = async (id, body, conn) => {
+  try {
+    const { assignedTo } = body;
+    console.log('Assigning lead with ID:', id, 'to user:', assignedTo); // Debug log
+    if (!assignedTo) {
+      return NextResponse.json({
+        success: false,
+        message: 'assignedTo ID is required',
+      }, { status: 400 });
+    }
+
+    const updated = await updateLeadService(id, {
+      assignedTo,
+      status: 'assigned'
+    }, conn);
+
+    if (!updated) {
+      console.error('Lead not found for ID:', id);
+      return NextResponse.json({
+        success: false,
+        message: 'Lead not found',
+      }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Lead assigned and converted successfully',
+      data: updated,
+    });
+  } catch (error) {
+    console.error('Error assigning lead:', error);
+    return NextResponse.json({
+      success: false,
+      message: error.message || 'Failed to assign lead',
+      error: error?.message || 'Something went wrong',
+    }, { status: 500 });
+  }
+};
+
+export const bulkAssignLeadsController = async (body, conn) => {
+  try {
+    const { leadIds, assignedTo } = body;
+    if (!Array.isArray(leadIds) || leadIds.length === 0 || !mongoose.Types.ObjectId.isValid(assignedTo)) {
+      return NextResponse.json({
+        success: false,
+        message: 'Invalid lead IDs or assignedTo ID',
+      }, { status: 400 });
+    }
+
+    if (!leadIds.every(id => mongoose.Types.ObjectId.isValid(id))) {
+      return NextResponse.json({
+        success: false,
+        message: 'One or more lead IDs are invalid',
+      }, { status: 400 });
+    }
+
+    const result = await bulkAssignLeadsService(leadIds, assignedTo, conn);
+
+    return NextResponse.json({
+      success: true,
+      message: `Successfully assigned ${result.modifiedCount} leads`,
+      data: { modifiedCount: result.modifiedCount },
+    });
+  } catch (error) {
+    console.error('Error bulk assigning leads:', error);
+    return NextResponse.json({
+      success: false,
+      message: error.message || 'Failed to bulk assign leads',
+      error: error?.message || 'Something went wrong',
+    }, { status: 500 });
   }
 };
