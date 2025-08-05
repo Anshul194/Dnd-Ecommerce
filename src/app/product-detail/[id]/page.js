@@ -4,7 +4,7 @@ import React, { useState, useEffect, use } from "react";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import AuthRequiredModal from "@/components/AuthRequiredModal";
-import Ingredient from "./components/Incredients"
+import Ingredient from "./components/Incredients";
 import {
   ChevronLeft,
   ChevronRight,
@@ -52,7 +52,9 @@ function ProductPage({ params }) {
 
   const prevImage = () => {
     if (data?.images?.length > 0) {
-      setSelectedImage((prev) => (prev - 1 + data.images.length) % data.images.length);
+      setSelectedImage(
+        (prev) => (prev - 1 + data.images.length) % data.images.length
+      );
     }
   };
 
@@ -141,8 +143,8 @@ function ProductPage({ params }) {
                       <div
                         key={index}
                         className={`w-20 h-20 border-2 rounded-lg cursor-pointer overflow-hidden transition-all ${
-                          selectedImage === index 
-                            ? "border-green-500 shadow-md" 
+                          selectedImage === index
+                            ? "border-green-500 shadow-md"
                             : "border-gray-200 hover:border-gray-300"
                         }`}
                         onClick={() => setSelectedImage(index)}
@@ -162,13 +164,13 @@ function ProductPage({ params }) {
                 <div className="flex-1 relative">
                   <div className="aspect-square bg-gray-50 border border-gray-200 rounded-xl overflow-hidden relative group">
                     {/* Navigation arrows */}
-                    <button 
+                    <button
                       onClick={prevImage}
                       className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 z-10"
                     >
                       <ChevronLeft size={20} />
                     </button>
-                    <button 
+                    <button
                       onClick={nextImage}
                       className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105 z-10"
                     >
@@ -192,7 +194,9 @@ function ProductPage({ params }) {
                           <div
                             key={index}
                             className={`w-2 h-2 rounded-full transition-all ${
-                              selectedImage === index ? "bg-green-500" : "bg-white/50"
+                              selectedImage === index
+                                ? "bg-green-500"
+                                : "bg-white/50"
                             }`}
                           />
                         ))}
@@ -207,14 +211,12 @@ function ProductPage({ params }) {
             <div className="lg:max-w-xl w-full md:w-1/2">
               {/* Product Title and Rating */}
               <div className={!data?.name ? "animate-pulse" : ""}>
-                {data.name ? (
+                {data?.name ? (
                   <h1 className="text-2xl font-bold text-gray-900 mb-2">
                     {data?.name}
                   </h1>
                 ) : (
-                  <div className="h-8 mb-2 w-full rounded-md bg-black/5">
-                    {" "}
-                  </div>
+                  <div className="h-8 mb-2 w-full rounded-md bg-black/5"> </div>
                 )}
               </div>
 
@@ -349,17 +351,27 @@ function ProductPage({ params }) {
                         : "hover:bg-gray-50"
                     }`}
                   >
-                    <span className={`font-semibold text-base ${
-                      expandedSection === "details" ? "text-green-700" : "text-green-600"
-                    }`}>
+                    <span
+                      className={`font-semibold text-base ${
+                        expandedSection === "details"
+                          ? "text-green-700"
+                          : "text-green-600"
+                      }`}
+                    >
                       Product Details
                     </span>
-                    <div className={`p-1 rounded-full transition-all duration-300 ${
-                      expandedSection === "details" ? "bg-green-200 rotate-180" : "bg-gray-100"
-                    }`}>
+                    <div
+                      className={`p-1 rounded-full transition-all duration-300 ${
+                        expandedSection === "details"
+                          ? "bg-green-200 rotate-180"
+                          : "bg-gray-100"
+                      }`}
+                    >
                       <ChevronDown
                         className={`transition-colors duration-200 ${
-                          expandedSection === "details" ? "text-green-700" : "text-gray-600"
+                          expandedSection === "details"
+                            ? "text-green-700"
+                            : "text-gray-600"
                         }`}
                         size={18}
                       />
@@ -372,7 +384,7 @@ function ProductPage({ params }) {
                         : "max-h-0 opacity-0"
                     } overflow-hidden`}
                   >
-                    <div 
+                    <div
                       className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50"
                       dangerouslySetInnerHTML={{
                         __html: data.description || "",
@@ -393,17 +405,27 @@ function ProductPage({ params }) {
                             : "hover:bg-gray-50"
                         }`}
                       >
-                        <span className={`font-semibold text-base ${
-                          expandedSection === "ingredients" ? "text-green-700" : "text-green-600"
-                        }`}>
+                        <span
+                          className={`font-semibold text-base ${
+                            expandedSection === "ingredients"
+                              ? "text-green-700"
+                              : "text-green-600"
+                          }`}
+                        >
                           Ingredients
                         </span>
-                        <div className={`p-1 rounded-full transition-all duration-300 ${
-                          expandedSection === "ingredients" ? "bg-green-200 rotate-180" : "bg-gray-100"
-                        }`}>
+                        <div
+                          className={`p-1 rounded-full transition-all duration-300 ${
+                            expandedSection === "ingredients"
+                              ? "bg-green-200 rotate-180"
+                              : "bg-gray-100"
+                          }`}
+                        >
                           <ChevronDown
                             className={`transition-colors duration-200 ${
-                              expandedSection === "ingredients" ? "text-green-700" : "text-gray-600"
+                              expandedSection === "ingredients"
+                                ? "text-green-700"
+                                : "text-gray-600"
                             }`}
                             size={18}
                           />
@@ -419,9 +441,14 @@ function ProductPage({ params }) {
                         <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
                           <ul className="space-y-2">
                             {data.ingredients.map((item, idx) => (
-                              <li key={item._id || idx} className="flex items-start gap-2">
+                              <li
+                                key={item._id || idx}
+                                className="flex items-start gap-2"
+                              >
                                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                                <span className="leading-relaxed">{item.description}</span>
+                                <span className="leading-relaxed">
+                                  {item.description}
+                                </span>
                               </li>
                             ))}
                           </ul>
@@ -441,17 +468,27 @@ function ProductPage({ params }) {
                           : "hover:bg-gray-50"
                       }`}
                     >
-                      <span className={`font-semibold text-base ${
-                        expandedSection === "benefits" ? "text-green-700" : "text-green-600"
-                      }`}>
+                      <span
+                        className={`font-semibold text-base ${
+                          expandedSection === "benefits"
+                            ? "text-green-700"
+                            : "text-green-600"
+                        }`}
+                      >
                         Benefits
                       </span>
-                      <div className={`p-1 rounded-full transition-all duration-300 ${
-                        expandedSection === "benefits" ? "bg-green-200 rotate-180" : "bg-gray-100"
-                      }`}>
+                      <div
+                        className={`p-1 rounded-full transition-all duration-300 ${
+                          expandedSection === "benefits"
+                            ? "bg-green-200 rotate-180"
+                            : "bg-gray-100"
+                        }`}
+                      >
                         <ChevronDown
                           className={`transition-colors duration-200 ${
-                            expandedSection === "benefits" ? "text-green-700" : "text-gray-600"
+                            expandedSection === "benefits"
+                              ? "text-green-700"
+                              : "text-gray-600"
                           }`}
                           size={18}
                         />
@@ -467,9 +504,14 @@ function ProductPage({ params }) {
                       <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
                         <ul className="space-y-2">
                           {data.benefits.map((item, idx) => (
-                            <li key={item._id || idx} className="flex items-start gap-2">
+                            <li
+                              key={item._id || idx}
+                              className="flex items-start gap-2"
+                            >
                               <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                              <span className="leading-relaxed">{item.description}</span>
+                              <span className="leading-relaxed">
+                                {item.description}
+                              </span>
                             </li>
                           ))}
                         </ul>
@@ -490,17 +532,27 @@ function ProductPage({ params }) {
                             : "hover:bg-gray-50"
                         }`}
                       >
-                        <span className={`font-semibold text-base ${
-                          expandedSection === "precautions" ? "text-green-700" : "text-green-600"
-                        }`}>
+                        <span
+                          className={`font-semibold text-base ${
+                            expandedSection === "precautions"
+                              ? "text-green-700"
+                              : "text-green-600"
+                          }`}
+                        >
                           Precautions
                         </span>
-                        <div className={`p-1 rounded-full transition-all duration-300 ${
-                          expandedSection === "precautions" ? "bg-green-200 rotate-180" : "bg-gray-100"
-                        }`}>
+                        <div
+                          className={`p-1 rounded-full transition-all duration-300 ${
+                            expandedSection === "precautions"
+                              ? "bg-green-200 rotate-180"
+                              : "bg-gray-100"
+                          }`}
+                        >
                           <ChevronDown
                             className={`transition-colors duration-200 ${
-                              expandedSection === "precautions" ? "text-green-700" : "text-gray-600"
+                              expandedSection === "precautions"
+                                ? "text-green-700"
+                                : "text-gray-600"
                             }`}
                             size={18}
                           />
@@ -516,9 +568,14 @@ function ProductPage({ params }) {
                         <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
                           <ul className="space-y-2">
                             {data.precautions.map((item, idx) => (
-                              <li key={item._id || idx} className="flex items-start gap-2">
+                              <li
+                                key={item._id || idx}
+                                className="flex items-start gap-2"
+                              >
                                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                                <span className="leading-relaxed">{item.description}</span>
+                                <span className="leading-relaxed">
+                                  {item.description}
+                                </span>
                               </li>
                             ))}
                           </ul>
@@ -537,17 +594,27 @@ function ProductPage({ params }) {
                         : "hover:bg-gray-50"
                     }`}
                   >
-                    <span className={`font-semibold text-base ${
-                      expandedSection === "usage" ? "text-green-700" : "text-green-600"
-                    }`}>
+                    <span
+                      className={`font-semibold text-base ${
+                        expandedSection === "usage"
+                          ? "text-green-700"
+                          : "text-green-600"
+                      }`}
+                    >
                       How to use
                     </span>
-                    <div className={`p-1 rounded-full transition-all duration-300 ${
-                      expandedSection === "usage" ? "bg-green-200 rotate-180" : "bg-gray-100"
-                    }`}>
+                    <div
+                      className={`p-1 rounded-full transition-all duration-300 ${
+                        expandedSection === "usage"
+                          ? "bg-green-200 rotate-180"
+                          : "bg-gray-100"
+                      }`}
+                    >
                       <ChevronDown
                         className={`transition-colors duration-200 ${
-                          expandedSection === "usage" ? "text-green-700" : "text-gray-600"
+                          expandedSection === "usage"
+                            ? "text-green-700"
+                            : "text-gray-600"
                         }`}
                         size={18}
                       />
@@ -561,8 +628,8 @@ function ProductPage({ params }) {
                     } overflow-hidden`}
                   >
                     <div className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50">
-                      Add a pinch to warm milk or tea. Can be used in cooking and
-                      baking. Store in a cool, dry place.
+                      Add a pinch to warm milk or tea. Can be used in cooking
+                      and baking. Store in a cool, dry place.
                     </div>
                   </div>
                 </div>
@@ -571,14 +638,14 @@ function ProductPage({ params }) {
                   <h3 className="font-semibold text-black mb-3">
                     Available Coupons
                   </h3>
-                  <CouponSlider />
+                  {/* <CouponSlider /> */}
                 </div>
               </div>
             </div>
           </div>
 
           <HowToUse data={data} />
-          <Ingredient/>
+          <Ingredient />
           <DescriptionLayout data={data} />
           <ProductReview />
           <FrequentlyPurchased />

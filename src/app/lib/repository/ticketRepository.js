@@ -15,7 +15,7 @@ class TicketRepository extends CrudRepository {
 
   async create(data, conn) {
     try {
-      console.log('Creating ticket with data:', JSON.stringify(data, null, 2));
+      // console.log('Creating ticket with data:', JSON.stringify(data, null, 2));
       return await this.Ticket.create(data);
     } catch (error) {
       console.error('TicketRepository Create Error:', error.message);
