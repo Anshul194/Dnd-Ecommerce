@@ -1,9 +1,7 @@
-import { boolean } from "joi";
-import mongoose from "mongoose";
-import { type } from "os";
-import slugify from "slugify";
+import mongoose from 'mongoose';
+import slugify from 'slugify';
 
-export const productSchema = new mongoose.Schema(
+const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -19,43 +17,35 @@ export const productSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-
     // Category, Subcategory, Brand as references
     category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
+      ref: 'Category',
       required: true,
     },
     subcategory: {
-      // type:String
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Subcategory",
+      ref: 'Subcategory',
     },
-
-
-searchKeywords: {
+    searchKeywords: {
       type: [String],
       default: [],
     },
-
-
     brand: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Brand",
+      ref: 'Brand',
     },
-
     // Media
     images: [
       {
-      url: String, // Image URL
-      alt: String, // Alt text for accessibility/SEO
+        url: String, // Image URL
+        alt: String, // Alt text for accessibility/SEO
       },
     ], // Product gallery images
     thumbnail: {
       url: String, // Primary display image URL
       alt: String, // Alt text for thumbnail
     },
-
     // How To Use Section
     howToUseTitle: String,
     howToUseVideo: String, // Video URL
@@ -66,8 +56,6 @@ searchKeywords: {
         icon: String, // optional icons
       },
     ],
-
-
     ingredients: [
       {
         name: String,
@@ -77,7 +65,6 @@ searchKeywords: {
         alt: String,
       },
     ],
-
     benefits: [
       {
         title: String,
@@ -86,7 +73,6 @@ searchKeywords: {
         alt: String,
       },
     ],
-
     precautions: [
       {
         title: String,
@@ -95,20 +81,16 @@ searchKeywords: {
         alt: String,
       },
     ],
-
-
     // Description Media Section
     descriptionImages: [
       {
-      url: String,
-      alt: String,
+        url: String,
+        alt: String,
       },
     ],
     descriptionVideo: String,
-
     // Highlights / Features
     highlights: [String],
-
     // Ratings and Reviews
     rating: {
       type: Number,
@@ -118,17 +100,15 @@ searchKeywords: {
       type: Number,
       default: 0,
     },
-
     isTopRated: {
       type: Boolean,
       default: false,
     },
-
     reviews: [
       {
         userId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
+          ref: 'User',
         },
         name: String,
         rating: Number,
@@ -139,35 +119,35 @@ searchKeywords: {
         },
       },
     ],
-
     // Attributes for variants
     attributeSet: [
       {
         attributeId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Attribute",
+          ref: 'Attribute',
         },
       },
     ],
-
     // Frequently Bought Together
     frequentlyPurchased: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
+        ref: 'Product',
       },
     ],
-
-    custom_template: {type:boolean, default: false}, // Custom template for product page
-    templateId  : {
+    custom_template: {
+      type: Boolean,
+      default: false,
+    }, // Custom template for product page
+    templateId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Template",
+      ref: 'Template',
     },
     // Status and Soft Delete
     status: {
       type: String,
-      enum: ["active", "inactive"],
-      default: "active",
+      enum: ['active', 'inactive'],
+      default: 'active',
     },
     deletedAt: {
       type: Date,
@@ -179,16 +159,17 @@ searchKeywords: {
   }
 );
 
-productSchema.pre("save", function (next) {
-  if (this.isModified("name")) {
-    this.slug = slugify(this.name, { lower: true });
+productSchema.pre('save', function (next) {
+  if (this.isModified('name')) {
+    this.slug = slugify(this.name, { lower: true, strict: true });
   }
   next();
 });
-productSchema.pre("findOneAndUpdate", function (next) {
+
+productSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();
   if (update.name) {
-    update.slug = slugify(update.name, { lower: true });
+    update.slug = slugify(update.name, { lower: true, strict: true });
   }
   next();
 });
