@@ -14,13 +14,15 @@ const toNextResponse = (data, status = 200) => {
 };
 
 // GET /api/crm/tickets/[id] - Get ticket by ID
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
+    const { params } = context;
+    const { id } = params;
+
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
     if (!conn) return toNextResponse({ success: false, message: 'DB not found' }, 404);
 
-    const { id } = params;
     if (!id) {
       return toNextResponse({ success: false, message: 'Ticket ID is required' }, 400);
     }
@@ -34,13 +36,17 @@ export async function GET(req, { params }) {
 }
 
 // PUT /api/crm/tickets/[id] - Update ticket by ID
-export async function PUT(req, { params }) {
+export async function PUT(req, context) {
   try {
+    const { params } = context;
+    const { id } = params;
+
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
-    if (!conn) return toNextResponse({ success: false, message: 'DB not found' }, 404);
+    if (!conn) {
+      return toNextResponse({ success: false, message: 'DB not found' }, 404);
+    }
 
-    const { id } = params;
     if (!id) {
       return toNextResponse({ success: false, message: 'Ticket ID is required' }, 400);
     }
@@ -54,14 +60,19 @@ export async function PUT(req, { params }) {
   }
 }
 
+
 // DELETE /api/crm/tickets/[id] - Delete ticket by ID
-export async function DELETE(req, { params }) {
+export async function DELETE(req, context) {
   try {
+    const { params } = context;
+    const { id } = params;
+
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
-    if (!conn) return toNextResponse({ success: false, message: 'DB not found' }, 404);
+    if (!conn) {
+      return toNextResponse({ success: false, message: 'DB not found' }, 404);
+    }
 
-    const { id } = params;
     if (!id) {
       return toNextResponse({ success: false, message: 'Ticket ID is required' }, 400);
     }

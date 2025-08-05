@@ -29,6 +29,8 @@ export async function getAllTickets(req, conn) {
 export async function getTicketById(id, conn) {
   try {
     const service = new TicketService(conn);
+    console.log(`Fetching ticket with ID: ${id}`);
+    
     const ticket = await service.getTicketById(id);
     if (!ticket) return { status: 404, body: { success: false, message: 'Ticket not found', data: null } };
     return { status: 200, body: { success: true, message: 'Ticket found', data: ticket } };
@@ -40,31 +42,85 @@ export async function getTicketById(id, conn) {
 
 export async function updateTicket(id, data, conn) {
   try {
+    // Validate input
     const { error } = ticketUpdateValidator.validate(data);
-    if (error) return { status: 400, body: { success: false, message: 'Validation error', data: error.details } };
+    if (error) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'Validation error',
+          data: error.details,
+        },
+      };
+    }
 
     const service = new TicketService(conn);
+
+    // Update the ticket
     const updated = await service.updateTicket(id, data);
-    return { status: 200, body: { success: true, message: 'Ticket updated successfully', data: updated } };
+
+    // If no document is returned, it means the ticket doesn't exist or isDeleted = true
+    if (!updated) {
+      return {
+        status: 404,
+        body: {
+          success: false,
+          message: 'Ticket not found or already deleted',
+          data: null,
+        },
+      };
+    }
+
+    // Return success with updated data
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Ticket updated successfully',
+        data: updated,
+      },
+    };
   } catch (err) {
+    // Catch and log any unexpected server error
     console.error('Update Ticket Error:', err.message);
-    return { status: 500, body: { success: false, message: 'Server error', data: null } };
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null,
+      },
+    };
   }
 }
+
 
 export async function replyToTicket(id, data, conn) {
   try {
     const { error } = ticketReplyValidator.validate(data);
-    if (error) return { status: 400, body: { success: false, message: 'Validation error', data: error.details } };
+    if (error) {
+      return {
+        status: 400,
+        body: { success: false, message: 'Validation error', data: error.details },
+      };
+    }
 
     const service = new TicketService(conn);
     const reply = await service.replyToTicket(id, data);
-    return { status: 201, body: { success: true, message: 'Reply added', data: reply } };
+    return {
+      status: 201,
+      body: { success: true, message: 'Reply added', data: reply },
+    };
   } catch (err) {
     console.error('Reply to Ticket Error:', err.message);
-    return { status: 500, body: { success: false, message: 'Server error', data: null } };
+    return {
+      status: 500,
+      body: { success: false, message: 'Server error', data: null },
+    };
   }
 }
+
 
 export async function deleteTicket(id, conn) {
   try {

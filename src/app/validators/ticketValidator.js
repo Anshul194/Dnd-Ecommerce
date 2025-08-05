@@ -5,7 +5,7 @@ export const ticketCreateValidator = Joi.object({
   description: Joi.string().required().trim().min(10).max(2000),
   priority: Joi.string().valid('low', 'medium', 'high', 'urgent').default('medium'),
   customer: Joi.string().required().pattern(/^[0-9a-fA-F]{24}$/), // ObjectId validation
- 
+ assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null), // ObjectId validation
   createdBy: Joi.string().hex().length(24).optional() 
 });
 
@@ -15,7 +15,7 @@ export const ticketUpdateValidator = Joi.object({
   status: Joi.string().valid('open', 'in_progress', 'resolved', 'closed'),
   priority: Joi.string().valid('low', 'medium', 'high', 'urgent'),
   assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null), // ObjectId validation
-  
+  customer: Joi.string().pattern(/^[0-9a-fA-F]{24}$/), 
   createdBy: Joi.string().hex().length(24).optional() 
 });
 

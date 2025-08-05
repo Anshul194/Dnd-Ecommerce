@@ -55,10 +55,16 @@ const ticketSchema = new mongoose.Schema(
       }
     ],
    
-    isDeleted: {
+     isDeleted: {
       type: Boolean,
       default: false,
+      index: true, // helps with filtering out soft-deleted tickets
     },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+  
   },
   {
     timestamps: true,
