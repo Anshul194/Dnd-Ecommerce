@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
-import userSchema from '../models/User.js';
+import { UserSchema } from '../models/User.js';
 import roleSchema from '../models/role.js';
 import CrudRepository from './CrudRepository.js';
 
 class UserRepository extends CrudRepository {
   constructor(conn) {
-    const userModel = conn.model('User', userSchema, 'users');
+    const userModel = conn.model('User', UserSchema, 'users');
     super(userModel);
     this.roleModel = conn.model('Role', roleSchema, 'roles');
   }
@@ -22,7 +22,7 @@ class UserRepository extends CrudRepository {
 
   async findById(id, tenantId = null) {
     try {
-      const query = { _id: id, isDeleted: false };
+      const query = { _id: id, deleted: { $ne: true } };
       if (tenantId) {
         query.tenant = new mongoose.Types.ObjectId(tenantId);
       }
@@ -37,9 +37,18 @@ class UserRepository extends CrudRepository {
 
   async findByEmail(email) {
     try {
-      return await this.model.findOne({ email, isDeleted: false });
+      return await this.model.findOne({ email, deleted: { $ne: true } });
     } catch (error) {
       console.error('UserRepo findByEmail error:', error?.message);
+      throw error;
+    }
+  }
+
+  async findByPhone(phone) {
+    try {
+      return await this.model.findOne({ phone, deleted: { $ne: true } });
+    } catch (error) {
+      console.error('UserRepo findByPhone error:', error?.message);
       throw error;
     }
   }
@@ -50,7 +59,7 @@ class UserRepository extends CrudRepository {
       const user = await this.model.findById(id);
       console.log('User found:', user); // ✅ Debug log
 
-      if (!user || user.isDeleted) return null;
+      if (!user || user.deleted) return null;
 
       user.set(data);
       return await user.save();

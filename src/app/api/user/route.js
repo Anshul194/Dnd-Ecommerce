@@ -130,7 +130,16 @@ export async function PATCH(request) {
     const userService = new UserService(conn);
 
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, phone } = body;
+
+    // Support both email/password and phone-based login
+    if (phone) {
+      // Phone-based login - should use OTP flow instead
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Phone login requires OTP verification. Use /auth/request-otp endpoint.' 
+      }, { status: 400 });
+    }
 
     if (!email || !password) {
       return NextResponse.json({ success: false, message: 'Email and password are required.' }, { status: 400 });
