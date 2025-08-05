@@ -46,12 +46,12 @@ export const createLeadController = async (body, conn) => {
 // };
 export const getLeadsController = async (query, conn) => {
   try {
-    const leads = await getLeadsService(conn); // assuming it returns an array
-
-    // Optional: pagination placeholders
-    const currentPage = 1;
-    const totalDocuments = leads.length;
-    const totalPages = 1;
+    const {
+      leads,
+      totalDocuments,
+      currentPage,
+      totalPages,
+    } = await getLeadsService(query, conn);
 
     return NextResponse.json({
       success: true,
@@ -60,8 +60,8 @@ export const getLeadsController = async (query, conn) => {
         result: leads,
         currentPage,
         totalPages,
-        totalDocuments
-      }
+        totalDocuments,
+      },
     });
   } catch (error) {
     return NextResponse.json({
@@ -71,6 +71,7 @@ export const getLeadsController = async (query, conn) => {
     }, { status: 500 });
   }
 };
+
 
 
 export const getLeadByIdController = async (id, conn) => {

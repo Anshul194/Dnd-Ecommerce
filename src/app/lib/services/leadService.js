@@ -9,14 +9,15 @@ export const createLeadService = async (payload, conn) => {
   }
 };
 
-export const getLeadsService = async (conn) => {
+export const getLeadsService = async (query, conn) => {
   try {
-    return await leadRepo.getLeads(conn); // ✅
+    return await leadRepo.getLeads(query, conn);
   } catch (error) {
     console.error('Error in getLeadsService:', error);
     throw error;
   }
 };
+
 
 export const updateLeadService = async (id, data, conn) => {
   try {

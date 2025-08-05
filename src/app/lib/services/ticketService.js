@@ -23,53 +23,52 @@ class TicketService {
   }
 
   async getAllTickets(query = {}) {
-    try {
-      const {
-        page = 1,
-        limit = 10,
-        filters = '{}',
-        searchFields = '{}',
-        sort = '{}',
-        populateFields = '[]',
-        selectFields = '{}'
-      } = query;
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      filters = '{}',
+      searchFields = '{}',
+      sort = '{}',
+      populateFields = '[]',
+      selectFields = '{}'
+    } = query;
 
-      const parsedFilters = JSON.parse(filters);
-      const parsedSearchFields = JSON.parse(searchFields);
-      const parsedSort = JSON.parse(sort);
-      const parsedPopulateFields = JSON.parse(populateFields);
-      const parsedSelectFields = JSON.parse(selectFields);
-      const parsedPage = parseInt(page);
-      const parsedLimit = parseInt(limit);
+    const parsedFilters = JSON.parse(filters || '{}');
+    const parsedSearchFields = JSON.parse(searchFields || '{}');
+    const parsedSort = JSON.parse(sort || '{}');
+    const parsedPopulateFields = JSON.parse(populateFields || '[]');
+    const parsedSelectFields = JSON.parse(selectFields || '{}');
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
 
-      const filterConditions = { isDeleted: false, ...parsedFilters };
-      const searchConditions = [];
+    const filterConditions = { isDeleted: false, ...parsedFilters };
 
-      for (const [field, term] of Object.entries(parsedSearchFields)) {
-        searchConditions.push({ [field]: { $regex: term, $options: 'i' } });
-      }
-
-      if (searchConditions.length > 0) {
-        filterConditions.$or = searchConditions;
-      }
-
-      const sortConditions = {};
-      for (const [field, direction] of Object.entries(parsedSort)) {
-        sortConditions[field] = direction === 'asc' ? 1 : -1;
-      }
-
-      return await this.repo.getAll(
-        filterConditions,
-        sortConditions,
-        parsedPage,
-        parsedLimit,
-        parsedPopulateFields,
-        parsedSelectFields
-      );
-    } catch (error) {
-      throw new Error(`Failed to get all tickets: ${error.message}`);
+    const searchConditions = Object.entries(parsedSearchFields).map(([field, value]) => ({
+      [field]: { $regex: value, $options: 'i' }
+    }));
+    if (searchConditions.length > 0) {
+      filterConditions.$or = searchConditions;
     }
+
+    const sortConditions = {};
+    for (const [field, direction] of Object.entries(parsedSort)) {
+      sortConditions[field] = direction === 'asc' ? 1 : -1;
+    }
+
+    return await this.repo.getAll(
+      filterConditions,
+      sortConditions,
+      parsedPage,
+      parsedLimit,
+      parsedPopulateFields,
+      parsedSelectFields
+    );
+  } catch (error) {
+    throw new Error(`Failed to get all tickets: ${error.message}`);
   }
+}
+
 
   async getTicketById(id) {
     try {
@@ -113,13 +112,14 @@ class TicketService {
     }
   }
 
-  async getTicketsByCustomer(customerId) {
-    try {
-      return await this.repo.findByCustomer(customerId);
-    } catch (error) {
-      throw new Error(`Failed to get tickets by customer: ${error.message}`);
-    }
+ async getTicketsByCustomer(customerId, query = {}) {
+  try {
+    return await this.repo.findByCustomer(customerId, query);
+  } catch (error) {
+    throw new Error(`Failed to get tickets by customer: ${error.message}`);
   }
+}
+
 
   async getRecentTickets(limit = 5) {
     try {

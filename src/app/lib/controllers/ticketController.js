@@ -19,12 +19,27 @@ export async function getAllTickets(req, conn) {
   try {
     const service = new TicketService(conn);
     const tickets = await service.getAllTickets(req.query || {});
-    return { status: 200, body: { success: true, message: 'Tickets fetched successfully', data: tickets } };
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Tickets fetched successfully',
+        data: tickets,
+      },
+    };
   } catch (err) {
     console.error('Get All Tickets Error:', err.message);
-    return { status: 500, body: { success: false, message: 'Server error', data: null } };
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null,
+      },
+    };
   }
 }
+
 
 export async function getTicketById(id, conn) {
   try {
@@ -134,13 +149,27 @@ export async function deleteTicket(id, conn) {
   }
 }
 
-export async function getTicketsByCustomer(customerId, conn) {
+export async function getTicketsByCustomer(customerId, conn, query = {}) {
   try {
     const service = new TicketService(conn);
-    const tickets = await service.getTicketsByCustomer(customerId);
-    return { status: 200, body: { success: true, message: 'Tickets fetched', data: tickets } };
+    const result = await service.getTicketsByCustomer(customerId, query);
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Tickets fetched successfully',
+        data: result.tickets,
+        currentPage: result.currentPage,
+        totalPages: result.totalPages,
+        totalDocuments: result.totalDocuments,
+      },
+    };
   } catch (err) {
     console.error('Get Tickets by Customer Error:', err.message);
-    return { status: 500, body: { success: false, message: 'Server error', data: null } };
+    return {
+      status: 500,
+      body: { success: false, message: 'Server error', data: null },
+    };
   }
 }
+
