@@ -32,13 +32,13 @@ class OrderRepository extends CrudRepository {
       console.log('Using Product model:', Product.modelName);
       console.log('Database:', this.connection.name || 'global mongoose');
 
-      if (!mongoose.Types.ObjectId.isValid(productId)) {
-        throw new Error(`Invalid productId: ${productId}`);
+      if (!mongoose.Types.ObjectId.isValid(product)) {
+        throw new Error(`Invalid productId: ${product}`);
       }
 
-      const product = await Product.findById(productId).select('price');
+      const product = await Product.findById(product).select('price');
       if (!product) {
-        throw new Error(`Product ${productId} not found`);
+        throw new Error(`Product ${product} not found`);
       }
       console.log('Found product:', product);
       return product;

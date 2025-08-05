@@ -11,6 +11,7 @@ import {
 } from "@/app/store/slices/cartSlice";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
 const CartSidebar = () => {
   const dispatch = useDispatch();
@@ -214,8 +215,8 @@ const CartSidebar = () => {
           <button
             onClick={() => {
               if (cartItems?.length > 0) {
-                route.push("/checkout");
                 dispatch(toggleCart());
+                dispatch(setCheckoutOpen(true));
               }
             }}
             className="w-full bg-green-500 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors"

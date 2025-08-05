@@ -1,9 +1,12 @@
 import axiosInstance from "@/axiosConfig/axiosInstance";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
+const isBrowser = typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+
 const initialState = {
-  isAuthenticated: false,
-  user: null,
+  isAuthenticated: isBrowser && localStorage.getItem("accessToken") ? true : false,
+  otpSended: false,
+  user: isBrowser && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null,
   loading: false,
   error: null,
 };
@@ -40,12 +43,46 @@ export const login = createAsyncThunk(
   }
 );
 
+export const sendOtp = createAsyncThunk(
+  "auth/sendOtp",
+  async (phone, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/auth/request-otp", {
+        phone,
+      });
+      console.log("OTP sent successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const verifyOtp = createAsyncThunk(
+  "auth/verifyOtp",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/auth/verify-otp", data);
+      console.log("OTP verification response:", response.data.data);
+      if (!response.data.success) {
+        throw new Error(response.data.message || "OTP verification failed");
+      }
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
     setAuthenticated: (state, action) => {
       state.isAuthenticated = action.payload;
+    },
+    setOtpSended: (state, action) => {
+      state.otpSended = action.payload;
     },
     setUser: (state, action) => {
       state.user = action.payload;
@@ -90,10 +127,48 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(sendOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(sendOtp.fulfilled, (state) => {
+        state.loading = false;
+        state.otpSended = true; // Set otpSended to true when OTP is sent
+      })
+      .addCase(sendOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(verifyOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyOtp.fulfilled, (state, action) => {
+        console.log("Verify OTP Response:", action.payload);
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user; // Assuming the user data is returned in the response
+        localStorage.setItem("accessToken", action.payload.tokens.accessToken);
+        localStorage.setItem(
+          "refreshToken",
+          action.payload.tokens.refreshToken
+        );
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
+      })
+      .addCase(verifyOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { setAuthenticated, setUser, setLoading, setError, logout } =
-  authSlice.actions;
+export const {
+  setAuthenticated,
+  setUser,
+  setLoading,
+  setError,
+  logout,
+  setOtpSended,
+} = authSlice.actions;
 export default authSlice.reducer;
