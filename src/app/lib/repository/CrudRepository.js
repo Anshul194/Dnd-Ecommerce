@@ -59,7 +59,7 @@ class CrudRepository {
  
 
   async getAll(filterCon = {}, sortCon = {}, pageNum, limitNum, populateFields = [],selectFields = {}) {
-    console.log('dfgh', pageNum)
+    console.log('dfgh', filterCon, sortCon, pageNum, limitNum, populateFields,selectFields);
     let query;
     sortCon = Object.keys(sortCon).length === 0 ? { createdAt: -1 } : sortCon;
     if(pageNum > 0){

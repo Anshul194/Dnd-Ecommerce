@@ -2,6 +2,7 @@ import UserRepository from '../repository/userRepository.js';
 import TenantRepository from '../repository/tenantRepository.js';
 import mongoose from 'mongoose';
 import RoleRepository from '../repository/roleRepository.js';
+import { file } from 'googleapis/build/src/apis/file/index.js';
 
 class UserService {
   constructor(conn) {
@@ -61,27 +62,38 @@ class UserService {
   }     
 
   // Read all
-async getAllUsers(query = {}) {
-  try {
-    const pageNum = query.page ? parseInt(query.page, 10) : 1;
-    const limitNum = query.limit ? parseInt(query.limit, 10) : 10;
+  async getAllUsers(query = {}) {
+    try {
+      const pageNum = query.page ? parseInt(query.page, 10) : 1;
+      const limitNum = query.limit ? parseInt(query.limit, 10) : 10;
+      const filter = { ...query };
+      
+      // Only add deleted filter if not explicitly requesting all users
+      if (!query.includeDeleted) {
+        // Try different approaches for deleted filter
+        filter.deleted = { $in: [false, null, undefined] }; // Match false, null, or undefined
+        // Alternative approach: filter.deleted = { $ne: true }; // Not equal to true
+      }
 
-    const filter = { ...query };
-    delete filter.page;
-    delete filter.limit;
-
-    // If role is a string (either ID or name), add it as a filter
-    if (filter.role) {
-      filter['role'] = filter.role; 
+      delete filter.page;
+      delete filter.limit;
+      delete filter.includeDeleted;
+      
+      // Use CrudRepository's getAll method
+      const result = await this.userRepo.getAll(filter, {}, pageNum, limitNum);
+      
+      // Transform the response to match expected format
+      return {
+        users: result.result,
+        total: result.totalDocuments,
+        page: result.currentPage,
+        totalPages: result.totalPages,
+        limit: limitNum
+      };
+    } catch (error) {
+      throw error; // Rethrow the original error
     }
-
-    filter.isDeleted = false;
-    return await this.userRepo.getAll(filter, pageNum, limitNum);
-  } catch (error) {
-    throw error;
   }
-}
-
 
   // Read one
 async getUserById(id) {
