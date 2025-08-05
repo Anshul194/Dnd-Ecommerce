@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, unique: true },
   passwordHash: { type: String, required: true },
   phone: { type: String, unique: true, sparse: true },
   isVerified: { type: Boolean, default: false },
@@ -17,4 +17,4 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-export default userSchema;
+export const UserSchema = userSchema;
