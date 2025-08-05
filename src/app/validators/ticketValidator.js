@@ -1,0 +1,26 @@
+import Joi from 'joi';
+
+export const ticketCreateValidator = Joi.object({
+  subject: Joi.string().required().trim().min(3).max(200),
+  description: Joi.string().required().trim().min(10).max(2000),
+  priority: Joi.string().valid('low', 'medium', 'high', 'urgent').default('medium'),
+  customer: Joi.string().required().pattern(/^[0-9a-fA-F]{24}$/), // ObjectId validation
+ 
+  createdBy: Joi.string().hex().length(24).optional() 
+});
+
+export const ticketUpdateValidator = Joi.object({
+  subject: Joi.string().trim().min(3).max(200),
+  description: Joi.string().trim().min(10).max(2000),
+  status: Joi.string().valid('open', 'in_progress', 'resolved', 'closed'),
+  priority: Joi.string().valid('low', 'medium', 'high', 'urgent'),
+  assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null), // ObjectId validation
+  
+  createdBy: Joi.string().hex().length(24).optional() 
+});
+
+export const ticketReplyValidator = Joi.object({
+  message: Joi.string().required().trim().min(1).max(2000),
+  repliedBy: Joi.string().required().pattern(/^[0-9a-fA-F]{24}$/), // ObjectId validation
+  isStaff: Joi.boolean().default(false),
+});
