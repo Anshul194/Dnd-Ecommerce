@@ -4,6 +4,8 @@ import UserService from '../../../lib/services/userService.js';
 import { Token } from '../../../middleware/generateToken.js';
 import mongoose from 'mongoose';
 import initRedis from '../../../config/redis.js';
+import bcrypt from 'bcryptjs';
+import roleSchema from '../../../lib/models/role.js';
 
 // Helper to extract subdomain from x-tenant header or host header
 function getSubdomain(request) {
@@ -105,25 +107,68 @@ export async function POST(request) {
         return response;
       }
 
-      // If user is new → create session to complete registration
-      const sessionId = `sess:${Date.now()}:${Math.random().toString(36).substring(2)}`;
-      await redis.setex(`session:${sessionId}`, 600, phone); // 10 minutes
+      // If user is new → create account automatically and log them in
+      try {
+        // Get default customer role
+        const RoleModel = conn.models.Role || conn.model('Role', roleSchema);
+        const customerRole = await RoleModel.findOne({ name: 'Customer' });
+        
+        let finalTenant = null;
+        let finalRole = null;
 
-      const response = NextResponse.json({
-        success: true,
-        message: "OTP verified, complete registration",
-        data: { phone }
-      }, { status: 206 });
+        if (customerRole) {
+          finalRole = customerRole._id;
+          if (customerRole.scope === 'tenant') {
+            finalTenant = customerRole.tenantId || null;
+          }
+        }
 
-      // Set session cookie
-      response.cookies.set("sessionId", sessionId, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: "lax",
-        maxAge: 10 * 60 * 1000 // 10 minutes
-      });
+        // Create user with phone number as name initially, no email, dummy password
+        const newUser = await userService.createUser({
+          name: '', // Temporary name, user can update later
+          email: '', // Temporary email, user can update later
+          passwordHash: await bcrypt.hash(Math.random().toString(36), 10), // Random password
+          phone,
+          role: finalRole,
+          tenant: finalTenant,
+          isVerified: true, // Already verified via OTP
+          isActive: true,
+          isDeleted: false
+        });
 
-      return response;
+        // Generate tokens for the new user
+        const { accessToken, refreshToken, accessTokenExp, refreshTokenExp } = Token.generateTokens(newUser);
+        
+        // Store tokens in Redis
+        await redis.setex(`accessToken:${accessToken}`, Math.floor((accessTokenExp - Date.now()) / 1000), "valid");
+        await redis.setex(`refreshToken:${refreshToken}`, Math.floor((refreshTokenExp - Date.now()) / 1000), newUser._id.toString());
+
+        // Return user info (without password) and tokens
+        const userObj = newUser.toObject();
+        delete userObj.passwordHash;
+
+        const response = NextResponse.json({
+          success: true,
+          message: "Account created and login successful",
+          data: {
+            user: userObj,
+            tokens: { accessToken, refreshToken }
+          }
+        }, { status: 201 });
+
+        // Set cookies
+        Token.setTokensCookies(response, accessToken, refreshToken, accessTokenExp, refreshTokenExp);
+
+        return response;
+
+      } catch (createError) {
+        console.error('Error creating new user:', createError);
+        return NextResponse.json({
+          success: false,
+          message: "Failed to create account",
+          error: createError.message
+        }, { status: 500 });
+      }
 
     } catch (redisError) {
       console.error('Redis error:', redisError);

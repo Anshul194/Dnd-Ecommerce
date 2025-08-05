@@ -14,16 +14,27 @@ class UserService {
   // Create
    async createUser(data) {
     try {
-      // Validate data
-      if (!data.name || !data.email || !data.passwordHash) {
-        throw new Error('Name, email, and password are required');
+      // For phone-based registration, only require name and phone, make email optional
+     
+      
+
+      // Check if user already exists by email (if email provided)
+      if (data.email) {
+        const existingUser = await this.userRepo.findByEmail(data.email);
+        if (existingUser) {
+          throw new Error('User with this email already exists');
+        }
       }
-      // Check if user already exists
-      const existingUser = await this.userRepo.findByEmail(data.email);
-      if (existingUser) {
-        throw new Error('User with this email already exists');
+
+      // Check if user already exists by phone (if phone provided)
+      if (data.phone) {
+        const existingPhoneUser = await this.userRepo.findByPhone(data.phone);
+        if (existingPhoneUser) {
+          throw new Error('User with this phone number already exists');
+        }
       }
-      // valida role id and tenant id if provided
+
+      // Validate role id and tenant id if provided
       if (data.role && !mongoose.Types.ObjectId.isValid(data.role)) {
         throw new Error('Invalid role ID');
       }
@@ -67,7 +78,7 @@ class UserService {
       const pageNum = query.page ? parseInt(query.page, 10) : 1;
       const limitNum = query.limit ? parseInt(query.limit, 10) : 10;
       const filter = { ...query };
-      
+
       // Only add deleted filter if not explicitly requesting all users
       if (!query.includeDeleted) {
         // Try different approaches for deleted filter
@@ -78,10 +89,10 @@ class UserService {
       delete filter.page;
       delete filter.limit;
       delete filter.includeDeleted;
-      
+
       // Use CrudRepository's getAll method
       const result = await this.userRepo.getAll(filter, {}, pageNum, limitNum);
-      
+
       // Transform the response to match expected format
       return {
         users: result.result,
