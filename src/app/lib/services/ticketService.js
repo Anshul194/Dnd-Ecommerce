@@ -9,14 +9,7 @@ class TicketService {
 
   async createTicket(data) {
     try {
-      if (!data.assignedTo) {
-        const staff = await this.repo.User.findOne({ role: 'staff', isDeleted: false });
-        if (staff) {
-          data.assignedTo = staff._id;
-        }
-      }
-
-      return await this.repo.create(data);
+    return await this.repo.create(data);
     } catch (error) {
       throw new Error(`Failed to create ticket: ${error.message}`);
     }

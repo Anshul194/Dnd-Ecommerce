@@ -32,8 +32,8 @@ export async function POST(req) {
     const conn = await getDbConnection(subdomain);
     if (!conn) return toNextResponse({ success: false, message: 'DB not found' }, 404);
 
-    const body = await req.json();
-    const result = await createTicket({ body }, conn);
+    const form = await req.formData();
+    const result = await createTicket(form, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
     return toNextResponse({ success: false, message: error.message }, 500);

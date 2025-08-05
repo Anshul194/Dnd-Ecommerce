@@ -12,6 +12,17 @@ const ticketSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order',
+      default: null, // optional, if ticket is related to an order
+    },
+    attachments: [ 
+      {
+        type: String, // Store only the image name or path
+        required: false,
+      }
+    ],
     status: {
       type: String,
       enum: ['open', 'in_progress', 'resolved', 'closed'],

@@ -3,6 +3,8 @@ import Joi from 'joi';
 export const ticketCreateValidator = Joi.object({
   subject: Joi.string().required().trim().min(3).max(200),
   description: Joi.string().required().trim().min(10).max(2000),
+  orderId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null), // ObjectId validation
+  attachments: Joi.array().items(Joi.string().trim()).optional(), // Array of image names
   priority: Joi.string().valid('low', 'medium', 'high', 'urgent').default('medium'),
   customer: Joi.string().required().pattern(/^[0-9a-fA-F]{24}$/), // ObjectId validation
  assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null), // ObjectId validation
@@ -12,6 +14,8 @@ export const ticketCreateValidator = Joi.object({
 export const ticketUpdateValidator = Joi.object({
   subject: Joi.string().trim().min(3).max(200),
   description: Joi.string().trim().min(10).max(2000),
+  orderId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null), // ObjectId validation
+  attachments: Joi.array().items(Joi.string().trim()).optional(), // Array of image names
   status: Joi.string().valid('open', 'in_progress', 'resolved', 'closed'),
   priority: Joi.string().valid('low', 'medium', 'high', 'urgent'),
   assignedTo: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow(null), // ObjectId validation
