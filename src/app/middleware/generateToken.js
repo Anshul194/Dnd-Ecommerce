@@ -9,6 +9,9 @@ export const Token = {
       role: user.role || null,
     };
 
+    const accessTokenExp = Date.now() + 30 * 60 * 1000; // 30 minutes
+    const refreshTokenExp = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
       expiresIn: "30m", // Short-lived Access Token
     });
@@ -21,17 +24,25 @@ export const Token = {
       }
     );
 
-    return { accessToken, refreshToken };
+    return { 
+      accessToken, 
+      refreshToken, 
+      accessTokenExp, 
+      refreshTokenExp 
+    };
   },
 
-  setTokensCookies(res, accessToken, refreshToken) {
+  setTokensCookies(res, accessToken, refreshToken, accessTokenExp, refreshTokenExp) {
+    const accessMaxAge = Math.floor((accessTokenExp - Date.now()) / 1000);
+    const refreshMaxAge = Math.floor((refreshTokenExp - Date.now()) / 1000);
+
     res.headers.append(
       "Set-Cookie",
-      `accessToken=${accessToken}; Path=/; HttpOnly; Max-Age=900; SameSite=Strict; Secure`
+      `accessToken=${accessToken}; Path=/; HttpOnly; Max-Age=${accessMaxAge}; SameSite=Strict; Secure`
     );
     res.headers.append(
       "Set-Cookie",
-      `refreshToken=${refreshToken}; Path=/; HttpOnly; Max-Age=604800; SameSite=Strict; Secure`
+      `refreshToken=${refreshToken}; Path=/; HttpOnly; Max-Age=${refreshMaxAge}; SameSite=Strict; Secure`
     );
   },
 

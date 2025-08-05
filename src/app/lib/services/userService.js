@@ -116,6 +116,31 @@ async findById(id) {
     }
   }
 
+  // Find by phone
+  async findByPhone(phone) {
+    try {
+      return await this.userRepo.findByPhone(phone);
+    } catch (error) {
+      console.error('UserService findByPhone error:', error?.message);
+      throw error; // Rethrow the original error
+    }
+  }
+
+  // Get user by phone (alias)
+  async getUserByPhone(phone) {
+    return await this.findByPhone(phone);
+  }
+
+  // Update user by ID
+  async updateUserById(id, data) {
+    try {
+      return await this.userRepo.updateUser(id, data);
+    } catch (error) {
+      console.error('UserService updateUserById error:', error?.message);
+      throw error;
+    }
+  }
+
   // Update
   // async updateUser(id, data) {
   //   try {

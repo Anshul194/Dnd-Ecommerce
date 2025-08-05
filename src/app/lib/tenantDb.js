@@ -17,11 +17,15 @@ export async function getDbConnection(subdomain) {
     return await dbConnect();
   } else {
     await dbConnect();
-    const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', new mongoose.Schema({
+    
+    // Define tenant schema properly
+    const tenantSchema = new mongoose.Schema({
       name: String,
       dbUri: String,
       subdomain: String
-    }, { collection: 'tenants' }));
+    }, { collection: 'tenants' });
+    
+    const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', tenantSchema);
     const tenant = await Tenant.findOne({ subdomain });
     console.log('Tenant found:', tenant);
     if (!tenant?.dbUri) return null;
