@@ -126,6 +126,35 @@ class OrderRepository extends CrudRepository {
       throw error;
     }
   }
+
+    async getOrderById(orderId, userId, populateFields = [], selectFields = {}) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        throw new Error(`Invalid orderId: ${orderId}`);
+      }
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error(`Invalid userId: ${userId}`);
+      }
+
+      let query = this.model.findOne({ _id: orderId, user: userId }).select(selectFields);
+
+      if (populateFields.length > 0) {
+        populateFields.forEach(field => {
+          query = query.populate(field);
+        });
+      }
+
+      const order = await query.exec();
+      if (!order) {
+        throw new Error('Order not found or you do not have access');
+      }
+
+      return order;
+    } catch (error) {
+      console.error('OrderRepository getOrderById Error:', error.message);
+      throw error;
+    }
+  }
 }
 
 export default OrderRepository;

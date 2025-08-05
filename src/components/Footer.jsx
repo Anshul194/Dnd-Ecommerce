@@ -1,3 +1,4 @@
+import axiosInstance from "@/axiosConfig/axiosInstance";
 import {
   Instagram,
   Facebook,
@@ -5,8 +6,9 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Custom SVG Icons
 const TikTokIcon = () => (
@@ -92,6 +94,7 @@ const CustomizationIcon = () => (
 );
 
 export default function Footer() {
+  const [data, setData] = useState(null);
   const [openAccordions, setOpenAccordions] = useState({
     quickLinks: false,
     aboutUs: false,
@@ -105,6 +108,25 @@ export default function Footer() {
       [section]: !prev[section],
     }));
   };
+
+  const getData = async () => {
+    try {
+      const response = await axiosInstance.get("/page?groupByMainTitle=true");
+      const footerData = {};
+
+      response.data.data.map((item) => {
+        footerData[item._id] = item.pages;
+      });
+      console.log("Response from API: ==>", footerData);
+      setData(footerData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
 
   if (
     pathname.includes("/signup") ||
@@ -154,70 +176,18 @@ export default function Footer() {
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">QUICK LINKS</h3>
                 <ul className="space-y-1">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Ready-To-Ship
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Engagement Rings
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Lab Diamonds
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Moissanite
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Sapphires
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Women's Wedding Rings
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Men's Wedding Rings
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Education
-                    </a>
-                  </li>
+                  {data?.["quick-links"]?.map((link, index) => (
+                    <Link href={`/pages/${link?._id}`} key={index}>
+                      <li>
+                        <a
+                          href="#"
+                          className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
+                        >
+                          {link.title}
+                        </a>
+                      </li>
+                    </Link>
+                  ))}
                 </ul>
               </div>
 
@@ -236,70 +206,18 @@ export default function Footer() {
                 </button>
                 {openAccordions.quickLinks && (
                   <ul className="space-y-1 pt-4">
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Ready-To-Ship
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Engagement Rings
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Lab Diamonds
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Moissanite
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Sapphires
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Women's Wedding Rings
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Men's Wedding Rings
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Education
-                      </a>
-                    </li>
+                    {data?.["quick-links"]?.map((link, index) => (
+                      <Link href={`/pages/${link?._id}`} key={index}>
+                        <li>
+                          <a
+                            href="#"
+                            className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
+                          >
+                            {link.title}
+                          </a>
+                        </li>
+                      </Link>
+                    ))}
                   </ul>
                 )}
               </div>
@@ -311,78 +229,18 @@ export default function Footer() {
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">ABOUT US</h3>
                 <ul className="space-y-1">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Our Story
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Reviews
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Moissanite Blog
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Lab Grown Diamond Blog
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Cullen Initiatives
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Careers
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Impact Report
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Precious Metal Recycling
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Cullen Curated
-                    </a>
-                  </li>
+                  {data?.["about-us"]?.map((link, index) => (
+                    <Link href={`/pages/${link?._id}`} key={index}>
+                      <li>
+                        <a
+                          href="#"
+                          className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
+                        >
+                          {link.title}
+                        </a>
+                      </li>
+                    </Link>
+                  ))}
                 </ul>
               </div>
 
@@ -401,78 +259,18 @@ export default function Footer() {
                 </button>
                 {openAccordions.aboutUs && (
                   <ul className="space-y-1 pt-4">
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Our Story
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Reviews
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Moissanite Blog
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Lab Grown Diamond Blog
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Cullen Initiatives
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Careers
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Impact Report
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Precious Metal Recycling
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Cullen Curated
-                      </a>
-                    </li>
+                    {data?.["about-us"]?.map((link, index) => (
+                      <Link href={`/pages/${link?._id}`} key={index}>
+                        <li key={index}>
+                          <a
+                            href="#"
+                            className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
+                          >
+                            {link.title}
+                          </a>
+                        </li>
+                      </Link>
+                    ))}
                   </ul>
                 )}
               </div>
@@ -484,78 +282,18 @@ export default function Footer() {
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">CLIENT CARE</h3>
                 <ul className="space-y-1">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      FAQs
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Shipping
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Free Resizing
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Order Status
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Ring Size Guide
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Ring Care Guide
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Lifetime Warranty
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Book Appointment
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                    >
-                      Crafting Timeframes
-                    </a>
-                  </li>
+                  {data?.["Client Care"]?.map((link, index) => (
+                    <Link href={`/pages/${link?._id}`} key={index}>
+                      <li>
+                        <a
+                          href="#"
+                          className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
+                        >
+                          {link.title}
+                        </a>
+                      </li>
+                    </Link>
+                  ))}
                 </ul>
               </div>
 
@@ -574,78 +312,18 @@ export default function Footer() {
                 </button>
                 {openAccordions.clientCare && (
                   <ul className="space-y-1 pt-4">
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        FAQs
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Shipping
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Free Resizing
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Order Status
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Ring Size Guide
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Ring Care Guide
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Lifetime Warranty
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Book Appointment
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                      >
-                        Crafting Timeframes
-                      </a>
-                    </li>
+                    {data?.["Client Care"]?.map((link, index) => (
+                      <Link href={`/pages/${link?._id}`} key={index}>
+                        <li>
+                          <a
+                            href="#"
+                            className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
+                          >
+                            {link.title}
+                          </a>
+                        </li>
+                      </Link>
+                    ))}
                   </ul>
                 )}
               </div>
@@ -656,19 +334,38 @@ export default function Footer() {
               <h3 className="font-bold text-sm mb-3">CONTACT US</h3>
               <div className="space-y-1">
                 <div className="flex items-center">
-                  <span className="text-sm">📞 +61 1300 977 619</span>
+                  <span className="text-sm">
+                    {data?.["contact-us"]?.[0]?.contactData?.phone}
+                  </span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-sm">✉ sales@cullenjewellery.com</span>
+                  <span className="text-sm">
+                    ✉ {data?.["contact-us"]?.[0]?.contactData?.email}
+                  </span>
                 </div>
                 <div className="text-sm">
                   <span>📅 Appointment Only</span>
                 </div>
                 <div className="text-sm">
                   <div className="font-bold mb-1">CONTACT HOURS</div>
-                  <div>MON-WED: 4:30 AM - 12:30 PM</div>
-                  <div>THU-FRI: 4:30 AM - 2:30 PM</div>
-                  <div>SAT: 3:30 AM - 11:30 AM</div>
+                  <div>
+                    MON-WED:{" "}
+                    {
+                      data?.["contact-us"]?.[0]?.contactData?.contactHours
+                        ?.monWed
+                    }
+                  </div>
+                  <div>
+                    THU-FRI:{" "}
+                    {
+                      data?.["contact-us"]?.[0]?.contactData?.contactHours
+                        ?.thuFri
+                    }
+                  </div>
+                  <div>
+                    SAT:{" "}
+                    {data?.["contact-us"]?.[0]?.contactData?.contactHours?.sat}
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div>

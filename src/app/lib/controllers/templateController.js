@@ -25,40 +25,31 @@ export async function createTemplate(data, conn) {
   }
 }
 
-export async function getAllTemplates(query = {}, conn) {
-  try {
-    console.log("Getting all templates with query:", query);
-    const templateService = new TemplateService(conn);
-    const result = await templateService.getAllTemplates(query);
-    return result;
-  } catch (error) {
-    console.error("getAllTemplates error:", error);
-    return {
-      status: 500,
-      body: {
-        success: false,
-        message: "Error fetching templates",
-        error: error.message,
-      },
-    };
-  }
-}
 
-export async function getTemplateById(id, conn) {
+
+export async function getPageById(id, conn) {
   try {
-    console.log("Getting template by ID:", id);
     const templateService = new TemplateService(conn);
+    console.log("Fetching template by ID:", id);
     const result = await templateService.getTemplateById(id);
-    return result;
-  } catch (error) {
-    console.error("getTemplateById error:", error);
+    if (!result.data) {
+      return {
+        status: 404,
+        body: errorResponse('Template not found', 404),
+      };
+    }
+    return {
+      status: 200,
+      body: successResponse(
+        result.data,
+        'Template fetched successfully'
+      ),
+    };
+  } catch (err) {
+    console.error("getTemplateById error:", err.message);
     return {
       status: 500,
-      body: {
-        success: false,
-        message: "Error fetching template",
-        error: error.message,
-      },
+      body: errorResponse('Server error', 500),
     };
   }
 }

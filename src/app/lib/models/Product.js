@@ -1,4 +1,6 @@
+import { boolean } from "joi";
 import mongoose from "mongoose";
+import { type } from "os";
 import slugify from "slugify";
 
 export const productSchema = new mongoose.Schema(
@@ -156,6 +158,11 @@ searchKeywords: {
       },
     ],
 
+    custom_template: {type:boolean, default: false}, // Custom template for product page
+    templateId  : {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Template",
+    },
     // Status and Soft Delete
     status: {
       type: String,

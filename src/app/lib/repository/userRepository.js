@@ -1,5 +1,5 @@
-import userSchema from '../models/User.js';
 import mongoose from 'mongoose';
+import userSchema from '../models/User.js';
 import roleSchema from '../models/role.js';
 import CrudRepository from './CrudRepository.js';
 
@@ -15,7 +15,7 @@ class UserRepository extends CrudRepository {
       const user = new this.model(data);
       return await user.save();
     } catch (error) {
-      console.error('UserRepo create error:', error);
+      console.error('UserRepo createUser error:', error);
       throw error;
     }
   }
@@ -23,7 +23,11 @@ class UserRepository extends CrudRepository {
   async findById(id, tenantId = null) {
     try {
       const query = { _id: id, isDeleted: false };
-      if (tenantId) query.tenant = tenantId;
+      if (tenantId) {
+        query.tenant = new mongoose.Types.ObjectId(tenantId);
+      }
+
+      console.log('UserRepo findById called with:', query); // ✅ Debug log
       return await this.model.findOne(query);
     } catch (error) {
       console.error('UserRepo findById error:', error);
@@ -42,8 +46,12 @@ class UserRepository extends CrudRepository {
 
   async updateUser(id, data) {
     try {
+      console.log('UserRepo updateUser called with:', { id, data }); // ✅ Debug log
       const user = await this.model.findById(id);
+      console.log('User found:', user); // ✅ Debug log
+
       if (!user || user.isDeleted) return null;
+
       user.set(data);
       return await user.save();
     } catch (error) {
@@ -54,17 +62,28 @@ class UserRepository extends CrudRepository {
 
   async softDelete(id) {
     try {
-      return await this.model.findByIdAndUpdate(
+      // ✅ Use `$set` to ensure both fields are updated properly
+      const doc = await this.model.findByIdAndUpdate(
         id,
         { deleted: true },
         { deletedAt: new Date(), updatedAt: new Date() },
         { new: true }
       );
+
+      if (!doc) {
+        console.warn('User not found for soft delete:', id);
+        return null;
+      }
+
+      console.log('Soft deleted user:', doc); // ✅ Debug log
+      return doc.toObject(); // ✅ Convert to plain object
     } catch (error) {
       console.error('UserRepo softDelete error:', error?.message);
       throw error;
     }
   }
+
+  // ✅ Find role by ID (skips deleted roles)
   async findRoleById(roleId) {
     try {
       return await this.roleModel.findOne({ _id: roleId, isDeleted: false });

@@ -16,21 +16,17 @@ class TemplateService {
     try {
       // Validate required fields
       if (
-        !data.productId ||
         !data.layoutId ||
         !data.layoutName ||
         !data.totalColumns
       ) {
         return errorResponse(
-          "Missing required fields: productId, layoutId, layoutName, totalColumns",
+          "Missing required fields: layoutId, layoutName, totalColumns",
           400
         );
       }
 
-      // Validate productId is a number
-      if (typeof data.productId !== "number") {
-        return errorResponse("productId must be a number", 400);
-      }
+      // Ensure layoutName is a string
 
       // Validate layoutId is a number
       if (typeof data.layoutId !== "number") {
@@ -38,15 +34,15 @@ class TemplateService {
       }
 
       // Check if template with same productId already exists
-      const existingTemplate = await this.templateRepo.findByProductId(
-        data.productId
-      );
-      if (existingTemplate) {
-        return errorResponse(
-          "Template with this productId already exists",
-          409
-        );
-      }
+      // const existingTemplate = await this.templateRepo.findByProductId(
+      //   data.productId
+      // );
+      // if (existingTemplate) {
+      //   return errorResponse(
+      //     "Template with this productId already exists",
+      //     409
+      //   );
+      // }
 
       const template = await this.templateRepo.create(data);
       return successResponse(template, "Template created successfully", 201);
@@ -58,16 +54,51 @@ class TemplateService {
 
   async getAllTemplates(query = {}) {
     try {
-      const { page = 1, limit = 10, ...filter } = query;
-      const templates = await this.templateRepo.getAll(
-        filter,
-        parseInt(page),
-        parseInt(limit)
+      const {
+        page = 1,
+        limit = 10,
+        filters = '{}',
+        searchFields = '{}',
+        sort = '{}',
+        populateFields = [],
+        selectFields = {}
+      } = query;
+
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      const parsedFilters = typeof filters === 'string' ? JSON.parse(filters) : filters;
+      const parsedSearchFields = typeof searchFields === 'string' ? JSON.parse(searchFields) : searchFields;
+      const parsedSort = typeof sort === 'string' ? JSON.parse(sort) : sort;
+
+      // Build filter conditions
+      const filterConditions = { deletedAt: null, ...parsedFilters };
+
+      // Build search conditions for multiple fields with partial matching
+      const searchConditions = [];
+      for (const [field, term] of Object.entries(parsedSearchFields)) {
+        searchConditions.push({ [field]: { $regex: term, $options: 'i' } });
+      }
+      if (searchConditions.length > 0) {
+        filterConditions.$or = searchConditions;
+      }
+
+      // Build sort conditions
+      const sortConditions = {};
+      for (const [field, direction] of Object.entries(parsedSort)) {
+        sortConditions[field] = direction === 'asc' ? 1 : -1;
+      }
+
+      const result = await this.templateRepo.getAll(
+        filterConditions,
+        sortConditions,
+        pageNum,
+        limitNum,
+        populateFields,
+        selectFields
       );
-      return successResponse(templates, "Templates fetched successfully", 200);
+      return { data: result };
     } catch (error) {
-      console.error("TemplateService getAllTemplates error:", error);
-      return errorResponse("Error fetching templates", 500, error.message);
+      return { data: null, error: error.message };
     }
   }
 

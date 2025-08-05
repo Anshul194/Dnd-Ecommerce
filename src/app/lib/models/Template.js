@@ -26,7 +26,12 @@ const columnSchema = new mongoose.Schema(
 
 const templateSchema = new mongoose.Schema(
   {
-    productId: { type: Number, required: true },
+    productId: { 
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: false,
+      default: null,
+    },
     layoutId: { type: Number, required: true },
     layoutName: { type: String, required: true },
     totalColumns: { type: Number, required: true },
@@ -40,5 +45,6 @@ const templateSchema = new mongoose.Schema(
   }
 );
 
+export { templateSchema };
 export default mongoose.models.Template ||
   mongoose.model("Template", templateSchema);

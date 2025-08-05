@@ -6,44 +6,28 @@ import {
   deleteTemplate,
 } from "@/app/lib/controllers/templateController";
 import mongoose from "mongoose";
+import TemplateService from "../../lib/services/templateService.js";
 
 // GET /api/template/[id]
 export async function GET(req, context) {
-  const { params } = context;
+  const params = await context.params;
   const id = params?.id;
-
   if (!id) {
-    return NextResponse.json(
-      { success: false, message: "ID is missing" },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, message: 'ID is missing' }, { status: 400 });
   }
-
-  // Validate ObjectId
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { success: false, message: "Invalid ObjectId" },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, message: 'Invalid ObjectId' }, { status: 400 });
   }
-
   const subdomain = getSubdomain(req);
   const conn = await getDbConnection(subdomain);
   if (!conn) {
-    return NextResponse.json(
-      { success: false, message: "DB not found" },
-      { status: 404 }
-    );
+    return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
   }
-
   try {
     const result = await getTemplateById(id, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, message: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
 

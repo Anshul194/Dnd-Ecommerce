@@ -134,7 +134,7 @@ const Categories = () => {
                           <Image
                             width={100}
                             height={100}
-                            src={item?.thumbnail}
+                            src={item?.thumbnail || "/placeholder.png"}
                             alt="Tea product"
                             className="w-full h-full object-contain"
                           />

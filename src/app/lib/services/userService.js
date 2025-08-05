@@ -96,13 +96,15 @@ class UserService {
   }
 
   // Read one
-  async getUserById(id) {
-    try {
-      return await this.userRepo.findById(id);
-    } catch (error) {
-      throw error; // Rethrow the original error
-    }
-  }
+async getUserById(id) {
+  return await this.userRepo.findById(id);
+}
+
+async findById(id) {
+  return await this.userRepo.findById(id);
+}
+
+
 
   // Find by email
   async findByEmail(email) {
@@ -115,22 +117,58 @@ class UserService {
   }
 
   // Update
+  // async updateUser(id, data) {
+  //   try {
+  //     console.log('Services Updating user with id:', id, 'and data:', data);
+      
+  //     return await this.userRepo.updateUser(id, data);
+  //   } catch (error) {
+  //     console.error('UserService updateUser error:', error?.message);
+  //     throw error; // Rethrow the original error
+  //   }
+  // }
   async updateUser(id, data) {
-    try {
-      return await this.userRepo.updateUser(id, data);
-    } catch (error) {
-      throw error; // Rethrow the original error
+  try {
+    console.log('Services Updating user with id:', id, 'and data:', data);
+
+    const tenantId = data?.tenant || data?.tenantId;
+    console.log('Calling findById with ID:', id, 'and tenantId:', tenantId);
+
+    const user = await this.userRepo.findById(id, tenantId);
+    if (!user) {
+      return {
+        status: 404,
+        body: { success: false, message: 'User not found' },
+      };
     }
+
+    return await this.userRepo.updateUser(id, data);
+  } catch (error) {
+    console.error('UserService updateUser error:', error?.message);
+    throw error; // Rethrow the original error
   }
+}
+
 
   // Delete (soft)
-  async deleteUser(id) {
-    try {
-      return await this.userRepo.softDelete(id);
-    } catch (error) {
-      throw error; // Rethrow the original error
-    }
+ async deleteUser(id) {
+  try {
+    console.log('Deleting user with id:', id);
+    const deletedUser = await this.userRepo.softDelete(id);
+    return {
+      status: 200,
+      body: { success: true, message: 'User deleted successfully', data: deletedUser }
+    };
+  } catch (error) {
+    console.error('UserService deleteUser error:', error?.message);
+    return {
+      status: 500,
+      body: { success: false, message: 'Failed to delete user' }
+    };
   }
+}
+
+
 
 
   // Additional methods can be added as needed

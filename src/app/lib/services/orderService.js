@@ -190,6 +190,45 @@ class OrderService {
     }
   }
 
+    async getOrderDetails(request, conn, params) {
+    try {
+      const userId = request.user?._id;
+      if (!userId) {
+        throw new Error('User authentication required');
+      }
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error(`Invalid userId: ${userId}`);
+      }
+
+      const { id } = params;
+      if (!id) {
+        throw new Error('orderId is required');
+      }
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error(`Invalid orderId: ${id}`);
+      }
+
+      const order = await this.orderRepository.getOrderById(
+        id,
+        userId,
+        ['items.product', 'items.variant', 'coupon'],
+        {}
+      );
+
+      return {
+        success: true,
+        message: 'Order details fetched successfully',
+        data: order
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
+
 
 }
 
