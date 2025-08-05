@@ -15,13 +15,15 @@ import CouponSchema from '../../lib/models/Coupon';
 import ProductSchema from '../../lib/models/Product';
 import VariantSchema from '../../lib/models/Variant';
 import TicketSchema from '../../lib/models/Ticket';
+import UserSchema from '../../lib/models/User';
+import RoleSchema from '../../lib/models/role';
 
 export const GET = withUserAuth(async function (request) {
   try {
-    // Check if user is admin (uncomment if needed)
-    // if (!request.user?.isAdmin) {
-    //   return NextResponse.json({ success: false, message: 'Admin access required' }, { status: 403 });
-    // }
+    // Check if user is admin
+    if (!request.user?._id) {
+      return NextResponse.json({ success: false, message: 'User authentication required' }, { status: 401 });
+    }
 
     const subdomain = getSubdomain(request);
     console.log('Subdomain:', subdomain);
@@ -33,6 +35,8 @@ export const GET = withUserAuth(async function (request) {
     console.log('Connection name in route:', conn.name);
 
     // Register models
+    const User = conn.models.User || conn.model('User', UserSchema);
+    const Role = conn.models.Role || conn.model('Role', RoleSchema);
     const Order = conn.models.Order || conn.model('Order', OrderSchema);
     const Coupon = conn.models.Coupon || conn.model('Coupon', CouponSchema);
     const Product = conn.models.Product || conn.model('Product', ProductSchema);
@@ -40,6 +44,8 @@ export const GET = withUserAuth(async function (request) {
     const Ticket = conn.models.Ticket || conn.model('Ticket', TicketSchema);
 
     console.log('Models registered:', {
+      User: User.modelName,
+      Role: Role.modelName,
       Order: Order.modelName,
       Coupon: Coupon.modelName,
       Product: Product.modelName,
@@ -47,9 +53,19 @@ export const GET = withUserAuth(async function (request) {
       Ticket: Ticket.modelName
     });
 
+    // Check if user has admin role
+    const user = await User.findById(request.user._id).select('role').exec();
+    if (!user || !user.role) {
+      return NextResponse.json({ success: false, message: 'User or role not found' }, { status: 403 });
+    }
+    const role = await Role.findById(user.role).select('name').exec();
+    if (!role || role.name !== 'admin') {
+      return NextResponse.json({ success: false, message: 'Admin access required' }, { status: 403 });
+    }
+
     // Initialize repositories
     const orderRepo = new OrderRepository(Order, conn);
-    const ticketRepo = new TicketRepository(conn); // Pass conn to TicketRepository
+    const ticketRepo = new TicketRepository(conn);
     const couponRepo = new CouponRepository(Coupon);
 
     // Initialize services
