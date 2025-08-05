@@ -226,8 +226,12 @@ export async function DELETE(request) {
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const result = await deleteUser(id);
-    return NextResponse.json(result.body, { status: result.status });
+    const result = await userService.deleteUser(id);
+    console.log('DELETE /user result here conoling:', result);
+    if (!result) {
+      return NextResponse.json({ success: false, message: 'User not found or could not be deleted' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, message: 'User deleted successfully',result }, { status: 200 });
   } catch (err) {
     console.error('DELETE /user error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });

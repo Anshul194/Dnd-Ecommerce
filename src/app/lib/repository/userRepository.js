@@ -1,9 +1,12 @@
 import userSchema from '../models/User.js';
 import mongoose from 'mongoose';
 import roleSchema from '../models/role.js';
-class UserRepository {
+import CrudRepository from './CrudRepository.js';
+
+class UserRepository extends CrudRepository {
   constructor(conn) {
-    this.model = conn.model('User', userSchema, 'users');
+    const userModel = conn.model('User', userSchema, 'users');
+    super(userModel);
     this.roleModel = conn.model('Role', roleSchema, 'roles');
   }
 
@@ -37,19 +40,6 @@ class UserRepository {
     }
   }
 
-  async getAll(filter = {}, page = 1, limit = 10) {
-    try {
-      const query = { ...filter, isDeleted: false };
-      const skip = (page - 1) * limit;
-      const users = await this.model.find(query).skip(skip).limit(limit);
-      const total = await this.model.countDocuments(query);
-      return { users, total, page, limit };
-    } catch (error) {
-      console.error('UserRepo getAll error:', error);
-      throw error;
-    }
-  }
-
   async updateUser(id, data) {
     try {
       const user = await this.model.findById(id);
@@ -66,11 +56,12 @@ class UserRepository {
     try {
       return await this.model.findByIdAndUpdate(
         id,
-        { isDeleted: true },
+        { deleted: true },
+        { deletedAt: new Date(), updatedAt: new Date() },
         { new: true }
       );
     } catch (error) {
-      console.error('UserRepo softDelete error:', error);
+      console.error('UserRepo softDelete error:', error?.message);
       throw error;
     }
   }

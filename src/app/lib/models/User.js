@@ -10,9 +10,13 @@ const userSchema = new mongoose.Schema({
 
   isSuperAdmin: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
-  isDeleted: { type: Boolean, default: false },
 
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
+  deletedAt: { type: Date, default: null },
+  deleted: { type: Boolean, default: false },
+  updatedAt: { type: Date, default: Date.now }
+
 });
 
 export default userSchema;
