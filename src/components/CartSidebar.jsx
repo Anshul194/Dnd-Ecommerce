@@ -118,8 +118,8 @@ const CartSidebar = () => {
                       <div className="w-12 h-16 bg-white rounded-sm overflow-hidden shadow-sm flex items-center justify-center">
                         {item?.product ? (
                           <Image
-                            src={item?.product?.image.url}
-                            alt={item?.product?.image.alt || item?.product?.name}
+                            src={item?.product?.image?.url}
+                            alt={item?.product?.image?.alt || item?.product?.name || "Product Image"}
                             width={48}
                             height={64}
                             className="object-cover h-full w-full "

@@ -387,7 +387,7 @@ function ProductPage({ params }) {
                     <div
                       className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50"
                       dangerouslySetInnerHTML={{
-                        __html: data.description || "",
+                        __html: data?.description || "",
                       }}
                     ></div>
                   </div>

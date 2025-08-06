@@ -5,10 +5,11 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 export const fetchProducts = createAsyncThunk(
   "product/fetchProducts",
   async (payload) => {
+    console.log("Fetching products with payload:", payload);
     const quaryParams = new URLSearchParams();
-    quaryParams.append("page", payload.page);
-    quaryParams.append("limit", payload.limit);
-    quaryParams.append("sortBy", payload.sortBy);
+   payload.page && quaryParams.append("page", payload.page);
+   payload.limit && quaryParams.append("limit", payload.limit);
+   payload.sortBy && quaryParams.append("sortBy", payload.sortBy);
 
     if (payload.category) {
       quaryParams.append("category", payload.category);
@@ -26,6 +27,7 @@ export const fetchProducts = createAsyncThunk(
     const response = await axiosInstance.get("/product", {
       params: quaryParams,
     });
+    console.log("Response from fetchProducts:", response);
     console.log("Products Data:", response.data.products.data);
     return response.data.products.data;
   }

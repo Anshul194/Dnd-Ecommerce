@@ -1,12 +1,17 @@
 import axiosInstance from "@/axiosConfig/axiosInstance";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-const isBrowser = typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+const isBrowser =
+  typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 
 const initialState = {
-  isAuthenticated: isBrowser && localStorage.getItem("accessToken") ? true : false,
+  isAuthenticated:
+    isBrowser && localStorage.getItem("accessToken") ? true : false,
   otpSended: false,
-  user: isBrowser && localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null,
+  user:
+    isBrowser && localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null,
   loading: false,
   error: null,
 };
@@ -67,6 +72,47 @@ export const verifyOtp = createAsyncThunk(
       if (!response.data.success) {
         throw new Error(response.data.message || "OTP verification failed");
       }
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const getuserAddresses = createAsyncThunk(
+  "auth/getuserAddresses",
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/address?user=${userId}`);
+      console.log("User addresses fetched successfully:", response.data);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const createUserAddress = createAsyncThunk(
+  "auth/createUserAddress",
+  async (addressData, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/address", addressData);
+      console.log("Address created successfully:", response.data);
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+export const updateUserAddress = createAsyncThunk(
+  "auth/updateUserAddress",
+  async ({ addressId, addressData }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.patch(
+        `/address/${addressId}`,
+        addressData
+      );
+      console.log("Address updated successfully:", response.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
