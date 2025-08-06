@@ -1,6 +1,7 @@
 // src/app/layout.js
 import { Bebas_Neue } from "next/font/google";
 import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 import Providers from "./store/Providers"; // ✅ Updated path
 import ClientLayout from "./ClientLayout";
 import { ToastContainer } from "react-toastify";
