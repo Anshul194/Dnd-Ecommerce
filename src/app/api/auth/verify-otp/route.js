@@ -92,8 +92,10 @@ export async function POST(request) {
         const { accessToken, refreshToken, accessTokenExp, refreshTokenExp } = Token.generateTokens(user);
         
         // Store tokens in Redis
-        await redis.setex(`accessToken:${accessToken}`, Math.floor((accessTokenExp - Date.now()) / 1000), "valid");
-        await redis.setex(`refreshToken:${refreshToken}`, Math.floor((refreshTokenExp - Date.now()) / 1000), user._id.toString());
+        if (redisWrapper.isEnabled()) {
+          await redisWrapper.setex(`accessToken:${accessToken}`, Math.floor((accessTokenExp - Date.now()) / 1000), "valid");
+          await redisWrapper.setex(`refreshToken:${refreshToken}`, Math.floor((refreshTokenExp - Date.now()) / 1000), user._id.toString());
+        }
         
         // Create response with cookies
         const response = NextResponse.json({
@@ -150,8 +152,10 @@ export async function POST(request) {
         const { accessToken, refreshToken, accessTokenExp, refreshTokenExp } = Token.generateTokens(newUser);
         
         // Store tokens in Redis
-        await redis.setex(`accessToken:${accessToken}`, Math.floor((accessTokenExp - Date.now()) / 1000), "valid");
-        await redis.setex(`refreshToken:${refreshToken}`, Math.floor((refreshTokenExp - Date.now()) / 1000), newUser._id.toString());
+        if (redisWrapper.isEnabled()) {
+          await redisWrapper.setex(`accessToken:${accessToken}`, Math.floor((accessTokenExp - Date.now()) / 1000), "valid");
+          await redisWrapper.setex(`refreshToken:${refreshToken}`, Math.floor((refreshTokenExp - Date.now()) / 1000), newUser._id.toString());
+        }
 
         // Return user info (without password) and tokens
         const userObj = newUser.toObject();

@@ -12,8 +12,16 @@ import { withSuperAdminCreationAuth, verifyTokenAndUser, hasModulePermission } f
 import Module from '../../lib/models/Module.js';
 import roleSchema from '../../lib/models/role.js';
 import mongoose from 'mongoose';
-function getRoleModel() {
-    return mongoose.models.Role || mongoose.model('Role', roleSchema);
+import { getDbConnection, getSubdomain } from '../../lib/tenantDb.js';
+
+function getRoleModel(conn = null) {
+    if (!conn) conn = mongoose;
+    return conn.models.Role || conn.model('Role', roleSchema);
+}
+
+function getModuleModel(conn = null) {
+    if (!conn) conn = mongoose;
+    return conn.models.Module || conn.model('Module', Module.schema);
 }
 // POST: Create a new module (Super Admin creation protected)
 export const POST = withSuperAdminCreationAuth(
@@ -48,12 +56,16 @@ export async function GET(request) {
     if (authResult.error) return authResult.error;
     const user = authResult.user;
 
+    // Get tenant connection
+    const subdomain = getSubdomain(request);
+    const conn = await getDbConnection(subdomain);
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
     if (id) {
       // Use common permission check for single module
-      const hasPermission = await hasModulePermission(user, id, 'read');
+      const hasPermission = await hasModulePermission(user, id, 'read', conn);
       if (!hasPermission) {
         return NextResponse.json({ success: false, message: 'Forbidden: insufficient permissions' }, { status: 403 });
       }
@@ -62,7 +74,7 @@ export async function GET(request) {
       return NextResponse.json(result.body, { status: result.body.status || result.status || 200 });
     } else {
       // Get all modules that this user/role has permissions for (for sidebar)
-      const permittedModules = await getPermittedModulesForUser(user);
+      const permittedModules = await getPermittedModulesForUser(user, conn);
     //   console.log('Permitted modules for user:', permittedModules);
       
       return NextResponse.json({ success: true, modules: permittedModules, status: 200 });
@@ -73,7 +85,7 @@ export async function GET(request) {
   }
 }
 
-export async function getPermittedModulesForUser(user) {
+export async function getPermittedModulesForUser(user, conn = null) {
     // Super Admins get all modules
     if (user.isSuperAdmin) {
         const allResult = await getAllModules();
@@ -90,9 +102,15 @@ export async function getPermittedModulesForUser(user) {
         role = role.toString();
     }
 
-    // If role is populated, use directly; otherwise, fetch role document
-    const RoleModel = getRoleModel();
+    // Use tenant-specific connection for Role model
+    const RoleModel = getRoleModel(conn);
+    console.log('Fetching role document for user:', user._id, 'Role:', role, 'Using connection:', conn ? 'tenant-specific' : 'default');
+    if (typeof role === 'string' && mongoose.Types.ObjectId.isValid(role)) {
+        role = new mongoose.Types.ObjectId(role);
+    }
+    
     let roleDoc = role.modulePermissions ? role : await RoleModel.findById(role).lean();
+    console.log('User role document:', roleDoc);
     if (!roleDoc || !roleDoc.modulePermissions) return [];
 
     // Get all module IDs that the role has permissions for
@@ -100,8 +118,11 @@ export async function getPermittedModulesForUser(user) {
         .filter(mp => mp.permissions && mp.permissions.length > 0)
         .map(mp => mp.module);
 
+    // Use tenant-specific connection for Module model as well
+    const ModuleModel = getModuleModel(conn);
+    
     // Fetch all modules that match these IDs
-    const permittedModules = await Module.find({ 
+    const permittedModules = await ModuleModel.find({ 
         _id: { $in: moduleIds } 
     }).lean();
 

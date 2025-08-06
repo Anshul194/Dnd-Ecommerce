@@ -72,16 +72,16 @@ async function seedTenantDBs() {
     const Module = tenantConn.model('Module', globalModuleSchema);
     const Role = tenantConn.model('Role', globalRoleSchema);
 
-    // Delete modules not in global list
-    await Module.deleteMany({ _id: { $nin: globalModuleIds } });
+    // // Delete modules not in global list
+    // await Module.deleteMany({ _id: { $nin: globalModuleIds } });
 
     // Upsert all modules
     for (const mod of globalModules) {
       await Module.replaceOne({ _id: mod._id }, mod.toObject(), { upsert: true });
     }
 
-    // Delete roles not in global list
-    await Role.deleteMany({ _id: { $nin: globalRoleIds } });
+    // // Delete roles not in global list
+    // await Role.deleteMany({ _id: { $nin: globalRoleIds } });
 
     // Upsert all roles with updated tenantId and full replacement
     for (const role of globalRoles) {

@@ -196,12 +196,16 @@ export async function verifySuperAdminOrRoleAdminAccess(request) {
         return result;
     }
 
+    // Get tenant connection for role lookup
+    const subdomain = getSubdomain(request);
+    const conn = await getDbConnection(subdomain);
+    
     // Check if user has 'admin' role (by name or by specific ObjectId)
     let roleDoc = result.user.role;
     console.log('User role:', roleDoc);
     if (!roleDoc || typeof roleDoc === 'string' || (roleDoc._bsontype === 'ObjectId')) {
-        // Fetch role document if not populated
-        const RoleModel = mongoose.models.Role || mongoose.model('Role', Role);
+        // Fetch role document if not populated using tenant-specific connection
+        const RoleModel = conn ? (conn.models.Role || conn.model('Role', Role)) : (mongoose.models.Role || mongoose.model('Role', Role));
         roleDoc = await RoleModel.findById(result.user.role).lean();
     }
     if (roleDoc && (roleDoc.name === 'admin' || roleDoc.slug === 'admin')) {
@@ -234,11 +238,12 @@ export function withSuperAdminOrRoleAdminAuth(handler) {
  * @param {Object} user - User document
  * @param {String} moduleId - Module ObjectId as string
  * @param {String} permission - Permission string (e.g. 'view', 'edit')
+ * @param {Object} conn - Optional tenant-specific connection
  * @returns {Boolean}
  */
 
 
-export async function hasModulePermission(user, moduleId, permission = null) {
+export async function hasModulePermission(user, moduleId, permission = null, conn = null) {
     // Super Admins have all permissions
     if (user.isSuperAdmin) return true;
 
@@ -251,8 +256,16 @@ export async function hasModulePermission(user, moduleId, permission = null) {
         role = role.toString();
     }
 
+    // Use tenant-specific connection if provided
+    let RoleModel;
+    if (conn) {
+        RoleModel = conn.models.Role || conn.model('Role', Role);
+    } else {
+        RoleModel = mongoose.models.Role || mongoose.model('Role', Role);
+    }
+
     // If role is populated, use directly; otherwise, fetch role document
-    let roleDoc = role.modulePermissions ? role : await (await import('../lib/models/role.js')).default.findById(role).lean();
+    let roleDoc = role.modulePermissions ? role : await RoleModel.findById(role).lean();
     console.log('Role id:', role, 'Role document modulePermissions:', roleDoc?.modulePermissions);
     if (!roleDoc) return false;
 
