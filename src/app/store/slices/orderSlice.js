@@ -1,0 +1,82 @@
+// src/lib/redux/slices/orderSlice.js
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axiosInstance from "@/axiosConfig/axiosInstance";
+
+// Async thunk to fetch all orders
+export const fetchOrders = createAsyncThunk(
+  "order/fetchOrders",
+  async (payload) => {
+    const queryParams = new URLSearchParams();
+    queryParams.append("page", payload.page);
+    queryParams.append("limit", payload.limit);
+    queryParams.append("sortBy", payload.sortBy);
+
+    if (payload.userId) {
+      queryParams.append("userId", payload.userId);
+    }
+    if (payload.status) {
+      queryParams.append("status", payload.status);
+    }
+
+    const response = await axiosInstance.get(`/orders/${payload.userId}`, {
+      params: queryParams,
+    });
+
+    console.log("Orders Data:", response.data.orders);
+    return response.data.orders;
+  }
+);
+
+// Async thunk to fetch a single order by ID
+export const fetchOrderById = createAsyncThunk(
+  "order/fetchOrderById",
+  async (id) => {
+    const response = await axiosInstance.get(`/orders/${id}`);
+    console.log("Order Details:", response);
+    return response.data.order;
+  }
+);
+
+// Slice
+const orderSlice = createSlice({
+  name: "order",
+  initialState: {
+    orders: [],
+    currentOrder: null,
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      // Fetch all orders
+      .addCase(fetchOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload;
+      })
+      .addCase(fetchOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+
+      // Fetch order by ID
+      .addCase(fetchOrderById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentOrder = action.payload;
+      })
+      .addCase(fetchOrderById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+  },
+});
+
+export default orderSlice.reducer;
