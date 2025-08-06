@@ -270,8 +270,8 @@ export const bulkAssignLeadsController = async (body, conn) => {
 
 export const addLeadNoteController = async (id, body, conn) => {
   try {
-    const { note, userId } = body;
-    console.log('Adding note to lead ID:', id, 'note:', note, 'userId:', userId);
+    const { note, userId, nextFollowUpAt } = body;
+    console.log('Adding note to lead ID:', id, 'note:', note, 'userId:', userId, 'nextFollowUpAt:', nextFollowUpAt);
     if (!note) {
       return NextResponse.json({
         success: false,
@@ -284,12 +284,23 @@ export const addLeadNoteController = async (id, body, conn) => {
         message: 'Invalid user ID from token',
       }, { status: 400 });
     }
+    if (nextFollowUpAt && isNaN(new Date(nextFollowUpAt))) {
+      return NextResponse.json({
+        success: false,
+        message: 'Invalid nextFollowUpAt date',
+      }, { status: 400 });
+    }
 
-    const updated = await updateLeadService(id, {
+    const updatePayload = {
       $push: { notes: { note, createdBy: userId } },
       lastContactedAt: new Date(),
       $inc: { followUpCount: 1 }
-    }, conn);
+    };
+    if (nextFollowUpAt) {
+      updatePayload.nextFollowUpAt = new Date(nextFollowUpAt);
+    }
+
+    const updated = await updateLeadService(id, updatePayload, conn);
 
     if (!updated) {
       console.error('Lead not found for ID:', id);

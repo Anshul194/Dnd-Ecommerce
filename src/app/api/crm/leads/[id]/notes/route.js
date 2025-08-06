@@ -34,7 +34,7 @@ export const POST = withSuperAdminOrRoleAdminAuth(async function (request, { par
 
     const body = await request.json();
     console.log('Request body:', body);
-    return await addLeadNoteController(id, { note: body.note, userId }, conn);
+    return await addLeadNoteController(id, { note: body.note, nextFollowUpAt: body.nextFollowUpAt, userId }, conn);
   } catch (err) {
     console.error('POST /crm/leads/:id/notes error:', err);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
