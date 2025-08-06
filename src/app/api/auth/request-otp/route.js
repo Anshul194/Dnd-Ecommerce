@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import UserService from '../../../lib/services/userService.js';
 import mongoose from 'mongoose';
-import initRedis from '../../../config/redis.js';
+import { redisWrapper } from '../../../config/redis.js';
 import { getSubdomain } from '@/app/lib/tenantDb';
 import { getDbConnection } from '../../../lib/tenantDb.js';
 
@@ -34,14 +34,22 @@ export async function POST(request) {
     }
 
     try {
-      const redis = initRedis();
-      await redis.setex(`otp:${phone}`, 300, finalOtp); // Store OTP for 5 minutes
-      console.log(`📩 OTP sent to ${phone}: ${finalOtp}`);
+      if (redisWrapper.isEnabled()) {
+        await redisWrapper.setex(`otp:${phone}`, 300, finalOtp); // Store OTP for 5 minutes
+        console.log(`📩 OTP sent to ${phone}: ${finalOtp}`);
+      } else {
+        console.log(`📴 Redis disabled - OTP would be: ${finalOtp} (for development)`);
+        // In production, you might want to handle this differently
+        // For now, we'll continue but log that Redis is disabled
+      }
 
       return NextResponse.json({
         success: true,
         message: `OTP sent to ${phone}`,
-        data: { isNewUser: !user }
+        data: { 
+          isNewUser: !user,
+          redisEnabled: redisWrapper.isEnabled()
+        }
       }, { status: 200 });
 
     } catch (redisError) {

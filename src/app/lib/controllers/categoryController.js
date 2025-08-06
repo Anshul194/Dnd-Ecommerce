@@ -1,18 +1,26 @@
 import CategoryService from '../.././lib/services/categoryService.js';
 import { saveFile, validateImageFile } from '../../config/fileUpload.js';
 import Category from '../../lib/models/Category.js';
-import initRedis from '../../config/redis.js';
+import { redisWrapper } from '../../config/redis.js';
 import { categoryCreateValidator, categoryUpdateValidator } from '../../validators/categoryValidator.js';
 import { successResponse, errorResponse } from '../../utils/response.js';
 
-// Remove global instance, always use tenant-based
-const redis = initRedis(); 
-
 // Helper to refresh allCategories cache
 async function refreshCategoriesCache(conn) {
-  const categoryService = new CategoryService(conn);
-  const allCategories = await categoryService.getAllCategories({});
-  await redis.set('allCategories', JSON.stringify(allCategories));
+  try {
+    const categoryService = new CategoryService(conn);
+    const allCategories = await categoryService.getAllCategories({});
+    
+    if (redisWrapper.isEnabled()) {
+      const client = await redisWrapper.getClient();
+      await client.set('allCategories', JSON.stringify(allCategories));
+      console.log('✅ Categories cache refreshed in Redis');
+    } else {
+      console.log('📴 Redis disabled - skipping cache refresh');
+    }
+  } catch (error) {
+    console.error('Failed to refresh categories cache:', error);
+  }
 }
 
 export async function createCategory(form, conn) {

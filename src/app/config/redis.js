@@ -1,19 +1,10 @@
-import Redis from 'ioredis';
+import redisWrapper from './redisWrapper.js';
 
+// Legacy function - maintained for backward compatibility
 export default function initRedis() {
-  const redis = new Redis({
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    password: process.env.REDIS_PASSWORD,
-  });
-
-  redis.on('connect', () => {
-    console.log('✅ Redis connected globally');
-  });
-
-  redis.on('error', (err) => {
-    console.error('❌ Redis connection error:', err);
-  });
-
-  return redis;
+  console.warn('⚠️ initRedis() is deprecated. Consider using redisWrapper directly for better control.');
+  return redisWrapper.getClient();
 }
+
+// Export the wrapper for direct access to new features
+export { default as redisWrapper } from './redisWrapper.js';

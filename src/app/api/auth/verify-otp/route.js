@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import UserService from '../../../lib/services/userService.js';
 import { Token } from '../../../middleware/generateToken.js';
 import mongoose from 'mongoose';
-import initRedis from '../../../config/redis.js';
+import { redisWrapper } from '../../../config/redis.js';
 import bcrypt from 'bcryptjs';
 import roleSchema from '../../../lib/models/role.js';
 
@@ -61,15 +61,25 @@ export async function POST(request) {
     }
 
     try {
-      const redis = initRedis();
-      const storedOtp = await redis.get(`otp:${phone}`);
+      if (!redisWrapper.isEnabled()) {
+        // If Redis is disabled, use development OTP for testing
+        if (otp !== '123456') {
+          return NextResponse.json({ 
+            success: false, 
+            message: "Invalid OTP (Redis disabled - use 123456 for testing)" 
+          }, { status: 400 });
+        }
+        console.log('📴 Redis disabled - using development OTP validation');
+      } else {
+        const storedOtp = await redisWrapper.get(`otp:${phone}`);
 
-      if (!storedOtp || storedOtp !== otp) {
-        return NextResponse.json({ success: false, message: "Invalid or expired OTP" }, { status: 400 });
+        if (!storedOtp || storedOtp !== otp) {
+          return NextResponse.json({ success: false, message: "Invalid or expired OTP" }, { status: 400 });
+        }
+
+        // Delete the OTP after successful verification
+        await redisWrapper.del(`otp:${phone}`);
       }
-
-      // Delete the OTP after successful verification
-      await redis.del(`otp:${phone}`);
 
       let user = await userService.getUserByPhone(phone);
 

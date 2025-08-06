@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import UserService from '../../../lib/services/userService.js';
 import { Token } from '../../../middleware/generateToken.js';
 import mongoose from 'mongoose';
-import initRedis from '../../../config/redis.js';
+import { redisWrapper } from '../../../config/redis.js';
 import bcrypt from 'bcryptjs';
 import roleSchema from '../../../lib/models/role.js';
 
@@ -74,10 +74,15 @@ export async function POST(request) {
     }
 
     try {
-      const redis = initRedis();
-      
+      if (!redisWrapper.isEnabled()) {
+        return NextResponse.json({ 
+          success: false, 
+          message: "Redis is disabled. Session management requires Redis to be enabled." 
+        }, { status: 503 });
+      }
+
       // Get phone number from session
-      const phone = await redis.get(`session:${sessionId}`);
+      const phone = await redisWrapper.get(`session:${sessionId}`);
       if (!phone) {
         return NextResponse.json({ 
           success: false, 
@@ -137,11 +142,11 @@ export async function POST(request) {
       const { accessToken, refreshToken, accessTokenExp, refreshTokenExp } = Token.generateTokens(user);
       
       // Store tokens in Redis
-      await redis.setex(`accessToken:${accessToken}`, Math.floor((accessTokenExp - Date.now()) / 1000), "valid");
-      await redis.setex(`refreshToken:${refreshToken}`, Math.floor((refreshTokenExp - Date.now()) / 1000), user._id.toString());
+      await redisWrapper.setex(`accessToken:${accessToken}`, Math.floor((accessTokenExp - Date.now()) / 1000), "valid");
+      await redisWrapper.setex(`refreshToken:${refreshToken}`, Math.floor((refreshTokenExp - Date.now()) / 1000), user._id.toString());
       
       // Delete session
-      await redis.del(`session:${sessionId}`);
+      await redisWrapper.del(`session:${sessionId}`);
 
       // Return user info (without password) and tokens
       const userObj = user.toObject();
