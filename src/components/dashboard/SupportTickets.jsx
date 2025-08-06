@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FileText, Plus, MessageCircle, Calendar, X, Send, Eye, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { createSupportTicket, resetTicketState } from '@/app/store/slices/supportTicketSlice';
+import { createSupportTicket, resetTicketState, fetchCustomerTickets } from '@/app/store/slices/supportTicketSlice';
 import { fetchOrders } from '@/app/store/slices/orderSlice';
 import { toast } from 'react-toastify';
 
 const SupportTickets = () => {
   const dispatch = useDispatch();
-  const { loading, error, success } = useSelector((state) => state.supportTicket);
+  const { loading, error, success, tickets, fetchLoading } = useSelector((state) => state.supportTicket);
   const { orders, loading: ordersLoading, error: ordersError } = useSelector((state) => state.orders);
   
   // Get user data for customer field
@@ -50,96 +50,12 @@ const SupportTickets = () => {
     }
   }, [dispatch, user?._id]);
 
-  const [tickets, setTickets] = useState([
-    {
-      _id: '1',
-      subject: 'Order not received',
-      description: 'I placed an order 5 days ago but haven\'t received it yet. Order number: ORD-2025-001',
-      status: 'open',
-      priority: 'medium',
-      createdAt: new Date('2025-08-01'),
-      replies: []
-    },
-    {
-      _id: '2',
-      subject: 'Payment issue',
-      description: 'My payment was deducted but order was not confirmed. Transaction ID: TXN123456',
-      status: 'in_progress',
-      priority: 'high',
-      createdAt: new Date('2025-07-30'),
-      replies: [
-        {
-          _id: 'r1',
-          message: 'Thank you for contacting us. We are looking into this issue and will update you shortly.',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-30T10:30:00'),
-          isStaff: true
-        },
-        {
-          _id: 'r2',
-          message: 'We have identified the issue and are processing your refund. You should see the amount credited back to your account within 3-5 business days.',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-31T14:15:00'),
-          isStaff: true
-        }
-      ]
-    },
-    {
-      _id: '3',
-      subject: 'Product quality concern',
-      description: 'The product I received (Smart Watch Model XYZ) is damaged. There are scratches on the screen.',
-      status: 'resolved',
-      priority: 'medium',
-      createdAt: new Date('2025-07-25'),
-      replies: [
-        {
-          _id: 'r3',
-          message: 'Can you please share photos of the damage? This will help us process your replacement request faster.',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-25T16:00:00'),
-          isStaff: true
-        },
-        {
-          _id: 'r4',
-          message: 'I have attached the photos as requested. Please let me know the next steps.',
-          repliedBy: 'Anshul',
-          repliedAt: new Date('2025-07-26T09:30:00'),
-          isStaff: false
-        },
-        {
-          _id: 'r5',
-          message: 'Thank you for the photos. We have processed a replacement which will be delivered within 2-3 business days. Tracking number: TRK789123',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-26T11:45:00'),
-          isStaff: true
-        }
-      ]
-    },
-    {
-      _id: '4',
-      subject: 'Account login issues',
-      description: 'I am unable to login to my account. Getting \'Invalid credentials\' error even with correct password.',
-      status: 'closed',
-      priority: 'low',
-      createdAt: new Date('2025-07-20'),
-      replies: [
-        {
-          _id: 'r6',
-          message: 'Please try resetting your password using the \'Forgot Password\' link on the login page.',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-20T13:20:00'),
-          isStaff: true
-        },
-        {
-          _id: 'r7',
-          message: 'That worked! Thank you for the quick resolution.',
-          repliedBy: 'Anshul',
-          repliedAt: new Date('2025-07-20T14:05:00'),
-          isStaff: false
-        }
-      ]
+  // Effect to fetch customer tickets when component mounts
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(fetchCustomerTickets());
     }
-  ]);
+  }, [dispatch, user?._id]);
 
   const handleTicketSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -203,17 +119,8 @@ const SupportTickets = () => {
         draggable: true,
       });
       
-      // Add the new ticket to local state
-      const newTicket = {
-        _id: result._id || Date.now().toString(),
-        subject: ticketForm.subject,
-        description: ticketForm.description,
-        priority: ticketForm.priority,
-        status: 'open',
-        createdAt: new Date(),
-        replies: []
-      };
-      setTickets(prev => [newTicket, ...prev]);
+      // Refresh tickets from API to get the latest data
+      dispatch(fetchCustomerTickets());
       
       // Reset form and close modal
       setTicketForm({ 
@@ -290,34 +197,17 @@ const SupportTickets = () => {
     if (e && e.preventDefault) e.preventDefault();
     if (!replyMessage.trim()) return;
 
-    const newReply = {
-      _id: Date.now().toString(),
-      message: replyMessage,
-      repliedBy: 'Anshul',
-      repliedAt: new Date(),
-      isStaff: false
-    };
-
-    setTickets(prev => prev.map(ticket => 
-      ticket._id === selectedTicket._id 
-        ? { ...ticket, replies: [...ticket.replies, newReply] }
-        : ticket
-    ));
-
-    setSelectedTicket(prev => ({
-      ...prev,
-      replies: [...prev.replies, newReply]
-    }));
-
-    setReplyMessage('');
-    toast.success('Reply sent successfully!', {
+    // TODO: Implement reply API endpoint
+    toast.info('Reply functionality will be available soon. Please create a new ticket for urgent matters.', {
       position: "top-right",
-      autoClose: 3000,
+      autoClose: 5000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
       draggable: true,
     });
+
+    setReplyMessage('');
   };
 
   const getStatusColor = (status) => {
@@ -372,7 +262,7 @@ const SupportTickets = () => {
                 {selectedTicket.priority.toUpperCase()}
               </span>
               <span className="text-sm text-gray-500">
-                Created {selectedTicket.createdAt.toLocaleDateString()}
+                Created {new Date(selectedTicket.createdAt).toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -387,7 +277,7 @@ const SupportTickets = () => {
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
                 <span className="font-medium text-gray-900">Anshul</span>
-                <span className="text-sm text-gray-500">{selectedTicket.createdAt.toLocaleString()}</span>
+                <span className="text-sm text-gray-500">{new Date(selectedTicket.createdAt).toLocaleString()}</span>
               </div>
               <p className="text-gray-700">{selectedTicket.description}</p>
             </div>
@@ -416,7 +306,7 @@ const SupportTickets = () => {
                         Support
                       </span>
                     )}
-                    <span className="text-sm text-gray-500">{reply.repliedAt.toLocaleString()}</span>
+                    <span className="text-sm text-gray-500">{new Date(reply.repliedAt).toLocaleString()}</span>
                   </div>
                   <p className="text-gray-700">{reply.message}</p>
                 </div>
@@ -487,9 +377,31 @@ const SupportTickets = () => {
         </button>
       </div>
 
+      {/* Tickets Loading and Error States */}
+      {fetchLoading && (
+        <div className="bg-white rounded-lg p-8 text-center shadow-sm">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Loading your tickets...</h3>
+          <p className="text-gray-600">Please wait while we fetch your support tickets.</p>
+        </div>
+      )}
+
+      {error && !fetchLoading && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+          <p className="font-medium">Error loading tickets:</p>
+          <p>{error}</p>
+          <button
+            onClick={() => dispatch(fetchCustomerTickets())}
+            className="mt-2 px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
       {/* Tickets List */}
       <div className="space-y-4">
-        {tickets.length === 0 ? (
+        {!fetchLoading && !error && tickets && tickets.length === 0 ? (
           <div className="bg-white rounded-lg p-8 text-center shadow-sm">
             <FileText size={48} className="mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No tickets yet</h3>
@@ -503,7 +415,7 @@ const SupportTickets = () => {
             </button>
           </div>
         ) : (
-          tickets.map((ticket) => (
+          !fetchLoading && !error && tickets && tickets.map((ticket) => (
             <div key={ticket._id} className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
@@ -525,7 +437,7 @@ const SupportTickets = () => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-1">
                     <Calendar size={14} />
-                    <span>{ticket.createdAt.toLocaleDateString()}</span>
+                    <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <MessageCircle size={14} />
