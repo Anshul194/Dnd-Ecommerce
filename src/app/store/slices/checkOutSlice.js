@@ -29,7 +29,6 @@ export const setAddress = createAsyncThunk(
   }
 );
 
-
 export const placeOrder = createAsyncThunk(
   "checkout/placeOrder",
   async (orderDetails, { rejectWithValue }) => {
@@ -45,7 +44,7 @@ export const placeOrder = createAsyncThunk(
 const checkoutSlice = createSlice({
   name: "checkout",
   initialState: {
-    checkoutOpen: false,
+    checkoutOpen: true,
     checkoutData: {},
     addressAdded:
       (isBrowser && localStorage.getItem("address") && true) || false,
@@ -64,6 +63,11 @@ const checkoutSlice = createSlice({
     },
     setCheckoutClose: (state) => {
       state.checkoutOpen = false;
+    },
+    getAddressFormLocalStorage: (state) => {
+      state.addressData = isBrowser
+        ? JSON.parse(localStorage.getItem("address")) || {}
+        : {};
     },
     setCheckoutData: (state, action) => {
       state.checkoutData = action.payload;
@@ -107,7 +111,8 @@ export const {
   setCheckoutClose,
   setCheckoutData,
   clearCheckoutData,
-  resetAddress
+  resetAddress,
+  getAddressFormLocalStorage
 } = checkoutSlice.actions;
 
 export default checkoutSlice.reducer;

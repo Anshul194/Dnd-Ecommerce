@@ -15,15 +15,19 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  getAddressFormLocalStorage,
   placeOrder,
   resetAddress,
   setAddress,
   setCheckoutClose,
 } from "@/app/store/slices/checkOutSlice";
 import {
+  createUserAddress,
+  getuserAddresses,
   sendOtp,
   setAuthenticated,
   setOtpSended,
+  updateUserAddress,
   verifyOtp,
 } from "@/app/store/slices/authSlice";
 import Loading from "@/components/Loading";
@@ -35,23 +39,19 @@ import { usePathname, useRouter } from "next/navigation";
 export default function CheckoutPopup() {
   const checkoutOpen = useSelector((state) => state.checkout.checkoutOpen);
   const { addressData, addressAdded } = useSelector((state) => state.checkout);
+  const [userAddresses, setUserAddresses] = useState([]);
+  const [addressType, setAddressType] = useState("");
   const router = useRouter();
   const location = usePathname();
   const { isAuthenticated, otpSended, loading, user } = useSelector(
     (state) => state.auth
   );
-  const {
-    isCartOpen = false,
-    cartItems,
-    cartId,
-    total = 0,
-  } = useSelector((state) => state.cart);
+  const { cartItems, total = 0 } = useSelector((state) => state.cart);
   const { selectedCoupon } = useSelector((state) => state.coupon);
   console.log("Selected Coupon:", selectedCoupon);
   const [couponCode, setCouponCode] = useState("");
   const [activeField, setActiveField] = useState(null);
   const [isLogged, setIsLogged] = useState(false);
-  const [otpSend, setOtpSend] = useState(true);
   const inputRefs = useRef([]); // Array of refs for each input field
 
   const dispatch = useDispatch();
@@ -70,7 +70,27 @@ export default function CheckoutPopup() {
   });
   const [otp, setOtp] = useState(Array(6).fill("")); // Array with 6 empty strings
 
-  const [quantity, setQuantity] = useState(1);
+  const handleSelectAddress = async (selectedIndex) => {
+    if (selectedIndex === "" || selectedIndex === "default") return;
+
+    const selectedAddress = userAddresses[parseInt(selectedIndex)];
+    console.log("Selected Address:", JSON.stringify({ ...selectedAddress }));
+    console.log("Selected Address Phone:", selectedAddress.phone);
+    setFormData({
+      pincode: selectedAddress.pincode || "",
+      firstName: selectedAddress.firstName || "",
+      lastName: selectedAddress.lastName || "",
+      flatNumber: selectedAddress.line1 || "",
+      area: selectedAddress.area || "",
+      landmark: selectedAddress.line2 || "",
+      city: selectedAddress.city || "",
+      state: selectedAddress.state || "",
+      email: selectedAddress.email || "",
+      addressType: selectedAddress.addressType || "Home",
+      phone: selectedAddress.phone || user?.phone || "",
+    });
+    dispatch(setAddress({ ...selectedAddress, phone: user?.phone }));
+  };
 
   const handleInputChange = (e) => {
     setFormData({
@@ -132,7 +152,7 @@ export default function CheckoutPopup() {
     setOtp(digits);
   };
 
-  const handleAddAddress = () => {
+  const handleAddAddress = async () => {
     if (
       formData.pincode === "" ||
       formData.firstName === "" ||
@@ -144,7 +164,55 @@ export default function CheckoutPopup() {
       alert("Please fill all required fields");
       return;
     }
-    dispatch(setAddress({ ...formData, phone: user?.phone }));
+    const data =
+      localStorage.getItem("address") &&
+      JSON.parse(localStorage.getItem("address"));
+    console.log("checking addressData", data);
+    if (data && data._id) {
+      console.log("Updating existing address:", data._id);
+      await dispatch(
+        updateUserAddress({
+          addressId: addressData._id,
+          addressData: {
+            user: user?._id,
+            title: addressType || "Home",
+            address: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phone: formData.phone,
+              pincode: formData.pincode,
+              line1: formData.flatNumber,
+              line2: formData.landmark,
+              landmark: formData.landmark,
+              city: formData.city,
+              state: formData.state,
+            },
+          },
+        })
+      );
+    } else {
+      await dispatch(
+        createUserAddress({
+          user: user?._id,
+          title: addressType || "Home",
+          address: {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            pincode: formData.pincode,
+            line1: formData.flatNumber,
+            line2: formData.landmark,
+            landmark: formData.landmark,
+            city: formData.city,
+            state: formData.state,
+          },
+        })
+      );
+    }
+    await dispatch(setAddress({ ...formData, phone: user?.phone }));
+    dispatch(fetchUserAddresses(user?._id));
   };
 
   const handelPayment = async () => {
@@ -237,19 +305,36 @@ export default function CheckoutPopup() {
   }, [otp]);
 
   useEffect(() => {
-    setFormData({
-      pincode: addressData?.pincode || "",
-      firstName: addressData?.firstName || "",
-      lastName: addressData?.lastName || "",
-      flatNumber: addressData?.flatNumber || "",
-      area: addressData?.area || "",
-      landmark: addressData?.landmark || "",
-      city: addressData?.city || "",
-      state: addressData?.state || "",
-      email: addressData?.email || "",
-      addressType: addressData?.addressType || "Home",
-      phone: addressData?.phone || "",
-    });
+    // Only set form data from addressData if it exists and has actual data
+    if (addressData && Object.keys(addressData).length > 0) {
+      setFormData({
+        pincode: addressData?.address?.pincode || "",
+        firstName: addressData?.address?.firstName || "",
+        lastName: addressData?.address?.lastName || "",
+        flatNumber: addressData?.address?.line1 || "",
+        area: addressData?.address?.area || "",
+        landmark: addressData?.address?.line2 || "",
+        city: addressData?.address?.city || "",
+        state: addressData?.address?.state || "",
+        email: addressData?.address?.email || "",
+        addressType: addressData?.address?.addressType || "Home",
+        phone: addressData?.address?.phone || "",
+      });
+      setAddressType(addressData?.title || "");
+    }
+
+    const fetchUserAddresses = async () => {
+      if (isAuthenticated && user?._id) {
+        try {
+          const response = await dispatch(getuserAddresses(user._id));
+          console.log("User addresses response:", response);
+
+          setUserAddresses(response.payload || []);
+        } catch (error) {
+          console.error("Error fetching user addresses:", error);
+        }
+      }
+    };
 
     const loadRazorpayScript = () => {
       const script = document.createElement("script");
@@ -259,9 +344,9 @@ export default function CheckoutPopup() {
       script.onerror = () => console.error("Failed to load Razorpay script");
       document.body.appendChild(script);
     };
-
+    fetchUserAddresses();
     loadRazorpayScript();
-  }, []);
+  }, [addressData, isAuthenticated, user?._id, dispatch]);
 
   if (!checkoutOpen) return null;
 
@@ -525,6 +610,20 @@ export default function CheckoutPopup() {
                       className="text-blue-600 text-sm font-medium cursor-pointer"
                       onClick={() => {
                         dispatch(resetAddress());
+                        // localStorage.removeItem("address");
+                        // setFormData({
+                        //   pincode: "",
+                        //   firstName: "",
+                        //   lastName: "",
+                        //   flatNumber: "",
+                        //   area: "",
+                        //   landmark: "",
+                        //   city: "",
+                        //   state: "",
+                        //   email: "",
+                        //   addressType: "Home",
+                        //   phone: user?.phone || "",
+                        // });
                       }}
                     >
                       Change
@@ -533,40 +632,62 @@ export default function CheckoutPopup() {
                   <div className="text-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <h2 className="font-semibold">
-                        {addressData?.firstName + " " + addressData?.lastName}
+                        {addressData?.address?.firstName +
+                          " " +
+                          addressData?.address?.lastName}
                       </h2>
                       <h2 className="bg-blue-300 px-1 text-xs rounded-full font-medium">
                         Home
                       </h2>
                     </div>
                     <p>
-                      {addressData?.flatNumber +
+                      {addressData?.address?.line1 +
                         ", " +
-                        addressData?.landmark +
+                        addressData?.address?.line2 +
                         ", " +
-                        addressData?.city +
+                        addressData?.address?.city +
                         ", " +
-                        addressData?.state +
+                        addressData?.address?.state +
                         ", " +
-                        addressData?.pincode}
+                        addressData?.address?.pincode}
                     </p>
 
                     <div className="flex items-center gap-4 mt-2  text-black/80">
                       <div className="flex items-center gap-2 mb-2">
                         <PhoneCall className="h-3 w-3" />
-                        <h2>{addressData?.phone}</h2>
+                        <h2>{addressData?.address?.phone}</h2>
                       </div>
                       <div className="flex items-center gap-2 mb-2">
                         <Mail className="h-3 w-3" />
-                        <h2>{addressData?.email}</h2>
+                        <h2>{addressData?.address?.email}</h2>
                       </div>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4 rounded-xl bg-white py-3 px-4">
-                  <h3 className="font-semibold mb-4">Add shipping address</h3>
-
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold ">Add shipping address</h3>
+                    <select
+                      onChange={(e) => handleSelectAddress(e.target.value)}
+                      className="text-sm w-1/3 font-medium text-black px-2 py-1 border rounded-md cursor-pointer outline-none"
+                      defaultValue="default"
+                    >
+                      <option value="default" disabled>
+                        Select Address
+                      </option>
+                      {userAddresses?.length > 0 &&
+                        userAddresses.map((address, index) => (
+                          <option
+                            key={index}
+                            className="outline-none border-none"
+                            value={index}
+                          >
+                            {address.title || `Address ${index + 1}`}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
                   <div
                     className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
                       activeField === "pincode"
@@ -888,40 +1009,13 @@ export default function CheckoutPopup() {
                   {/* Address Type */}
                   <div className="space-y-2 text-sm font-medium mt-10">
                     <h4 className="font-medium text-xs">Address type</h4>
-                    <div className="flex gap-6">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="addressType"
-                          value="Home"
-                          checked={formData.addressType === "Home"}
-                          onChange={handleInputChange}
-                          className="mr-2"
-                        />
-                        Home
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="addressType"
-                          value="Office"
-                          checked={formData.addressType === "Office"}
-                          onChange={handleInputChange}
-                          className="mr-2"
-                        />
-                        Office
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          name="addressType"
-                          value="Others"
-                          checked={formData.addressType === "Others"}
-                          onChange={handleInputChange}
-                          className="mr-2"
-                        />
-                        Others
-                      </label>
+                    <div>
+                      <input
+                        type="text"
+                        value={addressType}
+                        onChange={(e) => setAddressType(e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-gray-300  rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
                     </div>
                   </div>
 

@@ -29,7 +29,7 @@ export async function POST(request) {
 
     // For testing purposes, use fixed OTP for specific numbers
     let finalOtp = otp;
-    if (phone === '7014628523' || phone === '8347496266' || phone === '7016292085' || phone === '7774010984') {
+    if (phone === '7014628523' || phone === '8347496266' || phone === '7016292085' || phone === '7774010984' || phone === '9725398019') {
       finalOtp = '123456';
     }
 
