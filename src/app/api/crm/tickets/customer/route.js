@@ -1,6 +1,6 @@
-// File: app/api/crm/tickets/customer/[customerId]/route.js
-import { getSubdomain, getDbConnection } from '../../../../../lib/tenantDb';
-import { getTicketsByCustomer } from '../../../../../lib/controllers/ticketController';
+import { getSubdomain, getDbConnection } from '../../../../lib/tenantDb';
+import { getTicketsByCustomer } from '../../../../lib/controllers/ticketController';
+import { withUserAuth } from '../../../../middleware/commonAuth.js';
 
 const toNextResponse = (data, status = 200) => {
   return new Response(JSON.stringify(data), {
@@ -9,20 +9,19 @@ const toNextResponse = (data, status = 200) => {
   });
 };
 
-// GET /api/crm/tickets/customer/[customerId] - Get all tickets for a specific customer
-export async function GET(req, { params }) {
+// Using the user info from the token instead of URL params
+export const GET = withUserAuth(async function (req, context) {
   try {
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
-    if (!conn) return toNextResponse({ success: false, message: 'DB not found' }, 404);
-
-    const { customerId } = params;
-    if (!customerId) {
-      return toNextResponse({ success: false, message: 'Customer ID is required' }, 400);
-    }
+    if (!conn)
+      return toNextResponse({ success: false, message: 'DB not found' }, 404);
 
     const { searchParams } = new URL(req.url);
     const query = Object.fromEntries(searchParams.entries());
+
+    // ✅ Get the customerId from the authenticated user
+    const customerId = req.user._id;
 
     const result = await getTicketsByCustomer(customerId, conn, query);
     return toNextResponse(result.body, result.status);
@@ -30,5 +29,5 @@ export async function GET(req, { params }) {
     console.error('GET Tickets by Customer Error:', error.message);
     return toNextResponse({ success: false, message: error.message }, 500);
   }
-}
+});
 

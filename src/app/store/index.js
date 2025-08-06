@@ -14,6 +14,8 @@ import couponReducer from "./slices/couponSlice";
 import blogSlice from "./slices/blogSclie";
 import checkoutSlice from "./slices/checkOutSlice";
 import orderSlice from "./slices/orderSlice";
+import supportTicketSlice from "./slices/supportTicketSlice";
+import orderReducer from "./slices/orderSlice";
 
 const store = configureStore({
   reducer: {
@@ -31,6 +33,8 @@ const store = configureStore({
     blogs: blogSlice,
     checkout: checkoutSlice,
     order: orderSlice,
+    supportTicket: supportTicketSlice,
+    orders: orderReducer,
   },
 });
 

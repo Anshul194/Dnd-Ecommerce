@@ -130,6 +130,7 @@ class TicketRepository extends CrudRepository {
       this.Ticket.find(filter)
         .populate('assignedTo')
         .populate('customer')
+        .populate('replies.repliedBy', 'name email') // Populate reply author details
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit))

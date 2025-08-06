@@ -3,10 +3,20 @@ import {
   createLeadController,
   getLeadsController,
 } from '../../../lib/controllers/leadController';
-import { withSuperAdminOrRoleAdminAuth } from '../../../middleware/commonAuth';
+import { NextResponse } from 'next/server';
+import {verifyTokenAndUser} from '../../../middleware/commonAuth';
+import roleSchema from '../../../lib/models/role.js';
 
-export const GET = withSuperAdminOrRoleAdminAuth(async function(request) {
+
+export async function GET(request) {
   try {
+    // Authenticate user first
+    const authResult = await verifyTokenAndUser(request);
+    if (authResult.error) return authResult.error;
+    
+    // Add user to request object for easy access
+    request.user = authResult.user;
+
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
 
@@ -15,12 +25,41 @@ export const GET = withSuperAdminOrRoleAdminAuth(async function(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const query = Object.fromEntries(searchParams.entries());
+    let query = Object.fromEntries(searchParams.entries());
 
+    console.log('user in GET /crm/leads:', request.user);
+
+    // Role-based filtering logic
     const user = request.user;
+    
+    // Check if user is admin or super admin
+    let isAdmin = false;
+    
+    if (user.isSuperAdmin) {
+      isAdmin = true;
+    } else if (user.role) {
+      // Get role information to check if user is admin
+      let roleDoc = user.role;
+      
+      // If role is just an ID, fetch the role document
+      if (typeof roleDoc === 'string' || (roleDoc._bsontype === 'ObjectId')) {
+        const RoleModel = conn.models.Role || conn.model('Role', roleSchema);
+        roleDoc = await RoleModel.findById(user.role).lean();
+      }
+      
+      // Check if role name or slug indicates admin
+      if (roleDoc && (roleDoc.name === 'admin' || roleDoc.slug === 'admin' || roleDoc.name === 'Admin')) {
+        isAdmin = true;
+      }
+    }
 
-    console.log('user in GET /crm/leads:', user);
-
+    // If not admin, filter leads to show only assigned ones
+    if (!isAdmin) {
+      query.assignedTo = user._id.toString();
+      console.log('Non-admin user - filtering leads by assignedTo:', user._id.toString());
+    } else {
+      console.log('Admin user - showing all leads');
+    }
 
     // ✅ Directly return the controller's response
     return await getLeadsController(query, conn);
@@ -29,10 +68,18 @@ export const GET = withSuperAdminOrRoleAdminAuth(async function(request) {
     console.error('GET /crm/leads error:', err.message);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
-});
+}
+
 
 export async function POST(request) {
   try {
+    // Authenticate user first
+    const authResult = await verifyTokenAndUser(request);
+    if (authResult.error) return authResult.error;
+    
+    // Add user to request object for easy access
+    request.user = authResult.user;
+
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
 
@@ -41,6 +88,8 @@ export async function POST(request) {
     }
 
     const body = await request.json();
+
+    console.log('user in POST /crm/leads:', request.user);
 
     // ✅ Directly return the controller's response
     return await createLeadController(body, conn);

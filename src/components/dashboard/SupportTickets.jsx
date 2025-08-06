@@ -1,124 +1,164 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { FileText, Plus, MessageCircle, Calendar, X, Send, Eye, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { createSupportTicket, resetTicketState, fetchCustomerTickets, addTicketReply } from '@/app/store/slices/supportTicketSlice';
+import { fetchOrders } from '@/app/store/slices/orderSlice';
+import { toast } from 'react-toastify';
 
 const SupportTickets = () => {
+  const dispatch = useDispatch();
+  const { loading, error, success, tickets, fetchLoading, replyLoading } = useSelector((state) => state.supportTicket);
+  const { orders, loading: ordersLoading, error: ordersError } = useSelector((state) => state.orders);
+  
+  // Get user data for customer field
+  const { user } = useSelector((state) => state.auth || {});
+  
+  // Debug: Log user data
+  console.log('Current user:', user);
+  
+  // Debug: Log orders data
+  console.log('Orders state:', orders);
+  console.log('Orders loading:', ordersLoading);
+  console.log('Orders error:', ordersError);
+  
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [ticketForm, setTicketForm] = useState({
     subject: '',
     description: '',
-    priority: 'medium'
+    priority: 'medium',
+    customer: '', // Will be set dynamically from user context
+    orderId: '', // New field for order selection
+    attachments: []
   });
   const [replyMessage, setReplyMessage] = useState('');
 
-  const [tickets, setTickets] = useState([
-    {
-      _id: '1',
-      subject: 'Order not received',
-      description: 'I placed an order 5 days ago but haven\'t received it yet. Order number: ORD-2025-001',
-      status: 'open',
-      priority: 'medium',
-      createdAt: new Date('2025-08-01'),
-      replies: []
-    },
-    {
-      _id: '2',
-      subject: 'Payment issue',
-      description: 'My payment was deducted but order was not confirmed. Transaction ID: TXN123456',
-      status: 'in_progress',
-      priority: 'high',
-      createdAt: new Date('2025-07-30'),
-      replies: [
-        {
-          _id: 'r1',
-          message: 'Thank you for contacting us. We are looking into this issue and will update you shortly.',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-30T10:30:00'),
-          isStaff: true
-        },
-        {
-          _id: 'r2',
-          message: 'We have identified the issue and are processing your refund. You should see the amount credited back to your account within 3-5 business days.',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-31T14:15:00'),
-          isStaff: true
-        }
-      ]
-    },
-    {
-      _id: '3',
-      subject: 'Product quality concern',
-      description: 'The product I received (Smart Watch Model XYZ) is damaged. There are scratches on the screen.',
-      status: 'resolved',
-      priority: 'medium',
-      createdAt: new Date('2025-07-25'),
-      replies: [
-        {
-          _id: 'r3',
-          message: 'Can you please share photos of the damage? This will help us process your replacement request faster.',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-25T16:00:00'),
-          isStaff: true
-        },
-        {
-          _id: 'r4',
-          message: 'I have attached the photos as requested. Please let me know the next steps.',
-          repliedBy: 'Anshul',
-          repliedAt: new Date('2025-07-26T09:30:00'),
-          isStaff: false
-        },
-        {
-          _id: 'r5',
-          message: 'Thank you for the photos. We have processed a replacement which will be delivered within 2-3 business days. Tracking number: TRK789123',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-26T11:45:00'),
-          isStaff: true
-        }
-      ]
-    },
-    {
-      _id: '4',
-      subject: 'Account login issues',
-      description: 'I am unable to login to my account. Getting \'Invalid credentials\' error even with correct password.',
-      status: 'closed',
-      priority: 'low',
-      createdAt: new Date('2025-07-20'),
-      replies: [
-        {
-          _id: 'r6',
-          message: 'Please try resetting your password using the \'Forgot Password\' link on the login page.',
-          repliedBy: 'Support Team',
-          repliedAt: new Date('2025-07-20T13:20:00'),
-          isStaff: true
-        },
-        {
-          _id: 'r7',
-          message: 'That worked! Thank you for the quick resolution.',
-          repliedBy: 'Anshul',
-          repliedAt: new Date('2025-07-20T14:05:00'),
-          isStaff: false
-        }
-      ]
+  // Effect to set customer ID when user data is available
+  useEffect(() => {
+    if (user?._id && ticketForm.customer !== user._id) {
+      setTicketForm(prev => ({
+        ...prev,
+        customer: user._id
+      }));
     }
-  ]);
+  }, [user?._id, ticketForm.customer]);
+
+  // Effect to fetch orders when component mounts
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(fetchOrders());
+    }
+  }, [dispatch, user?._id]);
+
+  // Effect to fetch customer tickets when component mounts
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(fetchCustomerTickets());
+    }
+  }, [dispatch, user?._id]);
+
+  // Effect to update selected ticket when tickets state changes
+  useEffect(() => {
+    if (selectedTicket && tickets && tickets.length > 0) {
+      const updatedTicket = tickets.find(ticket => ticket._id === selectedTicket._id);
+      if (updatedTicket) {
+        setSelectedTicket(updatedTicket);
+      }
+    }
+  }, [tickets, selectedTicket]);
 
   const handleTicketSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
+    
+    // Validation
+    if (!ticketForm.subject.trim()) {
+      alert('Please enter a subject for your ticket.');
+      return;
+    }
+    
+    if (!ticketForm.description.trim()) {
+      alert('Please enter a description for your ticket.');
+      return;
+    }
+    
+    // Validate customer ID
+    if (!user?._id) {
+      alert('User authentication required. Please log in again.');
+      return;
+    }
+    
     try {
-      const newTicket = {
-        _id: Date.now().toString(),
-        ...ticketForm,
-        status: 'open',
-        createdAt: new Date(),
-        replies: []
-      };
-      setTickets(prev => [newTicket, ...prev]);
-      setTicketForm({ subject: '', description: '', priority: 'medium' });
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+      formData.append('subject', ticketForm.subject);
+      formData.append('description', ticketForm.description);
+      formData.append('priority', ticketForm.priority);
+      
+      // Add customer ID (required field)
+      formData.append('customer', user._id);
+      
+      // Add order ID if selected
+      if (ticketForm.orderId) {
+        formData.append('orderId', ticketForm.orderId);
+      }
+      
+      // Debug log to verify customer ID
+      console.log('Submitting ticket with customer ID:', user._id);
+      console.log('Selected order ID:', ticketForm.orderId);
+      
+      // Add attachments if any
+      ticketForm.attachments.forEach((file) => {
+        formData.append('attachments', file);
+      });
+
+      // Debug: Log all form data entries
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      // Dispatch the API call
+      const result = await dispatch(createSupportTicket(formData)).unwrap();
+      
+      // Show success toast message
+      toast.success('Support ticket submitted. We’ll get back to you within 24 hours. Thank you!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      
+      // Refresh tickets from API to get the latest data
+      dispatch(fetchCustomerTickets());
+      
+      // Reset form and close modal
+      setTicketForm({ 
+        subject: '', 
+        description: '', 
+        priority: 'medium',
+        customer: user?._id || '',
+        orderId: '',
+        attachments: []
+      });
       setIsTicketModalOpen(false);
-      alert('Support ticket submitted successfully!');
+      
+      // Reset Redux state
+      setTimeout(() => {
+        dispatch(resetTicketState());
+      }, 3000);
+      
     } catch (error) {
       console.error('Error submitting ticket:', error);
-      alert('Error submitting ticket. Please try again.');
+      toast.error(error.message || 'Failed to submit support ticket. Please try again.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      // Error is handled by Redux state
     }
   };
 
@@ -130,31 +170,79 @@ const SupportTickets = () => {
     }));
   };
 
-  const handleReplySubmit = (e) => {
-    e.preventDefault();
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Validate file sizes (max 10MB per file)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const oversizedFiles = files.filter(file => file.size > maxSize);
+    
+    if (oversizedFiles.length > 0) {
+      alert(`The following files are too large (max 10MB each): ${oversizedFiles.map(f => f.name).join(', ')}`);
+      return;
+    }
+    
+    setTicketForm(prev => ({
+      ...prev,
+      attachments: files
+    }));
+  };
+
+  const removeAttachment = (index) => {
+    setTicketForm(prev => ({
+      ...prev,
+      attachments: prev.attachments.filter((_, i) => i !== index)
+    }));
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleReplySubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!replyMessage.trim()) return;
 
-    const newReply = {
-      _id: Date.now().toString(),
-      message: replyMessage,
-      repliedBy: 'Anshul',
-      repliedAt: new Date(),
-      isStaff: false
-    };
+    try {
+      // Dispatch the addTicketReply action
+      await dispatch(addTicketReply({
+        ticketId: selectedTicket._id,
+        replyData: {
+          message: replyMessage.trim()
+        }
+      })).unwrap();
 
-    setTickets(prev => prev.map(ticket => 
-      ticket._id === selectedTicket._id 
-        ? { ...ticket, replies: [...ticket.replies, newReply] }
-        : ticket
-    ));
+      // Show success message
+      toast.success('Reply added successfully!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
 
-    setSelectedTicket(prev => ({
-      ...prev,
-      replies: [...prev.replies, newReply]
-    }));
+      // Clear the reply message
+      setReplyMessage('');
+      
+      // Refresh tickets to get updated data with populated fields
+      await dispatch(fetchCustomerTickets());
 
-    setReplyMessage('');
-    alert('Reply sent successfully!');
+    } catch (error) {
+      console.error('Error adding reply:', error);
+      toast.error(error || 'Failed to add reply. Please try again.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
   };
 
   const getStatusColor = (status) => {
@@ -209,7 +297,7 @@ const SupportTickets = () => {
                 {selectedTicket.priority.toUpperCase()}
               </span>
               <span className="text-sm text-gray-500">
-                Created {selectedTicket.createdAt.toLocaleDateString()}
+                Created {new Date(selectedTicket.createdAt).toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -224,7 +312,7 @@ const SupportTickets = () => {
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
                 <span className="font-medium text-gray-900">Anshul</span>
-                <span className="text-sm text-gray-500">{selectedTicket.createdAt.toLocaleString()}</span>
+                <span className="text-sm text-gray-500">{new Date(selectedTicket.createdAt).toLocaleString()}</span>
               </div>
               <p className="text-gray-700">{selectedTicket.description}</p>
             </div>
@@ -247,13 +335,18 @@ const SupportTickets = () => {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
-                    <span className="font-medium text-gray-900">{reply.repliedBy}</span>
+                    <span className="font-medium text-gray-900">
+                      {typeof reply.repliedBy === 'object' && reply.repliedBy?.name 
+                        ? reply.repliedBy.name 
+                        : reply.repliedBy || 'Customer'
+                      }
+                    </span>
                     {reply.isStaff && (
                       <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
                         Support
                       </span>
                     )}
-                    <span className="text-sm text-gray-500">{reply.repliedAt.toLocaleString()}</span>
+                    <span className="text-sm text-gray-500">{new Date(reply.repliedAt).toLocaleString()}</span>
                   </div>
                   <p className="text-gray-700">{reply.message}</p>
                 </div>
@@ -262,27 +355,94 @@ const SupportTickets = () => {
           ))}
         </div>
 
+        {/* Attachments */}
+        {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center space-x-2">
+              <FileText size={20} />
+              <span>Attachments</span>
+            </h3>
+            <ul className="space-y-2">
+              {selectedTicket.attachments.map((fileUrl, index) => (
+                <li key={index}>
+                  <a
+                    href={fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline break-all flex items-center space-x-2"
+                  >
+                    <Eye size={16} />
+                    <span>{fileUrl.split('/').pop()}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Related Order */}
+        {selectedTicket.orderId && orders && orders.length > 0 && (
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center space-x-2">
+              <Eye size={20} />
+              <span>Related Order</span>
+            </h3>
+            {(() => {
+              const relatedOrder = orders.find(order => order._id === selectedTicket.orderId);
+              if (!relatedOrder) return <p className="text-gray-500">Order details not available.</p>;
+
+              const firstItem = relatedOrder.items?.[0];
+              const itemCount = relatedOrder.items?.length || 0;
+
+              return (
+                <div className="space-y-2">
+                  <p><span className="font-medium">Order ID:</span> {relatedOrder._id}</p>
+                  <p><span className="font-medium">Date:</span> {new Date(relatedOrder.createdAt).toLocaleDateString()}</p>
+                  <p><span className="font-medium">Total:</span> ${relatedOrder.total?.toFixed(2)}</p>
+                  <p>
+                    <span className="font-medium">Items:</span> {firstItem?.variant?.title || 'Unknown'}{itemCount > 1 ? ` (+${itemCount - 1} more)` : ''}
+                  </p>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+    
+
         {/* Reply Form */}
         {selectedTicket.status !== 'closed' && (
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Add Reply</h3>
-            <form onSubmit={handleReplySubmit} className="space-y-4">
+            <div className="space-y-4">
               <textarea
                 value={replyMessage}
                 onChange={(e) => setReplyMessage(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                disabled={replyLoading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none disabled:bg-gray-50 disabled:opacity-50"
                 placeholder="Type your message here..."
                 required
               />
               <button
-                type="submit"
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
+                type="button"
+                onClick={handleReplySubmit}
+                disabled={replyLoading || !replyMessage.trim()}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send size={16} />
-                <span>Send Reply</span>
+                {replyLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    <span>Send Reply</span>
+                  </>
+                )}
               </button>
-            </form>
+            </div>
           </div>
         )}
       </div>
@@ -291,6 +451,23 @@ const SupportTickets = () => {
 
   return (
     <div className="space-y-6">
+      {/* Status Messages */}
+      {!user?._id && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md">
+          Warning: User authentication required to create support tickets. Please ensure you are logged in.
+        </div>
+      )}
+      {ordersLoading && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-md">
+          Loading your orders...
+        </div>
+      )}
+      {ordersError && (
+        <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-md">
+          Warning: Unable to load orders. You can still create a ticket, but order selection will not be available.
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -306,9 +483,31 @@ const SupportTickets = () => {
         </button>
       </div>
 
+      {/* Tickets Loading and Error States */}
+      {fetchLoading && (
+        <div className="bg-white rounded-lg p-8 text-center shadow-sm">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Loading your tickets...</h3>
+          <p className="text-gray-600">Please wait while we fetch your support tickets.</p>
+        </div>
+      )}
+
+      {error && !fetchLoading && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+          <p className="font-medium">Error loading tickets:</p>
+          <p>{error}</p>
+          <button
+            onClick={() => dispatch(fetchCustomerTickets())}
+            className="mt-2 px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
       {/* Tickets List */}
       <div className="space-y-4">
-        {tickets.length === 0 ? (
+        {!fetchLoading && !error && tickets && tickets.length === 0 ? (
           <div className="bg-white rounded-lg p-8 text-center shadow-sm">
             <FileText size={48} className="mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No tickets yet</h3>
@@ -322,11 +521,26 @@ const SupportTickets = () => {
             </button>
           </div>
         ) : (
-          tickets.map((ticket) => (
+          !fetchLoading && !error && tickets && tickets.map((ticket) => (
             <div key={ticket._id} className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{ticket.subject}</h3>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900">{ticket.subject}</h3>
+                    {/* Visual indicators */}
+                    {ticket.attachments && ticket.attachments.length > 0 && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                        <FileText size={12} className="mr-1" />
+                        {ticket.attachments.length}
+                      </span>
+                    )}
+                    {ticket.orderId && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                        <Eye size={12} className="mr-1" />
+                        Order
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-600 mb-3 line-clamp-2">{ticket.description}</p>
                 </div>
                 <div className="ml-4 flex flex-col space-y-2 items-end">
@@ -344,7 +558,7 @@ const SupportTickets = () => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-1">
                     <Calendar size={14} />
-                    <span>{ticket.createdAt.toLocaleDateString()}</span>
+                    <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <MessageCircle size={14} />
@@ -353,7 +567,8 @@ const SupportTickets = () => {
                 </div>
                 <button
                   onClick={() => setSelectedTicket(ticket)}
-                  className="text-red-600 hover:text-red-700 font-medium flex items-center space-x-1"
+                  className="text-red-600 hover:text-red-700 font-medium flex items-center space-x-1 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                  title="View ticket details"
                 >
                   <Eye size={14} />
                   <span>View Details</span>
@@ -371,14 +586,25 @@ const SupportTickets = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Create Support Ticket</h2>
               <button
-                onClick={() => setIsTicketModalOpen(false)}
+                onClick={() => {
+                  setIsTicketModalOpen(false);
+                  setTicketForm({ 
+                    subject: '', 
+                    description: '', 
+                    priority: 'medium',
+                    customer: user?._id || '',
+                    orderId: '',
+                    attachments: []
+                  });
+                  dispatch(resetTicketState());
+                }}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X size={24} />
               </button>
             </div>
 
-            <form onSubmit={handleTicketSubmit} className="space-y-4">
+            <div className="space-y-4">
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
                   Subject *
@@ -390,7 +616,8 @@ const SupportTickets = () => {
                   value={ticketForm.subject}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  disabled={loading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50"
                   placeholder="Brief description of your issue"
                 />
               </div>
@@ -404,13 +631,57 @@ const SupportTickets = () => {
                   name="priority"
                   value={ticketForm.priority}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  disabled={loading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 text-black"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
                   <option value="urgent">Urgent</option>
                 </select>
+              </div>
+
+              <div>
+                <label htmlFor="orderId" className="block text-sm font-medium text-gray-700 mb-1">
+                  Related Order (Optional)
+                </label>
+                <select
+                  id="orderId"
+                  name="orderId"
+                  value={ticketForm.orderId}
+                  onChange={handleInputChange}
+                  disabled={loading || ordersLoading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50 text-black"
+                >
+                  <option value="">Select an order (optional)</option>
+                  {orders && orders.length > 0 ? (
+                    orders.map((order) => {
+                      console.log('Rendering order:', order); // Debug log
+                      
+                      // Get the first item's variant title for display
+                      const firstItemTitle = order.items?.[0]?.variant?.title || 'Unknown Product';
+                      const itemCount = order.items?.length || 0;
+                      const orderDate = new Date(order.createdAt).toLocaleDateString();
+                      
+                      return (
+                        <option key={order._id} value={order._id}>
+                          {firstItemTitle}{itemCount > 1 ? ` (+${itemCount - 1} more)` : ''} - ${order.total?.toFixed(2) || '0.00'} ({orderDate})
+                        </option>
+                      );
+                    })
+                  ) : (
+                    <option value="" disabled>No orders found</option>
+                  )}
+                </select>
+                {ordersLoading && (
+                  <p className="text-xs text-gray-500 mt-1">Loading orders...</p>
+                )}
+                {ordersError && (
+                  <p className="text-xs text-red-500 mt-1">Error loading orders: {ordersError}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Select an order if your ticket is related to a specific purchase. This helps our support team assist you better.
+                </p>
               </div>
 
               <div>
@@ -424,28 +695,98 @@ const SupportTickets = () => {
                   onChange={handleInputChange}
                   required
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                  disabled={loading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none disabled:bg-gray-50 text-black"
                   placeholder="Please describe your issue in detail..."
                 />
+              </div>
+
+              <div>
+                <label htmlFor="attachments" className="block text-sm font-medium text-gray-700 mb-1">
+                  Attachments (Optional)
+                </label>
+                <input
+                  type="file"
+                  id="attachments"
+                  name="attachments"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                  onChange={handleFileChange}
+                  disabled={loading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  You can upload multiple files (images, PDF, documents). Max 10MB per file.
+                </p>
+                
+                {/* Show selected files */}
+                {ticketForm.attachments.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-sm font-medium text-gray-700">Selected files:</p>
+                    {ticketForm.attachments.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-md">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-gray-700 truncate block">{file.name}</span>
+                          <span className="text-xs text-gray-500">{formatFileSize(file.size)}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(index)}
+                          className="text-red-500 hover:text-red-700 ml-2 flex-shrink-0"
+                          disabled={loading}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setIsTicketModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    setIsTicketModalOpen(false);
+                    setTicketForm({ 
+                      subject: '', 
+                      description: '', 
+                      priority: 'medium',
+                      customer: user?._id || '',
+                      orderId: '',
+                      attachments: []
+                    });
+                    dispatch(resetTicketState());
+                  }}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+                  type="button"
+                  onClick={handleTicketSubmit}
+                  disabled={loading || !user?._id}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
                 >
-                  <Send size={16} />
-                  <span>Submit Ticket</span>
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Submitting...</span>
+                    </>
+                  ) : !user?._id ? (
+                    <>
+                      <span>User Required</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send size={16} />
+                      <span>Submit Ticket</span>
+                    </>
+                  )}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
