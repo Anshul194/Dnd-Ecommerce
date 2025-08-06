@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FileText, Plus, MessageCircle, Calendar, X, Send, Eye, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { createSupportTicket, resetTicketState, fetchCustomerTickets } from '@/app/store/slices/supportTicketSlice';
+import { createSupportTicket, resetTicketState, fetchCustomerTickets, addTicketReply } from '@/app/store/slices/supportTicketSlice';
 import { fetchOrders } from '@/app/store/slices/orderSlice';
 import { toast } from 'react-toastify';
 
 const SupportTickets = () => {
   const dispatch = useDispatch();
-  const { loading, error, success, tickets, fetchLoading } = useSelector((state) => state.supportTicket);
+  const { loading, error, success, tickets, fetchLoading, replyLoading } = useSelector((state) => state.supportTicket);
   const { orders, loading: ordersLoading, error: ordersError } = useSelector((state) => state.orders);
   
   // Get user data for customer field
@@ -56,6 +56,16 @@ const SupportTickets = () => {
       dispatch(fetchCustomerTickets());
     }
   }, [dispatch, user?._id]);
+
+  // Effect to update selected ticket when tickets state changes
+  useEffect(() => {
+    if (selectedTicket && tickets && tickets.length > 0) {
+      const updatedTicket = tickets.find(ticket => ticket._id === selectedTicket._id);
+      if (updatedTicket) {
+        setSelectedTicket(updatedTicket);
+      }
+    }
+  }, [tickets, selectedTicket]);
 
   const handleTicketSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -193,21 +203,46 @@ const SupportTickets = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const handleReplySubmit = (e) => {
+  const handleReplySubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!replyMessage.trim()) return;
 
-    // TODO: Implement reply API endpoint
-    toast.info('Reply functionality will be available soon. Please create a new ticket for urgent matters.', {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    try {
+      // Dispatch the addTicketReply action
+      await dispatch(addTicketReply({
+        ticketId: selectedTicket._id,
+        replyData: {
+          message: replyMessage.trim()
+        }
+      })).unwrap();
 
-    setReplyMessage('');
+      // Show success message
+      toast.success('Reply added successfully!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      // Clear the reply message
+      setReplyMessage('');
+      
+      // Refresh tickets to get updated data with populated fields
+      await dispatch(fetchCustomerTickets());
+
+    } catch (error) {
+      console.error('Error adding reply:', error);
+      toast.error(error || 'Failed to add reply. Please try again.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
   };
 
   const getStatusColor = (status) => {
@@ -300,7 +335,12 @@ const SupportTickets = () => {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
-                    <span className="font-medium text-gray-900">{reply.repliedBy}</span>
+                    <span className="font-medium text-gray-900">
+                      {typeof reply.repliedBy === 'object' && reply.repliedBy?.name 
+                        ? reply.repliedBy.name 
+                        : reply.repliedBy || 'Customer'
+                      }
+                    </span>
                     {reply.isStaff && (
                       <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
                         Support
@@ -315,6 +355,61 @@ const SupportTickets = () => {
           ))}
         </div>
 
+        {/* Attachments */}
+        {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center space-x-2">
+              <FileText size={20} />
+              <span>Attachments</span>
+            </h3>
+            <ul className="space-y-2">
+              {selectedTicket.attachments.map((fileUrl, index) => (
+                <li key={index}>
+                  <a
+                    href={fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline break-all flex items-center space-x-2"
+                  >
+                    <Eye size={16} />
+                    <span>{fileUrl.split('/').pop()}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Related Order */}
+        {selectedTicket.orderId && orders && orders.length > 0 && (
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center space-x-2">
+              <Eye size={20} />
+              <span>Related Order</span>
+            </h3>
+            {(() => {
+              const relatedOrder = orders.find(order => order._id === selectedTicket.orderId);
+              if (!relatedOrder) return <p className="text-gray-500">Order details not available.</p>;
+
+              const firstItem = relatedOrder.items?.[0];
+              const itemCount = relatedOrder.items?.length || 0;
+
+              return (
+                <div className="space-y-2">
+                  <p><span className="font-medium">Order ID:</span> {relatedOrder._id}</p>
+                  <p><span className="font-medium">Date:</span> {new Date(relatedOrder.createdAt).toLocaleDateString()}</p>
+                  <p><span className="font-medium">Total:</span> ${relatedOrder.total?.toFixed(2)}</p>
+                  <p>
+                    <span className="font-medium">Items:</span> {firstItem?.variant?.title || 'Unknown'}{itemCount > 1 ? ` (+${itemCount - 1} more)` : ''}
+                  </p>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+    
+
         {/* Reply Form */}
         {selectedTicket.status !== 'closed' && (
           <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -324,17 +419,28 @@ const SupportTickets = () => {
                 value={replyMessage}
                 onChange={(e) => setReplyMessage(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                disabled={replyLoading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none disabled:bg-gray-50 disabled:opacity-50"
                 placeholder="Type your message here..."
                 required
               />
               <button
                 type="button"
                 onClick={handleReplySubmit}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
+                disabled={replyLoading || !replyMessage.trim()}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send size={16} />
-                <span>Send Reply</span>
+                {replyLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    <span>Send Reply</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -419,7 +525,22 @@ const SupportTickets = () => {
             <div key={ticket._id} className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{ticket.subject}</h3>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900">{ticket.subject}</h3>
+                    {/* Visual indicators */}
+                    {ticket.attachments && ticket.attachments.length > 0 && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                        <FileText size={12} className="mr-1" />
+                        {ticket.attachments.length}
+                      </span>
+                    )}
+                    {ticket.orderId && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                        <Eye size={12} className="mr-1" />
+                        Order
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-600 mb-3 line-clamp-2">{ticket.description}</p>
                 </div>
                 <div className="ml-4 flex flex-col space-y-2 items-end">
@@ -446,7 +567,8 @@ const SupportTickets = () => {
                 </div>
                 <button
                   onClick={() => setSelectedTicket(ticket)}
-                  className="text-red-600 hover:text-red-700 font-medium flex items-center space-x-1"
+                  className="text-red-600 hover:text-red-700 font-medium flex items-center space-x-1 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                  title="View ticket details"
                 >
                   <Eye size={14} />
                   <span>View Details</span>

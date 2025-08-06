@@ -66,6 +66,36 @@ export const createSupportTicket = createAsyncThunk(
   }
 );
 
+// 🔄 Async thunk for adding a reply to a ticket
+export const addTicketReply = createAsyncThunk(
+  "supportTicket/addReply",
+  async ({ ticketId, replyData }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post(`/crm/tickets/${ticketId}/replies`, replyData);
+      return response.data?.data;
+    } catch (error) {
+      // Ensure we return a string error message
+      let errorMessage = "An error occurred while adding the reply";
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        
+        // If it's a validation error with details, format it nicely
+        if (error.response.data.data && Array.isArray(error.response.data.data)) {
+          const validationErrors = error.response.data.data.map(err => err.message).join(', ');
+          errorMessage = `${error.response.data.message}: ${validationErrors}`;
+        }
+      } else if (error.response?.data) {
+        errorMessage = typeof error.response.data === 'string' ? error.response.data : JSON.stringify(error.response.data);
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // 🎯 Support Ticket Slice
 const supportTicketSlice = createSlice({
   name: "supportTicket",
@@ -76,6 +106,8 @@ const supportTicketSlice = createSlice({
     ticket: null,
     tickets: [],
     fetchLoading: false,
+    replyLoading: false,
+    reply: null,
   },
   reducers: {
     resetTicketState: (state) => {
@@ -88,6 +120,11 @@ const supportTicketSlice = createSlice({
       state.fetchLoading = false;
       state.error = null;
       state.tickets = [];
+    },
+    resetReplyState: (state) => {
+      state.replyLoading = false;
+      state.error = null;
+      state.reply = null;
     },
   },
   extraReducers: (builder) => {
@@ -137,9 +174,35 @@ const supportTicketSlice = createSlice({
         } else {
           state.error = "Failed to create ticket";
         }
+      })
+      // Add ticket reply
+      .addCase(addTicketReply.pending, (state) => {
+        state.replyLoading = true;
+        state.error = null;
+      })
+      .addCase(addTicketReply.fulfilled, (state, action) => {
+        state.replyLoading = false;
+        state.reply = action.payload;
+        
+        // Note: We don't update the tickets list here because the new reply
+        // from the backend may not have populated fields (repliedBy name, etc.)
+        // The tickets will be refreshed in the component to get proper populated data
+      })
+      .addCase(addTicketReply.rejected, (state, action) => {
+        state.replyLoading = false;
+        // Ensure error is always a string
+        if (typeof action.payload === 'string') {
+          state.error = action.payload;
+        } else if (action.payload && action.payload.message) {
+          state.error = action.payload.message;
+        } else if (action.payload && typeof action.payload === 'object') {
+          state.error = JSON.stringify(action.payload);
+        } else {
+          state.error = "Failed to add reply";
+        }
       });
   },
 });
 
-export const { resetTicketState, resetFetchState } = supportTicketSlice.actions;
+export const { resetTicketState, resetFetchState, resetReplyState } = supportTicketSlice.actions;
 export default supportTicketSlice.reducer;

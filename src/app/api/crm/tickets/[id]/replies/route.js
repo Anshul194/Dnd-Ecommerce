@@ -1,6 +1,6 @@
-// File: app/api/crm/tickets/[id]/replies/route.js
 import { getSubdomain, getDbConnection } from '../../../../../lib/tenantDb';
 import { replyToTicket } from '../../../../../lib/controllers/ticketController';
+import { withUserAuth } from '../../../../../middleware/commonAuth.js';
 
 const toNextResponse = (data, status = 200) => {
   return new Response(JSON.stringify(data), {
@@ -9,8 +9,8 @@ const toNextResponse = (data, status = 200) => {
   });
 };
 
-// POST /api/crm/tickets/[id]/replies - Add a reply to a ticket
-export async function POST(req, { params }) {
+// POST /api/crm/tickets/[id]/replies
+export const POST = withUserAuth(async function (req, { params }) {
   try {
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
@@ -21,11 +21,20 @@ export async function POST(req, { params }) {
       return toNextResponse({ success: false, message: 'Ticket ID is required' }, 400);
     }
 
+    const user = req.user; // from auth middleware
     const body = await req.json();
-    const result = await replyToTicket(id, body, conn);
+
+    // ✅ Convert user._id to string before validation
+    const replyData = {
+      ...body,
+      repliedBy: user._id.toString(),
+      isStaff: user.role !== 'customer',
+    };
+
+    const result = await replyToTicket(id, replyData, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
     console.error('POST Reply to Ticket Error:', error.message);
     return toNextResponse({ success: false, message: error.message }, 500);
   }
-}
+});
