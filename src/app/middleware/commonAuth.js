@@ -43,26 +43,33 @@ export async function getUserById(userId, tenantId = null, conn = null) {
             conn = mongoose;
         }
         const UserModel = getUserModel(conn);
-        // Convert userId and tenantId to ObjectId if possible
+        
+        // Convert userId to ObjectId if possible
         let query = {};
         try {
             query._id = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
         } catch {
             query._id = userId;
         }
-        if (tenantId && tenantId !== 'localhost') {
+
+        // For tenant users, we don't need to filter by tenant when using tenant-specific DB
+        // The tenant-specific database already contains only users for that tenant
+        // Only add tenant filter for global/default DB queries
+        if (tenantId && tenantId !== 'localhost' && conn === mongoose) {
             try {
                 query.tenant = mongoose.Types.ObjectId.isValid(tenantId) ? new mongoose.Types.ObjectId(tenantId) : tenantId;
             } catch {
                 query.tenant = tenantId;
             }
         }
-        console.log('[getUserById] Query:', query, 'TenantId:', tenantId);
+
+        console.log('[getUserById] Query:', query, 'TenantId:', tenantId, 'Using tenant DB:', conn !== mongoose);
+        
         user = await UserModel.findOne(query).lean();
-        console.log('[getUserById] Result:', user);
+        console.log('[getUserById] Result:', user ? 'User found' : 'User not found');
         return user;
     } catch (err) {
-        console.error('Error fetching user:', err.message);
+        console.log('Error fetching user:', err.message);
         return null;
     }
 }
