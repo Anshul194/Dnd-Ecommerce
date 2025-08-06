@@ -7,23 +7,23 @@ export const fetchOrders = createAsyncThunk(
   "order/fetchOrders",
   async (payload) => {
     const queryParams = new URLSearchParams();
-    queryParams.append("page", payload.page);
-    queryParams.append("limit", payload.limit);
-    queryParams.append("sortBy", payload.sortBy);
+    payload.page && queryParams.append("page", payload.page);
+    payload.limit && queryParams.append("limit", payload.limit);
+    payload.sortBy && queryParams.append("sortBy", payload.sortBy);
 
-    if (payload.userId) {
-      queryParams.append("userId", payload.userId);
-    }
+    // if (payload.userId) {
+    //   queryParams.append("userId", payload.userId);
+    // }
     if (payload.status) {
       queryParams.append("status", payload.status);
     }
 
-    const response = await axiosInstance.get(`/orders/${payload.userId}`, {
+    const response = await axiosInstance.get(`/orders/place`, {
       params: queryParams,
     });
 
-    console.log("Orders Data:", response.data.orders);
-    return response.data.orders;
+    console.log("Orders Data:", response.data.data);
+    return response.data.data;
   }
 );
 

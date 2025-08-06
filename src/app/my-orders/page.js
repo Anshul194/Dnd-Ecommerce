@@ -36,13 +36,12 @@ export default function YourOrders() {
     // Fetch orders when the component mounts
     dispatch(
       fetchOrders({
-        userId: user?._id,
+        userId: "6891d1240f35f119d4f7425b",
       })
     );
-  }, [dispatch , user?._id]);
-
-  console.log("Orders:", orders);
- console.log("user is ==>", user);
+  }, [dispatch]);
+  //   console.log("Orders:", orders);
+  //  console.log("user is ==>", user);
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-7xl mx-auto">
