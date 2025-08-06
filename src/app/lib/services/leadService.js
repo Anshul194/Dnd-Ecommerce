@@ -54,3 +54,17 @@ export const bulkAssignLeadsService = async (leadIds, assignedTo, conn) => {
     throw error;
   }
 };
+
+export const addLeadNoteService = async (id, noteData, userId, conn) => {
+  try {
+    console.log('Adding note to lead ID:', id, 'noteData:', noteData, 'userId:', userId);
+    return await leadRepo.updateLead(id, {
+      $push: { notes: { note: noteData.note, createdBy: userId } },
+      lastContactedAt: new Date(),
+      $inc: { followUpCount: 1 }
+    }, conn);
+  } catch (error) {
+    console.error('Error in addLeadNoteService:', error);
+    throw error;
+  }
+};

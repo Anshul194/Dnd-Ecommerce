@@ -4,7 +4,7 @@ import {
   getLeadsService,
   getLeadByIdService,
   updateLeadService,
-  deleteLeadService,
+  deleteLeadService
 } from '../services/leadService.js';
 import { bulkAssignLeadsService } from '../services/leadService.js';
 import mongoose from 'mongoose';
@@ -261,6 +261,53 @@ export const bulkAssignLeadsController = async (body, conn) => {
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to bulk assign leads',
+      error: error?.message || 'Something went wrong',
+    }, { status: 500 });
+  }
+};
+
+
+export const addLeadNoteController = async (id, body, conn) => {
+  try {
+    const { note, userId } = body;
+    console.log('Adding note to lead ID:', id, 'note:', note, 'userId:', userId);
+    if (!note) {
+      return NextResponse.json({
+        success: false,
+        message: 'note is required',
+      }, { status: 400 });
+    }
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return NextResponse.json({
+        success: false,
+        message: 'Invalid user ID from token',
+      }, { status: 400 });
+    }
+
+    const updated = await updateLeadService(id, {
+      $push: { notes: { note, createdBy: userId } },
+      lastContactedAt: new Date(),
+      $inc: { followUpCount: 1 }
+    }, conn);
+
+    if (!updated) {
+      console.error('Lead not found for ID:', id);
+      return NextResponse.json({
+        success: false,
+        message: 'Lead not found',
+      }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Note added successfully',
+      data: updated,
+    });
+  } catch (error) {
+    console.error('Error adding lead note:', error);
+    return NextResponse.json({
+      success: false,
+      message: error.message || 'Failed to add note',
       error: error?.message || 'Something went wrong',
     }, { status: 500 });
   }
