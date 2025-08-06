@@ -1,13 +1,71 @@
 import TicketService from '../services/ticketService.js';
 import { ticketCreateValidator, ticketUpdateValidator, ticketReplyValidator } from '../../validators/ticketValidator.js';
+import { saveFile, validateImageFile } from '../../config/fileUpload.js';
 
-export async function createTicket(req, conn) {
+export async function createTicket(form, conn) {
   try {
-    const { error } = ticketCreateValidator.validate(req.body);
-    if (error) return { status: 400, body: { success: false, message: 'Validation error', data: error.details } };
+    console.log("Creating ticket with form data:", form);
+
+    let imageUrl = '';
+    let thumbnailUrl = '';
+    
+  
+    console.log('Create Ticket form:', form);
+
+    
+    const subject = form.get('subject');
+    const description = form.get('description');
+    const priority = form.get('priority');
+    const customer = form.get('customer');
+    const order_id = form.get('order_id');
+    const attachments = form.getAll('attachments'); // expects multiple files
+
+    // Build ticket data object
+    const ticketData = {
+      subject,
+      description,
+      priority,
+      customer,
+      orderId: order_id || null, // optional field
+      attachments: []
+    };
+
+    // Handle attachments (image upload logic)
+    if (attachments && attachments.length > 0) {
+      for (const file of attachments) {
+        if (file && file instanceof File) {
+          try {
+            validateImageFile(file);
+            const fileUrl = await saveFile(file, 'ticket-attachments');
+            // Only save the image name (not full path or other fields)
+            // console.log('Attachment saved at:', fileUrl);
+            // const imageName = file.name;
+            ticketData.attachments.push(fileUrl);
+          } catch (fileError) {
+            return {
+              status: 400,
+              body: { success: false, message: 'Attachment upload error', data: fileError.message }
+            };
+          }
+        } else if (typeof file === 'string') {
+          // If already a string (assume it's the image name)
+          ticketData.attachments.push(file);
+        }
+      }
+    }
+
+    const { error, value } = ticketCreateValidator.validate(ticketData);
+    if (error) {
+      return {
+        status: 400,
+        body: { success: false, message: 'Validation error', data: error.details },
+      };
+    }
+
+    // console.log('Ticket data to create:', ticketData);
 
     const service = new TicketService(conn);
-    const ticket = await service.createTicket(req.body);
+    const ticket = await service.createTicket(value);
     return { status: 201, body: { success: true, message: 'Ticket created successfully', data: ticket } };
   } catch (err) {
     console.error('Create Ticket Error:', err.message);
@@ -19,12 +77,27 @@ export async function getAllTickets(req, conn) {
   try {
     const service = new TicketService(conn);
     const tickets = await service.getAllTickets(req.query || {});
-    return { status: 200, body: { success: true, message: 'Tickets fetched successfully', data: tickets } };
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Tickets fetched successfully',
+        data: tickets,
+      },
+    };
   } catch (err) {
     console.error('Get All Tickets Error:', err.message);
-    return { status: 500, body: { success: false, message: 'Server error', data: null } };
+    return {
+      status: 500,
+      body: {
+        success: false,
+        message: 'Server error',
+        data: null,
+      },
+    };
   }
 }
+
 
 export async function getTicketById(id, conn) {
   try {
@@ -134,13 +207,27 @@ export async function deleteTicket(id, conn) {
   }
 }
 
-export async function getTicketsByCustomer(customerId, conn) {
+export async function getTicketsByCustomer(customerId, conn, query = {}) {
   try {
     const service = new TicketService(conn);
-    const tickets = await service.getTicketsByCustomer(customerId);
-    return { status: 200, body: { success: true, message: 'Tickets fetched', data: tickets } };
+    const result = await service.getTicketsByCustomer(customerId, query);
+    return {
+      status: 200,
+      body: {
+        success: true,
+        message: 'Tickets fetched successfully',
+        data: result.tickets,
+        currentPage: result.currentPage,
+        totalPages: result.totalPages,
+        totalDocuments: result.totalDocuments,
+      },
+    };
   } catch (err) {
     console.error('Get Tickets by Customer Error:', err.message);
-    return { status: 500, body: { success: false, message: 'Server error', data: null } };
+    return {
+      status: 500,
+      body: { success: false, message: 'Server error', data: null },
+    };
   }
 }
+

@@ -17,11 +17,16 @@ export const GET = withSuperAdminOrRoleAdminAuth(async function(request) {
     const { searchParams } = new URL(request.url);
     const query = Object.fromEntries(searchParams.entries());
 
+    const user = request.user;
+
+    console.log('user in GET /crm/leads:', user);
+
+
     // ✅ Directly return the controller's response
     return await getLeadsController(query, conn);
 
   } catch (err) {
-    console.error('GET /crm/leads error:', err);
+    console.error('GET /crm/leads error:', err.message);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
 });

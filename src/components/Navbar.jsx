@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "@/app/store/slices/categorySlice";
 import CartSidebar from "./CartSidebar";
 import { getCartItems, toggleCart } from "@/app/store/slices/cartSlice";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,9 +14,11 @@ const Navbar = () => {
   const backdropRef = useRef(null);
   const { categories } = useSelector((state) => state.category);
   const { cartItems } = useSelector((state) => state.cart);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   // Assuming you might use categories later
   const dispatch = useDispatch();
   const pathname = usePathname();
+  const router = useRouter();
 
   // Load GSAP
   useEffect(() => {
@@ -109,6 +111,16 @@ const Navbar = () => {
     dispatch(toggleCart());
   };
 
+  const handleUserDashboardClick = () => {
+    if (isAuthenticated) {
+      console?.log("User is authenticated, navigating to dashboard");
+      router.push('/dashboard');
+    } else {
+      // Redirect to login if not authenticated
+      router.push('/login');
+    }
+  };
+
   if (
     pathname.includes("/signup") ||
     pathname.includes("/login") ||
@@ -167,11 +179,17 @@ const Navbar = () => {
                       {cartItems.length || 0}
                     </span>
                   </button>
-                  <button className="text-gray-600 hover:text-green-500 h-8 w-8 rounded-full bg-gray-500 transition-colors">
-                    {/* <User size={20} /> */}
+                  {/* Account Avatar */}
+                  <button 
+                    onClick={handleUserDashboardClick}
+                    className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-300 hover:border-green-500 transition-colors"
+                  >
+                    <User size={20} className="text-gray-600" />
                   </button>
                 </div>
-                <span className="text-gray-600 text-sm">Username</span>
+                <span className="text-gray-600 text-sm">
+                  {isAuthenticated ? (user?.name || "User") : "Guest"}
+                </span>
               </div>
             </div>
 
@@ -290,11 +308,17 @@ const Navbar = () => {
                         {cartItems.length || 0}
                       </span>
                     </button>
-                    <button className="text-gray-600 hover:text-green-500 h-8 w-8 rounded-full bg-gray-500 transition-all duration-200 hover:scale-110">
-                      {/* <User size={20} /> */}
+                    {/* Account Avatar */}
+                    <button 
+                      onClick={handleUserDashboardClick}
+                      className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-300 hover:border-green-500 transition-colors"
+                    >
+                      <User size={20} className="text-gray-600" />
                     </button>
                   </div>
-                  <span className="text-gray-600 text-sm">Username</span>
+                  <span className="text-gray-600 text-sm">
+                    {isAuthenticated ? (user?.name || "User") : "Guest"}
+                  </span>
                 </div>
               </div>
             </div>

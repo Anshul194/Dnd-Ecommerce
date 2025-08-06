@@ -21,10 +21,14 @@ export async function GET(req, { params }) {
       return toNextResponse({ success: false, message: 'Customer ID is required' }, 400);
     }
 
-    const result = await getTicketsByCustomer(customerId, conn);
+    const { searchParams } = new URL(req.url);
+    const query = Object.fromEntries(searchParams.entries());
+
+    const result = await getTicketsByCustomer(customerId, conn, query);
     return toNextResponse(result.body, result.status);
   } catch (error) {
     console.error('GET Tickets by Customer Error:', error.message);
     return toNextResponse({ success: false, message: error.message }, 500);
   }
 }
+

@@ -15,7 +15,7 @@ class TicketRepository extends CrudRepository {
 
   async create(data, conn) {
     try {
-      console.log('Creating ticket with data:', JSON.stringify(data, null, 2));
+      // console.log('Creating ticket with data:', JSON.stringify(data, null, 2));
       return await this.Ticket.create(data);
     } catch (error) {
       console.error('TicketRepository Create Error:', error.message);
@@ -23,38 +23,45 @@ class TicketRepository extends CrudRepository {
     }
   }
 
-  async getAll(filterConditions = {}, sortConditions = {}, page = 1, limit = 10, populateFields = [], selectFields = {}, conn) {
-    try {
-      const skip = (page - 1) * limit;
-      const defaultPopulate = [
-        { path: 'customer', select: 'name email' },
-        { path: 'assignedTo', select: 'name email' },
-        { path: 'replies.repliedBy', select: 'name email' }
-      ];
-      const combinedPopulate = [...defaultPopulate, ...populateFields];
+  async getAll(filterConditions = {}, sortConditions = {}, page = 1, limit = 10, populateFields = [], selectFields = {}) {
+  try {
+    const skip = (page - 1) * limit;
 
-      let query = this.Ticket.find(filterConditions).select(selectFields).sort(sortConditions).skip(skip).limit(limit);
+    const defaultPopulate = [
+      { path: 'customer', select: 'name email' },
+      { path: 'assignedTo', select: 'name email' },
+      { path: 'replies.repliedBy', select: 'name email' }
+    ];
+    const combinedPopulate = [...defaultPopulate, ...populateFields];
 
-      for (const field of combinedPopulate) {
-        query = query.populate(field);
-      }
+    let query = this.Ticket.find(filterConditions)
+      .select(selectFields)
+      .sort(sortConditions)
+      .skip(skip)
+      .limit(limit);
 
-      const data = await query.exec();
-      const total = await this.Ticket.countDocuments(filterConditions);
-
-      return {
-        data,
-        meta: {
-          total,
-          page,
-          pages: Math.ceil(total / limit)
-        }
-      };
-    } catch (error) {
-      console.error('TicketRepository getAll Error:', error.message);
-      throw new Error(`Failed to get tickets: ${error.message}`);
+    for (const field of combinedPopulate) {
+      query = query.populate(field);
     }
+
+    const data = await query.exec();
+    const total = await this.Ticket.countDocuments(filterConditions);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+        limit
+      }
+    };
+  } catch (error) {
+    console.error('TicketRepository getAll Error:', error.message);
+    throw new Error(`Failed to get tickets: ${error.message}`);
   }
+}
+
 
   async getById(id, conn) {
     try {
@@ -88,17 +95,61 @@ class TicketRepository extends CrudRepository {
     }
   }
 
-  async findByCustomer(customerId, conn) {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(customerId)) {
-        throw new Error(`Invalid customerId: ${customerId}`);
-      }
-      return await this.Ticket.find({ customer: customerId, isDeleted: false }).exec();
-    } catch (error) {
-      console.error('TicketRepository findByCustomer Error:', error.message);
-      throw new Error(`Failed to find tickets by customer: ${error.message}`);
+ async findByCustomer(customerId, query = {}) {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(customerId)) {
+      throw new Error(`Invalid customerId: ${customerId}`);
     }
+
+    const {
+      search = '',
+      status,
+      priority,
+      page = 1,
+      limit = 10,
+    } = query;
+
+    const filter = {
+      customer: customerId,
+      isDeleted: false,
+    };
+
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+
+    if (search) {
+      filter.$or = [
+        { subject: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [tickets, totalDocuments] = await Promise.all([
+      this.Ticket.find(filter)
+        .populate('assignedTo')
+        .populate('customer')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit))
+        .exec(),
+
+      this.Ticket.countDocuments(filter),
+    ]);
+
+    return {
+      tickets,
+      totalDocuments,
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalDocuments / Number(limit)),
+    };
+  } catch (error) {
+    console.error('TicketRepository findByCustomer Error:', error.message);
+    throw new Error(`Failed to find tickets by customer: ${error.message}`);
   }
+}
+
 
   async replyToTicket(ticketId, reply, conn) {
     try {

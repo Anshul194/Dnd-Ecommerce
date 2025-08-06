@@ -12,6 +12,7 @@ import variantReducer from "./slices/variantSlice";
 import cartReducer from "./slices/cartSlice";
 import couponReducer from "./slices/couponSlice";
 import blogSlice from "./slices/blogSclie";
+import checkoutSlice from "./slices/checkOutSlice";
 
 const store = configureStore({
   reducer: {
@@ -27,6 +28,7 @@ const store = configureStore({
     variant: variantReducer,
     coupon: couponReducer,
     blogs: blogSlice,
+    checkout: checkoutSlice,
   },
 });
 
