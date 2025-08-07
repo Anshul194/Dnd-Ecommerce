@@ -16,6 +16,7 @@ import checkoutSlice from "./slices/checkOutSlice";
 import orderSlice from "./slices/orderSlice";
 import supportTicketSlice from "./slices/supportTicketSlice";
 import orderReducer from "./slices/orderSlice";
+import contentReducer from "./slices/contentSlice";
 
 const store = configureStore({
   reducer: {
@@ -35,6 +36,7 @@ const store = configureStore({
     order: orderSlice,
     supportTicket: supportTicketSlice,
     orders: orderReducer,
+    content: contentReducer,
   },
 });
 
