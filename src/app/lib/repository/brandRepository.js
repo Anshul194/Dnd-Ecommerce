@@ -22,7 +22,7 @@ export default class BrandRepository {
     try {
       const query = {};
       if (search) {
-        query.name = { $regex: search, $options: "i" }; // Case-insensitive search
+        query.name = { $regex: search, $options: "i" }; 
       }
 
       const skip = (page - 1) * limit;
