@@ -1,9 +1,11 @@
 import homepageSectionSchema from '../models/Content.js';
+import userSchema from '../models/User.js';
 
 class ContentRepository {
   constructor(connection) {
     this.connection = connection;
     this.HomepageSection = connection.models.HomepageSection || connection.model('HomepageSection', homepageSectionSchema);
+    this.User = connection.models.User || connection.model('User', userSchema);
   }
 
   // Create a new homepage section
@@ -40,8 +42,16 @@ class ContentRepository {
         .sort(sortOptions)
         .skip(skip)
         .limit(limit)
-        .populate('createdBy', 'name email')
-        .populate('updatedBy', 'name email')
+        .populate({
+          path: 'createdBy',
+          select: 'name email',
+          model: this.User
+        })
+        .populate({
+          path: 'updatedBy', 
+          select: 'name email',
+          model: this.User
+        })
         .lean();
 
       const total = await this.HomepageSection.countDocuments(filters);
@@ -65,8 +75,16 @@ class ContentRepository {
     try {
       const section = await this.HomepageSection
         .findById(id)
-        .populate('createdBy', 'name email')
-        .populate('updatedBy', 'name email')
+        .populate({
+          path: 'createdBy',
+          select: 'name email',
+          model: this.User
+        })
+        .populate({
+          path: 'updatedBy',
+          select: 'name email', 
+          model: this.User
+        })
         .lean();
       
       if (!section) {
@@ -90,8 +108,16 @@ class ContentRepository {
       return await this.HomepageSection
         .find(filters)
         .sort({ order: 1 })
-        .populate('createdBy', 'name email')
-        .populate('updatedBy', 'name email')
+        .populate({
+          path: 'createdBy',
+          select: 'name email',
+          model: this.User
+        })
+        .populate({
+          path: 'updatedBy',
+          select: 'name email',
+          model: this.User
+        })
         .lean();
     } catch (error) {
       throw new Error(`Error fetching sections by type: ${error.message}`);
@@ -106,8 +132,16 @@ class ContentRepository {
         { ...updateData, updatedAt: new Date() },
         { new: true, runValidators: true }
       )
-      .populate('createdBy', 'name email')
-      .populate('updatedBy', 'name email');
+      .populate({
+        path: 'createdBy',
+        select: 'name email',
+        model: this.User
+      })
+      .populate({
+        path: 'updatedBy',
+        select: 'name email',
+        model: this.User
+      });
 
       if (!section) {
         throw new Error('Homepage section not found');
