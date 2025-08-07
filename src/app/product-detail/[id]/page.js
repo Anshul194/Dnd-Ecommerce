@@ -292,10 +292,10 @@ function ProductPage({ params }) {
                                 : "text-gray-900"
                             }`}
                           >
-                            ₹{variant.price}
+                            ₹{variant.salePrice}
                           </div>
                           <div className="text-sm text-gray-500 line-through">
-                            ₹{variant.salePrice}
+                            ₹{variant.price}
                           </div>
                         </div>
                       </div>
@@ -387,7 +387,7 @@ function ProductPage({ params }) {
                     <div
                       className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50"
                       dangerouslySetInnerHTML={{
-                        __html: data.description || "",
+                        __html: data?.description || "",
                       }}
                     ></div>
                   </div>

@@ -41,7 +41,7 @@ const OrderPopup = () => {
   }, [orderStatus, pathname, searchParams]);
 
   return (
-    <div className="min-h-screen  flex items-center justify-center p-4">
+    <div className="min-h-screen absolute  flex items-center justify-center p-4">
       {/* Demo Buttons */}
 
       {/* Success Popup */}
@@ -133,6 +133,7 @@ const OrderPopup = () => {
                 >
                   Close
                 </button>
+                
               </div>
             </div>
           </div>
