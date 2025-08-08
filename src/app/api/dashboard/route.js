@@ -10,17 +10,17 @@ import TicketService from '../../lib/services/ticketService';
 import CouponService from '../../lib/services/CouponService';
 import { getSubdomain, getDbConnection } from '../../lib/tenantDb';
 import { withUserAuth } from '../../middleware/commonAuth';
-import OrderSchema from '../../lib/models/Order';
-import CouponSchema from '../../lib/models/Coupon';
-import ProductSchema from '../../lib/models/Product';
-import VariantSchema from '../../lib/models/Variant';
+import { OrderSchema } from '../../lib/models/Order';
+import { CouponSchema } from '../../lib/models/Coupon';
+import { ProductSchema } from '../../lib/models/Product';
+import { VariantSchema } from '../../lib/models/Variant';
 import TicketSchema from '../../lib/models/Ticket';
 import UserSchema from '../../lib/models/User';
 import RoleSchema from '../../lib/models/role';
 
 export const GET = withUserAuth(async function (request) {
   try {
-    // Check if user is admin
+    // Check if user is authenticated
     if (!request.user?._id) {
       return NextResponse.json({ success: false, message: 'User authentication required' }, { status: 401 });
     }
@@ -29,10 +29,10 @@ export const GET = withUserAuth(async function (request) {
     console.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error('No database connection established');
+      console.error('No database connection established for subdomain:', subdomain);
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connection name in route:', conn.name);
+    console.log('Connected to database:', conn.name);
 
     // Register models
     const User = conn.models.User || conn.model('User', UserSchema);
@@ -50,7 +50,7 @@ export const GET = withUserAuth(async function (request) {
       Coupon: Coupon.modelName,
       Product: Product.modelName,
       Variant: Variant.modelName,
-      Ticket: Ticket.modelName
+      Ticket: Ticket.modelName,
     });
 
     // Check if user has admin role
@@ -82,7 +82,7 @@ export const GET = withUserAuth(async function (request) {
     return NextResponse.json({
       success: true,
       message: result.message,
-      data: result.data
+      data: result.data,
     });
   } catch (error) {
     console.error('Route GET dashboard error:', error.message, error.stack);

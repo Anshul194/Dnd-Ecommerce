@@ -6,30 +6,140 @@ import { variantSchema } from '../models/Variant.js';
 class ProductRepository extends CrudRepository {
 
   // Fetch all products and attach variants with attributes to each
-  async getAll(filter = {}) {
-    try {
-      const conn = this.model.db;
-      if (!conn.models.Attribute) {
-        const Attribute = mongoose.models.Attribute || mongoose.model("Attribute", attributeSchema);
-        conn.model('Attribute', attributeSchema);
-      }
-      const populateOptions = [
-        { path: 'attributeSet.attributeId' }
-      ];
-      const products = await this.model.find(filter).populate(populateOptions);
-      const results = [];
-      for (const productDoc of products) {
-        const variants = await this.getVariantsWithAttributes(productDoc._id, conn);
-        const productObj = productDoc.toObject ? productDoc.toObject() : productDoc;
-        productObj.variants = variants;
-        results.push(productObj);
-      }
-      return results;
-    } catch (error) {
-      console.error('Repository getAll Error:', error.message);
-      throw error;
+async getAll(filter = {}, sortConditions = {}, pageNum = 1, limitNum = 10, populateFields = [], selectFields = {}, conn) {
+  try {
+    const connection = conn || this.model.db;
+    
+    // Register Attribute model if not already registered
+    if (!connection.models.Attribute) {
+      const Attribute = mongoose.models.Attribute || mongoose.model("Attribute", attributeSchema);
+      connection.model('Attribute', attributeSchema);
     }
+    
+    // Register Wishlist model with your schema if not already registered
+    let Wishlist;
+    if (!connection.models.Wishlist) {
+      // Import your wishlist schema
+      const wishlistItemSchema = new mongoose.Schema({
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true
+        },
+        variant: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Variant',
+          required: false
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now
+        }
+      }, { _id: false });
+
+      const wishlistSchema = new mongoose.Schema({
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+          unique: true
+        },
+        items: [wishlistItemSchema],
+        updatedAt: {
+          type: Date,
+          default: Date.now
+        }
+      }, {
+        timestamps: true
+      });
+
+      wishlistSchema.pre('save', function(next) {
+        this.updatedAt = Date.now();
+        next();
+      });
+
+      Wishlist = connection.model('Wishlist', wishlistSchema);
+    } else {
+      Wishlist = connection.models.Wishlist;
+    }
+
+    const populateOptions = [
+      { path: 'attributeSet.attributeId' }
+    ];
+
+    // Calculate skip value for pagination
+    const skip = (pageNum - 1) * limitNum;
+
+    // Find products with pagination and sorting
+    const products = await this.model
+      .find(filter)
+      .populate(populateOptions)
+      .sort(sortConditions)
+      .skip(skip)
+      .limit(limitNum)
+      .select(selectFields);
+
+    const results = [];
+    
+    for (const productDoc of products) {
+      const variants = await this.getVariantsWithAttributes(productDoc._id, connection);
+      const productObj = productDoc.toObject ? productDoc.toObject() : productDoc;
+      
+      // Get wishlist data for this product using aggregation
+      const wishlistUsers = await Wishlist.aggregate([
+        {
+          $match: {
+            "items.product": productDoc._id
+          }
+        },
+        {
+          $unwind: "$items"
+        },
+        {
+          $match: {
+            "items.product": productDoc._id
+          }
+        },
+        {
+          $project: {
+            userId: "$user",
+            variantId: "$items.variant",
+            addedAt: "$items.addedAt",
+            _id: 0
+          }
+        }
+      ]);
+      
+      // Format wishlist data - only userId
+      const uniqueUsers = [...new Set(wishlistUsers.map(item => item.userId.toString()))];
+      productObj.wishlist = uniqueUsers;
+      
+      // Add wishlist count for convenience
+      productObj.wishlistCount = uniqueUsers.length;
+      
+      productObj.variants = variants;
+      results.push(productObj);
+    }
+
+    // Get total count for pagination info
+    const totalCount = await this.model.countDocuments(filter);
+    
+    return {
+      products: results,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalCount / limitNum),
+        totalItems: totalCount,
+        itemsPerPage: limitNum,
+        hasNextPage: pageNum < Math.ceil(totalCount / limitNum),
+        hasPrevPage: pageNum > 1
+      }
+    };
+  } catch (error) {
+    console.error('Repository getAll Error:', error.message);
+    throw error;
   }
+}
   constructor(model) {
     super(model);
     this.model = model;

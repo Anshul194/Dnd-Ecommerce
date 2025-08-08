@@ -1,6 +1,8 @@
 import { VariantSchema } from '../../lib/models/Variant.js'; // Adjust path as needed
 import mongoose from 'mongoose';
 import { attributeSchema } from '../models/Attribute.js';
+import { wishlistSchema } from '../models/Wishlist';
+import { variantSchema } from '../models/Variant';
 
 class ProductService {
   constructor(productRepository) {
@@ -101,9 +103,11 @@ async getAllProducts(query = {}, conn) {
     pageNum,
     limitNum,
     populateFields,
-    selectFields
+    selectFields,
+    conn  // Pass connection to repository
   );
 }
+
 
   async getProductById(id, conn) {
     console.log('Fetching product with ID:', id);
