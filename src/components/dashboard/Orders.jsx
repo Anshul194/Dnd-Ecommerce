@@ -687,14 +687,14 @@ const Orders = () => {
                     style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                   >
                     {Array.from({
-                      length: Math.ceil(products.length / 3),
+                      length: Math.ceil(products?.products?.length / 3),
                     }).map((_, slideIndex) => (
                       <div
                         key={slideIndex}
                         className="flex space-x-4 min-w-full"
                       >
-                        {products
-                          .slice(slideIndex * 3, slideIndex * 3 + 3)
+                        {products?.products
+                          ?.slice(slideIndex * 3, slideIndex * 3 + 3)
                           .map((product) => (
                             <div
                               key={product?._id}

@@ -91,11 +91,10 @@ export default function SignupPage() {
         {/* Right Side - Signup Form */}
         <div className="flex-1 p-12 flex flex-col justify-center bg-gray-50">
           <div className="max-w-md mx-auto w-full">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">
-              Sign Up Now
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Login now</h2>
             <p className="text-gray-600 mb-8">
-              Create your account to get started
+              Login to your account to explore our exclusive range of fresh
+              Indian teas and enjoy a delightful tea experience.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -190,12 +189,12 @@ export default function SignupPage() {
             {/* Login Link */}
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Already have an account?{" "}
+               don't have an account?{" "}
                 <a
-                  href="#"
+                  href="/signup"
                   className="text-green-600 hover:text-green-700 font-medium underline"
                 >
-                  Login here
+                  Sing up here
                 </a>
               </p>
             </div>
