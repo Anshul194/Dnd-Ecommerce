@@ -19,7 +19,7 @@ const globalRoleSchema = new mongoose.Schema({
     permissions: [{ type: String }]
   }],
   createdAt: { type: Date, default: Date.now },
-  deletedAt: { type: Date, default: null },
+  deletedAt: { type: Date ,default: null },
 });
 
 const globalTenantSchema = new mongoose.Schema({
@@ -40,7 +40,7 @@ const globalTenantSchema = new mongoose.Schema({
 });
 
 // Seed Function
-async function seedTenantDBs(singleTenantId = null) {
+async function seedTenantDBs() {
   const globalDbUri = process.env.MONGODB_URI;
 
   // Connect to global DB
@@ -59,10 +59,7 @@ async function seedTenantDBs(singleTenantId = null) {
   const globalModuleIds = globalModules.map(m => m._id.toString());
   const globalRoleIds = globalRoles.map(r => r._id.toString());
 
-  // ✅ Get either one tenant or all tenants
-  const tenants = singleTenantId
-    ? await GlobalTenant.find({ _id: singleTenantId })
-    : await GlobalTenant.find();
+  const tenants = await GlobalTenant.find();
 
   for (const tenant of tenants) {
     if (!tenant.dbUri) continue;
@@ -75,15 +72,22 @@ async function seedTenantDBs(singleTenantId = null) {
     const Module = tenantConn.model('Module', globalModuleSchema);
     const Role = tenantConn.model('Role', globalRoleSchema);
 
+    // // Delete modules not in global list
+    // await Module.deleteMany({ _id: { $nin: globalModuleIds } });
+
     // Upsert all modules
     for (const mod of globalModules) {
       await Module.replaceOne({ _id: mod._id }, mod.toObject(), { upsert: true });
     }
 
-    // Upsert all roles with updated tenantId
+    // // Delete roles not in global list
+    // await Role.deleteMany({ _id: { $nin: globalRoleIds } });
+
+    // Upsert all roles with updated tenantId and full replacement
     for (const role of globalRoles) {
       const roleData = role.toObject();
-      roleData.tenantId = tenant._id;
+      roleData.tenantId = tenant._id; // override tenantId
+
       await Role.replaceOne({ _id: role._id }, roleData, { upsert: true });
     }
 
@@ -95,18 +99,13 @@ async function seedTenantDBs(singleTenantId = null) {
   mongoose.disconnect();
 }
 
-// CLI support: node seedTenantDBs.js <tenantId>
-if (require.main === module) {
-  const tenantId = process.argv[2] || null;
-  seedTenantDBs(tenantId)
-    .then(() => {
-      console.log('✅ Seeding complete.');
-      process.exit(0);
-    })
-    .catch(err => {
-      console.error('❌ Seeding error:', err);
-      process.exit(1);
-    });
-}
-
-module.exports = seedTenantDBs;
+// Run seeding
+seedTenantDBs()
+  .then(() => {
+    console.log('✅ Seeding complete.');
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error('❌ Seeding error:', err);
+    process.exit(1);
+  });
