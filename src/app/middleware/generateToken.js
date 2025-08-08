@@ -9,20 +9,20 @@ export const Token = {
       role: user.role || null,
     };
 
-    const accessTokenExp = Date.now() + 30 * 60 * 1000; // 30 minutes
-    const refreshTokenExp = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+    // Calculate expiration times in seconds (JWT standard)
+    const accessTokenExpInSeconds = Math.floor(Date.now() / 1000) + (30 * 60); // 30 minutes
+    const refreshTokenExpInSeconds = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60); // 7 days
 
-    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "30m", // Short-lived Access Token
-    });
+    // Add exp claim to payload for consistency
+    const accessPayload = { ...payload, exp: accessTokenExpInSeconds };
+    const refreshPayload = { id: user._id.toString(), exp: refreshTokenExpInSeconds };
 
-    const refreshToken = jwt.sign(
-      { id: user._id.toString() },
-      process.env.REFRESH_TOKEN_SECRET,
-      {
-        expiresIn: "7d", // Longer-lived Refresh Token
-      }
-    );
+    const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET);
+    const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET);
+
+    // Return expiration times in milliseconds for cookie setting
+    const accessTokenExp = accessTokenExpInSeconds * 1000;
+    const refreshTokenExp = refreshTokenExpInSeconds * 1000;
 
     return { 
       accessToken, 
@@ -33,17 +33,25 @@ export const Token = {
   },
 
   setTokensCookies(res, accessToken, refreshToken, accessTokenExp, refreshTokenExp) {
-    const accessMaxAge = Math.floor((accessTokenExp - Date.now()) / 1000);
-    const refreshMaxAge = Math.floor((refreshTokenExp - Date.now()) / 1000);
+    // Calculate remaining time in seconds, ensuring it's not negative
+    const now = Date.now();
+    const accessMaxAge = Math.max(0, Math.floor((accessTokenExp - now) / 1000));
+    const refreshMaxAge = Math.max(0, Math.floor((refreshTokenExp - now) / 1000));
 
-    res.headers.append(
-      "Set-Cookie",
-      `accessToken=${accessToken}; Path=/; HttpOnly; Max-Age=${accessMaxAge}; SameSite=Strict; Secure`
-    );
-    res.headers.append(
-      "Set-Cookie",
-      `refreshToken=${refreshToken}; Path=/; HttpOnly; Max-Age=${refreshMaxAge}; SameSite=Strict; Secure`
-    );
+    // Only set cookies if there's remaining time
+    if (accessMaxAge > 0) {
+      res.headers.append(
+        "Set-Cookie",
+        `accessToken=${accessToken}; Path=/; HttpOnly; Max-Age=${accessMaxAge}; SameSite=Strict; Secure`
+      );
+    }
+    
+    if (refreshMaxAge > 0) {
+      res.headers.append(
+        "Set-Cookie",
+        `refreshToken=${refreshToken}; Path=/; HttpOnly; Max-Age=${refreshMaxAge}; SameSite=Strict; Secure`
+      );
+    }
   },
 
   /**
@@ -57,7 +65,40 @@ export const Token = {
       // You may want to fetch user from DB here if needed
       return decoded;
     } catch (err) {
+      console.error('Token verification failed:', err.message);
       return null;
+    }
+  },
+
+  /**
+   * Verify refresh token and return user ID if valid
+   */
+  async verifyRefreshToken(refreshToken) {
+    try {
+      if (!refreshToken) return null;
+      const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+      return decoded;
+    } catch (err) {
+      console.error('Refresh token verification failed:', err.message);
+      return null;
+    }
+  },
+
+  /**
+   * Check if token is about to expire (within 5 minutes)
+   */
+  isTokenExpiringSoon(token) {
+    try {
+      const decoded = jwt.decode(token);
+      if (!decoded || !decoded.exp) return true;
+      
+      const now = Math.floor(Date.now() / 1000);
+      const timeUntilExpiry = decoded.exp - now;
+      
+      // Return true if token expires within 5 minutes (300 seconds)
+      return timeUntilExpiry < 300;
+    } catch (err) {
+      return true;
     }
   },
 };

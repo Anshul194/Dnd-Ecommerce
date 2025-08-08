@@ -9,10 +9,8 @@ export async function createTicket(form, conn) {
     let imageUrl = '';
     let thumbnailUrl = '';
     
-  
     console.log('Create Ticket form:', form);
 
-    
     const subject = form.get('subject');
     const description = form.get('description');
     const priority = form.get('priority');
@@ -37,9 +35,6 @@ export async function createTicket(form, conn) {
           try {
             validateImageFile(file);
             const fileUrl = await saveFile(file, 'ticket-attachments');
-            // Only save the image name (not full path or other fields)
-            // console.log('Attachment saved at:', fileUrl);
-            // const imageName = file.name;
             ticketData.attachments.push(fileUrl);
           } catch (fileError) {
             return {
@@ -61,8 +56,6 @@ export async function createTicket(form, conn) {
         body: { success: false, message: 'Validation error', data: error.details },
       };
     }
-
-    // console.log('Ticket data to create:', ticketData);
 
     const service = new TicketService(conn);
     const ticket = await service.createTicket(value);
@@ -97,7 +90,6 @@ export async function getAllTickets(req, conn) {
     };
   }
 }
-
 
 export async function getTicketById(id, conn) {
   try {
@@ -168,10 +160,57 @@ export async function updateTicket(id, data, conn) {
   }
 }
 
-
+// 🆕 Updated replyToTicket function with image support
 export async function replyToTicket(id, data, conn) {
   try {
-    const { error } = ticketReplyValidator.validate(data);
+    console.log('Reply data received:', data);
+
+    // Process attachments if they exist
+    const processedAttachments = [];
+    
+    if (data.attachments && Array.isArray(data.attachments)) {
+      for (const attachment of data.attachments) {
+        if (attachment && attachment instanceof File) {
+          try {
+            // Validate the image file
+            validateImageFile(attachment);
+            
+            // Save the file and get the URL
+            const fileUrl = await saveFile(attachment, 'reply-attachments');
+            processedAttachments.push(fileUrl);
+            
+            console.log('Reply attachment saved:', fileUrl);
+          } catch (fileError) {
+            console.error('Reply attachment upload error:', fileError.message);
+            return {
+              status: 400,
+              body: { 
+                success: false, 
+                message: 'Reply attachment upload error', 
+                data: fileError.message 
+              }
+            };
+          }
+        } else if (typeof attachment === 'string') {
+          // If already a string (assume it's a file URL)
+          processedAttachments.push(attachment);
+        }
+      }
+    }
+
+    // Create the reply data with processed attachments
+    const replyData = {
+      message: data.message,
+      repliedBy: data.repliedBy,
+      isStaff: data.isStaff,
+      attachments: processedAttachments,
+      repliedAt: new Date()
+    };
+
+    console.log('Final reply data:', replyData);
+
+    // Validate the reply data
+    const { error } = ticketReplyValidator.validate(replyData);
     if (error) {
       return {
         status: 400,
@@ -180,10 +219,15 @@ export async function replyToTicket(id, data, conn) {
     }
 
     const service = new TicketService(conn);
-    const reply = await service.replyToTicket(id, data);
+    const reply = await service.replyToTicket(id, replyData);
+    
     return {
       status: 201,
-      body: { success: true, message: 'Reply added', data: reply },
+      body: { 
+        success: true, 
+        message: 'Reply added successfully', 
+        data: reply 
+      },
     };
   } catch (err) {
     console.error('Reply to Ticket Error:', err.message);
@@ -193,7 +237,6 @@ export async function replyToTicket(id, data, conn) {
     };
   }
 }
-
 
 export async function deleteTicket(id, conn) {
   try {
@@ -230,4 +273,3 @@ export async function getTicketsByCustomer(customerId, conn, query = {}) {
     };
   }
 }
-

@@ -1,6 +1,7 @@
 import { getSubdomain, getDbConnection } from '../../../../../lib/tenantDb';
 import { replyToTicket } from '../../../../../lib/controllers/ticketController';
 import { withUserAuth } from '../../../../../middleware/commonAuth.js';
+import { validateImageFile, saveFile } from '../../../../../config/fileUpload.js';
 
 const toNextResponse = (data, status = 200) => {
   return new Response(JSON.stringify(data), {
@@ -17,19 +18,28 @@ export const POST = withUserAuth(async function (req, { params }) {
     if (!conn) return toNextResponse({ success: false, message: 'DB not found' }, 404);
 
     const { id } = params;
-    if (!id) {
-      return toNextResponse({ success: false, message: 'Ticket ID is required' }, 400);
-    }
+    const user = req.user;
+    const form = await req.formData();
 
-    const user = req.user; // from auth middleware
-    const body = await req.json();
+    const message = form.get('message');
+    const attachments = form.getAll('attachments');
 
-    // ✅ Convert user._id to string before validation
     const replyData = {
-      ...body,
+      message,
       repliedBy: user._id.toString(),
       isStaff: user.role !== 'customer',
+      attachments: [],
     };
+
+    if (attachments && attachments.length > 0) {
+      for (const file of attachments) {
+        if (file instanceof File) {
+          validateImageFile(file);
+          const fileUrl = await saveFile(file, 'ticket-attachments');
+          replyData.attachments.push(fileUrl);
+        }
+      }
+    }
 
     const result = await replyToTicket(id, replyData, conn);
     return toNextResponse(result.body, result.status);

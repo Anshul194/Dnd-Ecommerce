@@ -50,6 +50,12 @@ const ticketSchema = new mongoose.Schema(
           required: true,
           trim: true,
         },
+        attachments: [ 
+          {
+            type: String, // Store only the image name or path
+            required: false,
+          }
+        ],
         repliedBy: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'User',
