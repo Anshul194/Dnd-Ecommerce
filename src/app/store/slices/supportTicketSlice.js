@@ -71,7 +71,11 @@ export const addTicketReply = createAsyncThunk(
   "supportTicket/addReply",
   async ({ ticketId, replyData }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(`/crm/tickets/${ticketId}/replies`, replyData);
+      const response = await axiosInstance.post(`/crm/tickets/${ticketId}/replies`, replyData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data?.data;
     } catch (error) {
       // Ensure we return a string error message

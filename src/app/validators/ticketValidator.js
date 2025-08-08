@@ -25,6 +25,9 @@ export const ticketUpdateValidator = Joi.object({
 
 export const ticketReplyValidator = Joi.object({
   message: Joi.string().required().trim().min(1).max(2000),
-  repliedBy: Joi.string().required().pattern(/^[0-9a-fA-F]{24}$/), // ObjectId validation
+  attachments: Joi.array().items(Joi.string()).optional(), // Array of image names
+  repliedBy: Joi.string().required().pattern(/^[0-9a-fA-F]{24}$/), 
+  repliedAt: Joi.date(), 
   isStaff: Joi.boolean().default(false),
+
 });
