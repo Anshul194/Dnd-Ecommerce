@@ -19,8 +19,9 @@ export const addToWishlist = createAsyncThunk(
 
 export const fetchWishlist = createAsyncThunk(
     'wishlist/fetchWishlist',
-    async ({ token, tenant }, { rejectWithValue }) => {
+    async (_, { rejectWithValue }) => {
         try {
+            console.log("Fetching wishlist...");
             const response = await axiosInstances.get('/wishlist');
             console.log("Fetched Wishlist:", response.data);
             return response.data;
