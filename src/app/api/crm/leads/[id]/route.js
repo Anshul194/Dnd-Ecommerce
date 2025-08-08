@@ -5,11 +5,18 @@ import {
   getLeadByIdController,
 } from '../../../../lib/controllers/leadController';
 import { NextResponse } from 'next/server';
-import { withSuperAdminOrRoleAdminAuth } from '../../../../middleware/commonAuth';
+import { verifyTokenAndUser } from '../../../../middleware/commonAuth';
 
 // GET /api/crm/leads/[id]
-export const GET = withSuperAdminOrRoleAdminAuth(async (request, context) => {
+export async function GET(request, context) {
   try {
+    // Authenticate user first
+    const authResult = await verifyTokenAndUser(request);
+    if (authResult.error) return authResult.error;
+    
+    // Add user to request object for easy access
+    request.user = authResult.user;
+
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
@@ -22,7 +29,7 @@ export const GET = withSuperAdminOrRoleAdminAuth(async (request, context) => {
     console.error('GET /crm/leads/:id error:', err);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
-});
+}
 
 // PUT /api/crm/leads/[id]
 export async function PUT(request, context) {

@@ -79,6 +79,8 @@ class TicketService {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new Error('Invalid ticket ID');
       }
+      console.log(`Updating ticket with ID: ${id}`, data);
+      
       const updated = await this.repo.update(id, data);
       console.log('Updated Ticket:', updated);
       return updated;

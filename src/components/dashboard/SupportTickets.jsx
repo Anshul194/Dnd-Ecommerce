@@ -32,6 +32,7 @@ const SupportTickets = () => {
     attachments: []
   });
   const [replyMessage, setReplyMessage] = useState('');
+  const [replyAttachments, setReplyAttachments] = useState([]);
 
   // Effect to set customer ID when user data is available
   useEffect(() => {
@@ -203,17 +204,48 @@ const SupportTickets = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const handleReplyFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Validate file sizes (max 10MB per file)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const oversizedFiles = files.filter(file => file.size > maxSize);
+    
+    if (oversizedFiles.length > 0) {
+      alert(`The following files are too large (max 10MB each): ${oversizedFiles.map(f => f.name).join(', ')}`);
+      return;
+    }
+    
+    setReplyAttachments(files);
+  };
+
+  const removeReplyAttachment = (index) => {
+    setReplyAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleReplySubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!replyMessage.trim()) return;
 
     try {
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+      formData.append('message', replyMessage.trim());
+      
+      // Add attachments if any
+      replyAttachments.forEach((file) => {
+        formData.append('attachments', file);
+      });
+
+      // Debug: Log all form data entries
+      for (let [key, value] of formData.entries()) {
+        console.log(`Reply ${key}:`, value);
+      }
+
       // Dispatch the addTicketReply action
       await dispatch(addTicketReply({
         ticketId: selectedTicket._id,
-        replyData: {
-          message: replyMessage.trim()
-        }
+        replyData: formData
       })).unwrap();
 
       // Show success message
@@ -226,8 +258,9 @@ const SupportTickets = () => {
         draggable: true,
       });
 
-      // Clear the reply message
+      // Clear the reply message and attachments
       setReplyMessage('');
+      setReplyAttachments([]);
       
       // Refresh tickets to get updated data with populated fields
       await dispatch(fetchCustomerTickets());
@@ -275,6 +308,40 @@ const SupportTickets = () => {
     }
   };
 
+  // Helper function to get full attachment URL
+  const getAttachmentURL = (relativePath) => {
+    if (!relativePath) return '';
+    // If it already starts with http, return as is
+    if (relativePath.startsWith('http')) return relativePath;
+    // Otherwise, construct the full URL
+    return `${window.location.origin}${relativePath}`;
+  };
+
+  // Helper function to get file type icon
+  const getFileTypeIcon = (fileName) => {
+    if (!fileName) return <FileText size={12} />;
+    
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+      case 'avif':
+        return <Eye size={12} className="text-blue-600" />;
+      case 'pdf':
+        return <FileText size={12} className="text-red-600" />;
+      case 'doc':
+      case 'docx':
+        return <FileText size={12} className="text-blue-600" />;
+      case 'txt':
+        return <FileText size={12} className="text-gray-600" />;
+      default:
+        return <FileText size={12} />;
+    }
+  };
+
   if (selectedTicket) {
     return (
       <div className="space-y-6">
@@ -282,7 +349,11 @@ const SupportTickets = () => {
         <div className="flex justify-between items-center mb-6">
           <div>
             <button
-              onClick={() => setSelectedTicket(null)}
+              onClick={() => {
+                setSelectedTicket(null);
+                setReplyMessage('');
+                setReplyAttachments([]);
+              }}
               className="text-red-600 hover:text-red-700 mb-2 text-sm"
             >
               ← Back to Tickets
@@ -307,14 +378,48 @@ const SupportTickets = () => {
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex items-start space-x-4">
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-600 font-medium text-sm">A</span>
+              <span className="text-blue-600 font-medium text-sm">
+                {selectedTicket.customer?.name?.charAt(0)?.toUpperCase() || 'C'}
+              </span>
             </div>
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
-                <span className="font-medium text-gray-900">Anshul</span>
+                <span className="font-medium text-gray-900">
+                  {selectedTicket.customer?.name || 'Customer'}
+                </span>
                 <span className="text-sm text-gray-500">{new Date(selectedTicket.createdAt).toLocaleString()}</span>
               </div>
               <p className="text-gray-700">{selectedTicket.description}</p>
+              
+              {/* Original Message Attachments */}
+              {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-sm font-medium text-gray-700 mb-2 flex items-center space-x-1">
+                    <FileText size={14} />
+                    <span>Attachments ({selectedTicket.attachments.length})</span>
+                  </p>
+                  <div className="space-y-1">
+                    {selectedTicket.attachments.map((attachment, attachIndex) => {
+                      const fullURL = getAttachmentURL(attachment);
+                      const fileName = attachment.split('/').pop() || `Attachment ${attachIndex + 1}`;
+                      return (
+                        <div key={attachIndex}>
+                          <a
+                            href={fullURL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline text-sm flex items-center space-x-2 hover:bg-blue-50 p-1 rounded transition-colors"
+                          >
+                            {getFileTypeIcon(fileName)}
+                            <span>{fileName}</span>
+                            <span className="text-xs text-gray-500 ml-auto">View</span>
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -349,36 +454,41 @@ const SupportTickets = () => {
                     <span className="text-sm text-gray-500">{new Date(reply.repliedAt).toLocaleString()}</span>
                   </div>
                   <p className="text-gray-700">{reply.message}</p>
+                  
+                  {/* Reply Attachments */}
+                  {reply.attachments && reply.attachments.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-sm font-medium text-gray-700 mb-2 flex items-center space-x-1">
+                        <FileText size={14} />
+                        <span>Attachments ({reply.attachments.length})</span>
+                      </p>
+                      <div className="space-y-1">
+                        {reply.attachments.map((attachment, attachIndex) => {
+                          const fullURL = getAttachmentURL(attachment);
+                          const fileName = attachment.split('/').pop() || `Attachment ${attachIndex + 1}`;
+                          return (
+                            <div key={attachIndex}>
+                              <a
+                                href={fullURL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline text-sm flex items-center space-x-2 hover:bg-blue-50 p-1 rounded transition-colors"
+                              >
+                                {getFileTypeIcon(fileName)}
+                                <span>{fileName}</span>
+                                <span className="text-xs text-gray-500 ml-auto">View</span>
+                              </a>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           ))}
         </div>
-
-        {/* Attachments */}
-        {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center space-x-2">
-              <FileText size={20} />
-              <span>Attachments</span>
-            </h3>
-            <ul className="space-y-2">
-              {selectedTicket.attachments.map((fileUrl, index) => (
-                <li key={index}>
-                  <a
-                    href={fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline break-all flex items-center space-x-2"
-                  >
-                    <Eye size={16} />
-                    <span>{fileUrl.split('/').pop()}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         {/* Related Order */}
         {selectedTicket.orderId && orders && orders.length > 0 && (
@@ -424,6 +534,50 @@ const SupportTickets = () => {
                 placeholder="Type your message here..."
                 required
               />
+              
+              {/* Reply Attachments */}
+              <div>
+                <label htmlFor="replyAttachments" className="block text-sm font-medium text-gray-700 mb-1">
+                  Attachments (Optional)
+                </label>
+                <input
+                  type="file"
+                  id="replyAttachments"
+                  name="replyAttachments"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                  onChange={handleReplyFileChange}
+                  disabled={replyLoading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-50"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  You can upload multiple files (images, PDF, documents). Max 10MB per file.
+                </p>
+                
+                {/* Display selected files */}
+                {replyAttachments.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-sm font-medium text-gray-700">Selected files:</p>
+                    {replyAttachments.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-md">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm text-gray-700 truncate block">{file.name}</span>
+                          <span className="text-xs text-gray-500">{formatFileSize(file.size)}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeReplyAttachment(index)}
+                          className="text-red-500 hover:text-red-700 ml-2 flex-shrink-0"
+                          disabled={replyLoading}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={handleReplySubmit}
@@ -566,7 +720,11 @@ const SupportTickets = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => setSelectedTicket(ticket)}
+                  onClick={() => {
+                    setSelectedTicket(ticket);
+                    setReplyMessage('');
+                    setReplyAttachments([]);
+                  }}
                   className="text-red-600 hover:text-red-700 font-medium flex items-center space-x-1 hover:bg-red-50 px-2 py-1 rounded transition-colors"
                   title="View ticket details"
                 >

@@ -79,21 +79,70 @@ class TicketRepository extends CrudRepository {
     }
   }
 
-  async update(id, data, conn) {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error(`Invalid ticketId: ${id}`);
-      }
-      const ticket = await this.Ticket.findByIdAndUpdate(id, { $set: data }, { new: true }).exec();
-      if (!ticket || ticket.isDeleted) {
-        throw new Error('Ticket not found');
-      }
-      return ticket;
-    } catch (error) {
-      console.error('TicketRepository update Error:', error.message);
-      throw new Error(`Failed to update ticket: ${error.message}`);
+  // async update(id, data, conn) {
+  //   try {
+  //     if (!mongoose.Types.ObjectId.isValid(id)) {
+  //       throw new Error(`Invalid ticketId: ${id}`);
+  //     }
+  //     const ticket = await this.Ticket.findByIdAndUpdate(id, { $set: data }, { new: true }).exec();
+  //     if (!ticket || ticket.isDeleted) {
+  //       throw new Error('Ticket not found');
+  //     }
+  //     return ticket;
+  //   } catch (error) {
+  //     console.error('TicketRepository update Error:', error.message);
+  //     throw new Error(`Failed to update ticket: ${error.message}`);
+  //   }
+  // }
+
+async update(id, data) {
+  try {
+    console.log('Updating ticket:', { id, data });
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new Error(`Invalid ticketId: ${id}`);
     }
+
+    const objectId = new mongoose.Types.ObjectId(id);
+    const updateData = { ...data };
+
+    console.log('Finding ticket with filter:', { _id: objectId, isDeleted: false });
+    const existingTicket = await this.Ticket.findOne({ _id: objectId, isDeleted: false }).exec();
+
+    console.log('Ticket found:', existingTicket);
+
+    if (!existingTicket) {
+      throw new Error('Ticket not found');
+    }
+
+    if (data.assignedTo && !data.status) {
+  const currentStatus = existingTicket.status;
+  if (currentStatus === 'open' || currentStatus === 'in_progress') {
+    updateData.status = 'in_progress';
   }
+}
+    console.log('Updating ticket with data:', updateData);
+    const ticket = await this.Ticket.findOneAndUpdate(
+      { _id: objectId, isDeleted: false },
+      { $set: updateData },
+      { new: true }
+    ).exec();
+
+    console.log('Updated ticket:', ticket);
+
+    if (!ticket) {
+      throw new Error('Ticket not found');
+    }
+
+    return ticket;
+  } catch (error) {
+    console.error('TicketRepository update Error:', error.message);
+    throw new Error(`Failed to update ticket: ${error.message}`);
+  }
+}
+
+
+
 
  async findByCustomer(customerId, query = {}) {
   try {

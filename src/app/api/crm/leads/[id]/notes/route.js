@@ -2,10 +2,17 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { getSubdomain, getDbConnection } from '../../../../../lib/tenantDb';
 import { addLeadNoteController } from '../../../../../lib/controllers/leadController';
-import { withSuperAdminOrRoleAdminAuth } from '../../../../../middleware/commonAuth';
+import { verifyTokenAndUser } from '../../../../../middleware/commonAuth';
 
-export const POST = withSuperAdminOrRoleAdminAuth(async function (request, { params }) {
+export async function POST(request, { params }) {
   try {
+    // ✅ Step 1: Authenticate user
+    const authResult = await verifyTokenAndUser(request);
+    if (authResult.error) return authResult.error;
+
+    const user = authResult.user;
+    request.user = user;
+
     console.log('Raw params:', params);
     const id = params.id;
     console.log('Extracted lead ID:', id);
@@ -39,4 +46,4 @@ export const POST = withSuperAdminOrRoleAdminAuth(async function (request, { par
     console.error('POST /crm/leads/:id/notes error:', err);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
-}, '/api/crm/leads/[id]/notes');
+}
