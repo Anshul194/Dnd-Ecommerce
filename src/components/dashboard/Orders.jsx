@@ -17,18 +17,27 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
+  Cross,
+  Plus,
 } from "lucide-react";
 import { fetchOrderById, fetchOrders } from "@/app/store/slices/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Loading from "@/components/Loading";
 import { useRouter, useSearchParams } from "next/navigation";
-import { fetchProducts } from "@/app/store/slices/productSlice";
+import { addReview, fetchProducts } from "@/app/store/slices/productSlice";
+import { set } from "mongoose";
 
 const Orders = () => {
   const { orders, loading, currentOrder } = useSelector((state) => state.order);
   const { products } = useSelector((state) => state.product);
+  const [reviewPopup, setReviewPopup] = useState(false);
+  const [reviewProduct, setReviewProduct] = useState(null);
   const { user } = useSelector((state) => state.auth);
   const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
+  const [reviewImage, setReviewImage] = useState(null);
+  const [reviewLLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState("");
   const dispatch = useDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -90,6 +99,24 @@ const Orders = () => {
       year: "numeric",
     });
   };
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const validFiles = files.filter((file) => file.size <= 2 * 1024 * 1024);
+    if (validFiles.length !== files.length) {
+      setReviewError("All images must be less than 2MB");
+      return;
+    }
+    setReviewImage(validFiles);
+    setReviewError("");
+  };
+
+  const handleImageRemove = (index) => {
+    setReviewImage((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const filePreviews = (file) => {
+    return URL.createObjectURL(file);
+  };
 
   const handleClick = (orderId) => {
     const currentPath = window.location.pathname;
@@ -146,6 +173,34 @@ const Orders = () => {
         Math.ceil(products.length / 3)
     );
   };
+
+  const handleReviewSubmit = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("rating", rating);
+      formData.append("comment", review);
+      formData.append("productId", reviewProduct.product._id);
+      if (reviewImage) {
+        reviewImage.forEach((file, index) => {
+          formData.append(`images[${index}]`, file);
+        });
+      }
+      setReviewLoading(true);
+      const response = await dispatch(addReview(formData));
+      setReviewPopup(false);
+      setReviewProduct(null);
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      setReviewError("Failed to submit review. Please try again.");
+    } finally {
+      setReviewLoading(false);
+      setRating(0);
+      setReview("");
+      setReviewImage([]);
+      setReviewError("");
+    }
+  };
+
   useEffect(() => {
     // Fetch orders when the component mounts
     if (user?._id) {
@@ -181,6 +236,131 @@ const Orders = () => {
   if (orderId) {
     return (
       <>
+        {reviewPopup && (
+          <div className="fixed inset-0 bg-gray-800/10 backdrop-blur-xs bg-opacity-50 flex items-center justify-center z-50">
+            {" "}
+            <div className="bg-white border w-1/3 rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4 ">
+                <h2 className="text-lg text-black font-semibold ">
+                  Rate Your Purchase
+                </h2>
+                <div
+                  onClick={() => {
+                    setReviewPopup(false);
+                    setReviewProduct(null);
+                  }}
+                  className=" rounded-md cursor-pointer flex justify-center items-center h-6 w-6 "
+                >
+                  <Plus className="rotate-45 h-5 w-5 text-black" />
+                </div>
+              </div>
+              <div className="flex mb-2 items-start space-x-4 p-2 bg-gray-500/5 rounded-lg">
+                <img
+                  src={reviewProduct?.product?.thumbnail?.url}
+                  alt={reviewProduct?.product?.name}
+                  className="w-16  h-16   object-cover rounded-lg bg-gray-100"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-gray-900 mb-1">
+                    {reviewProduct?.product?.name}
+                  </h3>
+
+                  <p className="text-sm text-gray-500 mb-2">
+                    {reviewProduct?.variant?.name}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">
+                      Qty: {reviewProduct?.quantity}
+                    </span>
+                    <span className="font-semibold text-gray-900">
+                      ₹{reviewProduct?.price?.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    How was your experience with this product?
+                  </p>
+                  <div className="flex space-x-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setRating(star)}
+                        className="focus:outline-none"
+                      >
+                        <Star
+                          className={`h-8 w-8 ${
+                            star <= rating
+                              ? "text-yellow-400 fill-current"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <textarea
+                  onChange={(e) => setReview(e.target.value)}
+                  value={review}
+                  rows="3"
+                  placeholder="Share your feedback about this product..."
+                  className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none h-24"
+                />
+                <div>
+                  <label className="text-sm text-gray-600 mb-2">
+                    upload an image (optional)
+                  </label>
+                  <input
+                    multiple
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="mt-1 px-4 py-1  block w-60 text-sm text-gray-500 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  />
+
+                  <div className="my-2 flex flex-wrap gap-2">
+                    {reviewImage &&
+                      reviewImage.map((file, index) => (
+                        <div className="w-20 h-20 relative" key={index}>
+                          <div
+                            onClick={() => handleImageRemove(index)}
+                            className="absolute top-2 right-2 rounded-md hover:bg-red-500/60 cursor-pointer flex justify-center items-center h-6 w-6 bg-red-500/50"
+                          >
+                            <Plus className="rotate-45 h-4 w-4" />
+                          </div>
+                          <img
+                            key={index}
+                            src={filePreviews(file)}
+                            alt={`Review Image ${index + 1}`}
+                            className="h-full w-full object-cover rounded-lg"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                {reviewLLoading ? (
+                  <button
+                    disabled
+                    className="bg-green-500 mt-4 text-white px-6 py-2 pt-3 opacity-80  rounded-lg  transition-colors"
+                  >
+                    <Loading color="bg-white" scale="scale-75" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleReviewSubmit}
+                    className="bg-green-500 mt-4 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                  >
+                    Submit Review
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {currentOrder ? (
           <div className="min-h-screen bg-gray-50">
             {/* Header */}
@@ -253,45 +433,21 @@ const Orders = () => {
                                 ₹{item.price.toLocaleString()}
                               </span>
                             </div>
+
+                            <div className="">
+                              <button
+                                onClick={() => {
+                                  setReviewPopup(true);
+                                  setReviewProduct(item);
+                                }}
+                                className="text-sm text-blue-500 hover:underline"
+                              >
+                                Add Review
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}
-                    </div>
-                  </div>
-                  <div className="bg-white border rounded-lg shadow-sm p-6">
-                    <h2 className="text-lg text-black font-semibold mb-4">
-                      Rate Your Purchase
-                    </h2>
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm text-gray-600 mb-2">
-                          How was your experience with this product?
-                        </p>
-                        <div className="flex space-x-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              onClick={() => setRating(star)}
-                              className="focus:outline-none"
-                            >
-                              <Star
-                                className={`h-8 w-8 ${
-                                  star <= rating
-                                    ? "text-yellow-400 fill-current"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <textarea
-                        placeholder="Share your feedback about this product..."
-                        className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none h-24"
-                      />
-                      <button className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors">
-                        Submit Review
-                      </button>
                     </div>
                   </div>
 

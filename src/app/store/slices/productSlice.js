@@ -7,9 +7,9 @@ export const fetchProducts = createAsyncThunk(
   async (payload) => {
     console.log("Fetching products with payload:", payload);
     const quaryParams = new URLSearchParams();
-   payload.page && quaryParams.append("page", payload.page);
-   payload.limit && quaryParams.append("limit", payload.limit);
-   payload.sortBy && quaryParams.append("sortBy", payload.sortBy);
+    payload.page && quaryParams.append("page", payload.page);
+    payload.limit && quaryParams.append("limit", payload.limit);
+    payload.sortBy && quaryParams.append("sortBy", payload.sortBy);
 
     if (payload.category) {
       quaryParams.append("category", payload.category);
@@ -40,6 +40,40 @@ export const fetchProductById = createAsyncThunk(
     console.log("Product Data:", response);
 
     return response.data.data;
+  }
+);
+
+export const addReview = createAsyncThunk(
+  "product/addReview",
+  async (reviewData) => {
+    try {
+      const response = await axiosInstance.post("/review", reviewData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("Review added successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error adding review:", error);
+      throw error;
+    }
+  }
+);
+
+export const fetchProductReviews = createAsyncThunk(
+  "product/fetchProductReviews",
+  async (productId) => {
+    try {
+      const response = await axiosInstance.get(
+        `/review?productId=${productId}`
+      );
+      console.log("Product Reviews Data:", response);
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching product reviews:", error);
+      throw error;
+    }
   }
 );
 

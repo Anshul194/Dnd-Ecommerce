@@ -647,7 +647,7 @@ function ProductPage({ params }) {
           <HowToUse data={data} />
           <Ingredient />
           <DescriptionLayout data={data} />
-          <ProductReview />
+          <ProductReview id={data._id} />
           <FrequentlyPurchased />
         </div>
       </div>
