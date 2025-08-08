@@ -17,6 +17,7 @@ import orderSlice from "./slices/orderSlice";
 import supportTicketSlice from "./slices/supportTicketSlice";
 import orderReducer from "./slices/orderSlice";
 import contentReducer from "./slices/contentSlice";
+import wishlistReducer from "./slices/wishlistSlice";
 
 const store = configureStore({
   reducer: {
@@ -36,6 +37,7 @@ const store = configureStore({
     order: orderSlice,
     supportTicket: supportTicketSlice,
     orders: orderReducer,
+    wishlist: wishlistReducer,
     content: contentReducer,
   },
 });

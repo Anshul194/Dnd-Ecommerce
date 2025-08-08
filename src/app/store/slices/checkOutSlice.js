@@ -44,7 +44,7 @@ export const placeOrder = createAsyncThunk(
 const checkoutSlice = createSlice({
   name: "checkout",
   initialState: {
-    checkoutOpen: true,
+    checkoutOpen: false,
     checkoutData: {},
     addressAdded:
       (isBrowser && localStorage.getItem("address") && true) || false,
@@ -112,7 +112,7 @@ export const {
   setCheckoutData,
   clearCheckoutData,
   resetAddress,
-  getAddressFormLocalStorage
+  getAddressFormLocalStorage,
 } = checkoutSlice.actions;
 
 export default checkoutSlice.reducer;

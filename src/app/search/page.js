@@ -100,14 +100,14 @@ const SearchPage = () => {
 
             {/* Products Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 mb-8">
-              {products?.length > 0 &&
-                products.map((product) => (
+              {products?.products?.length > 0 &&
+                products.products.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))}
             </div>
 
             {/* No Results */}
-            {products.length === 0 && (
+            {products?.products?.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">
                   No products found matching your criteria.
