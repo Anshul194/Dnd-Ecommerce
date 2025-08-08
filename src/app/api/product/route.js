@@ -24,6 +24,7 @@ export async function GET(req) {
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
     const productsResult = await productController.getAll(query, conn);
+    
     // Defensive: productsResult may be { success, message, data }
     if (productsResult && productsResult.data && Array.isArray(productsResult.data)) {
       for (const product of productsResult.data) {
@@ -41,6 +42,7 @@ export async function GET(req) {
             }
           });
         }
+        
         // Normalize descriptionImages
         if (Array.isArray(product.descriptionImages)) {
           product.descriptionImages = product.descriptionImages.map(img => {
@@ -54,6 +56,7 @@ export async function GET(req) {
             }
           });
         }
+        
         // Normalize thumbnail if it's a string or char-indexed object
         if (product.thumbnail && typeof product.thumbnail === 'string') {
           product.thumbnail = { url: product.thumbnail, alt: '' };
@@ -63,6 +66,7 @@ export async function GET(req) {
         }
       }
     }
+    
     return NextResponse.json({ success: true, products: productsResult });
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
