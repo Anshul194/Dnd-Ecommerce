@@ -1,43 +1,48 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react';
-import { ShoppingBag, MapPin, Heart, Settings, LogOut, User, FileText } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  ShoppingBag,
+  MapPin,
+  Heart,
+  Settings,
+  LogOut,
+  User,
+  FileText,
+} from "lucide-react";
 
 // Import dashboard components
-import Dashboard from '../../components/dashboard/Dashboard';
-import Orders from '../../components/dashboard/Orders';
-import Addresses from '../../components/dashboard/Addresses';
-import Wishlist from '../../components/dashboard/Wishlist';
-import AccountDetails from '../../components/dashboard/AccountDetails';
-import SupportTickets from '../../components/dashboard/SupportTickets';
+import Dashboard from "../../components/dashboard/Dashboard";
+import Orders from "../../components/dashboard/Orders";
+import Addresses from "../../components/dashboard/Addresses";
+import Wishlist from "../../components/dashboard/Wishlist";
+import AccountDetails from "../../components/dashboard/AccountDetails";
+import SupportTickets from "../../components/dashboard/SupportTickets";
+import { useSelector } from "react-redux";
 
 export default function SidebarDashboard() {
-  const [activeComponent, setActiveComponent] = useState('dashboard');
-
-  const user = {
-    name: 'Anshul',
-    email: 'anshul12@gmail.com'
-  };
+  const [activeComponent, setActiveComponent] = useState("dashboard");
+  const { user } = useSelector((state) => state.auth);
 
   const sidebarItems = [
-    { icon: ShoppingBag, label: 'Orders', component: 'orders' },
-    { icon: MapPin, label: 'Addresses', component: 'addresses' },
-    { icon: Heart, label: 'Wishlist', component: 'wishlist' },
-    { icon: Settings, label: 'Account Details', component: 'account-details' },
-    { icon: FileText, label: 'Support Ticket', component: 'support-tickets' }
+    { icon: ShoppingBag, label: "Orders", component: "orders" },
+    { icon: MapPin, label: "Addresses", component: "addresses" },
+    { icon: Heart, label: "Wishlist", component: "wishlist" },
+    { icon: Settings, label: "Account Details", component: "account-details" },
+    { icon: FileText, label: "Support Ticket", component: "support-tickets" },
   ];
 
   const renderActiveComponent = () => {
     switch (activeComponent) {
-      case 'orders':
+      case "orders":
         return <Orders />;
-      case 'addresses':
+      case "addresses":
         return <Addresses />;
-      case 'wishlist':
+      case "wishlist":
         return <Wishlist />;
-      case 'account-details':
+      case "account-details":
         return <AccountDetails />;
-      case 'support-tickets':
+      case "support-tickets":
         return <SupportTickets />;
       default:
         return <Dashboard user={user} />;
@@ -63,25 +68,25 @@ export default function SidebarDashboard() {
           {/* Navigation Menu */}
           <nav className="space-y-2">
             <button
-              onClick={() => setActiveComponent('dashboard')}
+              onClick={() => setActiveComponent("dashboard")}
               className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 w-full text-left ${
-                activeComponent === 'dashboard'
-                  ? 'bg-red-100 text-red-600'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-red-600'
+                activeComponent === "dashboard"
+                  ? "bg-red-100 text-red-600"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-red-600"
               }`}
             >
               <User size={18} />
               <span className="font-medium">Dashboard</span>
             </button>
-            
+
             {sidebarItems.map((item, index) => (
               <button
                 key={index}
                 onClick={() => setActiveComponent(item.component)}
                 className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 w-full text-left ${
                   activeComponent === item.component
-                    ? 'bg-red-100 text-red-600'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-red-600'
+                    ? "bg-red-100 text-red-600"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-red-600"
                 }`}
               >
                 <item.icon size={18} />
@@ -101,9 +106,7 @@ export default function SidebarDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
-        {renderActiveComponent()}
-      </div>
+      <div className="flex-1 p-8">{renderActiveComponent()}</div>
     </div>
   );
 }

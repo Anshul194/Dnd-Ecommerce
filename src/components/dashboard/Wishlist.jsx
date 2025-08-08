@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { Heart, ShoppingCart, Trash2, Star, Eye } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchWishlist } from "@/app/store/slices/wishlistSlice";
+import { toggleCart } from "@/app/store/slices/cartSlice";
 
 const Wishlist = () => {
   const dispatch = useDispatch();
@@ -11,7 +12,7 @@ const Wishlist = () => {
   const loading = useSelector((state) => state.wishlist.loading);
   const error = useSelector((state) => state.wishlist.error);
 
-  console?.log("the data ", wishlistItems);
+  console?.log("the data ====>", wishlistItems);
   useEffect(() => {
     console.log("inside if ==?");
     dispatch(fetchWishlist());
@@ -26,9 +27,22 @@ const Wishlist = () => {
   };
 
   const addToCart = (item) => {
-    // TODO: Implement add to cart functionality
     console.log("Adding to cart:", item);
-    alert(`${item.name} added to cart!`);
+    dispatch( 
+      addToCart({
+        product: {
+          id: item.product._id,
+          name: item.product.name,
+          image: item.product.thumbnail || item.product.images?.[0],
+          variant: item?.variant?._id,
+          slug: item.slug,
+        },
+        quantity: 1,
+        price: item?.variant?.salePrice || item?.price,
+        variant: item?.variant?._id,
+      })
+    );
+    dispatch(toggleCart());
   };
 
   const renderStars = (rating) => {
@@ -87,9 +101,9 @@ const Wishlist = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {wishlistItems.map((item) => (
+          {wishlistItems.map((item, index) => (
             <div
-              key={item.product._id}
+              key={index}
               className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
             >
               {/* Product Image */}
@@ -106,7 +120,7 @@ const Wishlist = () => {
                   )}
                 </div>
                 {/* Discount Badge */}
-                {item.product.originalPrice > item.product.price && (
+                {/* {item.product.originalPrice > item.product.price && (
                   <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md">
                     {calculateSavings(
                       item.product.originalPrice,
@@ -114,7 +128,7 @@ const Wishlist = () => {
                     )}
                     % OFF
                   </div>
-                )}
+                )} */}
                 {/* Stock Status */}
                 {/* {!item.product.inStock && (
                   <div className="absolute top-2 right-2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md">
@@ -170,7 +184,7 @@ const Wishlist = () => {
                 {/* Actions */}
                 <div className="space-y-2">
                   <button
-                    onClick={() => addToCart(item.product)}
+                    onClick={() => addToCart(item)}
                     disabled={!item.product}
                     className={`w-full px-4 py-2 rounded-md transition-colors flex items-center justify-center space-x-2 ${
                       item.product

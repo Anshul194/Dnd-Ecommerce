@@ -172,7 +172,7 @@ export default function CheckoutPopup() {
       console.log("Updating existing address:", data._id);
       await dispatch(
         updateUserAddress({
-          addressId: addressData._id,
+          addressId: data._id,
           addressData: {
             user: user?._id,
             title: addressType || "Home",
@@ -200,7 +200,7 @@ export default function CheckoutPopup() {
             firstName: formData.firstName,
             lastName: formData.lastName,
             email: formData.email,
-            phone: formData.phone,
+            phone: formData.phone || user?.phone,
             pincode: formData.pincode,
             line1: formData.flatNumber,
             line2: formData.landmark,
@@ -211,8 +211,34 @@ export default function CheckoutPopup() {
         })
       );
     }
-    await dispatch(setAddress({ ...formData, phone: user?.phone }));
-    dispatch(fetchUserAddresses(user?._id));
+    // Structure the address data to match the expected format for display
+    const addressStructure = {
+      title: addressType || "Home",
+      address: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || user?.phone,
+        pincode: formData.pincode,
+        line1: formData.flatNumber,
+        line2: formData.landmark,
+        landmark: formData.landmark,
+        area: formData.area,
+        city: formData.city,
+        state: formData.state,
+      },
+    };
+    await dispatch(setAddress(addressStructure));
+
+    // Refresh user addresses after adding/updating
+    if (isAuthenticated && user?._id) {
+      try {
+        const response = await dispatch(getuserAddresses(user._id));
+        setUserAddresses(response.payload || []);
+      } catch (error) {
+        console.error("Error fetching user addresses:", error);
+      }
+    }
   };
 
   const handelPayment = async () => {
@@ -296,13 +322,13 @@ export default function CheckoutPopup() {
     if (formData.phone.length === 10) {
       dispatch(sendOtp(formData.phone));
     }
-  }, [formData.phone]);
+  }, [formData.phone, dispatch]);
 
   useEffect(() => {
     if (otp.every((digit) => digit !== "")) {
       dispatch(verifyOtp({ phone: formData.phone, otp: otp.join("") }));
     }
-  }, [otp]);
+  }, [otp, dispatch, formData.phone]);
 
   useEffect(() => {
     // Only set form data from addressData if it exists and has actual data
@@ -632,34 +658,36 @@ export default function CheckoutPopup() {
                   <div className="text-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <h2 className="font-semibold">
-                        {addressData?.address?.firstName +
+                        {(addressData?.address?.firstName || "") +
                           " " +
-                          addressData?.address?.lastName}
+                          (addressData?.address?.lastName || "")}
                       </h2>
                       <h2 className="bg-blue-300 px-1 text-xs rounded-full font-medium">
-                        Home
+                        {addressData?.title || "Home"}
                       </h2>
                     </div>
                     <p>
-                      {addressData?.address?.line1 +
-                        ", " +
-                        addressData?.address?.line2 +
-                        ", " +
-                        addressData?.address?.city +
-                        ", " +
-                        addressData?.address?.state +
-                        ", " +
-                        addressData?.address?.pincode}
+                      {[
+                        addressData?.address?.line1,
+                        addressData?.address?.line2,
+                        addressData?.address?.city,
+                        addressData?.address?.state,
+                        addressData?.address?.pincode,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
                     </p>
 
                     <div className="flex items-center gap-4 mt-2  text-black/80">
                       <div className="flex items-center gap-2 mb-2">
                         <PhoneCall className="h-3 w-3" />
-                        <h2>{addressData?.address?.phone}</h2>
+                        <h2>
+                          {addressData?.address?.phone || user?.phone || ""}
+                        </h2>
                       </div>
                       <div className="flex items-center gap-2 mb-2">
                         <Mail className="h-3 w-3" />
-                        <h2>{addressData?.address?.email}</h2>
+                        <h2>{addressData?.address?.email || ""}</h2>
                       </div>
                     </div>
                   </div>
