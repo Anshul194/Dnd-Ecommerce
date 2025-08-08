@@ -5,6 +5,7 @@ import OrderService from '../../../lib/services/orderService.js';
 import OrderRepository from '../../../lib/repository/OrderRepository.js';
 import CouponService from '../../../lib/services/CouponService.js';
 import CouponRepository from '../../../lib/repository/CouponRepository.js';
+import EmailService from '../../../lib/services/EmailService.js';
 import { OrderSchema } from '../../../lib/models/Order.js';
 import { CouponSchema } from '../../../lib/models/Coupon.js';
 import { ProductSchema } from '../../../lib/models/Product.js';
@@ -32,7 +33,8 @@ export async function POST(req) {
     const orderRepo = new OrderRepository(Order, conn);
     const couponRepo = new CouponRepository(Coupon);
     const couponService = new CouponService(couponRepo);
-    const orderService = new OrderService(orderRepo, couponService);
+    const emailService = new EmailService();
+    const orderService = new OrderService(orderRepo, couponService, emailService);
     const orderController = new OrderController(orderService);
     const result = await orderController.create({ body }, conn);
     if (!result.success) {
@@ -44,7 +46,6 @@ export async function POST(req) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
-
 
 export const GET = withUserAuth(async function (request) {
   try {
@@ -63,7 +64,8 @@ export const GET = withUserAuth(async function (request) {
     const orderRepo = new OrderRepository(Order, conn);
     const couponRepo = new CouponRepository(Coupon);
     const couponService = new CouponService(couponRepo);
-    const orderService = new OrderService(orderRepo, couponService);
+    const emailService = new EmailService();
+    const orderService = new OrderService(orderRepo, couponService, emailService);
     const orderController = new OrderController(orderService);
     const result = await orderController.getUserOrders(request, conn);
     return NextResponse.json({
@@ -79,5 +81,3 @@ export const GET = withUserAuth(async function (request) {
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
 });
-
-
