@@ -17,6 +17,7 @@ import { VariantSchema } from '../../lib/models/Variant';
 import TicketSchema from '../../lib/models/Ticket';
 import UserSchema from '../../lib/models/User';
 import RoleSchema from '../../lib/models/role';
+import leadSchema from '../../lib/models/Lead';
 
 export const GET = withUserAuth(async function (request) {
   try {
@@ -42,6 +43,7 @@ export const GET = withUserAuth(async function (request) {
     const Product = conn.models.Product || conn.model('Product', ProductSchema);
     const Variant = conn.models.Variant || conn.model('Variant', VariantSchema);
     const Ticket = conn.models.Ticket || conn.model('Ticket', TicketSchema);
+    const Lead = conn.models.Lead || conn.model('Lead', leadSchema);
 
     console.log('Models registered:', {
       User: User.modelName,
@@ -51,6 +53,7 @@ export const GET = withUserAuth(async function (request) {
       Product: Product.modelName,
       Variant: Variant.modelName,
       Ticket: Ticket.modelName,
+      Lead: Lead.modelName,
     });
 
     // Check if user has admin role
