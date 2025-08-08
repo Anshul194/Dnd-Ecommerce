@@ -2,6 +2,7 @@ import TenantService from '../services/tenantService.js';
 import UserSchema from '../models/User.js';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+import seedTenantDBs from 'tenantSeeder.js';
 
 const tenantService = new TenantService(); // Import the schema only, not model
 
@@ -79,6 +80,9 @@ export async function createTenant(data) {
     });
 
     await globalUser.save();
+
+    await seedTenantDBs(tenantResult.body.data._id);
+
 
     return {
       status: tenantResult.status || 201,

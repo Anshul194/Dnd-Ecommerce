@@ -9,12 +9,17 @@ import { useRouter } from "next/navigation";
 import AuthRequiredModal from "@/components/AuthRequiredModal";
 import useAuthRedirect from "@/hooks/useAuthRedirect";
 
+import { addToWishlist } from "../store/slices/wishlistSlice";
+
+
 const ProductCard = ({ product }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { redirectToLogin, redirectToSignup } = useAuthRedirect();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+        const [showAuthModal, setShowAuthModal] = useState(false);
+        const [heartActive, setHeartActive] = useState(null);
+        const [heartAnimating, setHeartAnimating] = useState(false);
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
@@ -50,17 +55,38 @@ const ProductCard = ({ product }) => {
           <div className="relative bg-gradient-to-br from-orange-100 to-orange-200 rounded-t-2xl">
             {/* Heart Icon */}
             <div className="absolute top-2 right-2 z-10">
-              <button className="w-6 h-6 hover:scale-[1.1] bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+              <button
+                className="w-6 h-6 hover:scale-[1.1] bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (!isAuthenticated) {
+                    setShowAuthModal(true);
+                    return;
+                  }
+                  setHeartAnimating(true);
+                  await dispatch(
+                    addToWishlist({
+                      product: product._id,
+                      variant: product?.variants[0]?._id,
+                    })
+                  );
+                  setHeartActive(product._id);
+                  setTimeout(() => setHeartAnimating(false), 400);
+                }}
+                aria-label="Add to wishlist"
+              >
                 <svg
                   width="14"
                   height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
+                  style={{ transition: 'stroke 0.4s, fill 0.4s' }}
                 >
                   <path
                     d="M20.84 4.61C20.3292 4.099 19.7228 3.69364 19.0554 3.41708C18.3879 3.14052 17.6725 2.99817 16.95 2.99817C16.2275 2.99817 15.5121 3.14052 14.8446 3.41708C14.1772 3.69364 13.5708 4.099 13.06 4.61L12 5.67L10.94 4.61C9.9083 3.5783 8.50903 2.9987 7.05 2.9987C5.59096 2.9987 4.19169 3.5783 3.16 4.61C2.1283 5.6417 1.5487 7.04097 1.5487 8.5C1.5487 9.95903 2.1283 11.3583 3.16 12.39L12 21.23L20.84 12.39C21.351 11.8792 21.7563 11.2728 22.0329 10.6053C22.3095 9.93789 22.4518 9.22248 22.4518 8.5C22.4518 7.77752 22.3095 7.06211 22.0329 6.3947C21.7563 5.72729 21.351 5.1208 20.84 4.61V4.61Z"
-                    stroke="black"
+                    stroke={heartActive === product._id ? "#e63946" : "black"}
+                    fill={heartActive === product._id ? "#e63946" : "none"}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -68,7 +94,6 @@ const ProductCard = ({ product }) => {
                 </svg>
               </button>
             </div>
-
             {/* Product Image */}
             <div className="flex h-40  justify-center items-center">
               <Image
