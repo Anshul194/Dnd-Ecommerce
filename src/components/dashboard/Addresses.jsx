@@ -1,141 +1,198 @@
-import React, { useState } from 'react';
-import { MapPin, Plus, Edit, Trash2, Home, Building, Check } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import {
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
+  Home,
+  Building,
+  Check,
+} from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createUserAddress,
+  deleteUserAddress,
+  getuserAddresses,
+  updateUserAddress,
+} from "@/app/store/slices/authSlice";
 
 const Addresses = () => {
-  const [addresses, setAddresses] = useState([
-    {
-      _id: '1',
-      type: 'home',
-      isDefault: true,
-      firstName: 'Anshul',
-      lastName: 'Sharma',
-      company: '',
-      address1: '123 Main Street',
-      address2: 'Apt 4B',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      country: 'United States',
-      phone: '+1 (555) 123-4567'
-    },
-    {
-      _id: '2',
-      type: 'work',
-      isDefault: false,
-      firstName: 'Anshul',
-      lastName: 'Sharma',
-      company: 'Tech Corp',
-      address1: '456 Business Ave',
-      address2: 'Suite 200',
-      city: 'Los Angeles',
-      state: 'CA',
-      zipCode: '90210',
-      country: 'United States',
-      phone: '+1 (555) 987-6543'
-    },
-    {
-      _id: '3',
-      type: 'other',
-      isDefault: false,
-      firstName: 'John',
-      lastName: 'Doe',
-      company: '',
-      address1: '789 Oak Street',
-      address2: '',
-      city: 'Chicago',
-      state: 'IL',
-      zipCode: '60601',
-      country: 'United States',
-      phone: '+1 (555) 456-7890'
-    }
-  ]);
-
+  const [addresses, setAddresses] = useState(null);
+  const { user } = useSelector((state) => state.auth);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [addressForm, setAddressForm] = useState({
-    type: 'home',
+    type: "home",
     isDefault: false,
-    firstName: '',
-    lastName: '',
-    company: '',
-    address1: '',
-    address2: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'United States',
-    phone: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    address1: "",
+    address2: "",
+    landmark: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "United States",
+    phone: "",
   });
-
+  const dispatch = useDispatch();
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setAddressForm(prev => ({
+    setAddressForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const fetchAddresses = async () => {
+    // Simulate fetching addresses from an API
+    const response = await dispatch(getuserAddresses(user._id));
+    console.log("Fetched addresses:", response);
+    setAddresses(response.payload || []);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (editingAddress) {
-      // Update existing address
-      setAddresses(prev => prev.map(addr => 
-        addr._id === editingAddress._id ? { ...addressForm, _id: editingAddress._id } : addr
-      ));
+      const payload = {
+        title: addressForm.type,
+        isDefault: addressForm.isDefault,
+        address: {
+          firstName: addressForm.firstName,
+          lastName: addressForm.lastName,
+          email: addressForm.email,
+          line1: addressForm.address1,
+          line2: addressForm.address2,
+          landmark: addressForm.landmark,
+          city: addressForm.city,
+          state: addressForm.state,
+          pincode: addressForm.zipCode,
+          country: addressForm.country,
+          phone: addressForm.phone,
+        },
+      };
+      await dispatch(
+        updateUserAddress({
+          addressId: editingAddress._id,
+          addressData: payload,
+        })
+      );
+      fetchAddresses();
+      setIsAddingAddress(false);
       setEditingAddress(null);
     } else {
       // Add new address
-      const newAddress = {
-        ...addressForm,
-        _id: Date.now().toString()
+      const payload = {
+        user: user._id,
+        title: addressForm.type || "Home",
+        isDefault: addressForm.isDefault,
+        address: {
+          firstName: addressForm.firstName,
+          lastName: addressForm.lastName,
+          email: addressForm.email,
+          line1: addressForm.address1,
+          line2: addressForm.address2,
+          landmark: addressForm.landmark,
+          city: addressForm.city,
+          state: addressForm.state,
+          pincode: addressForm.zipCode,
+          country: addressForm.country || "India",
+          phone: addressForm.phone,
+        },
       };
-      setAddresses(prev => [...prev, newAddress]);
+      await dispatch(createUserAddress(payload));
+      setIsAddingAddress(false);
+      fetchAddresses();
+
       setIsAddingAddress(false);
     }
+
     resetForm();
   };
 
   const resetForm = () => {
     setAddressForm({
-      type: 'home',
+      type: "home",
       isDefault: false,
-      firstName: '',
-      lastName: '',
-      company: '',
-      address1: '',
-      address2: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: 'United States',
-      phone: ''
+      firstName: "",
+      lastName: "",
+      email: "",
+      address1: "",
+      address2: "",
+      landmark: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "United States",
+      phone: "",
     });
   };
 
   const handleEdit = (address) => {
-    setAddressForm(address);
+    console.log("Editing address:", address);
+    setAddressForm({
+      type: address.title,
+      isDefault: address.isDefault,
+      firstName: address.address.firstName,
+      lastName: address.address.lastName,
+      email: address.address.email || "",
+      address1: address.address.line1,
+      address2: address.address.line2 || "",
+      landmark: address.address.landmark || "",
+      city: address.address.city,
+      state: address.address.state,
+      zipCode: address.address.pincode,
+      country: address.address.country || "United States",
+      phone: address.address.phone,
+    });
     setEditingAddress(address);
     setIsAddingAddress(true);
   };
 
-  const handleDelete = (addressId) => {
-    if (window.confirm('Are you sure you want to delete this address?')) {
-      setAddresses(prev => prev.filter(addr => addr._id !== addressId));
+  const handelUpdateIsDefault = async(addressId) => {
+    try {
+      setAddresses((prev) =>
+        prev.map((addr) => ({
+          ...addr,
+          isDefault: addr._id === addressId,
+        }))
+      );
+    await  dispatch(updateUserAddress({ addressId, isDefault: true }));
+      fetchAddresses();
+      console.log("Default address updated successfully");
+    } catch (error) {
+      console.error("Failed to update default address:", error);
+    }
+  };
+  const handleDelete = async (addressId) => {
+    try {
+      await dispatch(deleteUserAddress(addressId));
+      setAddresses((prev) => prev.filter((addr) => addr._id !== addressId));
+      console.log("Address deleted successfully");
+      dispatch(getuserAddresses(user._id)); // Refresh addresses
+    } catch (error) {
+      console.error("Failed to delete address:", error);
     }
   };
 
   const setAsDefault = (addressId) => {
-    setAddresses(prev => prev.map(addr => ({
-      ...addr,
-      isDefault: addr._id === addressId
-    })));
+    setAddresses((prev) =>
+      prev.map((addr) => ({
+        ...addr,
+        isDefault: addr._id === addressId,
+      }))
+    );
   };
 
   const getAddressIcon = (type) => {
     switch (type) {
-      case 'home': return <Home size={16} className="text-blue-600" />;
-      case 'work': return <Building size={16} className="text-green-600" />;
-      default: return <MapPin size={16} className="text-gray-600" />;
+      case "home":
+        return <Home size={16} className="text-blue-600" />;
+      case "work":
+        return <Building size={16} className="text-green-600" />;
+      default:
+        return <MapPin size={16} className="text-gray-600" />;
     }
   };
 
@@ -145,13 +202,21 @@ const Addresses = () => {
     resetForm();
   };
 
+  useEffect(() => {
+    fetchAddresses();
+  }, [dispatch, user._id]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Addresses</h1>
-          <p className="text-gray-600">Manage your shipping and billing addresses</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            My Addresses
+          </h1>
+          <p className="text-gray-600">
+            Manage your shipping and billing addresses
+          </p>
         </div>
         <button
           onClick={() => setIsAddingAddress(true)}
@@ -166,22 +231,22 @@ const Addresses = () => {
       {isAddingAddress && (
         <div className="bg-white rounded-lg p-6 shadow-sm border">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {editingAddress ? 'Edit Address' : 'Add New Address'}
+            {editingAddress ? "Edit Address" : "Add New Address"}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address Type</label>
-                <select
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Address Type
+                </label>
+                <input
+                  type="text"
                   name="type"
                   value={addressForm.type}
                   onChange={handleInputChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="home">Home</option>
-                  <option value="work">Work</option>
-                  <option value="other">Other</option>
-                </select>
+                />
               </div>
               <div className="flex items-center">
                 <input
@@ -191,13 +256,17 @@ const Addresses = () => {
                   onChange={handleInputChange}
                   className="mr-2"
                 />
-                <label className="text-sm font-medium text-gray-700">Set as default address</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Set as default address
+                </label>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name *
+                </label>
                 <input
                   type="text"
                   name="firstName"
@@ -208,7 +277,9 @@ const Addresses = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name *
+                </label>
                 <input
                   type="text"
                   name="lastName"
@@ -221,18 +292,23 @@ const Addresses = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Company (Optional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email *
+              </label>
               <input
-                type="text"
-                name="company"
-                value={addressForm.company}
+                type="email"
+                name="email"
+                value={addressForm.email}
                 onChange={handleInputChange}
+                required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1 *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Address Line 1 *
+              </label>
               <input
                 type="text"
                 name="address1"
@@ -244,7 +320,9 @@ const Addresses = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2 (Optional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Address Line 2 (Optional)
+              </label>
               <input
                 type="text"
                 name="address2"
@@ -254,9 +332,25 @@ const Addresses = () => {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Landmark (Optional)
+              </label>
+              <input
+                type="text"
+                name="landmark"
+                value={addressForm.landmark}
+                onChange={handleInputChange}
+                placeholder="Near hospital, mall, etc."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  City *
+                </label>
                 <input
                   type="text"
                   name="city"
@@ -267,7 +361,9 @@ const Addresses = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  State *
+                </label>
                 <input
                   type="text"
                   name="state"
@@ -278,7 +374,9 @@ const Addresses = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  ZIP Code *
+                </label>
                 <input
                   type="text"
                   name="zipCode"
@@ -291,7 +389,9 @@ const Addresses = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number *
+              </label>
               <input
                 type="tel"
                 name="phone"
@@ -314,7 +414,7 @@ const Addresses = () => {
                 type="submit"
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
-                {editingAddress ? 'Update Address' : 'Save Address'}
+                {editingAddress ? "Update Address" : "Save Address"}
               </button>
             </div>
           </form>
@@ -323,62 +423,85 @@ const Addresses = () => {
 
       {/* Addresses List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {addresses.map((address) => (
-          <div key={address._id} className="bg-white rounded-lg p-6 shadow-sm border hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center space-x-2">
-                {getAddressIcon(address.type)}
-                <span className="font-medium text-gray-900 capitalize">{address.type}</span>
-                {address.isDefault && (
-                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center space-x-1">
-                    <Check size={12} />
-                    <span>Default</span>
+        {addresses &&
+          addresses?.length > 0 &&
+          addresses?.map((address) => (
+            <div
+              key={address._id}
+              className="bg-white rounded-lg p-6 shadow-sm border hover:shadow-md transition-shadow"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center space-x-2">
+                  {getAddressIcon(address.title)}
+                  <span className="font-medium text-gray-900 capitalize">
+                    {address.title}
                   </span>
+                  {address.isDefault && (
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center space-x-1">
+                      <Check size={12} />
+                      <span>Default</span>
+                    </span>
+                  )}
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleEdit(address)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <Edit size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(address._id)}
+                    className="text-red-400 hover:text-red-600 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1 text-sm text-gray-600">
+                <p className="font-medium text-gray-900">
+                  {address.address.firstName} {address.address.lastName}
+                </p>
+                {address.address.email && (
+                  <p className="text-blue-600">{address.address.email}</p>
                 )}
+                {address.address.line1 && <p>{address.address.line1}</p>}
+                {address.address.line2 && <p>{address.address.line2}</p>}
+                {address.address.landmark && (
+                  <p className="text-gray-500">
+                    Near: {address.address.landmark}
+                  </p>
+                )}
+                <p>
+                  {address.address.city}, {address.address.state}{" "}
+                  {address.address.pincode}
+                </p>
+                <p>{address.address.country} </p>
+                <p>{address.address.phone}</p>
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleEdit(address)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <Edit size={16} />
-                </button>
-                <button
-                  onClick={() => handleDelete(address._id)}
-                  className="text-red-400 hover:text-red-600 transition-colors"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
 
-            <div className="space-y-1 text-sm text-gray-600">
-              <p className="font-medium text-gray-900">{address.firstName} {address.lastName}</p>
-              {address.company && <p>{address.company}</p>}
-              <p>{address.address1}</p>
-              {address.address2 && <p>{address.address2}</p>}
-              <p>{address.city}, {address.state} {address.zipCode}</p>
-              <p>{address.country}</p>
-              <p>{address.phone}</p>
+              {!address.isDefault && (
+                <button
+                  onClick={() => handelUpdateIsDefault(address._id)}
+                  className="mt-4 text-sm text-red-600 hover:text-red-700 font-medium"
+                >
+                  Set as Default
+                </button>
+              )}
             </div>
-
-            {!address.isDefault && (
-              <button
-                onClick={() => setAsDefault(address._id)}
-                className="mt-4 text-sm text-red-600 hover:text-red-700 font-medium"
-              >
-                Set as Default
-              </button>
-            )}
-          </div>
-        ))}
+          ))}
       </div>
 
-      {addresses.length === 0 && !isAddingAddress && (
+      {addresses?.length === 0 && !isAddingAddress && (
         <div className="bg-white rounded-lg p-8 text-center shadow-sm">
           <MapPin size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No addresses saved</h3>
-          <p className="text-gray-600 mb-4">Add your first address to get started</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No addresses saved
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Add your first address to get started
+          </p>
           <button
             onClick={() => setIsAddingAddress(true)}
             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2 mx-auto"
