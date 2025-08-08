@@ -171,8 +171,10 @@ export default function ProductReview({ id }) {
                         key={idx}
                         className="bg-gray-400 rounded h-24 w-24 mb-4"
                       >
-                        <Image
-                          src={image}
+                        <img
+                          src={
+                            "/uploads/Variant/profile-1753807026838-801819914.jfif"
+                          }
                           alt={`Review Image ${idx + 1}`}
                           width={100}
                           height={100}

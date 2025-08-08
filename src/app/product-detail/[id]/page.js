@@ -329,14 +329,14 @@ function ProductPage({ params }) {
               <div className="flex gap-2 mb-6">
                 <button
                   onClick={handleAddToCart}
-                  className="px-4 w-full py-3 border border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                  className="px-4 w-1/2 py-3 border border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={16} />
                   Add to Cart
                 </button>
-                {/* <button className="flex-1 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors">
-                Buy Now
-              </button> */}
+                <button className="flex-1 w-1/2 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors">
+                  Buy Now
+                </button>
               </div>
 
               {/* Expandable Sections */}
