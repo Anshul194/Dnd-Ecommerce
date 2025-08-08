@@ -37,50 +37,7 @@ export default function WhyUs() {
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="flex items-start flex-col-reverse md:flex-row gap-8">
-        {/* Left content */}
-        <div className="flex-1 w-full lg:w-1/2 sm:sticky top-24">
-          <h2 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
-            WHAT MAKES<br />US UNIQUE.
-          </h2>
-          
-          <p className="text-black relative poppins-medium leading-tight text-lg ml-auto mb-8 max-w-xl">
-            Lorem Ipsum dolor sit amet, consectetur 
-            adipiscing elit, sed do eiusmod tempor incididunt 
-            ut labore et dolor magna aliqua. Lorem Ipsum dolor 
-            sit amet, consectetur.
-          </p>
-          
-          <button className="bg hover:bg-green-700 text-white px-6 py-3 rounded text-sm font-medium flex items-center gap-2 transition-colors">
-            Learn More
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Right cards */}
-        <div className=" flex-1 h-full w-full md:w-1/2 flex-col lg:!flex-row gap-6">
-          {/* Gray card */}
-          <div className="aspect-5/4 w-full h-full  bg-gray-400 rounded-lg mb-4"></div>
-          
-          {/* Dark card */}
-          <div className="aspect-5/4 w-full  bg-gray-800 rounded-lg p-8 flex flex-col ">
-            <div className="text-gray-400 text-xs font-medium mb-2 tracking-wider">
-              LOREM IPSUM
-            </div>
-            <div className="text-green-400 text-2xl font-bold mb-4 leading-tight">
-              LOREM IPSUM<br />DOLOR
-            </div>
-            <p className="text-gray-400 text-xs leading-relaxed">
-              Lorem Ipsum dolor sit amet consectetur adipiscing 
-              elit, sed do eiusmod tempor incididunt ut labore et 
-              dolor magna aliqua. Ut enim
-            </p>
-          </div>
-        </div>
-      </div>
+    
     </div>
   );
 }

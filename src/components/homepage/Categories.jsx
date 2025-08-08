@@ -14,7 +14,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import Link from "next/link";
 
-const Categories = () => {
+const Categories = ({ dynamicContent = null }) => {
   const { categories } = useSelector((state) => state.category);
   const dispatch = useDispatch();
 
@@ -69,25 +69,33 @@ const Categories = () => {
         </div>
         <div className="flex-1 relative lg:max-w-xl mb-8 lg:mb-0 lg:mr-8">
           <h1 className="!font-bebas text-4xl md:text-5xl font-black text-gray-800 leading-tight mb-6">
-            WHAT'S YOUR PICK?
+            {dynamicContent?.title || "WHAT'S YOUR PICK?"}
           </h1>
           <p className="text-black font-medium text-lg mt-2">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do{" "}
-            <span className="text-fontGreen">eiusmod tempor incididunt</span> ut
-            labore et dolor magna{" "}
-            <span className="relative w-8">
-              aliqua{" "}
-              <Image
-                src={heart}
-                className="absolute -right-7 -bottom-10 w-8"
-                alt="heart-img"
-              />
-            </span>
-            .
+            {dynamicContent?.description ? (
+              <span dangerouslySetInnerHTML={{ __html: dynamicContent.description }} />
+            ) : (
+              <>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do{" "}
+                <span className="text-fontGreen">eiusmod tempor incididunt</span> ut
+                labore et dolor magna{" "}
+                <span className="relative w-8">
+                  aliqua{" "}
+                  <Image
+                    src={heart}
+                    className="absolute -right-7 -bottom-10 w-8"
+                    alt="heart-img"
+                  />
+                </span>
+                .
+              </>
+            )}
           </p>
-          <button className="mt-4 relative z-50 bg text-white px-6 py-2 rounded hover:bg-green-700 transition-colors">
-            Explore
-          </button>
+          <Link href={dynamicContent?.cta?.link || '/shop'}>
+            <button className="mt-4 relative z-50 bg text-white px-6 py-2 rounded hover:bg-green-700 transition-colors">
+              {dynamicContent?.cta?.title || 'Explore'}
+            </button>
+          </Link>
         </div>
 
         <div>
