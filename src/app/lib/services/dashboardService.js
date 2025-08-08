@@ -14,8 +14,26 @@ class DashboardService {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-      // Fetch recent 5 orders
+      // Register models
+      const Product = conn.models.Product || conn.model('Product', mongoose.model('Product').schema);
+      const User = conn.models.User || conn.model('User', mongoose.model('User').schema);
+      const Ticket = conn.models.Ticket || conn.model('Ticket', mongoose.model('Ticket').schema);
+      const Lead = conn.models.Lead || conn.model('Lead', mongoose.model('Lead').schema);
+
+      // Fetch counts
+      const totalOrders = await this.orderService.getTotalOrders(conn);
+      const totalProducts = await Product.countDocuments().exec();
+      const totalUsers = await User.countDocuments().exec();
+      const totalTickets = await Ticket.countDocuments().exec();
+      const totalLeads = await Lead.countDocuments().exec();
+
+      // Fetch recent items
       const recentOrders = await this.orderService.getRecentOrders(conn);
+      const recentTickets = await this.ticketService.getRecentTickets(conn);
+      const recentProducts = await Product.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .exec();
 
       // Calculate income for different periods
       const todayIncome = await this.orderService.calculateIncome({ createdAt: { $gte: startOfToday } }, conn);
@@ -23,18 +41,21 @@ class DashboardService {
       const monthIncome = await this.orderService.calculateIncome({ createdAt: { $gte: startOfMonth } }, conn);
       const yearIncome = await this.orderService.calculateIncome({ createdAt: { $gte: startOfYear } }, conn);
 
-      // Fetch recent 5 tickets
-      const recentTickets = await this.ticketService.getRecentTickets(conn);
-
       return {
+        totalOrders,
+        totalProducts,
+        totalUsers,
+        totalTickets,
+        totalLeads,
         recentOrders,
+        recentProducts,
+        recentTickets,
         income: {
           today: todayIncome,
           week: weekIncome,
           month: monthIncome,
           year: yearIncome
-        },
-        recentTickets
+        }
       };
     } catch (error) {
       throw new Error(`Failed to fetch dashboard metrics: ${error.message}`);

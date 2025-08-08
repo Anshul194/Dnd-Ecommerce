@@ -25,9 +25,7 @@ export async function createTemplate(data, conn) {
   }
 }
 
-
-
-export async function getPageById(id, conn) {
+export async function getTemplateById(id, conn) {
   try {
     const templateService = new TemplateService(conn);
     console.log("Fetching template by ID:", id);
