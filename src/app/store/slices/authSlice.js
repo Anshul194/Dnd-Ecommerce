@@ -79,6 +79,30 @@ export const verifyOtp = createAsyncThunk(
   }
 );
 
+export const refreshToken = createAsyncThunk(
+  "auth/refreshToken",
+  async (_, { rejectWithValue }) => {
+    try {
+      const storedRefreshToken = localStorage.getItem("refreshToken");
+      if (!storedRefreshToken) {
+        throw new Error("No refresh token found");
+      }
+
+      const response = await axiosInstance.post("/auth/refresh-token", {
+        refreshToken: storedRefreshToken
+      });
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Token refresh failed");
+      }
+      
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: error.message });
+    }
+  }
+);
+
 export const getuserAddresses = createAsyncThunk(
   "auth/getuserAddresses",
   async (userId, { rejectWithValue }) => {
@@ -205,6 +229,29 @@ const authSlice = createSlice({
       .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(refreshToken.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(refreshToken.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        // Update tokens in localStorage
+        localStorage.setItem("accessToken", action.payload.accessToken);
+        localStorage.setItem("refreshToken", action.payload.refreshToken);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
+      })
+      .addCase(refreshToken.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        // Clear authentication state on refresh failure
+        state.isAuthenticated = false;
+        state.user = null;
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
       });
   },
 });
