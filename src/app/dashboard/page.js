@@ -60,8 +60,8 @@ export default function SidebarDashboard() {
               <User size={20} className="text-red-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">{user.name}</h3>
-              <p className="text-sm text-gray-500">{user.email}</p>
+              <h3 className="font-semibold text-gray-900">{user?.name}</h3>
+              <p className="text-sm text-gray-500">{user?.email}</p>
             </div>
           </div>
 

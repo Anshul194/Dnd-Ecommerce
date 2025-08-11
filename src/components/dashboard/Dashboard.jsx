@@ -1,36 +1,36 @@
-import React from 'react';
-import { ShoppingBag, MapPin, Heart, Settings } from 'lucide-react';
+import React from "react";
+import { ShoppingBag, MapPin, Heart, Settings } from "lucide-react";
 
 const Dashboard = ({ user }) => {
   const dashboardCards = [
     {
       icon: ShoppingBag,
-      title: 'Orders',
-      description: 'View and track your orders',
-      action: 'View Orders',
-      href: '/orders'
+      title: "Orders",
+      description: "View and track your orders",
+      action: "View Orders",
+      href: "/orders",
     },
     {
       icon: MapPin,
-      title: 'Addresses',
-      description: 'Manage your addresses',
-      action: 'Manage Addresses',
-      href: '/addresses'
+      title: "Addresses",
+      description: "Manage your addresses",
+      action: "Manage Addresses",
+      href: "/addresses",
     },
     {
       icon: Heart,
-      title: 'Wishlist',
-      description: 'View saved items',
-      action: 'View Wishlist',
-      href: '/wishlist'
+      title: "Wishlist",
+      description: "View saved items",
+      action: "View Wishlist",
+      href: "/wishlist",
     },
     {
       icon: Settings,
-      title: 'Account Details',
-      description: 'View and track your details',
-      action: 'Edit Details',
-      href: '/account-details'
-    }
+      title: "Account Details",
+      description: "View and track your details",
+      action: "Edit Details",
+      href: "/account-details",
+    },
   ];
 
   return (
@@ -40,11 +40,13 @@ const Dashboard = ({ user }) => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
         <p className="text-gray-600">
-          Hello <span className="font-semibold text-gray-900">{user.name}</span> ( not{' '}
-          <span className="font-semibold text-gray-900">{user.name}</span> ?{' '}
+          Hello{" "}
+          <span className="font-semibold text-gray-900">{user?.name}</span> (
+          not <span className="font-semibold text-gray-900">{user?.name}</span>{" "}
+          ?{" "}
           <a href="/logout" className="text-green-500 hover:underline">
             Log out
-          </a>{' '}
+          </a>{" "}
           )
         </p>
       </div>
@@ -52,16 +54,25 @@ const Dashboard = ({ user }) => {
       {/* Description */}
       <div className="mb-8 bg-white rounded-lg p-6 shadow-sm">
         <p className="text-gray-600 leading-relaxed">
-          From your account dashboard you can view your{' '}
-          <a href="/orders" className="text-green-500 font-medium hover:underline">
+          From your account dashboard you can view your{" "}
+          <a
+            href="/orders"
+            className="text-green-500 font-medium hover:underline"
+          >
             recent orders
           </a>
-          , manage your{' '}
-          <a href="/addresses" className="text-green-500 font-medium hover:underline">
+          , manage your{" "}
+          <a
+            href="/addresses"
+            className="text-green-500 font-medium hover:underline"
+          >
             shipping and billing addresses
           </a>
-          , and{' '}
-          <a href="/account-details" className="text-green-500 font-medium hover:underline">
+          , and{" "}
+          <a
+            href="/account-details"
+            className="text-green-500 font-medium hover:underline"
+          >
             edit your password and account details
           </a>
           .

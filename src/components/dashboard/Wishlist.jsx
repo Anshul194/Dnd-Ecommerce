@@ -104,7 +104,7 @@ const Wishlist = () => {
         </div>
       ) : error ? (
         <div className="bg-white rounded-lg p-8 text-center shadow-sm text-red-600">
-          {error}
+          {error?.message}
         </div>
       ) : wishlistItems.length == 0 ? (
         <div className="bg-white rounded-lg p-8 text-center shadow-sm">
@@ -185,12 +185,18 @@ const Wishlist = () => {
                 </div>
                 {/* Price */}
                 <div className="flex items-center space-x-2 mb-3">
-                  <span className="text-lg font-bold text-gray-900">
-                    ${item?.product?.price}
-                  </span>
-                  {item?.product?.originalPrice > item?.product?.price && (
-                    <span className="text-sm text-gray-500 line-through">
-                      ${item?.product?.originalPrice}
+                  {item?.variant?.salePrice ? (
+                    <>
+                      <span className="text-lg font-bold text-gray-900">
+                        ${item?.variant?.salePrice}
+                      </span>
+                      <span className="text-lg line-through font-bold text-gray-900">
+                        ${item?.variant?.price}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-lg font-bold text-gray-900">
+                      ${item?.variant?.price}
                     </span>
                   )}
                 </div>
@@ -235,7 +241,7 @@ const Wishlist = () => {
         </div>
       )}
       {/* Wishlist Actions */}
-      {wishlistItems.length > 0 && (
+      {wishlistItems?.length > 0 && (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div>
