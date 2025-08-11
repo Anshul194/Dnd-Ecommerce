@@ -85,7 +85,7 @@ export default function ProductReview({ id }) {
           <div className="relative">
             <div className="w-20 h-20 rounded-full border-4 border-green-500 flex items-center justify-center bg-white">
               <span className="text-2xl font-bold text-black">
-                {data?.Average?.toFixed(2) || 0}
+                {data?.Average?.toFixed(1) || 0}
               </span>
             </div>
           </div>
