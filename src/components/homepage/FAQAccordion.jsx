@@ -1,50 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import smile from "../../../public/images/smile.png";
-import Image from "next/image";
+import React, { useState, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
+import smile from '../../../public/images/smile.png';
+import Image from 'next/image';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchFaqs } from '../../app/store/slices/faqSlice';
 
 export default function FAQAccordion({ content }) {
   const [openIndex, setOpenIndex] = useState(null);
+  const { faqs, loading, error } = useSelector((state) => state.faq);
+  const dispatch = useDispatch();
 
-  const faqs = [
-    {
-      question: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
-    },
-    {
-      question: "Lorem ipsum?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    },
-    {
-      question: "Lorem ipsum dolor sit amet, consectetur?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    },
-    {
-      question: "Lorem ipsum dolor sit elit?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    },
-    {
-      question: "Lorem ipsum adipiscing elit?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    },
-    {
-      question: "Lorem ipsum dolor sit amet, consectetur adipiscing?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    },
-    {
-      question: "Lorem ipsum dolor elit?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    },
-  ];
+  useEffect(() => {
+    dispatch(fetchFaqs());
+  }, [dispatch]);
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -82,8 +52,13 @@ export default function FAQAccordion({ content }) {
         {/* Right Section - FAQ Accordion */}
         <div className=" w-full lg:w-[40%] ">
           <div className="space-y-1">
-            {faqs.map((faq, index) => (
-              <div key={index} className="border-b border-gray-200">
+            {loading && <div className="text-gray-500">Loading FAQs...</div>}
+            {error && <div className="text-red-500">{error}</div>}
+            {!loading && !error && faqs.length === 0 && (
+              <div className="text-gray-500">No FAQs found.</div>
+            )}
+            {!loading && !error && faqs.map((faq, index) => (
+              <div key={faq._id || index} className="border-b border-gray-200">
                 <button
                   onClick={() => toggleFAQ(index)}
                   className="w-full py-4 px-0 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
