@@ -1,55 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+
 export default function Ingredient({ data }) {
   const [activeIngredient, setActiveIngredient] = useState(0);
   const ingredientsRef = useRef([]);
   const containerRef = useRef(null);
 
-  // Sample ingredients data - replace with your actual data structure
-  const ingredients = data?.ingredients || [
-    {
-      id: 1,
-      name: "Fresh Tomatoes",
-      description: "Vine-ripened tomatoes, carefully selected for their rich flavor and vibrant color. These premium tomatoes form the base of our signature sauce.",
-      image: "https://images.unsplash.com/photo-1546470427-e26264be0b91?w=400&h=400&fit=crop",
-      details: "Organic, locally sourced"
-    },
-    {
-      id: 2,
-      name: "Extra Virgin Olive Oil",
-      description: "Cold-pressed olive oil from Mediterranean groves, providing a smooth, fruity flavor that enhances every dish with its golden richness.",
-      image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&h=400&fit=crop",
-      details: "First cold press, Mediterranean origin"
-    },
-    {
-      id: 3,
-      name: "Fresh Basil",
-      description: "Hand-picked basil leaves with their distinctive aroma and peppery flavor. This herb adds the perfect aromatic finish to our creations.",
-      image: "https://images.unsplash.com/photo-1618375569909-3c8616cf598e?w=400&h=400&fit=crop",
-      details: "Locally grown, pesticide-free"
-    },
-    {
-      id: 4,
-      name: "Sea Salt",
-      description: "Pure sea salt harvested from pristine coastal waters, providing the perfect mineral balance to enhance natural flavors.",
-      image: "https://images.unsplash.com/photo-1502819126416-e54b65efb8be?w=400&h=400&fit=crop",
-      details: "Unrefined, mineral-rich"
-    },
-    {
-      id: 5,
-      name: "Garlic",
-      description: "Fresh garlic cloves with their pungent, savory flavor that forms the aromatic foundation of countless culinary masterpieces.",
-      image: "https://images.unsplash.com/photo-1553978297-833d24758027?w=400&h=400&fit=crop",
-      details: "Farm fresh, hand-selected"
-    },
-    {
-      id: 6,
-      name: "Black Pepper",
-      description: "Freshly ground black peppercorns that deliver a sharp, piney fragrance and a characteristic heat that awakens the palate.",
-      image: "https://images.unsplash.com/photo-1506629905056-7199b18204d8?w=400&h=400&fit=crop",
-      details: "Whole peppercorns, freshly ground"
-    }
-  ];
+  // Use only actual data.ingredients, no fallback sample data
+  const ingredients = data?.ingredients || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -97,7 +55,7 @@ export default function Ingredient({ data }) {
           <div className="space-y-12">
             {ingredients.map((ingredient, index) => (
               <div
-                key={ingredient.id}
+                key={index}
                 ref={el => ingredientsRef.current[index] = el}
                 className={`transition-all duration-500 ${
                   activeIngredient === index 
@@ -115,26 +73,36 @@ export default function Ingredient({ data }) {
                       {ingredient.name}
                     </h3>
                     <p className="text-sm text-gray-600 poppins-medium mb-2">
-                      {ingredient.details}
+                      {ingredient.quantity}
                     </p>
                   </div>
                 </div>
 
                 {/* Ingredient Description */}
                 <div className="ml-20">
-                  <p className="text-black poppins-medium leading-tight text-lg">
-                    {ingredient.description}
-                  </p>
+                  {/* Render HTML if present, else plain text */}
+                  {ingredient.description ? (
+                    <div
+                      className="text-black poppins-medium leading-tight text-lg"
+                      dangerouslySetInnerHTML={{ __html: ingredient.description }}
+                    />
+                  ) : (
+                    <p className="text-black poppins-medium leading-tight text-lg">
+                      {/* fallback if no description */}
+                    </p>
+                  )}
                 </div>
 
                 {/* Mobile Image (visible only on mobile) */}
-                <div className="lg:hidden mt-6 rounded-lg w-full h-[250px] overflow-hidden">
-                  <img
-                    src={ingredient.image}
-                    alt={ingredient.name}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </div>
+                {ingredient.image && (
+                  <div className="lg:hidden mt-6 rounded-lg w-full h-[250px] overflow-hidden">
+                    <img
+                      src={ingredient.image}
+                      alt={ingredient.alt || ingredient.name}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  </div>
+                )}
 
                 {/* Divider */}
                 {index < ingredients.length - 1 && (
@@ -151,14 +119,16 @@ export default function Ingredient({ data }) {
             {/* Active Ingredient Image */}
             <div className="relative">
               <div className="rounded-lg w-full h-[500px] overflow-hidden shadow-lg">
-                <img
-                  src={ingredients[activeIngredient]?.image}
-                  alt={ingredients[activeIngredient]?.name}
-                  className="w-full h-full object-cover rounded-lg transition-all duration-700 ease-in-out transform"
-                  style={{
-                    filter: 'brightness(0.95) contrast(1.05)'
-                  }}
-                />
+                {ingredients[activeIngredient]?.image && (
+                  <img
+                    src={ingredients[activeIngredient]?.image}
+                    alt={ingredients[activeIngredient]?.alt || ingredients[activeIngredient]?.name}
+                    className="w-full h-full object-cover rounded-lg transition-all duration-700 ease-in-out transform"
+                    style={{
+                      filter: 'brightness(0.95) contrast(1.05)'
+                    }}
+                  />
+                )}
               </div>
               
               {/* Image Overlay Info */}
@@ -168,7 +138,7 @@ export default function Ingredient({ data }) {
                     {ingredients[activeIngredient]?.name}
                   </h4>
                   <p className="text-sm text-gray-700 poppins-medium">
-                    {ingredients[activeIngredient]?.details}
+                    {ingredients[activeIngredient]?.quantity}
                   </p>
                 </div>
               </div>
