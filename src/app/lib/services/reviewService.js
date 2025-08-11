@@ -13,8 +13,8 @@ export default class ReviewService {
     return await this.reviewRepository.findByProductId(productId, conn);
   }
 
-  async getReviewById(id) {
-    return await this.reviewRepository.findById(id);
+  async getReviewById(id, populateOptions = null) {
+    return await this.reviewRepository.findById(id, populateOptions);
   }
 
   async updateReview(id, data) {
