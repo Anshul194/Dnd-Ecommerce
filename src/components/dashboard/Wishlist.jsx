@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { Heart, ShoppingCart, Trash2, Star, Eye } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchWishlist } from "@/app/store/slices/wishlistSlice";
-import { toggleCart } from "@/app/store/slices/cartSlice";
+import { addToCart, toggleCart } from "@/app/store/slices/cartSlice";
 
 const Wishlist = () => {
   const dispatch = useDispatch();
@@ -26,9 +26,9 @@ const Wishlist = () => {
     alert("Remove from wishlist API not implemented yet.");
   };
 
-  const addToCart = (item) => {
+  const addToCartHandler = (item) => {
     console.log("Adding to cart:", item);
-    dispatch( 
+    dispatch(
       addToCart({
         product: {
           id: item.product._id,
@@ -42,6 +42,26 @@ const Wishlist = () => {
         variant: item?.variant?._id,
       })
     );
+    dispatch(toggleCart());
+  };
+
+  const addAllToCart = () => {
+    wishlistItems.forEach((item) => {
+      dispatch(
+        addToCart({
+          product: {
+            id: item.product._id,
+            name: item.product.name,
+            image: item.product.thumbnail || item.product.images?.[0],
+            variant: item?.variant?._id,
+            slug: item.slug,
+          },
+          quantity: 1,
+          price: item?.variant?.salePrice || item?.price,
+          variant: item?.variant?._id,
+        })
+      );
+    });
     dispatch(toggleCart());
   };
 
@@ -150,27 +170,27 @@ const Wishlist = () => {
               <div className="p-4">
                 <div className="mb-2">
                   <span className="text-xs text-gray-500 uppercase tracking-wide">
-                    {item.product.category}
+                    {item?.product?.category}
                   </span>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                  {item.product.name}
+                  {item?.product?.name}
                 </h3>
                 {/* Rating */}
                 <div className="flex items-center justify-between mb-3">
-                  {renderStars(item.product.rating)}
+                  {renderStars(item?.product?.rating)}
                   <span className="text-xs text-gray-500">
-                    {item.product.reviewCount} reviews
+                    {item?.product?.reviewCount} reviews
                   </span>
                 </div>
                 {/* Price */}
                 <div className="flex items-center space-x-2 mb-3">
                   <span className="text-lg font-bold text-gray-900">
-                    ${item.product.price}
+                    ${item?.product?.price}
                   </span>
-                  {item.product.originalPrice > item.product.price && (
+                  {item?.product?.originalPrice > item?.product?.price && (
                     <span className="text-sm text-gray-500 line-through">
-                      ${item.product.originalPrice}
+                      ${item?.product?.originalPrice}
                     </span>
                   )}
                 </div>
@@ -184,7 +204,7 @@ const Wishlist = () => {
                 {/* Actions */}
                 <div className="space-y-2">
                   <button
-                    onClick={() => addToCart(item)}
+                    onClick={() => addToCartHandler(item)}
                     disabled={!item.product}
                     className={`w-full px-4 py-2 rounded-md transition-colors flex items-center justify-center space-x-2 ${
                       item.product
@@ -231,16 +251,7 @@ const Wishlist = () => {
                 Share Wishlist
               </button>
               <button
-                onClick={() => {
-                  const inStockItems = wishlistItems.filter(
-                    (item) => item.inStock
-                  );
-                  if (inStockItems.length > 0) {
-                    alert(`Adding ${inStockItems.length} items to cart!`);
-                  } else {
-                    alert("No items in stock to add to cart.");
-                  }
-                }}
+                onClick={() => addAllToCart()}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
                 Add All to Cart

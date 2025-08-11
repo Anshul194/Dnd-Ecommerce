@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { ReviewSchema } from "../models/Review.js";
-import { Average } from "next/font/google/index.js";
 import UserSchema from "../models/User.js"; // Import User schema for population
 
 export default class ReviewRepository {
@@ -59,7 +58,6 @@ export default class ReviewRepository {
         populatedFaq = await this.Review.find({ productId }).populate("userId");
       } else {
         console.log("else -->");
-
         populatedFaq = await this.Review.find({ productId });
       }
 
@@ -193,7 +191,11 @@ export default class ReviewRepository {
       const response = {
         ratingBreakdown: result[0].ratingBreakdown,
         Average: avgResult[0]?.avgRating || 0,
-        Reviews: data,
+        Reviews: data.map(review => ({
+          ...review.toObject(),
+          likes: review.likes || [], // Ensure likes is included
+          likeCount: review.likes ? review.likes.length : 0,
+        })),
       };
       console.log("ReviewRepository findByProductId Response:", response);
       return response;
@@ -233,6 +235,47 @@ export default class ReviewRepository {
       return true;
     } catch (error) {
       console.error("ReviewRepository delete Error:", error.message);
+      throw error;
+    }
+  }
+
+  async voteReview(id, userId, action) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error(`Invalid reviewId: ${id}`);
+      }
+      const review = await this.Review.findById(id);
+      if (!review) {
+        throw new Error(`Review ${id} not found`);
+      }
+
+      // Initialize likes array if undefined
+      if (!review.likes) {
+        review.likes = [];
+      }
+
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+
+      if (action === 'like') {
+        // Add user to likes if not already present
+        if (!review.likes.some(u => u.equals(userObjectId))) {
+          review.likes.push(userObjectId);
+        }
+      } else if (action === 'dislike') {
+        // Remove user from likes if present
+        review.likes = review.likes.filter(u => !u.equals(userObjectId));
+      } else {
+        throw new Error(`Invalid action: ${action}`);
+      }
+
+      await review.save();
+      return {
+        ...review.toObject(),
+        likes: review.likes || [], // Ensure likes is included
+        likeCount: review.likes.length,
+      };
+    } catch (error) {
+      console.error("ReviewRepository voteReview Error:", error.message);
       throw error;
     }
   }
