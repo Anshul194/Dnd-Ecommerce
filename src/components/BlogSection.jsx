@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-export default function BlogSection() {
+export default function BlogSection({ content }) {
   const { items, loading } = useSelector((state) => state.blogs);
   const dispatch = useDispatch();
   const scrollLeft = () => {
@@ -98,13 +98,11 @@ export default function BlogSection() {
       {/* Header Section */}
       <div className="mb-8">
         <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0">
-          Blogs
+          {content?.title || "Blogs"}
         </h1>
         <p className="text-black max-w-xl relative poppins-medium leading-tight text-lg mb-8">
-          Lorem ipsum dolor sit amet,{" "}
-          <span className="text font-semibold">consectetur</span> eiusmod tempor
-          incididunt ut labore et dolor magna aliquaLorem ipsum dolor sit amet,
-          consectetur.
+          {content?.description ||
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
         </p>
       </div>
 
