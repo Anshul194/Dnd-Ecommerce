@@ -259,7 +259,7 @@ function ProductPage({ params }) {
               <div className="mb-6 relative">
                 <h3 className="font-semibold text-black mb-3">Select Pack</h3>
                 <div className="flex gap-3">
-                  {data?.variants?.length > 0 &&
+                  {data?.variants?.length > 0 ? (
                     data?.variants?.map((variant, index) => (
                       <div
                         key={index}
@@ -299,7 +299,14 @@ function ProductPage({ params }) {
                           </div>
                         </div>
                       </div>
-                    ))}
+                    ))
+                  ) : (
+                    <div
+                      className={`relative w-fit border-2 rounded-lg p-4 cursor-pointer transition-all border-gray-300 hover:border-gray-400`}
+                    >
+                      <h2 className="text-black/50">No Packs Available</h2>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -394,8 +401,8 @@ function ProductPage({ params }) {
                 </div>
 
                 {/* Ingredients Accordion */}
-                {Array.isArray(data.ingredients) &&
-                  data.ingredients.length > 0 && (
+                {Array.isArray(data?.ingredients) &&
+                  data?.ingredients?.length > 0 && (
                     <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                       <button
                         onClick={() => toggleSection("ingredients")}
@@ -440,17 +447,21 @@ function ProductPage({ params }) {
                       >
                         <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
                           <ul className="space-y-2">
-                            {data.ingredients.map((item, idx) => (
-                              <li
-                                key={item._id || idx}
-                                className="flex items-start gap-2"
-                              >
-                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                                <span className="leading-relaxed">
-                                  {item.description}
-                                </span>
-                              </li>
-                            ))}
+                            {data?.ingredients?.length > 0 &&
+                              data?.ingredients?.map((item, idx) => (
+                                <li
+                                  key={item._id || idx}
+                                  className="flex items-start gap-2"
+                                >
+                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html: item.description,
+                                    }}
+                                    className="leading-relaxed"
+                                  ></div>
+                                </li>
+                              ))}
                           </ul>
                         </div>
                       </div>
@@ -503,17 +514,21 @@ function ProductPage({ params }) {
                     >
                       <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
                         <ul className="space-y-2">
-                          {data.benefits.map((item, idx) => (
-                            <li
-                              key={item._id || idx}
-                              className="flex items-start gap-2"
-                            >
-                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                              <span className="leading-relaxed">
-                                {item.description}
-                              </span>
-                            </li>
-                          ))}
+                          {data?.benefits?.length > 0 &&
+                            data?.benefits?.map((item, idx) => (
+                              <li
+                                key={item._id || idx}
+                                className="flex items-start gap-2"
+                              >
+                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                                <div
+                                  className="leading-relaxed"
+                                  dangerouslySetInnerHTML={{
+                                    __html: item.description,
+                                  }}
+                                ></div>
+                              </li>
+                            ))}
                         </ul>
                       </div>
                     </div>
@@ -567,17 +582,21 @@ function ProductPage({ params }) {
                       >
                         <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
                           <ul className="space-y-2">
-                            {data.precautions.map((item, idx) => (
-                              <li
-                                key={item._id || idx}
-                                className="flex items-start gap-2"
-                              >
-                                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                                <span className="leading-relaxed">
-                                  {item.description}
-                                </span>
-                              </li>
-                            ))}
+                            {data?.precautions?.length > 0 &&
+                              data?.precautions?.map((item, idx) => (
+                                <li
+                                  key={item._id || idx}
+                                  className="flex items-start gap-2"
+                                >
+                                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html: item.description,
+                                    }}
+                                    className="leading-relaxed"
+                                  ></div>
+                                </li>
+                              ))}
                           </ul>
                         </div>
                       </div>
@@ -638,7 +657,7 @@ function ProductPage({ params }) {
                   <h3 className="font-semibold text-black mb-3">
                     Available Coupons
                   </h3>
-                  {/* <CouponSlider /> */}
+                  <CouponSlider />
                 </div>
               </div>
             </div>

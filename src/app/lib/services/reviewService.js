@@ -9,7 +9,7 @@ export default class ReviewService {
     return await this.reviewRepository.create(data);
   }
 
-  async getReviewsByProductId(productId , conn) {
+  async getReviewsByProductId(productId, conn) {
     return await this.reviewRepository.findByProductId(productId, conn);
   }
 
@@ -23,5 +23,9 @@ export default class ReviewService {
 
   async deleteReview(id) {
     return await this.reviewRepository.delete(id);
+  }
+
+  async voteReview(id, userId, action) {
+    return await this.reviewRepository.voteReview(id, userId, action);
   }
 }
