@@ -232,6 +232,7 @@ const cartSlice = createSlice({
   initialState: {
     cartId: null,
     cartItems: [],
+    buyNowProduct: null,
     total: 0,
     loading: false,
     error: null,
@@ -246,6 +247,12 @@ const cartSlice = createSlice({
     },
     closeCart: (state) => {
       state.isCartOpen = false;
+    },
+    setBuyNowProduct: (state, action) => {
+      state.buyNowProduct = action.payload;
+    },
+    removeBuyNowProduct: (state) => {
+      state.buyNowProduct = null;
     },
   },
   extraReducers: (builder) => {
@@ -328,5 +335,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { toggleCart, openCart, closeCart } = cartSlice.actions;
+export const { toggleCart, openCart, closeCart , setBuyNowProduct, removeBuyNowProduct } = cartSlice.actions;
 export default cartSlice.reducer;

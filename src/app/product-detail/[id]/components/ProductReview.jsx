@@ -63,6 +63,8 @@ export default function ProductReview({ id }) {
     fetchReviews();
   }, [id]);
 
+  if (!data?.length > 0) return null;
+
   return (
     <div className="py-10 lg:py-20 px-4">
       <div className="flex justify-between flex-col md:flex-row gap-12">

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addToCart,
   getCartItems,
+  removeBuyNowProduct,
   removeItemFromCart,
   toggleCart,
   updateCartItemQuantity,
@@ -119,7 +120,11 @@ const CartSidebar = () => {
                         {item?.product ? (
                           <Image
                             src={item?.product?.image?.url}
-                            alt={item?.product?.image?.alt || item?.product?.name || "Product Image"}
+                            alt={
+                              item?.product?.image?.alt ||
+                              item?.product?.name ||
+                              "Product Image"
+                            }
                             width={48}
                             height={64}
                             className="object-cover h-full w-full "
@@ -216,6 +221,7 @@ const CartSidebar = () => {
             onClick={() => {
               if (cartItems?.length > 0) {
                 dispatch(toggleCart());
+                dispatch(removeBuyNowProduct());
                 dispatch(setCheckoutOpen(true));
               }
             }}

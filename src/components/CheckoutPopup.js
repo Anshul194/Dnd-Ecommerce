@@ -48,7 +48,11 @@ export default function CheckoutPopup() {
   const { isAuthenticated, otpSended, loading, user } = useSelector(
     (state) => state.auth
   );
-  const { cartItems, total = 0 } = useSelector((state) => state.cart);
+  const {
+    cartItems,
+    total = 0,
+    buyNowProduct,
+  } = useSelector((state) => state.cart);
   const { selectedCoupon } = useSelector((state) => state.coupon);
   console.log("Products ==> ", products);
   const [couponCode, setCouponCode] = useState("");
@@ -258,7 +262,11 @@ export default function CheckoutPopup() {
     try {
       const options = {
         key: "rzp_test_1DP5mmOlF5G5ag",
-        amount: (total - (selectedCoupon?.discount || 0)) * 100, // Convert to paise
+        amount: buyNowProduct
+          ? (buyNowProduct.price * buyNowProduct.quantity -
+              (selectedCoupon?.discount || 0)) *
+            100
+          : (total - (selectedCoupon?.discount || 0)) * 100, // Convert to paise
         currency: "INR",
         name: "Tea Box",
         description: "Slot Booking Fee",
@@ -266,13 +274,15 @@ export default function CheckoutPopup() {
           try {
             const payload = {
               userId: user._id,
-              items: cartItems.map((item) => ({
-                product: item.product.id,
-                quantity: item.quantity,
-                price: item.price,
-                variant: item.variant,
-              })),
-              total,
+              items: buyNowProduct
+                ? [...buyNowProduct]
+                : cartItems.map((item) => ({
+                    product: item.product.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    variant: item.variant,
+                  })),
+              total: buyNowProduct.price || total,
               paymentId: response.razorpay_payment_id,
               shippingAddress: {
                 fullName: `${formData.firstName} ${formData.lastName}`,
@@ -397,7 +407,9 @@ export default function CheckoutPopup() {
     setLoadingSuggestions(true);
     try {
       const response = await fetch(
-        `/api/maps-autocomplete?type=autocomplete&input=${encodeURIComponent(input)}`
+        `/api/maps-autocomplete?type=autocomplete&input=${encodeURIComponent(
+          input
+        )}`
       );
       const data = await response.json();
       if (data.status === "OK") {
@@ -410,6 +422,14 @@ export default function CheckoutPopup() {
     }
     setLoadingSuggestions(false);
   };
+
+  useEffect(() => {
+    dispatch(
+      fetchProducts({
+        isAddon: true,
+      })
+    );
+  }, []);
 
   // Fetch place details and extract address components
   const fetchPlaceDetails = async (placeId) => {
@@ -430,9 +450,14 @@ export default function CheckoutPopup() {
         comp.forEach((c) => {
           if (c.types.includes("postal_code")) pincode = c.long_name;
           if (c.types.includes("locality")) city = c.long_name;
-          if (c.types.includes("administrative_area_level_1")) state = c.long_name;
+          if (c.types.includes("administrative_area_level_1"))
+            state = c.long_name;
           if (c.types.includes("country")) country = c.long_name;
-          if (c.types.includes("sublocality") || c.types.includes("sublocality_level_1")) area = c.long_name;
+          if (
+            c.types.includes("sublocality") ||
+            c.types.includes("sublocality_level_1")
+          )
+            area = c.long_name;
           if (c.types.includes("premise")) flatNumber = c.long_name;
           if (c.types.includes("route")) landmark = c.long_name;
         });
@@ -478,10 +503,16 @@ export default function CheckoutPopup() {
           <div className="space-y-3">
             <div className="flex justify-between items-center rounded-xl bg-white py-3 px-4">
               <h2 className="text-md font-medium">
-                Order summary <span className="text-gray-600">(1 item)</span>
+                Order summary{" "}
+                <span className="text-gray-600">
+                  ({buyNowProduct ? 1 : cartItems?.length} item)
+                </span>
               </h2>
               <span className="text-sm font-medium">
-                ₹{(total - (selectedCoupon?.discount || 0)).toFixed(2)}
+                ₹
+                {buyNowProduct
+                  ? buyNowProduct.price * buyNowProduct.quantity
+                  : (total - (selectedCoupon?.discount || 0)).toFixed(2)}
               </span>
             </div>
 
@@ -667,40 +698,71 @@ export default function CheckoutPopup() {
           {isAuthenticated && (
             <div className="space-y-3 rounded-xl bg-white py-3 px-4">
               <h3 className="font-semibold text-md">Items </h3>
-              <div className="flex gap-3 w-full overflow-x-scroll">
-                {/* Product 1 */}
-                {cartItems?.length > 0 &&
-                  cartItems.map((item, index) => (
-                    <div
-                      key={index}
-                      className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3"
-                    >
-                      <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                        <Image
-                          src={item?.product?.image.url}
-                          alt={item?.product?.image.alt || "Product"}
-                          width={56}
-                          height={64}
-                          className="object-cover h-full w-full"
-                        />
-                      </div>
-                      <div className="w-fit">
-                        <p className="text-xs w-40 text-gray-600 mb-1">
-                          {item?.product?.name} X {item?.quantity}
-                        </p>
-                        <span className="font-extrabold text-sm ">
-                          ₹
-                          {parseFloat(item?.price) *
-                            parseFloat(item?.quantity).toFixed(2)}
-                        </span>
-                        <div className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs">
-                          <Plus className="h-3 w-3" />
-                          <h3>3 options</h3>
-                        </div>
+              {buyNowProduct ? (
+                <div className="flex gap-3 w-full overflow-x-scroll">
+                  <div className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3">
+                    <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
+                      <Image
+                        src={buyNowProduct?.product?.image.url}
+                        alt={buyNowProduct?.product?.image.alt || "Product"}
+                        width={56}
+                        height={64}
+                        className="object-cover h-full w-full"
+                      />
+                    </div>
+                    <div className="w-fit">
+                      <p className="text-xs w-40 text-gray-600 mb-1">
+                        {buyNowProduct?.product?.name} X{" "}
+                        {buyNowProduct?.quantity}
+                      </p>
+                      <span className="font-extrabold text-sm ">
+                        ₹
+                        {parseFloat(buyNowProduct?.price) *
+                          parseFloat(buyNowProduct?.quantity).toFixed(2)}
+                      </span>
+                      <div className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs">
+                        <Plus className="h-3 w-3" />
+                        <h3>3 options</h3>
                       </div>
                     </div>
-                  ))}
-              </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-3 w-full overflow-x-scroll">
+                  {/* Product 1 */}
+                  {cartItems?.length > 0 &&
+                    cartItems.map((item, index) => (
+                      <div
+                        key={index}
+                        className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3"
+                      >
+                        <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
+                          <Image
+                            src={item?.product?.image.url}
+                            alt={item?.product?.image.alt || "Product"}
+                            width={56}
+                            height={64}
+                            className="object-cover h-full w-full"
+                          />
+                        </div>
+                        <div className="w-fit">
+                          <p className="text-xs w-40 text-gray-600 mb-1">
+                            {item?.product?.name} X {item?.quantity}
+                          </p>
+                          <span className="font-extrabold text-sm ">
+                            ₹
+                            {parseFloat(item?.price) *
+                              parseFloat(item?.quantity).toFixed(2)}
+                          </span>
+                          <div className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs">
+                            <Plus className="h-3 w-3" />
+                            <h3>3 options</h3>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           )}
           {/* Add Shipping Address */}
@@ -1167,7 +1229,7 @@ export default function CheckoutPopup() {
                 products.products.map((item, index) => (
                   <div
                     key={index}
-                    className="relative  flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3"
+                    className="relative w-60 flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3"
                   >
                     <div className="w-full aspect-square  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
                       <Image
@@ -1202,51 +1264,53 @@ export default function CheckoutPopup() {
                       <div className="absolute flex justify-between flex-col transition-all duration-300 bottom-0 h-1/2 left-0 right-0 rounded-t-md bg-green-100 backdrop-blur-sm p-4 z-[999]">
                         <div>
                           <h2 className="mb-1">Select Variant</h2>
-                          {item?.variants?.map((variant, index) => (
-                            <div
-                              key={index}
-                              onClick={() =>
-                                handleSelectVariant(
-                                  {
-                                    id: item._id,
-                                    image: {
-                                      url:
-                                        item.thumbnail.url ||
-                                        item.image?.[0].url,
-                                      alt:
-                                        item.thumbnail.alt ||
-                                        item.image?.[0].alt,
+                          <div className="flex flex-col gap-1 h-16  overflow-y-auto">
+                            {item?.variants?.map((variant, index) => (
+                              <div
+                                key={index}
+                                onClick={() =>
+                                  handleSelectVariant(
+                                    {
+                                      id: item._id,
+                                      image: {
+                                        url:
+                                          item.thumbnail.url ||
+                                          item.image?.[0].url,
+                                        alt:
+                                          item.thumbnail.alt ||
+                                          item.image?.[0].alt,
+                                      },
+                                      name: item.name,
+                                      slug: item.slug,
+                                      variant: variant._id,
                                     },
-                                    name: item.name,
-                                    slug: item.slug,
-                                    variant: variant._id,
-                                  },
-                                  variant._id,
-                                  1,
-                                  variant.salePrice || variant.price
-                                )
-                              }
-                              className="cursor-pointer hover:font-semibold"
-                            >
-                              <h2 className="text-xs capitalize">
-                                {variant.title} - {"₹" + variant.salePrice}{" "}
-                                <span
-                                  className={
-                                    variant.salePrice
-                                      ? "line-through opacity-75  text-gray-500"
-                                      : ""
-                                  }
-                                >
-                                  ₹{variant.price}
-                                </span>
-                              </h2>
-                            </div>
-                          ))}
+                                    variant._id,
+                                    1,
+                                    variant.salePrice || variant.price
+                                  )
+                                }
+                                className="cursor-pointer hover:font-semibold "
+                              >
+                                <h2 className="text-xs capitalize">
+                                  {variant.title} - {"₹" + variant.salePrice}{" "}
+                                  <span
+                                    className={
+                                      variant.salePrice
+                                        ? "line-through opacity-75  text-gray-500"
+                                        : ""
+                                    }
+                                  >
+                                    ₹{variant.price}
+                                  </span>
+                                </h2>
+                              </div>
+                            ))}
+                          </div>
                         </div>
 
                         <button
                           onClick={() => setSelectedProduct(null)}
-                          className="flex mt-4 w-full items-center h-7 rounded-md justify-center border text-green-800 gap-1 text-sm "
+                          className="flex mt-1 w-full items-center h-7 rounded-md justify-center border text-green-800 gap-1 text-sm "
                         >
                           Close
                         </button>
