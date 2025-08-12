@@ -1,12 +1,15 @@
 import { attributeSchema } from '../models/Attribute.js';
+import { ProductSchema } from '../models/Product.js';
 import CrudRepository from './CrudRepository.js';
-
 
 class AttributeRepository extends CrudRepository {
   constructor(conn) {
     const connection = conn || require('mongoose');
+
     const AttributeModel = connection.models.Attribute || connection.model('Attribute', attributeSchema);
-    const ProductModel = connection.models.Product || connection.model('Product', require('../models/Product.js').productSchema);
+
+    const ProductModel = connection.models.Product || connection.model('Product', ProductSchema);
+
     super(AttributeModel);
     this.Attribute = AttributeModel;
     this.Product = ProductModel;

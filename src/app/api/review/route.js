@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { getSubdomain, getDbConnection } from "../../lib/tenantDb";
 import ReviewService from "../../lib/services/reviewService";
 import { ReviewSchema } from "../../lib/models/Review.js";
-import { ProductModel } from "../../lib/models/Product.js"; // Import Product model
-import { withUserAuth } from "../../middleware/commonAuth.js"; // Use existing middleware
+import { ProductModel } from "../../lib/models/Product.js";
+import { withUserAuth } from "../../middleware/commonAuth.js";
+import fs from "fs/promises"; // Import fs for file operations
+import path from "path"; // Import path for handling file paths
 
 // Helper to parse FormData in Next.js
 async function parseFormData(req) {
@@ -89,21 +91,20 @@ export const POST = withUserAuth(async function (req) {
 
     // Handle multiple image uploads
     if (files.images && files.images.length > 0) {
-      const imagePaths = files.images.map(
-        (file, index) => `/uploads/review-${Date.now()}-${index}-${file.name}`
-      );
+      const uploadDir = path.join(process.cwd(), "public/uploads");
+      // Ensure the upload directory exists
+      await fs.mkdir(uploadDir, { recursive: true });
+
+      const imagePaths = [];
+      for (const [index, file] of files.images.entries()) {
+        const fileName = `review-${Date.now()}-${index}-${file.name}`;
+        const filePath = path.join(uploadDir, fileName);
+        const fileBuffer = Buffer.from(await file.arrayBuffer());
+        await fs.writeFile(filePath, fileBuffer); // Save the file
+        imagePaths.push(`/uploads/${fileName}`); // Store the relative path
+      }
       body.images = imagePaths;
       console.log("Images uploaded:", imagePaths);
-      // Example for local storage (uncomment and implement as needed):
-      /*
-      import fs from 'fs/promises';
-      import path from 'path';
-      for (const [index, file] of files.images.entries()) {
-        const filePath = path.join(process.cwd(), 'public/uploads', imagePaths[index].split('/uploads/')[1]);
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
-        await fs.writeFile(filePath, fileBuffer);
-      }
-      */
     }
 
     const newReview = await reviewService.createReview(body);
@@ -124,7 +125,7 @@ export const POST = withUserAuth(async function (req) {
         message: error.message,
       },
       { status: 401 }
-    ); // 401 for authentication errors
+    );
   }
 });
 

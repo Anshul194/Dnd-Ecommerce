@@ -89,16 +89,18 @@ export const refreshToken = createAsyncThunk(
       }
 
       const response = await axiosInstance.post("/auth/refresh-token", {
-        refreshToken: storedRefreshToken
+        refreshToken: storedRefreshToken,
       });
-      
+
       if (!response.data.success) {
         throw new Error(response.data.message || "Token refresh failed");
       }
-      
+
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || { message: error.message });
+      return rejectWithValue(
+        error.response?.data || { message: error.message }
+      );
     }
   }
 );
@@ -138,6 +140,19 @@ export const updateUserAddress = createAsyncThunk(
       );
       console.log("Address updated successfully:", response.data);
       return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const deleteUserAddress = createAsyncThunk(
+  "auth/deleteUserAddress",
+  async (addressId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.delete(`/address/${addressId}`);
+      console.log("Address deleted successfully:", response.data);
+      return addressId; // Return the address ID to remove it from the state
     } catch (error) {
       return rejectWithValue(error.response.data);
     }

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { ReviewSchema } from "../models/Review.js";
-import { Average } from "next/font/google/index.js";
-import UserSchema from "../models/User.js"; // Import User schema for population
+import UserSchema from "../models/User.js";
 
 export default class ReviewRepository {
   constructor(connection) {
@@ -27,12 +26,16 @@ export default class ReviewRepository {
     }
   }
 
-  async findById(id) {
+  async findById(id, populateOptions = null) {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new Error(`Invalid reviewId: ${id}`);
       }
-      const review = await this.Review.findById(id);
+      let query = this.Review.findById(id);
+      if (populateOptions) {
+        query = query.populate(populateOptions);
+      }
+      const review = await query.exec();
       if (!review) {
         throw new Error(`Review ${id} not found`);
       }
@@ -59,7 +62,6 @@ export default class ReviewRepository {
         populatedFaq = await this.Review.find({ productId }).populate("userId");
       } else {
         console.log("else -->");
-
         populatedFaq = await this.Review.find({ productId });
       }
 
@@ -107,7 +109,7 @@ export default class ReviewRepository {
           $addFields: {
             ratingBreakdown: {
               $map: {
-                input: [5, 4, 3, 2, 1], // enforce the order
+                input: [5, 4, 3, 2, 1],
                 as: "star",
                 in: {
                   rating: "$$star",
@@ -193,7 +195,11 @@ export default class ReviewRepository {
       const response = {
         ratingBreakdown: result[0].ratingBreakdown,
         Average: avgResult[0]?.avgRating || 0,
-        Reviews: data,
+        Reviews: data.map(review => ({
+          ...review.toObject(),
+          likes: review.likes || [],
+          likeCount: review.likes ? review.likes.length : 0,
+        })),
       };
       console.log("ReviewRepository findByProductId Response:", response);
       return response;
@@ -233,6 +239,44 @@ export default class ReviewRepository {
       return true;
     } catch (error) {
       console.error("ReviewRepository delete Error:", error.message);
+      throw error;
+    }
+  }
+
+  async voteReview(id, userId, action) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error(`Invalid reviewId: ${id}`);
+      }
+      const review = await this.Review.findById(id);
+      if (!review) {
+        throw new Error(`Review ${id} not found`);
+      }
+
+      if (!review.likes) {
+        review.likes = [];
+      }
+
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+
+      if (action === 'like') {
+        if (!review.likes.some(u => u.equals(userObjectId))) {
+          review.likes.push(userObjectId);
+        }
+      } else if (action === 'dislike') {
+        review.likes = review.likes.filter(u => !u.equals(userObjectId));
+      } else {
+        throw new Error(`Invalid action: ${action}`);
+      }
+
+      await review.save();
+      return {
+        ...review.toObject(),
+        likes: review.likes || [],
+        likeCount: review.likes.length,
+      };
+    } catch (error) {
+      console.error("ReviewRepository voteReview Error:", error.message);
       throw error;
     }
   }

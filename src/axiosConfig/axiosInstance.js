@@ -87,10 +87,10 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem("user");
       
       // Redirect to login page with current page as redirect parameter
-      if (typeof window !== 'undefined') {
-        const currentPath = window.location.pathname + window.location.search;
-        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
-      }
+      // if (typeof window !== 'undefined') {
+      //   const currentPath = window.location.pathname + window.location.search;
+      //   window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+      // }
     }
     
     return Promise.reject(error);

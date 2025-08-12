@@ -1,11 +1,29 @@
 import mongoose from "mongoose";
 import OrderRepository from "../repository/OrderRepository";
 import CouponService from "./CouponService";
+import EmailService from "./EmailService";
+
+const UserSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+  },
+}, { timestamps: true });
 
 class OrderService {
-  constructor(orderRepository, couponService) {
+  constructor(orderRepository, couponService, emailService) {
     this.orderRepository = orderRepository;
     this.couponService = couponService;
+    this.emailService = emailService || new EmailService();
+  }
+
+  async getTotalOrders(conn) {
+    try {
+      const Order = conn.models.Order || conn.model('Order', mongoose.model('Order').schema);
+      return await Order.countDocuments().exec();
+    } catch (error) {
+      throw new Error(`Failed to fetch total orders: ${error.message}`);
+    }
   }
 
   async createOrder(data, conn) {
@@ -48,6 +66,14 @@ class OrderService {
         throw new Error(`Invalid userId: ${userId}`);
       }
 
+      // Fetch customer email from User model
+      const User = conn.models.User || conn.model('User', UserSchema);
+      const user = await User.findById(userId).select('email').exec();
+      if (!user || !user.email) {
+        throw new Error(`User with ID ${userId} not found or has no email`);
+      }
+      const customerEmail = user.email;
+
       // Validate delivery option
       const validDeliveryOptions = [
         "standard_delivery",
@@ -73,24 +99,12 @@ class OrderService {
         }
       }
 
-      // // Validate payment details (basic format)
-      // if (!/^\d{16}$/.test(paymentDetails.cardNumber)) {
-      //   throw new Error("Card number must be 16 digits");
-      // }
-      // if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(paymentDetails.expiryDate)) {
-      //   throw new Error("Expiry date must be in MM/YY format");
-      // }
-      // if (!/^\d{3}$/.test(paymentDetails.cvv)) {
-      //   throw new Error("CVV must be 3 digits");
-      // }
-
       // Calculate subtotal
       let subtotal = 0;
       const orderItems = [];
       for (const item of items) {
         const { product, variant, quantity } = item;
         let price = 0;
-
         if (variant) {
           const newVariant = await this.orderRepository.findVariantById(variant);
           price = newVariant.price;
@@ -98,7 +112,6 @@ class OrderService {
           const newProduct = await this.orderRepository.findProductById(product);
           price = newProduct.price;
         }
-
         orderItems.push({
           product: product,
           variant: variant || null,
@@ -139,8 +152,39 @@ class OrderService {
         deliveryOption,
         status: "pending",
       };
-
       const order = await this.orderRepository.create(orderData);
+
+      // Send email notifications
+      const orderDate = new Date().toISOString().split('T')[0];
+      const replacements = {
+        app_name: 'YourStore', // Replace with your app name
+        order_id: order._id.toString(),
+        order_url: `https://yourstore.com/orders/${order._id}`, // Replace with your actual order URL
+        owner_name: 'Admin', // Replace with actual owner name if available
+        order_date: orderDate,
+      };
+
+      // Send email to customer
+      const customerEmailResult = await this.emailService.sendOrderEmail({
+        templateName: 'Order Created',
+        to: customerEmail,
+        replacements,
+        conn,
+      });
+      if (!customerEmailResult.success) {
+        console.error('Failed to send customer email:', customerEmailResult.message);
+      }
+
+      // Send email to admin
+      const adminEmailResult = await this.emailService.sendOrderEmail({
+        templateName: 'Order Created For Owner',
+        to: 'smaisuriya1206@gmail.com', 
+        replacements,
+        conn,
+      });
+      if (!adminEmailResult.success) {
+        console.error('Failed to send admin email:', adminEmailResult.message);
+      }
 
       return {
         success: true,
@@ -160,7 +204,6 @@ class OrderService {
     try {
       console.log("request user", request.user);
       const userId = request.user?._id;
-
       console.log("User ID:", userId);
       if (!userId) {
         throw new Error("User authentication required");
@@ -168,7 +211,6 @@ class OrderService {
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new Error(`Invalid userId: ${userId}`);
       }
-
       const searchParams = request.nextUrl.searchParams;
       const {
         page = 1,
@@ -178,19 +220,16 @@ class OrderService {
         populateFields = ["items.product", "items.variant", "coupon"],
         selectFields = {},
       } = Object.fromEntries(searchParams.entries());
-
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
       const parsedFilters =
         typeof filters === "string" ? JSON.parse(filters) : filters;
       const parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort;
-
       const filterConditions = { ...parsedFilters };
       const sortConditions = {};
       for (const [field, direction] of Object.entries(parsedSort)) {
         sortConditions[field] = direction === "asc" ? 1 : -1;
       }
-
       const { results, totalCount, currentPage, pageSize } =
         await this.orderRepository.getUserOrders(
           userId,
@@ -201,9 +240,7 @@ class OrderService {
           populateFields,
           selectFields
         );
-
       const totalPages = Math.ceil(totalCount / limitNum);
-
       return {
         success: true,
         message: "Orders fetched successfully",
@@ -230,7 +267,6 @@ class OrderService {
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new Error(`Invalid userId: ${userId}`);
       }
-
       const { id } = params;
       if (!id) {
         throw new Error("orderId is required");
@@ -238,14 +274,12 @@ class OrderService {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new Error(`Invalid orderId: ${id}`);
       }
-
       const order = await this.orderRepository.getOrderById(
         id,
         userId,
         ["items.product", "items.variant", "coupon"],
         {}
       );
-
       return {
         success: true,
         message: "Order details fetched successfully",

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShoppingBag,
   MapPin,
@@ -19,10 +19,34 @@ import Wishlist from "../../components/dashboard/Wishlist";
 import AccountDetails from "../../components/dashboard/AccountDetails";
 import SupportTickets from "../../components/dashboard/SupportTickets";
 import { useSelector } from "react-redux";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SidebarDashboard() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeComponent, setActiveComponent] = useState("dashboard");
   const { user } = useSelector((state) => state.auth);
+
+  // Get active tab from URL on component mount
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl) {
+      setActiveComponent(tabFromUrl);
+    }
+
+    () => {
+      setActiveComponent("dashboard");
+      searchParams.delete("tab");
+    };
+  }, [searchParams]);
+
+  // Function to handle tab change and update URL
+  const handleTabChange = (component) => {
+    setActiveComponent(component);
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.set("tab", component);
+    router.replace(newUrl.pathname + newUrl.search);
+  };
 
   const sidebarItems = [
     { icon: ShoppingBag, label: "Orders", component: "orders" },
@@ -55,20 +79,20 @@ export default function SidebarDashboard() {
       <div className="w-64 bg-white shadow-lg">
         <div className="p-6">
           {/* User Profile */}
-          <div className="flex items-center space-x-3 mb-8">
+          <div className="flex flex-col gap-3 items-center space-x-3 mb-8">
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
               <User size={20} className="text-red-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">{user.name}</h3>
-              <p className="text-sm text-gray-500">{user.email}</p>
+              <h3 className="font-semibold text-center text-gray-900">{user?.name}</h3>
+              <p className="text-xs text-gray-500">{user?.email}</p>
             </div>
           </div>
 
           {/* Navigation Menu */}
           <nav className="space-y-2">
             <button
-              onClick={() => setActiveComponent("dashboard")}
+              onClick={() => handleTabChange("dashboard")}
               className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 w-full text-left ${
                 activeComponent === "dashboard"
                   ? "bg-red-100 text-red-600"
@@ -82,7 +106,7 @@ export default function SidebarDashboard() {
             {sidebarItems.map((item, index) => (
               <button
                 key={index}
-                onClick={() => setActiveComponent(item.component)}
+                onClick={() => handleTabChange(item.component)}
                 className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 w-full text-left ${
                   activeComponent === item.component
                     ? "bg-red-100 text-red-600"

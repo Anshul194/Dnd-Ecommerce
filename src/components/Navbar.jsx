@@ -114,10 +114,10 @@ const Navbar = () => {
   const handleUserDashboardClick = () => {
     if (isAuthenticated) {
       console?.log("User is authenticated, navigating to dashboard");
-      router.push('/dashboard');
+      router.push("/dashboard");
     } else {
       // Redirect to login if not authenticated
-      router.push('/login');
+      router.push("/login");
     }
   };
 
@@ -167,9 +167,11 @@ const Navbar = () => {
                   <button className="text-gray-600 hover:text-green-500 transition-colors">
                     <Bell size={20} />
                   </button>
-                  <button className="text-gray-600 hover:text-green-500 transition-colors">
-                    <Heart size={20} />
-                  </button>
+                  <Link href="/dashboard?tab=wishlist">
+                    <button className="text-gray-600 hover:text-green-500 transition-colors">
+                      <Heart size={20} />
+                    </button>
+                  </Link>
                   <button
                     onClick={handelCartToggle}
                     className="text-gray-600 hover:text-green-500 transition-colors relative"
@@ -180,7 +182,7 @@ const Navbar = () => {
                     </span>
                   </button>
                   {/* Account Avatar */}
-                  <button 
+                  <button
                     onClick={handleUserDashboardClick}
                     className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-300 hover:border-green-500 transition-colors"
                   >
@@ -188,7 +190,7 @@ const Navbar = () => {
                   </button>
                 </div>
                 <span className="text-gray-600 text-sm">
-                  {isAuthenticated ? (user?.name || "User") : "Guest"}
+                  {isAuthenticated ? user?.name || "User" : "Guest"}
                 </span>
               </div>
             </div>
@@ -296,9 +298,11 @@ const Navbar = () => {
                     <button className="text-gray-600 hover:text-green-500 transition-all duration-200 hover:scale-110">
                       <Bell size={20} />
                     </button>
-                    <button className="text-gray-600 hover:text-green-500 transition-all duration-200 hover:scale-110">
-                      <Heart size={20} />
-                    </button>
+                    <Link href="/dashboard?tab=wishlist">
+                      <button className="text-gray-600 hover:text-green-500 transition-all duration-200 hover:scale-110">
+                        <Heart size={20} />
+                      </button>
+                    </Link>
                     <button
                       onClick={handelCartToggle}
                       className="text-gray-600 hover:text-green-500 transition-all duration-200 hover:scale-110 relative"
@@ -309,7 +313,7 @@ const Navbar = () => {
                       </span>
                     </button>
                     {/* Account Avatar */}
-                    <button 
+                    <button
                       onClick={handleUserDashboardClick}
                       className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-300 hover:border-green-500 transition-colors"
                     >
@@ -317,7 +321,7 @@ const Navbar = () => {
                     </button>
                   </div>
                   <span className="text-gray-600 text-sm">
-                    {isAuthenticated ? (user?.name || "User") : "Guest"}
+                    {isAuthenticated ? user?.name || "User" : "Guest"}
                   </span>
                 </div>
               </div>
