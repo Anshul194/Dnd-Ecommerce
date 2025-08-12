@@ -148,6 +148,7 @@ export async function POST(req) {
               body[key] = value;
             }
       }
+      // Normalize images and descriptionImages to always have url and alt
       if (body.images) {
         body.images = body.images.filter(Boolean).map(img => ({ url: img.url || '', alt: img.alt || '' }));
       }
@@ -157,6 +158,48 @@ export async function POST(req) {
       if (body.thumbnail) {
         body.thumbnail = { url: body.thumbnail.url || '', alt: body.thumbnail.alt || '' };
       }
+
+      // --- NEW: Ensure all image fields have URLs, not File objects ---
+      // Helper to process File objects in image fields
+      async function processImageField(fieldArr, uploadPath) {
+        if (!Array.isArray(fieldArr)) return fieldArr;
+        for (let i = 0; i < fieldArr.length; i++) {
+          if (fieldArr[i] && typeof fieldArr[i].url === 'object' && fieldArr[i].url instanceof File) {
+            fieldArr[i].url = await saveFile(fieldArr[i].url, uploadPath);
+          }
+        }
+        return fieldArr;
+      }
+      async function processSingleImageField(obj, uploadPath) {
+        if (obj && typeof obj.url === 'object' && obj.url instanceof File) {
+          obj.url = await saveFile(obj.url, uploadPath);
+        }
+        return obj;
+      }
+      // Images
+      if (body.images) {
+        body.images = await processImageField(body.images, 'uploads/Variant');
+      }
+      // DescriptionImages
+      if (body.descriptionImages) {
+        body.descriptionImages = await processImageField(body.descriptionImages, 'uploads/Variant');
+      }
+      // Thumbnail
+      if (body.thumbnail) {
+        body.thumbnail = await processSingleImageField(body.thumbnail, 'uploads/Variant');
+      }
+      // Nested image fields (ingredients, benefits, precautions)
+      const nestedImageFields = ['ingredients', 'benefits', 'precautions'];
+      for (const field of nestedImageFields) {
+        if (Array.isArray(body[field])) {
+          for (let i = 0; i < body[field].length; i++) {
+            if (body[field][i] && typeof body[field][i].image === 'object' && body[field][i].image instanceof File) {
+              body[field][i].image = await saveFile(body[field][i].image, 'uploads/Variant');
+            }
+          }
+        }
+      }
+      // --- END NEW ---
     } else {
       body = await req.json();
     }

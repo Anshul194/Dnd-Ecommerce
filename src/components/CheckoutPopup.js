@@ -69,6 +69,10 @@ export default function CheckoutPopup() {
     phone: "",
   });
   const [otp, setOtp] = useState(Array(6).fill("")); // Array with 6 empty strings
+  const GOOGLE_MAPS_API_KEY = "AIzaSyApJRbaVZNuthc2Mi72xifDbdk8b-3WI9Q";
+  const [addressSearch, setAddressSearch] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const handleSelectAddress = async (selectedIndex) => {
     if (selectedIndex === "" || selectedIndex === "default") return;
@@ -373,6 +377,70 @@ export default function CheckoutPopup() {
     fetchUserAddresses();
     loadRazorpayScript();
   }, [addressData, isAuthenticated, user?._id, dispatch]);
+
+  // Fetch address suggestions from Google Places API
+  const fetchAddressSuggestions = async (input) => {
+    if (!input) {
+      setAddressSuggestions([]);
+      return;
+    }
+    setLoadingSuggestions(true);
+    try {
+      const response = await fetch(
+        `/api/maps-autocomplete?type=autocomplete&input=${encodeURIComponent(input)}`
+      );
+      const data = await response.json();
+      if (data.status === "OK") {
+        setAddressSuggestions(data.predictions);
+      } else {
+        setAddressSuggestions([]);
+      }
+    } catch (err) {
+      setAddressSuggestions([]);
+    }
+    setLoadingSuggestions(false);
+  };
+
+  // Fetch place details and extract address components
+  const fetchPlaceDetails = async (placeId) => {
+    try {
+      const response = await fetch(
+        `/api/maps-autocomplete?type=details&placeid=${placeId}`
+      );
+      const data = await response.json();
+      if (data.status === "OK") {
+        const comp = data.result.address_components;
+        let pincode = "";
+        let city = "";
+        let state = "";
+        let country = "";
+        let area = "";
+        let flatNumber = "";
+        let landmark = "";
+        comp.forEach((c) => {
+          if (c.types.includes("postal_code")) pincode = c.long_name;
+          if (c.types.includes("locality")) city = c.long_name;
+          if (c.types.includes("administrative_area_level_1")) state = c.long_name;
+          if (c.types.includes("country")) country = c.long_name;
+          if (c.types.includes("sublocality") || c.types.includes("sublocality_level_1")) area = c.long_name;
+          if (c.types.includes("premise")) flatNumber = c.long_name;
+          if (c.types.includes("route")) landmark = c.long_name;
+        });
+        setFormData((prev) => ({
+          ...prev,
+          pincode,
+          city,
+          state,
+          country,
+          area,
+          flatNumber,
+          landmark,
+        }));
+        setAddressSearch(data.result.formatted_address || "");
+        setAddressSuggestions([]);
+      }
+    } catch (err) {}
+  };
 
   if (!checkoutOpen) return null;
 
@@ -869,12 +937,12 @@ export default function CheckoutPopup() {
                   >
                     <h2
                       className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "area" || formData.area !== ""
+                        activeField === "area" || addressSearch !== ""
                           ? "-translate-y-6"
                           : "translate-y-0"
                       }`}
                     >
-                      Area, street, sector, village{" "}
+                      Search Address (Google Maps)
                       <span
                         className={
                           activeField === "area" ? "text-red-500" : "text-black"
@@ -885,13 +953,35 @@ export default function CheckoutPopup() {
                     </h2>
                     <input
                       type="text"
-                      name="area"
-                      value={formData.area}
-                      onChange={handleInputChange}
+                      value={addressSearch}
+                      onChange={(e) => {
+                        setAddressSearch(e.target.value);
+                        fetchAddressSuggestions(e.target.value);
+                      }}
                       onFocus={() => setActiveField("area")}
                       onBlur={() => setActiveField(null)}
-                      className="outline-none text-md   w-full border-0 h-full "
+                      className="outline-none text-md w-full border-0 h-full"
+                      placeholder="Type address, area, landmark..."
+                      autoComplete="off"
                     />
+                    {loadingSuggestions && (
+                      <div className="absolute top-full left-0 w-full bg-white border z-10">
+                        Loading...
+                      </div>
+                    )}
+                    {addressSuggestions.length > 0 && (
+                      <ul className="absolute top-full left-0 w-full bg-white border z-10 max-h-48 overflow-y-auto">
+                        {addressSuggestions.map((sugg, idx) => (
+                          <li
+                            key={sugg.place_id}
+                            className="px-3 py-2 cursor-pointer hover:bg-blue-100"
+                            onMouseDown={() => fetchPlaceDetails(sugg.place_id)}
+                          >
+                            {sugg.description}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
 
                   <div
