@@ -71,6 +71,7 @@ class ProductService {
     if (isAddon) {
       filterConditions.isAddon = isAddon === "true" ? true : false;
     }
+
     if (name) {
       filterConditions.name = { $regex: name, $options: "i" };
     }
