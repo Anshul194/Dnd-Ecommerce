@@ -104,6 +104,10 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isAddon: {
+      type: Boolean,
+      default: false,
+    },
     reviews: [
       {
         userId: {
