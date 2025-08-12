@@ -1,43 +1,49 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const homepageSectionSchema = new mongoose.Schema({
-  sectionType: {
-    type: String,
-    required: true,
-    enum: [
-      'hero',
-      'categoryPick',
-      'offerBanner',
-      'productSlider',
-      'whyUs',
-      'uniqueSellingPoints',
-      'promoBanner',
-      'testimonial',
-      'blog',
-      'faq'
-    ]
+const homepageSectionSchema = new mongoose.Schema(
+  {
+    sectionType: {
+      type: String,
+      required: true,
+      enum: [
+        "hero",
+        "categoryPick",
+        "offerBanner",
+        "productSlider",
+        "whyUs",
+        "uniqueSellingPoints",
+        "promoBanner",
+        "testimonial",
+        "blogs",
+        "faq",
+        "genuineHeartStory",
+        "noConfusion",
+        "3V",
+      ],
+    },
+    order: {
+      type: Number,
+      default: 0,
+    },
+    isVisible: {
+      type: Boolean,
+      default: true,
+    },
+    content: mongoose.Schema.Types.Mixed, // Flexible content structure
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
-  order: {
-    type: Number,
-    default: 0
-  },
-  isVisible: {
-    type: Boolean,
-    default: true
-  },
-  content: mongoose.Schema.Types.Mixed, // Flexible content structure
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  updatedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+  {
+    timestamps: true,
+    collection: "homepageSections",
   }
-}, { 
-  timestamps: true,
-  collection: 'homepageSections'
-});
+);
 
 // Index for better query performance
 homepageSectionSchema.index({ sectionType: 1, order: 1 });

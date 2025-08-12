@@ -3,8 +3,12 @@
 import React, { useEffect } from "react";
 import { Heart, ShoppingCart, Trash2, Star, Eye } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchWishlist } from "@/app/store/slices/wishlistSlice";
+import {
+  fetchWishlist,
+  removeFromWishlist,
+} from "@/app/store/slices/wishlistSlice";
 import { addToCart, toggleCart } from "@/app/store/slices/cartSlice";
+import Link from "next/link";
 
 const Wishlist = () => {
   const dispatch = useDispatch();
@@ -18,12 +22,16 @@ const Wishlist = () => {
     dispatch(fetchWishlist());
   }, [dispatch]);
 
-  const removeFromWishlist = (itemId) => {
-    // TODO: Implement remove from wishlist API
-    // For now, just filter out locally (optimistic UI)
-    // dispatch(removeFromWishlist({ itemId, token, tenant }));
-    // Or refetch after removal
-    alert("Remove from wishlist API not implemented yet.");
+  const handleRemoveItemFromWishlist = async (itemId) => {
+    console.log("Removing item from wishlist:", itemId);
+    await dispatch(
+      removeFromWishlist({
+        productId: itemId.product?._id,
+        variantId: itemId?.variant?._id,
+      })
+    );
+
+    dispatch(fetchWishlist());
   };
 
   const addToCartHandler = (item) => {
@@ -104,7 +112,7 @@ const Wishlist = () => {
         </div>
       ) : error ? (
         <div className="bg-white rounded-lg p-8 text-center shadow-sm text-red-600">
-          {error}
+          {error?.message}
         </div>
       ) : wishlistItems.length == 0 ? (
         <div className="bg-white rounded-lg p-8 text-center shadow-sm">
@@ -157,7 +165,7 @@ const Wishlist = () => {
                 )} */}
                 {/* Remove from Wishlist */}
                 <button
-                  onClick={() => removeFromWishlist(item.product._id)}
+                  onClick={() => handleRemoveItemFromWishlist(item.product._id)}
                   className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow group"
                 >
                   <Heart
@@ -169,28 +177,36 @@ const Wishlist = () => {
               {/* Product Info */}
               <div className="p-4">
                 <div className="mb-2">
-                  <span className="text-xs text-gray-500 uppercase tracking-wide">
+                  {/* <span className="text-xs text-gray-500 uppercase tracking-wide">
                     {item?.product?.category}
-                  </span>
+                  </span> */}
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                   {item?.product?.name}
                 </h3>
                 {/* Rating */}
-                <div className="flex items-center justify-between mb-3">
-                  {renderStars(item?.product?.rating)}
-                  <span className="text-xs text-gray-500">
-                    {item?.product?.reviewCount} reviews
-                  </span>
-                </div>
+                {item?.product?.rating > 0 && (
+                  <div className="flex items-center justify-between mb-3">
+                    {renderStars(item?.product?.rating)}
+                    <span className="text-xs text-gray-500">
+                      {item?.product?.reviewCount} reviews
+                    </span>
+                  </div>
+                )}
                 {/* Price */}
                 <div className="flex items-center space-x-2 mb-3">
-                  <span className="text-lg font-bold text-gray-900">
-                    ${item?.product?.price}
-                  </span>
-                  {item?.product?.originalPrice > item?.product?.price && (
-                    <span className="text-sm text-gray-500 line-through">
-                      ${item?.product?.originalPrice}
+                  {item?.variant?.salePrice ? (
+                    <>
+                      <span className="text-lg font-bold text-gray-900">
+                        ${item?.variant?.salePrice}
+                      </span>
+                      <span className="text-lg line-through font-bold text-gray-900">
+                        ${item?.variant?.price}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-lg font-bold text-gray-900">
+                      ${item?.variant?.price}
                     </span>
                   )}
                 </div>
@@ -216,13 +232,18 @@ const Wishlist = () => {
                     <span>{item.product ? "Add to Cart" : "Out of Stock"}</span>
                   </button>
                   <div className="flex space-x-2">
-                    <button className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 text-sm">
-                      <Eye size={14} />
-                      <span>View</span>
-                    </button>
+                    <Link
+                      href={`/product-detail/${item.product.slug}`}
+                      className="w-1/2"
+                    >
+                      <button className="flex-1 px-3 py-2 border w-full border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 text-sm">
+                        <Eye size={14} />
+                        <span>View</span>
+                      </button>
+                    </Link>
                     <button
-                      onClick={() => removeFromWishlist(item.product._id)}
-                      className="flex-1 px-3 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors flex items-center justify-center space-x-2 text-sm"
+                      onClick={() => handleRemoveItemFromWishlist(item)}
+                      className="flex-1 w-1/2 px-3 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors flex items-center justify-center space-x-2 text-sm"
                     >
                       <Trash2 size={14} />
                       <span>Remove</span>
@@ -235,7 +256,7 @@ const Wishlist = () => {
         </div>
       )}
       {/* Wishlist Actions */}
-      {wishlistItems.length > 0 && (
+      {wishlistItems?.length > 0 && (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div>

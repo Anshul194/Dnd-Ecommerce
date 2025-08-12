@@ -23,6 +23,9 @@ export const fetchProducts = createAsyncThunk(
     if (payload.searchTerm) {
       quaryParams.append("searchTerm", payload.searchTerm);
     }
+    if (payload.isAddon !== undefined) {
+      quaryParams.append("isAddon", payload.isAddon);
+    }
 
     const response = await axiosInstance.get("/product", {
       params: quaryParams,

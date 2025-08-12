@@ -150,7 +150,7 @@ const Addresses = () => {
     setIsAddingAddress(true);
   };
 
-  const handelUpdateIsDefault = async(addressId) => {
+  const handelUpdateIsDefault = async (addressId) => {
     try {
       setAddresses((prev) =>
         prev.map((addr) => ({
@@ -158,7 +158,7 @@ const Addresses = () => {
           isDefault: addr._id === addressId,
         }))
       );
-    await  dispatch(updateUserAddress({ addressId, isDefault: true }));
+      await dispatch(updateUserAddress({ addressId, isDefault: true }));
       fetchAddresses();
       console.log("Default address updated successfully");
     } catch (error) {
@@ -204,7 +204,7 @@ const Addresses = () => {
 
   useEffect(() => {
     fetchAddresses();
-  }, [dispatch, user._id]);
+  }, [dispatch, user?._id]);
 
   return (
     <div className="space-y-6">

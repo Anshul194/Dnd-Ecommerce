@@ -653,12 +653,12 @@ function ProductPage({ params }) {
                   </div>
                 </div>
 
-                <div className="mt-6">
+                {/* <div className="mt-6">
                   <h3 className="font-semibold text-black mb-3">
                     Available Coupons
                   </h3>
                   <CouponSlider />
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

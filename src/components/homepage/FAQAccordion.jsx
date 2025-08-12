@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchFaqs } from '../../app/store/slices/faqSlice';
 
-export default function FAQAccordion() {
+export default function FAQAccordion({ content }) {
   const [openIndex, setOpenIndex] = useState(null);
   const { faqs, loading, error } = useSelector((state) => state.faq);
   const dispatch = useDispatch();
@@ -23,27 +23,28 @@ export default function FAQAccordion() {
   return (
     <div className="w-full py-10 lg:py-20 px-4">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16">
-        
         {/* Left Section */}
         <div className="flex-1 w-full lg:w-[60%]">
           <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
-            NO CONFUSION, <br /> JUST 
-            <span className='relative'> CLARITY
-            <Image src={smile} alt="smiley face" className="w-12 h-12 absolute -right-10 -bottom-1" />
+            {content?.title || "NO CONFUSION. JUST CLARITY."}
+            <span className="relative">
+              <Image
+                src={smile}
+                alt="smiley face"
+                className="w-12 h-12 absolute -right-10 -bottom-1"
+              />
             </span>
           </h1>
-          
+
           {/* Green smiley face */}
-          
-          
+
           <p className="text-black relative poppins-medium leading-tight text-lg ml-auto mb-8">
-            Lorem ipsum dolor sit amet, <span className="text font-semibold">consectetur</span> eiusmod 
-            tempor incididunt ut labore et dolor magna aliquaLorem 
-            ipsum dolor sit amet, consectetur.
+            {content?.description ||
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
           </p>
-          
+
           <button className="bg text-white px-6 py-3 rounded-md font-medium hover:bg transition-colors flex items-center gap-2">
-            Still curious? Just ask! 
+            {content.cta.title || "Get Started"}
             <span>→</span>
           </button>
         </div>
@@ -65,17 +66,17 @@ export default function FAQAccordion() {
                   <span className="text-black poppins font-medium text-base">
                     {faq.question}
                   </span>
-                  <ChevronDown 
+                  <ChevronDown
                     className={`w-5 h-5 text transition-transform duration-200 flex-shrink-0 ml-4 ${
-                      openIndex === index ? 'rotate-180' : ''
+                      openIndex === index ? "rotate-180" : ""
                     }`}
                   />
                 </button>
-                
+
                 {/* Accordion Content */}
-                <div 
+                <div
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    openIndex === index ? 'max-h-96 pb-4' : 'max-h-0'
+                    openIndex === index ? "max-h-96 pb-4" : "max-h-0"
                   }`}
                 >
                   <div className="text-black poppins text-sm leading-relaxed">
