@@ -189,7 +189,7 @@ const DynamicProductSlider = ({ content }) => {
                     </div>
 
                     {/* Add to Cart Button */}
-                    <Link href={`/product-detail/${product.id}`}>
+                    <Link href={`/product-detail/${product._id}`}>
                       <button className="w-full mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200">
                         View
                       </button>
