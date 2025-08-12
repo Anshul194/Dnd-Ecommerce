@@ -71,6 +71,8 @@ export default function CheckoutPopup() {
     phone: "",
   });
   const [otp, setOtp] = useState(Array(6).fill("")); // Array with 6 empty strings
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState("createdAt");
 
   const handleSelectAddress = async (selectedIndex) => {
     if (selectedIndex === "" || selectedIndex === "default") return;
@@ -379,15 +381,41 @@ export default function CheckoutPopup() {
       script.onerror = () => console.error("Failed to load Razorpay script");
       document.body.appendChild(script);
     };
+
     fetchUserAddresses();
     loadRazorpayScript();
   }, [addressData, isAuthenticated, user?._id, dispatch]);
 
+  // Separate useEffect for fetching products on component mount
   useEffect(() => {
-    if (products.length === 0) {
-      dispatch(fetchProducts());
+    const getData = async () => {
+      try {
+        const payload = {
+          page: currentPage,
+          sortBy: sortBy,
+          limit: 20,
+          isAddon: true,
+        };
+        console.log("Calling fetchProducts with payload:", payload);
+        const response = await dispatch(fetchProducts(payload));
+        console.log("Fetched products response: ====>", response);
+
+        // Check if the response was successful
+        if (response.type.endsWith("/fulfilled")) {
+          console.log("Products fetched successfully:", response.payload);
+        } else if (response.type.endsWith("/rejected")) {
+          console.error("Failed to fetch products:", response.error);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    // Only fetch products if the checkout popup is open
+    if (checkoutOpen) {
+      getData();
     }
-  }, [products, dispatch]);
+  }, [dispatch, currentPage, sortBy, checkoutOpen]); // Added checkoutOpen as dependency
 
   if (!checkoutOpen) return null;
 
