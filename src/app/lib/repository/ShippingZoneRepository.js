@@ -16,6 +16,8 @@ class ShippingZoneRepository {
       throw new Error('Database connection is required');
     }
     console.log('ShippingZoneRepository using connection:', conn.name || 'global mongoose');
+    // Clear cached model for this connection to ensure updated schema is used
+    delete conn.models.ShippingZone;
     return conn.models.ShippingZone || conn.model('ShippingZone', shippingZoneSchema);
   }
 
@@ -33,9 +35,26 @@ class ShippingZoneRepository {
     return shippingZone;
   }
 
-  async getAllShippingZones(conn) {
+  async getAllShippingZones(conn, { page, limit, search }) {
     const ShippingZone = this.getShippingZoneModel(conn);
-    return await ShippingZone.find().populate('shippingId');
+    const query = search ? { 'postalCodes.code': { $regex: search, $options: 'i' } } : {};
+    const skip = (page - 1) * limit;
+    const [shippingZones, totalItems] = await Promise.all([
+      ShippingZone.find(query)
+        .populate('shippingId')
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      ShippingZone.countDocuments(query),
+    ]);
+
+    return {
+      shippingZones,
+      totalItems,
+      currentPage: Number(page),
+      itemsPerPage: Number(limit),
+      totalPages: Math.ceil(totalItems / limit),
+    };
   }
 
   async updateShippingZone(id, update, conn) {

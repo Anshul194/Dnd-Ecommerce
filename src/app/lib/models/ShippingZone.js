@@ -8,13 +8,26 @@ export const shippingZoneSchema = new mongoose.Schema(
       required: true,
     },
     postalCodes: {
-      type: [String],
+      type: [
+        {
+          code: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+          price: {
+            type: Number,
+            required: true,
+            min: 0,
+          },
+        },
+      ],
       required: true,
       validate: {
         validator: function (v) {
           return v.length > 0;
         },
-        message: "At least one postal code is required",
+        message: "At least one postal code with price is required",
       },
     },
   },
@@ -22,6 +35,9 @@ export const shippingZoneSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Remove cached model to ensure the updated schema is used
+delete mongoose.models.ShippingZone;
 
 export const ShippingZoneModel = mongoose.models.ShippingZone || mongoose.model("ShippingZone", shippingZoneSchema);
 export default ShippingZoneModel;

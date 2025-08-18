@@ -16,31 +16,7 @@ class ShippingZoneService {
 
   async getAllShippingZones(conn, { page = 1, limit = 10, search = '' }) {
     console.log('[ShippingZoneService.getAllShippingZones] Fetching all shipping zones', 'Connection:', conn.name || 'global mongoose', 'Page:', page, 'Limit:', limit, 'Search:', search);
-    
-    const query = {};
-    if (search) {
-      query.postalCodes = { $regex: search, $options: 'i' }; // Case-insensitive search on postalCodes
-    }
-
-    const ShippingZone = conn.models.ShippingZone || conn.model('ShippingZone', mongoose.model('ShippingZone').schema);
-    
-    const skip = (page - 1) * limit;
-    const [shippingZones, totalItems] = await Promise.all([
-      ShippingZone.find(query)
-        .populate('shippingId')
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      ShippingZone.countDocuments(query),
-    ]);
-
-    return {
-      shippingZones,
-      totalItems,
-      currentPage: Number(page),
-      itemsPerPage: Number(limit),
-      totalPages: Math.ceil(totalItems / limit),
-    };
+    return await shippingZoneRepository.getAllShippingZones(conn, { page, limit, search });
   }
 
   async updateShippingZone(id, data, conn) {
@@ -60,15 +36,27 @@ class ShippingZoneService {
         throw new Error('Valid shipping ID is required');
       }
       if (!data.postalCodes || !Array.isArray(data.postalCodes) || data.postalCodes.length === 0) {
-        throw new Error('At least one postal code is required');
+        throw new Error('At least one postal code with price is required');
       }
     } else {
       if (data.shippingId && !mongoose.Types.ObjectId.isValid(data.shippingId)) {
         throw new Error('Valid shipping ID is required');
       }
       if (data.postalCodes && (!Array.isArray(data.postalCodes) || data.postalCodes.length === 0)) {
-        throw new Error('At least one postal code is required if updating postal codes');
+        throw new Error('At least one postal code with price is required if updating postal codes');
       }
+    }
+
+    // Validate postalCodes structure
+    if (data.postalCodes) {
+      data.postalCodes.forEach((item, index) => {
+        if (!item.code || typeof item.code !== 'string' || item.code.trim() === '') {
+          throw new Error(`Postal code at index ${index} is invalid`);
+        }
+        if (item.price == null || typeof item.price !== 'number' || item.price < 0) {
+          throw new Error(`Price at index ${index} must be a non-negative number`);
+        }
+      });
     }
 
     // Check if shippingId exists in the Shipping collection
