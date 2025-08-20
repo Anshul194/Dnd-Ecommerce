@@ -37,6 +37,7 @@ import { applyCoupon } from "@/app/store/slices/couponSlice";
 import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { fetchProducts } from "@/app/store/slices/productSlice";
+import { toast } from "react-toastify";
 
 export default function CheckoutPopup() {
   const checkoutOpen = useSelector((state) => state.checkout.checkoutOpen);
@@ -289,7 +290,7 @@ export default function CheckoutPopup() {
                     price: item.price,
                     variant: item.variant,
                   })),
-              total: buyNowProduct.price || total,
+              total: buyNowProduct?.price || total,
               paymentId: response.razorpay_payment_id,
               shippingAddress: {
                 fullName: `${formData.firstName} ${formData.lastName}`,
@@ -458,22 +459,28 @@ export default function CheckoutPopup() {
           const types = c.types;
           if (types.includes("postal_code")) pincode = c.long_name;
           if (types.includes("locality")) city = c.long_name;
-          if (types.includes("administrative_area_level_1")) state = c.long_name;
+          if (types.includes("administrative_area_level_1"))
+            state = c.long_name;
           if (types.includes("country")) country = c.long_name;
-          if (types.includes("sublocality_level_1") || types.includes("sublocality")) area = c.long_name;
+          if (
+            types.includes("sublocality_level_1") ||
+            types.includes("sublocality")
+          )
+            area = c.long_name;
           if (types.includes("sublocality_level_2")) subarea = c.long_name;
           if (types.includes("route")) route = c.long_name;
           if (types.includes("street_number")) streetNumber = c.long_name;
-          if (types.includes("establishment") || types.includes("point_of_interest")) landmark = c.long_name;
+          if (
+            types.includes("establishment") ||
+            types.includes("point_of_interest")
+          )
+            landmark = c.long_name;
         });
 
         // Create a comprehensive address for line1 (flatNumber field)
-        const addressParts = [
-          streetNumber,
-          route,
-          subarea,
-          area
-        ].filter(Boolean);
+        const addressParts = [streetNumber, route, subarea, area].filter(
+          Boolean
+        );
 
         const fullAddress = addressParts.join(", ");
 
@@ -505,15 +512,26 @@ export default function CheckoutPopup() {
     }
     setLoadingLandmarks(true);
     try {
-      const locationBias = location ? `&location=${location.lat},${location.lng}&radius=2000` : '';
+      const locationBias = location
+        ? `&location=${location.lat},${location.lng}&radius=2000`
+        : "";
       const response = await fetch(
-        `/api/maps-autocomplete?type=autocomplete&input=${encodeURIComponent(input)}&types=establishment|point_of_interest${locationBias}`
+        `/api/maps-autocomplete?type=autocomplete&input=${encodeURIComponent(
+          input
+        )}&types=establishment|point_of_interest${locationBias}`
       );
       const data = await response.json();
       if (data.status === "OK") {
-        const landmarks = data.predictions.filter(prediction =>
-          prediction.types.some(type =>
-            ['establishment', 'point_of_interest', 'store', 'hospital', 'school', 'bank'].includes(type)
+        const landmarks = data.predictions.filter((prediction) =>
+          prediction.types.some((type) =>
+            [
+              "establishment",
+              "point_of_interest",
+              "store",
+              "hospital",
+              "school",
+              "bank",
+            ].includes(type)
           )
         );
         setLandmarkSuggestions(landmarks);
@@ -1193,40 +1211,45 @@ export default function CheckoutPopup() {
                         </div>
                       </div>
                     )}
-                    {landmarkSuggestions.length > 0 && activeField === "landmark" && (
-                      <ul className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-b-md shadow-lg z-20 max-h-48 overflow-y-auto">
-                        {landmarkSuggestions.map((landmark) => (
-                          <li
-                            key={landmark.place_id}
-                            className="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setFormData((prev) => ({
-                                ...prev,
-                                landmark:
-                                  landmark.structured_formatting?.main_text ||
-                                  landmark.description,
-                              }));
-                              setLandmarkSuggestions([]);
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-900">
-                                  {landmark.structured_formatting?.main_text}
-                                </p>
-                                {landmark.structured_formatting?.secondary_text && (
-                                  <p className="text-xs text-gray-500">
-                                    {landmark.structured_formatting.secondary_text}
+                    {landmarkSuggestions.length > 0 &&
+                      activeField === "landmark" && (
+                        <ul className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-b-md shadow-lg z-20 max-h-48 overflow-y-auto">
+                          {landmarkSuggestions.map((landmark) => (
+                            <li
+                              key={landmark.place_id}
+                              className="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  landmark:
+                                    landmark.structured_formatting?.main_text ||
+                                    landmark.description,
+                                }));
+                                setLandmarkSuggestions([]);
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {landmark.structured_formatting?.main_text}
                                   </p>
-                                )}
+                                  {landmark.structured_formatting
+                                    ?.secondary_text && (
+                                    <p className="text-xs text-gray-500">
+                                      {
+                                        landmark.structured_formatting
+                                          .secondary_text
+                                      }
+                                    </p>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -1357,126 +1380,129 @@ export default function CheckoutPopup() {
             </div>
           )}
 
-          <div className="space-y-4 rounded-xl bg-white py-3 px-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold mb-3">More Products</h3>
-            </div>
-            <div className="text-sm flex gap-2 overflow-auto">
-              {products?.products?.length > 0 &&
-                products.products.map((item, index) => (
-                  <div
-                    onClick={() => {
-                      dispatch(setCheckoutClose());
-                      router.push(`/product-detail/${item._id}`);
-                    }}
-                    key={index}
-                  >
-                    {" "}
-                    <div className="relative w-60 flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
-                      <div className="w-full aspect-square  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                        <Image
-                          src={item?.thumbnail?.url}
-                          alt={item?.thumbnail?.alt || "Product"}
-                          width={56}
-                          height={64}
-                          className="object-cover h-full w-full"
-                        />
-                      </div>
-                      <div className="w-fit h-fit">
-                        <div className="text-xs w-40  min-h-7 text-gray-600 mb-1">
-                          {item?.name}
+          {isAuthenticated && (
+            <div className="space-y-4 rounded-xl bg-white py-3 px-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold mb-3">More Products</h3>
+              </div>
+              <div className="text-sm flex gap-2 overflow-auto">
+                {products?.products?.length > 0 &&
+                  products.products.map((item, index) => (
+                    <div
+                      onClick={() => {
+                        dispatch(setCheckoutClose());
+                        router.push(`/product-detail/${item._id}`);
+                      }}
+                      key={index}
+                    >
+                      {" "}
+                      <div className="relative w-60 flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
+                        <div className="w-full aspect-square  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
+                          <Image
+                            src={item?.thumbnail?.url}
+                            alt={item?.thumbnail?.alt || "Product"}
+                            width={56}
+                            height={64}
+                            className="object-cover h-full w-full"
+                          />
                         </div>
-                        {item?.variants?.[0]?.salePrice ? (
-                          <>
-                            <span className="font-extrabold text-sm text-black">
-                              ₹{item?.variants?.[0]?.salePrice}
-                            </span>
-                            <span className="font-extrabold line-through ml-1 opacity-75 text-sm text-black">
-                              ₹{item?.variants?.[0]?.price}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="font-extrabold text-sm ">
-                            ₹{item?.variants?.[0]?.price || "500"}
-                          </span>
-                        )}
-                      </div>
-
-                      {SelectedProduct?._id === item._id && (
-                        <div className="absolute flex justify-between flex-col transition-all duration-300 bottom-0 h-1/2 left-0 right-0 rounded-t-md bg-green-100 backdrop-blur-sm p-4 z-[999]">
-                          <div>
-                            <h2 className="mb-1">Select Variant</h2>
-                            <div className="flex flex-col gap-1 h-16  overflow-y-auto">
-                              {item?.variants?.map((variant, index) => (
-                                <div
-                                  key={index}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    handleSelectVariant(
-                                      {
-                                        id: item._id,
-                                        image: {
-                                          url:
-                                            item.thumbnail.url ||
-                                            item.image?.[0].url,
-                                          alt:
-                                            item.thumbnail.alt ||
-                                            item.image?.[0].alt,
-                                        },
-                                        name: item.name,
-                                        slug: item.slug,
-                                        variant: variant._id,
-                                      },
-                                      variant._id,
-                                      1,
-                                      variant.salePrice || variant.price
-                                    );
-                                  }}
-                                  className="cursor-pointer hover:font-semibold "
-                                >
-                                  <h2 className="text-xs capitalize">
-                                    {variant.title} - {"₹" + variant.salePrice}{" "}
-                                    <span
-                                      className={
-                                        variant.salePrice
-                                          ? "line-through opacity-75  text-gray-500"
-                                          : ""
-                                      }
-                                    >
-                                      ₹{variant.price}
-                                    </span>
-                                  </h2>
-                                </div>
-                              ))}
-                            </div>
+                        <div className="w-fit h-fit">
+                          <div className="text-xs w-40  min-h-7 text-gray-600 mb-1">
+                            {item?.name}
                           </div>
-
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setSelectedProduct(null);
-                            }}
-                            className="flex mt-1 w-full items-center h-7 rounded-md justify-center border text-green-800 gap-1 text-sm "
-                          >
-                            Close
-                          </button>
+                          {item?.variants?.[0]?.salePrice ? (
+                            <>
+                              <span className="font-extrabold text-sm text-black">
+                                ₹{item?.variants?.[0]?.salePrice}
+                              </span>
+                              <span className="font-extrabold line-through ml-1 opacity-75 text-sm text-black">
+                                ₹{item?.variants?.[0]?.price}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="font-extrabold text-sm ">
+                              ₹{item?.variants?.[0]?.price || "500"}
+                            </span>
+                          )}
                         </div>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSelectedProduct(item);
-                        }}
-                        className="flex items-center h-7 rounded-md justify-center bg-blue-500 gap-1 text-sm text-white"
-                      >
-                        <Plus className="h-4 w-4 text-white " />
-                        Add Now
-                      </button>
+
+                        {SelectedProduct?._id === item._id && (
+                          <div className="absolute flex justify-between flex-col transition-all duration-300 bottom-0 h-1/2 left-0 right-0 rounded-t-md bg-green-100 backdrop-blur-sm p-4 z-[999]">
+                            <div>
+                              <h2 className="mb-1">Select Variant</h2>
+                              <div className="flex flex-col gap-1 h-16  overflow-y-auto">
+                                {item?.variants?.map((variant, index) => (
+                                  <div
+                                    key={index}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleSelectVariant(
+                                        {
+                                          id: item._id,
+                                          image: {
+                                            url:
+                                              item.thumbnail.url ||
+                                              item.image?.[0].url,
+                                            alt:
+                                              item.thumbnail.alt ||
+                                              item.image?.[0].alt,
+                                          },
+                                          name: item.name,
+                                          slug: item.slug,
+                                          variant: variant._id,
+                                        },
+                                        variant._id,
+                                        1,
+                                        variant.salePrice || variant.price
+                                      );
+                                    }}
+                                    className="cursor-pointer hover:font-semibold "
+                                  >
+                                    <h2 className="text-xs capitalize">
+                                      {variant.title} -{" "}
+                                      {"₹" + variant.salePrice}{" "}
+                                      <span
+                                        className={
+                                          variant.salePrice
+                                            ? "line-through opacity-75  text-gray-500"
+                                            : ""
+                                        }
+                                      >
+                                        ₹{variant.price}
+                                      </span>
+                                    </h2>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setSelectedProduct(null);
+                              }}
+                              className="flex mt-1 w-full items-center h-7 rounded-md justify-center border text-green-800 gap-1 text-sm "
+                            >
+                              Close
+                            </button>
+                          </div>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSelectedProduct(item);
+                          }}
+                          className="flex items-center h-7 rounded-md justify-center bg-blue-500 gap-1 text-sm text-white"
+                        >
+                          <Plus className="h-4 w-4 text-white " />
+                          Add Now
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {isAuthenticated && addressAdded && (
             <button
