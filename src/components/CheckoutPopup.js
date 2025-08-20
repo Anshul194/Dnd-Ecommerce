@@ -20,6 +20,7 @@ import {
   resetAddress,
   setAddress,
   setCheckoutClose,
+  setCheckoutOpen,
 } from "@/app/store/slices/checkOutSlice";
 import {
   createUserAddress,
@@ -33,12 +34,15 @@ import {
 import Loading from "@/components/Loading";
 import Image from "next/image";
 import { applyCoupon } from "@/app/store/slices/couponSlice";
-import { clearCart } from "@/app/store/slices/cartSlice";
+import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter } from "next/navigation";
+import { fetchProducts } from "@/app/store/slices/productSlice";
 
 export default function CheckoutPopup() {
   const checkoutOpen = useSelector((state) => state.checkout.checkoutOpen);
   const { addressData, addressAdded } = useSelector((state) => state.checkout);
+  const { products } = useSelector((state) => state.product);
+
   const [userAddresses, setUserAddresses] = useState([]);
   const [addressType, setAddressType] = useState("");
   const router = useRouter();
@@ -46,14 +50,18 @@ export default function CheckoutPopup() {
   const { isAuthenticated, otpSended, loading, user } = useSelector(
     (state) => state.auth
   );
-  const { cartItems, total = 0 } = useSelector((state) => state.cart);
+  const {
+    cartItems,
+    total = 0,
+    buyNowProduct,
+  } = useSelector((state) => state.cart);
   const { selectedCoupon } = useSelector((state) => state.coupon);
-  console.log("Selected Coupon:", selectedCoupon);
+  console.log("Products ==> ", products);
   const [couponCode, setCouponCode] = useState("");
   const [activeField, setActiveField] = useState(null);
   const [isLogged, setIsLogged] = useState(false);
   const inputRefs = useRef([]); // Array of refs for each input field
-
+  const [SelectedProduct, setSelectedProduct] = useState(null);
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     pincode: "",
@@ -69,6 +77,15 @@ export default function CheckoutPopup() {
     phone: "",
   });
   const [otp, setOtp] = useState(Array(6).fill("")); // Array with 6 empty strings
+  const GOOGLE_MAPS_API_KEY = "AIzaSyApJRbaVZNuthc2Mi72xifDbdk8b-3WI9Q";
+  const [addressSearch, setAddressSearch] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+
+  // Add new state for landmark suggestions
+  const [landmarkSuggestions, setLandmarkSuggestions] = useState([]);
+  const [loadingLandmarks, setLoadingLandmarks] = useState(false);
+  const [landmarkSearch, setLandmarkSearch] = useState("");
 
   const handleSelectAddress = async (selectedIndex) => {
     if (selectedIndex === "" || selectedIndex === "default") return;
@@ -241,11 +258,22 @@ export default function CheckoutPopup() {
     }
   };
 
+  const handleSelectVariant = async (productId, variantId, quantity, price) => {
+    await dispatch(
+      addToCart({ product: productId, variant: variantId, quantity, price })
+    );
+    setSelectedProduct(null);
+  };
+
   const handelPayment = async () => {
     try {
       const options = {
         key: "rzp_test_1DP5mmOlF5G5ag",
-        amount: (total - (selectedCoupon?.discount || 0)) * 100, // Convert to paise
+        amount: buyNowProduct
+          ? (buyNowProduct.price * buyNowProduct.quantity -
+              (selectedCoupon?.discount || 0)) *
+            100
+          : (total - (selectedCoupon?.discount || 0)) * 100, // Convert to paise
         currency: "INR",
         name: "Tea Box",
         description: "Slot Booking Fee",
@@ -253,13 +281,15 @@ export default function CheckoutPopup() {
           try {
             const payload = {
               userId: user._id,
-              items: cartItems.map((item) => ({
-                product: item.product.id,
-                quantity: item.quantity,
-                price: item.price,
-                variant: item.variant,
-              })),
-              total,
+              items: buyNowProduct
+                ? [...buyNowProduct]
+                : cartItems.map((item) => ({
+                    product: item.product.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    variant: item.variant,
+                  })),
+              total: buyNowProduct.price || total,
               paymentId: response.razorpay_payment_id,
               shippingAddress: {
                 fullName: `${formData.firstName} ${formData.lastName}`,
@@ -370,9 +400,140 @@ export default function CheckoutPopup() {
       script.onerror = () => console.error("Failed to load Razorpay script");
       document.body.appendChild(script);
     };
+
     fetchUserAddresses();
     loadRazorpayScript();
   }, [addressData, isAuthenticated, user?._id, dispatch]);
+
+  // Fetch address suggestions from Google Places API
+  const fetchAddressSuggestions = async (input) => {
+    if (!input) {
+      setAddressSuggestions([]);
+      return;
+    }
+    setLoadingSuggestions(true);
+    try {
+      const response = await fetch(
+        `/api/maps-autocomplete?type=autocomplete&input=${encodeURIComponent(
+          input
+        )}`
+      );
+      const data = await response.json();
+      if (data.status === "OK") {
+        setAddressSuggestions(data.predictions);
+      } else {
+        setAddressSuggestions([]);
+      }
+    } catch (err) {
+      setAddressSuggestions([]);
+    }
+    setLoadingSuggestions(false);
+  };
+
+  // Enhanced fetchPlaceDetails function with better address parsing
+  const fetchPlaceDetails = async (placeId) => {
+    try {
+      const response = await fetch(
+        `/api/maps-autocomplete?type=details&placeid=${placeId}`
+      );
+      const data = await response.json();
+      if (data.status === "OK") {
+        const comp = data.result.address_components;
+        const geometry = data.result.geometry;
+
+        // Initialize address components
+        let pincode = "";
+        let city = "";
+        let state = "";
+        let country = "";
+        let area = "";
+        let subarea = "";
+        let route = ""; // Street name
+        let streetNumber = "";
+        let landmark = "";
+        let formattedAddress = data.result.formatted_address || "";
+
+        // Enhanced address component parsing
+        comp.forEach((c) => {
+          const types = c.types;
+          if (types.includes("postal_code")) pincode = c.long_name;
+          if (types.includes("locality")) city = c.long_name;
+          if (types.includes("administrative_area_level_1")) state = c.long_name;
+          if (types.includes("country")) country = c.long_name;
+          if (types.includes("sublocality_level_1") || types.includes("sublocality")) area = c.long_name;
+          if (types.includes("sublocality_level_2")) subarea = c.long_name;
+          if (types.includes("route")) route = c.long_name;
+          if (types.includes("street_number")) streetNumber = c.long_name;
+          if (types.includes("establishment") || types.includes("point_of_interest")) landmark = c.long_name;
+        });
+
+        // Create a comprehensive address for line1 (flatNumber field)
+        const addressParts = [
+          streetNumber,
+          route,
+          subarea,
+          area
+        ].filter(Boolean);
+
+        const fullAddress = addressParts.join(", ");
+
+        // Update form data with parsed information
+        setFormData((prev) => ({
+          ...prev,
+          pincode,
+          city,
+          state,
+          country,
+          area: area || subarea,
+          flatNumber: fullAddress,
+          landmark: landmark || route || "",
+        }));
+
+        setAddressSearch(formattedAddress);
+        setAddressSuggestions([]);
+      }
+    } catch (err) {
+      console.error("Error fetching place details:", err);
+    }
+  };
+
+  // Enhanced landmarks fetching function
+  const fetchLandmarkSuggestions = async (input, location = null) => {
+    if (!input || input.length < 2) {
+      setLandmarkSuggestions([]);
+      return;
+    }
+    setLoadingLandmarks(true);
+    try {
+      const locationBias = location ? `&location=${location.lat},${location.lng}&radius=2000` : '';
+      const response = await fetch(
+        `/api/maps-autocomplete?type=autocomplete&input=${encodeURIComponent(input)}&types=establishment|point_of_interest${locationBias}`
+      );
+      const data = await response.json();
+      if (data.status === "OK") {
+        const landmarks = data.predictions.filter(prediction =>
+          prediction.types.some(type =>
+            ['establishment', 'point_of_interest', 'store', 'hospital', 'school', 'bank'].includes(type)
+          )
+        );
+        setLandmarkSuggestions(landmarks);
+      } else {
+        setLandmarkSuggestions([]);
+      }
+    } catch (err) {
+      console.error("Error fetching landmark suggestions:", err);
+      setLandmarkSuggestions([]);
+    }
+    setLoadingLandmarks(false);
+  };
+
+  useEffect(() => {
+    dispatch(
+      fetchProducts({
+        isAddon: true,
+      })
+    );
+  }, []);
 
   if (!checkoutOpen) return null;
 
@@ -400,10 +561,16 @@ export default function CheckoutPopup() {
           <div className="space-y-3">
             <div className="flex justify-between items-center rounded-xl bg-white py-3 px-4">
               <h2 className="text-md font-medium">
-                Order summary <span className="text-gray-600">(1 item)</span>
+                Order summary{" "}
+                <span className="text-gray-600">
+                  ({buyNowProduct ? 1 : cartItems?.length} item)
+                </span>
               </h2>
               <span className="text-sm font-medium">
-                ₹{(total - (selectedCoupon?.discount || 0)).toFixed(2)}
+                ₹
+                {buyNowProduct
+                  ? buyNowProduct.price * buyNowProduct.quantity
+                  : (total - (selectedCoupon?.discount || 0)).toFixed(2)}
               </span>
             </div>
 
@@ -588,41 +755,72 @@ export default function CheckoutPopup() {
           )}
           {isAuthenticated && (
             <div className="space-y-3 rounded-xl bg-white py-3 px-4">
-              <h3 className="font-semibold text-md">Items you may like</h3>
-              <div className="flex gap-3 w-full overflow-x-scroll">
-                {/* Product 1 */}
-                {cartItems?.length > 0 &&
-                  cartItems.map((item, index) => (
-                    <div
-                      key={index}
-                      className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3"
-                    >
-                      <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                        <Image
-                          src={item?.product?.image.url}
-                          alt={item?.product?.image.alt || "Product"}
-                          width={56}
-                          height={64}
-                          className="object-cover h-full w-full"
-                        />
-                      </div>
-                      <div className="w-fit">
-                        <p className="text-xs w-40 text-gray-600 mb-1">
-                          {item?.product?.name} X {item?.quantity}
-                        </p>
-                        <span className="font-extrabold text-sm ">
-                          ₹
-                          {parseFloat(item?.price) *
-                            parseFloat(item?.quantity).toFixed(2)}
-                        </span>
-                        <div className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs">
-                          <Plus className="h-3 w-3" />
-                          <h3>3 options</h3>
-                        </div>
+              <h3 className="font-semibold text-md">Items </h3>
+              {buyNowProduct ? (
+                <div className="flex gap-3 w-full overflow-x-scroll">
+                  <div className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3">
+                    <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
+                      <Image
+                        src={buyNowProduct?.product?.image.url}
+                        alt={buyNowProduct?.product?.image.alt || "Product"}
+                        width={56}
+                        height={64}
+                        className="object-cover h-full w-full"
+                      />
+                    </div>
+                    <div className="w-fit">
+                      <p className="text-xs w-40 text-gray-600 mb-1">
+                        {buyNowProduct?.product?.name} X{" "}
+                        {buyNowProduct?.quantity}
+                      </p>
+                      <span className="font-extrabold text-sm ">
+                        ₹
+                        {parseFloat(buyNowProduct?.price) *
+                          parseFloat(buyNowProduct?.quantity).toFixed(2)}
+                      </span>
+                      <div className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs">
+                        <Plus className="h-3 w-3" />
+                        <h3>3 options</h3>
                       </div>
                     </div>
-                  ))}
-              </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-3 w-full overflow-x-scroll">
+                  {/* Product 1 */}
+                  {cartItems?.length > 0 &&
+                    cartItems.map((item, index) => (
+                      <div
+                        key={index}
+                        className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3"
+                      >
+                        <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
+                          <Image
+                            src={item?.product?.image.url}
+                            alt={item?.product?.image.alt || "Product"}
+                            width={56}
+                            height={64}
+                            className="object-cover h-full w-full"
+                          />
+                        </div>
+                        <div className="w-fit">
+                          <p className="text-xs w-40 text-gray-600 mb-1">
+                            {item?.product?.name} X {item?.quantity}
+                          </p>
+                          <span className="font-extrabold text-sm ">
+                            ₹
+                            {parseFloat(item?.price) *
+                              parseFloat(item?.quantity).toFixed(2)}
+                          </span>
+                          <div className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs">
+                            <Plus className="h-3 w-3" />
+                            <h3>3 options</h3>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           )}
           {/* Add Shipping Address */}
@@ -869,12 +1067,12 @@ export default function CheckoutPopup() {
                   >
                     <h2
                       className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "area" || formData.area !== ""
+                        activeField === "area" || addressSearch !== ""
                           ? "-translate-y-6"
                           : "translate-y-0"
                       }`}
                     >
-                      Area, street, sector, village{" "}
+                      Search Full Address (Google Maps)
                       <span
                         className={
                           activeField === "area" ? "text-red-500" : "text-black"
@@ -885,18 +1083,63 @@ export default function CheckoutPopup() {
                     </h2>
                     <input
                       type="text"
-                      name="area"
-                      value={formData.area}
-                      onChange={handleInputChange}
+                      value={addressSearch}
+                      onChange={(e) => {
+                        setAddressSearch(e.target.value);
+                        fetchAddressSuggestions(e.target.value);
+                      }}
                       onFocus={() => setActiveField("area")}
-                      onBlur={() => setActiveField(null)}
-                      className="outline-none text-md   w-full border-0 h-full "
+                      onBlur={() => {
+                        setTimeout(() => setActiveField(null), 200);
+                      }}
+                      className="outline-none text-md w-full border-0 h-full"
+                      placeholder="Search your complete address..."
+                      autoComplete="off"
                     />
+                    {loadingSuggestions && (
+                      <div className="absolute top-full left-0 w-full bg-white border border-gray-200 z-20 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                          <span className="text-sm text-gray-500">
+                            Searching addresses...
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {addressSuggestions.length > 0 && (
+                      <ul className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-b-md shadow-lg z-20 max-h-60 overflow-y-auto">
+                        {addressSuggestions.map((sugg) => (
+                          <li
+                            key={sugg.place_id}
+                            className="px-3 py-3 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              fetchPlaceDetails(sugg.place_id);
+                            }}
+                          >
+                            <div className="flex items-start gap-2">
+                              <MapPin
+                                size={16}
+                                className="text-gray-400 mt-1 flex-shrink-0"
+                              />
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {sugg.structured_formatting?.main_text}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {sugg.structured_formatting?.secondary_text}
+                                </p>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
 
                   <div
                     className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "pincode"
+                      activeField === "landmark"
                         ? "border-blue-600"
                         : "border-gray-300"
                     } rounded-md`}
@@ -908,7 +1151,7 @@ export default function CheckoutPopup() {
                           : "translate-y-0"
                       }`}
                     >
-                      Landmark{" "}
+                      Nearby Landmark
                       <span
                         className={
                           activeField === "landmark"
@@ -923,17 +1166,73 @@ export default function CheckoutPopup() {
                       type="text"
                       name="landmark"
                       value={formData.landmark}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        handleInputChange(e);
+                        // Fetch landmark suggestions based on current location
+                        if (formData.city && formData.state) {
+                          fetchLandmarkSuggestions(e.target.value, {
+                            lat: 21.1702, // Replace with actual lat/lng from selected address if available
+                            lng: 72.8311,
+                          });
+                        }
+                      }}
                       onFocus={() => setActiveField("landmark")}
-                      onBlur={() => setActiveField(null)}
-                      className="outline-none text-md z-10 w-full border-0 h-full "
+                      onBlur={() => {
+                        setTimeout(() => setActiveField(null), 200);
+                      }}
+                      className="outline-none text-md z-10 w-full border-0 h-full"
+                      placeholder="e.g., Near City Mall, Behind School"
                     />
+                    {loadingLandmarks && (
+                      <div className="absolute top-full left-0 w-full bg-white border border-gray-200 z-20 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                          <span className="text-sm text-gray-500">
+                            Finding landmarks...
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {landmarkSuggestions.length > 0 && activeField === "landmark" && (
+                      <ul className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-b-md shadow-lg z-20 max-h-48 overflow-y-auto">
+                        {landmarkSuggestions.map((landmark) => (
+                          <li
+                            key={landmark.place_id}
+                            className="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setFormData((prev) => ({
+                                ...prev,
+                                landmark:
+                                  landmark.structured_formatting?.main_text ||
+                                  landmark.description,
+                              }));
+                              setLandmarkSuggestions([]);
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {landmark.structured_formatting?.main_text}
+                                </p>
+                                {landmark.structured_formatting?.secondary_text && (
+                                  <p className="text-xs text-gray-500">
+                                    {landmark.structured_formatting.secondary_text}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div
                       className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                        activeField === "pincode"
+                        activeField === "city"
                           ? "border-blue-600"
                           : "border-gray-300"
                       } rounded-md`}
@@ -1057,6 +1356,127 @@ export default function CheckoutPopup() {
               )}
             </div>
           )}
+
+          <div className="space-y-4 rounded-xl bg-white py-3 px-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold mb-3">More Products</h3>
+            </div>
+            <div className="text-sm flex gap-2 overflow-auto">
+              {products?.products?.length > 0 &&
+                products.products.map((item, index) => (
+                  <div
+                    onClick={() => {
+                      dispatch(setCheckoutClose());
+                      router.push(`/product-detail/${item._id}`);
+                    }}
+                    key={index}
+                  >
+                    {" "}
+                    <div className="relative w-60 flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
+                      <div className="w-full aspect-square  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
+                        <Image
+                          src={item?.thumbnail?.url}
+                          alt={item?.thumbnail?.alt || "Product"}
+                          width={56}
+                          height={64}
+                          className="object-cover h-full w-full"
+                        />
+                      </div>
+                      <div className="w-fit h-fit">
+                        <div className="text-xs w-40  min-h-7 text-gray-600 mb-1">
+                          {item?.name}
+                        </div>
+                        {item?.variants?.[0]?.salePrice ? (
+                          <>
+                            <span className="font-extrabold text-sm text-black">
+                              ₹{item?.variants?.[0]?.salePrice}
+                            </span>
+                            <span className="font-extrabold line-through ml-1 opacity-75 text-sm text-black">
+                              ₹{item?.variants?.[0]?.price}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-extrabold text-sm ">
+                            ₹{item?.variants?.[0]?.price || "500"}
+                          </span>
+                        )}
+                      </div>
+
+                      {SelectedProduct?._id === item._id && (
+                        <div className="absolute flex justify-between flex-col transition-all duration-300 bottom-0 h-1/2 left-0 right-0 rounded-t-md bg-green-100 backdrop-blur-sm p-4 z-[999]">
+                          <div>
+                            <h2 className="mb-1">Select Variant</h2>
+                            <div className="flex flex-col gap-1 h-16  overflow-y-auto">
+                              {item?.variants?.map((variant, index) => (
+                                <div
+                                  key={index}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleSelectVariant(
+                                      {
+                                        id: item._id,
+                                        image: {
+                                          url:
+                                            item.thumbnail.url ||
+                                            item.image?.[0].url,
+                                          alt:
+                                            item.thumbnail.alt ||
+                                            item.image?.[0].alt,
+                                        },
+                                        name: item.name,
+                                        slug: item.slug,
+                                        variant: variant._id,
+                                      },
+                                      variant._id,
+                                      1,
+                                      variant.salePrice || variant.price
+                                    );
+                                  }}
+                                  className="cursor-pointer hover:font-semibold "
+                                >
+                                  <h2 className="text-xs capitalize">
+                                    {variant.title} - {"₹" + variant.salePrice}{" "}
+                                    <span
+                                      className={
+                                        variant.salePrice
+                                          ? "line-through opacity-75  text-gray-500"
+                                          : ""
+                                      }
+                                    >
+                                      ₹{variant.price}
+                                    </span>
+                                  </h2>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setSelectedProduct(null);
+                            }}
+                            className="flex mt-1 w-full items-center h-7 rounded-md justify-center border text-green-800 gap-1 text-sm "
+                          >
+                            Close
+                          </button>
+                        </div>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedProduct(item);
+                        }}
+                        className="flex items-center h-7 rounded-md justify-center bg-blue-500 gap-1 text-sm text-white"
+                      >
+                        <Plus className="h-4 w-4 text-white " />
+                        Add Now
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
 
           {isAuthenticated && addressAdded && (
             <button

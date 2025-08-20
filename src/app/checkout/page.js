@@ -16,8 +16,8 @@ export default function CheckoutForm() {
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState("SAVE10");
   const [selectedDelivery, setSelectedDelivery] = useState("standard");
-  const { loading, cartItems, total } = useSelector((state) => state.cart);
-  const { items: coupons, loading: couponsLoading, error: couponsError, selectedCoupon } = useSelector((state) => state.coupon);
+  const { loading, cartItems = [], total = 0 } = useSelector((state) => state.cart ?? {});
+  const { items: coupons = [], loading: couponsLoading = false, error: couponsError = "", selectedCoupon = null } = useSelector((state) => state.coupon ?? {});
 
   useEffect(() => {
     dispatch(fetchCoupons());
@@ -593,12 +593,12 @@ export default function CheckoutForm() {
           {/* Order Items */}
           <div className="space-y-4 mb-6">
             {/* Item 1 */}
-            {cartItems.map((item, index) => (
+            {(cartItems ?? []).map((item, index) => (
               <div key={index} className="flex items-center gap-3">
                 <div className="w-16 h-16 bg-gray-200 rounded">
                   <Image
-                    src={item.product.thumbnail}
-                    alt={item.product.name}
+                    src={item?.product?.thumbnail ?? "/api/placeholder/64/64"}
+                    alt={item?.product?.name ?? "Product"}
                     width={64}
                     height={64}
                     className="object-cover w-full h-full rounded"
@@ -606,31 +606,31 @@ export default function CheckoutForm() {
                 </div>
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-gray-900">
-                    {item?.product?.name || "Product Name"}
+                    {item?.product?.name ?? "Product Name"}
                   </h4>
                   <p className="text-xs text-gray-500">
-                    Quantity : {item?.quantity || 1}
+                    Quantity : {item?.quantity ?? 1}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => updateQuantity(item.id, -1)}
+                    onClick={() => updateQuantity(item?.id ?? "", -1)}
                     className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center"
                   >
                     <Minus className="w-3 h-3 text-black" />
                   </button>
                   <span className="text-sm text-black font-medium">
-                    {item?.quantity || 1}
+                    {item?.quantity ?? 1}
                   </span>
                   <button
-                    onClick={() => updateQuantity(item.id, 1)}
+                    onClick={() => updateQuantity(item?.id ?? "", 1)}
                     className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center"
                   >
                     <Plus className="w-3 h-3 text-black" />
                   </button>
                 </div>
                 <div className="text-sm font-semibold text-black">
-                  ₹ {(item?.price || 0) * (item?.quantity || 1)}
+                  ₹ {(item?.price ?? 0) * (item?.quantity ?? 1)}
                 </div>
               </div>
             ))}
@@ -675,13 +675,13 @@ export default function CheckoutForm() {
     <div className="text-sm text-gray-500">Loading coupons...</div>
   ) : couponsError ? (
     <div className="text-sm text-red-500">{couponsError}</div>
-  ) : coupons && coupons.length > 0 ? (
+  ) : (coupons ?? []).length > 0 ? (
     <div className="space-y-2 max-h-40 overflow-y-auto">
-      {coupons.map((coupon) => (
+      {(coupons ?? []).map((coupon) => (
         <div
-          key={coupon._id}
+          key={coupon?._id ?? ""}
           className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-all duration-200 ${
-            selectedCoupon?._id === coupon._id
+            selectedCoupon?._id === coupon?._id
               ? "border-green-500 bg-green-50"
               : "border-gray-200 hover:border-green-400"
           }`}
@@ -689,15 +689,15 @@ export default function CheckoutForm() {
         >
           <Tag size={18} className="text-green-600" />
           <div className="flex flex-col text-sm">
-            <span className="font-semibold text-gray-800">{coupon.code}</span>
+            <span className="font-semibold text-gray-800">{coupon?.code ?? ""}</span>
             <span className="text-gray-600">
-              {coupon.type === "percent"
-                ? `${coupon.value}% OFF`
-                : `₹${coupon.value} OFF`}{" "}
-              • Min: ₹{coupon.minCartValue || 0}
+              {coupon?.type === "percent"
+                ? `${coupon?.value ?? 0}% OFF`
+                : `₹${coupon?.value ?? 0} OFF`}{" "}
+              • Min: ₹{coupon?.minCartValue ?? 0}
             </span>
           </div>
-          {selectedCoupon?._id === coupon._id && (
+          {selectedCoupon?._id === coupon?._id && (
             <span className="ml-auto text-green-600 font-semibold text-xs">Selected</span>
           )}
         </div>
@@ -711,10 +711,10 @@ export default function CheckoutForm() {
   {selectedCoupon && (
     <div className="mt-4 flex items-center justify-between text-sm bg-green-50 border border-green-200 rounded-md px-3 py-2">
       <span className="text-green-700">
-        Coupon <strong>{selectedCoupon.code}</strong> applied -{" "}
-        {selectedCoupon.type === "percent"
-          ? `${selectedCoupon.value}% OFF`
-          : `₹${selectedCoupon.value} OFF`}
+        Coupon <strong>{selectedCoupon?.code ?? ""}</strong> applied -{" "}
+        {selectedCoupon?.type === "percent"
+          ? `${selectedCoupon?.value ?? 0}% OFF`
+          : `₹${selectedCoupon?.value ?? 0} OFF`}
       </span>
       <button
         onClick={() => dispatch(clearSelectedCoupon())}
@@ -732,7 +732,7 @@ export default function CheckoutForm() {
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Subtotal</span>
               <span className="font-semibold text-black">
-                ₹ {total.toLocaleString()}
+                ₹ {(total ?? 0).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between text-sm">
@@ -751,7 +751,7 @@ export default function CheckoutForm() {
               <span className="text-gray-600">Total Payable (10%)</span>
               <span className="font-semibold text-black">
                 {" "}
-                ₹ {total.toLocaleString()}
+                ₹ {(total ?? 0).toLocaleString()}
               </span>
             </div>
           </div>

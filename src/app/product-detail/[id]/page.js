@@ -21,7 +21,13 @@ import FrequentlyPurchased from "./components/FrequentlyPurchased";
 import { useDispatch } from "react-redux";
 import { fetchProductById } from "@/app/store/slices/productSlice";
 import Image from "next/image";
-import { addToCart, toggleCart } from "@/app/store/slices/cartSlice";
+import {
+  addToCart,
+  getCartItems,
+  setBuyNowProduct,
+  toggleCart,
+} from "@/app/store/slices/cartSlice";
+import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
 function ProductPage({ params }) {
   const { id } = use(params);
@@ -101,6 +107,44 @@ function ProductPage({ params }) {
       }
       await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
       dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
+  };
+
+  const handleBuyNow = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = data.variants.find((variant) => variant._id === selectedPack);
+    try {
+      const resultAction = await dispatch(
+        setBuyNowProduct({
+          product: {
+            id: data._id,
+            name: data.name,
+            image: data.thumbnail || data.images[0],
+            variant: selectedPack,
+            slug: data.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedPack,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      dispatch(setCheckoutOpen(true));
+      // dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
     }
@@ -341,7 +385,10 @@ function ProductPage({ params }) {
                   <ShoppingCart size={16} />
                   Add to Cart
                 </button>
-                <button className="flex-1 w-1/2 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors">
+                <button
+                  onClick={handleBuyNow}
+                  className="flex-1 w-1/2 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
+                >
                   Buy Now
                 </button>
               </div>

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addToCart,
   getCartItems,
+  removeBuyNowProduct,
   removeItemFromCart,
   toggleCart,
   updateCartItemQuantity,
@@ -12,6 +13,8 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
+import { fetchProducts } from "@/app/store/slices/productSlice";
+import Link from "next/link";
 
 const CartSidebar = () => {
   const dispatch = useDispatch();
@@ -24,7 +27,8 @@ const CartSidebar = () => {
   } = useSelector((state) => state.cart);
 
   const route = useRouter();
-
+  const { products } = useSelector((state) => state.product);
+  const [SelectedProduct, setSelectedProduct] = useState(null);
   const shipping = 65;
 
   const handelCartToggle = () => {
@@ -55,6 +59,12 @@ const CartSidebar = () => {
     }
   };
 
+  const handleSelectVariant = async (productId, variantId, quantity, price) => {
+    await dispatch(
+      addToCart({ product: productId, variant: variantId, quantity, price })
+    );
+    setSelectedProduct(null);
+  };
   const handelRedirect = (e, item) => {
     e.preventDefault();
     route.push(`/product-detail/${item?.product?.id}`);
@@ -66,6 +76,14 @@ const CartSidebar = () => {
       dispatch(getCartItems());
     }
   }, [isCartOpen, dispatch]);
+
+  useEffect(() => {
+    dispatch(
+      fetchProducts({
+        isAddon: true,
+      })
+    );
+  }, []);
 
   if (!loading && !isCartOpen) {
     return null;
@@ -119,7 +137,11 @@ const CartSidebar = () => {
                         {item?.product ? (
                           <Image
                             src={item?.product?.image?.url}
-                            alt={item?.product?.image?.alt || item?.product?.name || "Product Image"}
+                            alt={
+                              item?.product?.image?.alt ||
+                              item?.product?.name ||
+                              "Product Image"
+                            }
                             width={48}
                             height={64}
                             className="object-cover h-full w-full "
@@ -188,6 +210,120 @@ const CartSidebar = () => {
               </div>
             )}
           </div>
+
+          <div className=" rounded-xl bg-white px-4 mb-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold mb-3">More Products</h3>
+            </div>
+            <div className="text-sm flex gap-2 overflow-auto">
+              {products?.products?.length > 0 &&
+                products.products.map((item, index) => (
+                  <Link href={`/product-detail//${item._id}`} key={index}>
+                    <div className="relative w-fit flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
+                      <div className="h-20 aspect-square  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
+                        <Image
+                          src={item?.thumbnail?.url}
+                          alt={item?.thumbnail?.alt || "Product"}
+                          width={56}
+                          height={64}
+                          className="object-cover h-full w-full"
+                        />
+                      </div>
+                      <div className="w-fit h-fit">
+                        <div className="text-xs w-40  min-h-7 text-gray-600 mb-1">
+                          {item?.name}
+                        </div>
+                        {item?.variants?.[0]?.salePrice ? (
+                          <>
+                            <span className="font-extrabold text-sm text-black">
+                              ₹{item?.variants?.[0]?.salePrice}
+                            </span>
+                            <span className="font-extrabold line-through ml-1 opacity-75 text-sm text-black">
+                              ₹{item?.variants?.[0]?.price}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-extrabold text-sm ">
+                            ₹{item?.variants?.[0]?.price || "500"}
+                          </span>
+                        )}
+                      </div>
+
+                      {SelectedProduct?._id === item._id && (
+                        <div className="absolute flex justify-between flex-col transition-all duration-300 bottom-0 h-3/4 left-0 right-0 rounded-t-md bg-green-100 backdrop-blur-sm p-4 z-[999]">
+                          <div>
+                            <h2 className="mb-1">Select Variant</h2>
+                            <div className="flex flex-col gap-1 h-16  overflow-y-auto">
+                              {item?.variants?.map((variant, index) => (
+                                <div
+                                  key={index}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleSelectVariant(
+                                      {
+                                        id: item._id,
+                                        image: {
+                                          url:
+                                            item.thumbnail.url ||
+                                            item.image?.[0].url,
+                                          alt:
+                                            item.thumbnail.alt ||
+                                            item.image?.[0].alt,
+                                        },
+                                        name: item.name,
+                                        slug: item.slug,
+                                        variant: variant._id,
+                                      },
+                                      variant._id,
+                                      1,
+                                      variant.salePrice || variant.price
+                                    );
+                                  }}
+                                  className="cursor-pointer hover:font-semibold "
+                                >
+                                  <h2 className="text-xs capitalize">
+                                    {variant.title} - {"₹" + variant.salePrice}{" "}
+                                    <span
+                                      className={
+                                        variant.salePrice
+                                          ? "line-through opacity-75  text-gray-500"
+                                          : ""
+                                      }
+                                    >
+                                      ₹{variant.price}
+                                    </span>
+                                  </h2>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setSelectedProduct(null);
+                            }}
+                            className="flex mt-1 w-full items-center h-7 rounded-md justify-center border text-green-800 gap-1 text-sm "
+                          >
+                            Close
+                          </button>
+                        </div>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedProduct(item);
+                        }}
+                        className="flex items-center h-7 rounded-md justify-center bg-blue-500 gap-1 text-sm text-white"
+                      >
+                        <Plus className="h-4 w-4 text-white " />
+                        Add Now
+                      </button>
+                    </div>
+                  </Link>
+                ))}
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
@@ -216,6 +352,7 @@ const CartSidebar = () => {
             onClick={() => {
               if (cartItems?.length > 0) {
                 dispatch(toggleCart());
+                dispatch(removeBuyNowProduct());
                 dispatch(setCheckoutOpen(true));
               }
             }}

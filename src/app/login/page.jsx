@@ -182,14 +182,14 @@ export default function SignupPage() {
                 disabled={!acceptTerms}
                 className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
+                Login
               </button>
             </form>
 
             {/* Login Link */}
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-               don't have an account?{" "}
+                don't have an account?{" "}
                 <a
                   href="/signup"
                   className="text-green-600 hover:text-green-700 font-medium underline"

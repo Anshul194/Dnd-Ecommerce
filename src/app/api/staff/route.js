@@ -52,7 +52,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const { name, email, password, role, tenant, isSuperAdmin, isActive, isDeleted } = body;
-
+   console.log("Request body:", body);
     // Basic validation
     if (!name || !email || !password) {
       return NextResponse.json({ success: false, message: 'Name, email, and password are required.' }, { status: 400 });
