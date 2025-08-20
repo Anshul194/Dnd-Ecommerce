@@ -2,6 +2,7 @@ import CrudRepository from "./CrudRepository.js";
 import mongoose from 'mongoose';
 import { attributeSchema } from '../models/Attribute.js';
 import { variantSchema } from '../models/Variant.js'; 
+import { influencerVideoSchema } from '../models/InfluencerVideo.js';
 
 class ProductRepository extends CrudRepository {
 
@@ -159,20 +160,22 @@ async getAll(filter = {}, sortConditions = {}, pageNum = 1, limitNum = 10, popul
     }
   }
 
-  async findById(id) {
+ async findById(id) {
     try {
       console.log('Repo findById called with:', id);
-      // Ensure Attribute model is registered on the same connection as Product
       const conn = this.model.db;
+      
       if (!conn.models.Attribute) {
-        // Dynamically require the schema to avoid circular imports
-        const Attribute = mongoose.models.Attribute || mongoose.model("Attribute", attributeSchema);
         conn.model('Attribute', attributeSchema);
       }
-      // Only populate product attributeSet.attributeId
+      if (!conn.models.InfluencerVideo) {
+        conn.model('InfluencerVideo', influencerVideoSchema);
+      }
+
       const populateOptions = [
         { path: 'attributeSet.attributeId' }
       ];
+
       let productDoc;
       if (mongoose.Types.ObjectId.isValid(id)) {
         productDoc = await this.model.findById(id)
@@ -181,12 +184,22 @@ async getAll(filter = {}, sortConditions = {}, pageNum = 1, limitNum = 10, popul
         productDoc = await this.model.findOne({ slug: id })
           .populate(populateOptions);
       }
+
       if (!productDoc) return null;
-      // Fetch variants for this product with attributes
+
       const variants = await this.getVariantsWithAttributes(productDoc._id, conn);
-      // Attach variants to the returned product object (as plain object)
+
+      // Fetch InfluencerVideos where productId matches and type is "product"
+      const InfluencerVideo = conn.models.InfluencerVideo;
+      const influencerVideos = await InfluencerVideo.find({
+        productId: productDoc._id,
+        type: 'product'
+      }).select('title description videoUrl videoType type productId createdAt updatedAt');
+
       const productObj = productDoc.toObject ? productDoc.toObject() : productDoc;
       productObj.variants = variants;
+      productObj.influencerVideos = influencerVideos;
+
       return productObj;
     } catch (error) {
       console.error("Repository FindById Error:", error.message);

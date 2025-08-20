@@ -82,6 +82,11 @@ export default function CheckoutPopup() {
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
+  // Add new state for landmark suggestions
+  const [landmarkSuggestions, setLandmarkSuggestions] = useState([]);
+  const [loadingLandmarks, setLoadingLandmarks] = useState(false);
+  const [landmarkSearch, setLandmarkSearch] = useState("");
+
   const handleSelectAddress = async (selectedIndex) => {
     if (selectedIndex === "" || selectedIndex === "default") return;
 
@@ -425,15 +430,7 @@ export default function CheckoutPopup() {
     setLoadingSuggestions(false);
   };
 
-  useEffect(() => {
-    dispatch(
-      fetchProducts({
-        isAddon: true,
-      })
-    );
-  }, []);
-
-  // Fetch place details and extract address components
+  // Enhanced fetchPlaceDetails function with better address parsing
   const fetchPlaceDetails = async (placeId) => {
     try {
       const response = await fetch(
@@ -442,42 +439,101 @@ export default function CheckoutPopup() {
       const data = await response.json();
       if (data.status === "OK") {
         const comp = data.result.address_components;
+        const geometry = data.result.geometry;
+
+        // Initialize address components
         let pincode = "";
         let city = "";
         let state = "";
         let country = "";
         let area = "";
-        let flatNumber = "";
+        let subarea = "";
+        let route = ""; // Street name
+        let streetNumber = "";
         let landmark = "";
+        let formattedAddress = data.result.formatted_address || "";
+
+        // Enhanced address component parsing
         comp.forEach((c) => {
-          if (c.types.includes("postal_code")) pincode = c.long_name;
-          if (c.types.includes("locality")) city = c.long_name;
-          if (c.types.includes("administrative_area_level_1"))
-            state = c.long_name;
-          if (c.types.includes("country")) country = c.long_name;
-          if (
-            c.types.includes("sublocality") ||
-            c.types.includes("sublocality_level_1")
-          )
-            area = c.long_name;
-          if (c.types.includes("premise")) flatNumber = c.long_name;
-          if (c.types.includes("route")) landmark = c.long_name;
+          const types = c.types;
+          if (types.includes("postal_code")) pincode = c.long_name;
+          if (types.includes("locality")) city = c.long_name;
+          if (types.includes("administrative_area_level_1")) state = c.long_name;
+          if (types.includes("country")) country = c.long_name;
+          if (types.includes("sublocality_level_1") || types.includes("sublocality")) area = c.long_name;
+          if (types.includes("sublocality_level_2")) subarea = c.long_name;
+          if (types.includes("route")) route = c.long_name;
+          if (types.includes("street_number")) streetNumber = c.long_name;
+          if (types.includes("establishment") || types.includes("point_of_interest")) landmark = c.long_name;
         });
+
+        // Create a comprehensive address for line1 (flatNumber field)
+        const addressParts = [
+          streetNumber,
+          route,
+          subarea,
+          area
+        ].filter(Boolean);
+
+        const fullAddress = addressParts.join(", ");
+
+        // Update form data with parsed information
         setFormData((prev) => ({
           ...prev,
           pincode,
           city,
           state,
           country,
-          area,
-          flatNumber,
-          landmark,
+          area: area || subarea,
+          flatNumber: fullAddress,
+          landmark: landmark || route || "",
         }));
-        setAddressSearch(data.result.formatted_address || "");
+
+        setAddressSearch(formattedAddress);
         setAddressSuggestions([]);
       }
-    } catch (err) {}
+    } catch (err) {
+      console.error("Error fetching place details:", err);
+    }
   };
+
+  // Enhanced landmarks fetching function
+  const fetchLandmarkSuggestions = async (input, location = null) => {
+    if (!input || input.length < 2) {
+      setLandmarkSuggestions([]);
+      return;
+    }
+    setLoadingLandmarks(true);
+    try {
+      const locationBias = location ? `&location=${location.lat},${location.lng}&radius=2000` : '';
+      const response = await fetch(
+        `/api/maps-autocomplete?type=autocomplete&input=${encodeURIComponent(input)}&types=establishment|point_of_interest${locationBias}`
+      );
+      const data = await response.json();
+      if (data.status === "OK") {
+        const landmarks = data.predictions.filter(prediction =>
+          prediction.types.some(type =>
+            ['establishment', 'point_of_interest', 'store', 'hospital', 'school', 'bank'].includes(type)
+          )
+        );
+        setLandmarkSuggestions(landmarks);
+      } else {
+        setLandmarkSuggestions([]);
+      }
+    } catch (err) {
+      console.error("Error fetching landmark suggestions:", err);
+      setLandmarkSuggestions([]);
+    }
+    setLoadingLandmarks(false);
+  };
+
+  useEffect(() => {
+    dispatch(
+      fetchProducts({
+        isAddon: true,
+      })
+    );
+  }, []);
 
   if (!checkoutOpen) return null;
 
@@ -1016,7 +1072,7 @@ export default function CheckoutPopup() {
                           : "translate-y-0"
                       }`}
                     >
-                      Search Address (Google Maps)
+                      Search Full Address (Google Maps)
                       <span
                         className={
                           activeField === "area" ? "text-red-500" : "text-black"
@@ -1033,25 +1089,48 @@ export default function CheckoutPopup() {
                         fetchAddressSuggestions(e.target.value);
                       }}
                       onFocus={() => setActiveField("area")}
-                      onBlur={() => setActiveField(null)}
+                      onBlur={() => {
+                        setTimeout(() => setActiveField(null), 200);
+                      }}
                       className="outline-none text-md w-full border-0 h-full"
-                      placeholder="Type address, area, landmark..."
+                      placeholder="Search your complete address..."
                       autoComplete="off"
                     />
                     {loadingSuggestions && (
-                      <div className="absolute top-full left-0 w-full bg-white border z-10">
-                        Loading...
+                      <div className="absolute top-full left-0 w-full bg-white border border-gray-200 z-20 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                          <span className="text-sm text-gray-500">
+                            Searching addresses...
+                          </span>
+                        </div>
                       </div>
                     )}
                     {addressSuggestions.length > 0 && (
-                      <ul className="absolute top-full left-0 w-full bg-white border z-10 max-h-48 overflow-y-auto">
-                        {addressSuggestions.map((sugg, idx) => (
+                      <ul className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-b-md shadow-lg z-20 max-h-60 overflow-y-auto">
+                        {addressSuggestions.map((sugg) => (
                           <li
                             key={sugg.place_id}
-                            className="px-3 py-2 cursor-pointer hover:bg-blue-100"
-                            onMouseDown={() => fetchPlaceDetails(sugg.place_id)}
+                            className="px-3 py-3 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              fetchPlaceDetails(sugg.place_id);
+                            }}
                           >
-                            {sugg.description}
+                            <div className="flex items-start gap-2">
+                              <MapPin
+                                size={16}
+                                className="text-gray-400 mt-1 flex-shrink-0"
+                              />
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {sugg.structured_formatting?.main_text}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {sugg.structured_formatting?.secondary_text}
+                                </p>
+                              </div>
+                            </div>
                           </li>
                         ))}
                       </ul>
@@ -1060,7 +1139,7 @@ export default function CheckoutPopup() {
 
                   <div
                     className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "pincode"
+                      activeField === "landmark"
                         ? "border-blue-600"
                         : "border-gray-300"
                     } rounded-md`}
@@ -1072,7 +1151,7 @@ export default function CheckoutPopup() {
                           : "translate-y-0"
                       }`}
                     >
-                      Landmark{" "}
+                      Nearby Landmark
                       <span
                         className={
                           activeField === "landmark"
@@ -1087,17 +1166,73 @@ export default function CheckoutPopup() {
                       type="text"
                       name="landmark"
                       value={formData.landmark}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        handleInputChange(e);
+                        // Fetch landmark suggestions based on current location
+                        if (formData.city && formData.state) {
+                          fetchLandmarkSuggestions(e.target.value, {
+                            lat: 21.1702, // Replace with actual lat/lng from selected address if available
+                            lng: 72.8311,
+                          });
+                        }
+                      }}
                       onFocus={() => setActiveField("landmark")}
-                      onBlur={() => setActiveField(null)}
-                      className="outline-none text-md z-10 w-full border-0 h-full "
+                      onBlur={() => {
+                        setTimeout(() => setActiveField(null), 200);
+                      }}
+                      className="outline-none text-md z-10 w-full border-0 h-full"
+                      placeholder="e.g., Near City Mall, Behind School"
                     />
+                    {loadingLandmarks && (
+                      <div className="absolute top-full left-0 w-full bg-white border border-gray-200 z-20 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                          <span className="text-sm text-gray-500">
+                            Finding landmarks...
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {landmarkSuggestions.length > 0 && activeField === "landmark" && (
+                      <ul className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-b-md shadow-lg z-20 max-h-48 overflow-y-auto">
+                        {landmarkSuggestions.map((landmark) => (
+                          <li
+                            key={landmark.place_id}
+                            className="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setFormData((prev) => ({
+                                ...prev,
+                                landmark:
+                                  landmark.structured_formatting?.main_text ||
+                                  landmark.description,
+                              }));
+                              setLandmarkSuggestions([]);
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {landmark.structured_formatting?.main_text}
+                                </p>
+                                {landmark.structured_formatting?.secondary_text && (
+                                  <p className="text-xs text-gray-500">
+                                    {landmark.structured_formatting.secondary_text}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div
                       className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                        activeField === "pincode"
+                        activeField === "city"
                           ? "border-blue-600"
                           : "border-gray-300"
                       } rounded-md`}

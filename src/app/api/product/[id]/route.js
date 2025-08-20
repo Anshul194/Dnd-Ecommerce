@@ -17,16 +17,21 @@ export async function GET(req, { params }) {
         { status: 404 }
       );
     }
-    const Product =
-      conn.models.Product || conn.model("Product", ProductModel.schema);
+    const Product = conn.models.Product || conn.model("Product", ProductModel.schema);
     const productRepo = new ProductRepository(Product);
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
-    console.log('Fetching product with ID:', params);
+    console.log('Fetching product with ID:', id);
     const response = await productController.getById(id, conn);
-    return NextResponse.json(response, {
-      status: response.success ? 200 : 404,
-    });
+
+    return NextResponse.json(
+      {
+        success: response.success,
+        message: response.message,
+        product: response.data
+      },
+      { status: response.success ? 200 : 404 }
+    );
   } catch (error) {
     return NextResponse.json(
       { success: false, message: error.message },
