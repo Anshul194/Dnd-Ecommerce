@@ -111,7 +111,9 @@ export default function Footer() {
 
   const getData = async () => {
     try {
-      const response = await axiosInstance.get("/page?groupByMainTitle=true");
+      const response = await axiosInstance.get("/page?groupByMainTitle=true", {
+        timeout: 30000, // Increase timeout to 30 seconds for this request
+      });
       const footerData = {};
 
       response.data.data.map((item) => {
@@ -176,16 +178,13 @@ export default function Footer() {
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">QUICK LINKS</h3>
                 <ul className="space-y-1">
-                  {data?.["quick-links"]?.map((link, index) => (
-                    <Link href={`/pages/${link?._id}`} key={index}>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                        >
-                          {link.title}
-                        </a>
-                      </li>
+                  {data?.["quick-links"]?.map?.((link, index) => (
+                    <Link
+                      href={`/pages/${link?._id ?? ""}`}
+                      key={index}
+                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
+                    >
+                      {link?.title ?? ""}
                     </Link>
                   ))}
                 </ul>
@@ -206,16 +205,13 @@ export default function Footer() {
                 </button>
                 {openAccordions.quickLinks && (
                   <ul className="space-y-1 pt-4">
-                    {data?.["quick-links"]?.map((link, index) => (
-                      <Link href={`/pages/${link?._id}`} key={index}>
-                        <li>
-                          <a
-                            href="#"
-                            className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
-                          >
-                            {link.title}
-                          </a>
-                        </li>
+                    {data?.["quick-links"]?.map?.((link, index) => (
+                      <Link
+                        href={`/pages/${link?._id ?? ""}`}
+                        key={index}
+                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
+                      >
+                        {link?.title ?? ""}
                       </Link>
                     ))}
                   </ul>
@@ -229,16 +225,13 @@ export default function Footer() {
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">ABOUT US</h3>
                 <ul className="space-y-1">
-                  {data?.["about-us"]?.map((link, index) => (
-                    <Link href={`/pages/${link?._id}`} key={index}>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                        >
-                          {link.title}
-                        </a>
-                      </li>
+                  {data?.["about-us"]?.map?.((link, index) => (
+                    <Link
+                      href={`/pages/${link?._id ?? ""}`}
+                      key={index}
+                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
+                    >
+                      {link?.title ?? ""}
                     </Link>
                   ))}
                 </ul>
@@ -259,16 +252,13 @@ export default function Footer() {
                 </button>
                 {openAccordions.aboutUs && (
                   <ul className="space-y-1 pt-4">
-                    {data?.["about-us"]?.map((link, index) => (
-                      <Link href={`/pages/${link?._id}`} key={index}>
-                        <li key={index}>
-                          <a
-                            href="#"
-                            className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                          >
-                            {link.title}
-                          </a>
-                        </li>
+                    {data?.["about-us"]?.map?.((link, index) => (
+                      <Link
+                        href={`/pages/${link?._id ?? ""}`}
+                        key={index}
+                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
+                      >
+                        {link?.title ?? ""}
                       </Link>
                     ))}
                   </ul>
@@ -282,16 +272,13 @@ export default function Footer() {
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">CLIENT CARE</h3>
                 <ul className="space-y-1">
-                  {data?.["Client Care"]?.map((link, index) => (
-                    <Link href={`/pages/${link?._id}`} key={index}>
-                      <li>
-                        <a
-                          href="#"
-                          className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                        >
-                          {link.title}
-                        </a>
-                      </li>
+                  {data?.["Client Care"]?.map?.((link, index) => (
+                    <Link
+                      href={`/pages/${link?._id ?? ""}`}
+                      key={index}
+                      className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
+                    >
+                      {link?.title ?? ""}
                     </Link>
                   ))}
                 </ul>
@@ -312,16 +299,13 @@ export default function Footer() {
                 </button>
                 {openAccordions.clientCare && (
                   <ul className="space-y-1 pt-4">
-                    {data?.["Client Care"]?.map((link, index) => (
-                      <Link href={`/pages/${link?._id}`} key={index}>
-                        <li>
-                          <a
-                            href="#"
-                            className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
-                          >
-                            {link.title}
-                          </a>
-                        </li>
+                    {data?.["Client Care"]?.map?.((link, index) => (
+                      <Link
+                        href={`/pages/${link?._id ?? ""}`}
+                        key={index}
+                        className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord"
+                      >
+                        {link?.title ?? ""}
                       </Link>
                     ))}
                   </ul>
@@ -335,12 +319,12 @@ export default function Footer() {
               <div className="space-y-1">
                 <div className="flex items-center">
                   <span className="text-sm">
-                    {data?.["contact-us"]?.[0]?.contactData?.phone}
+                    {data?.["contact-us"]?.[0]?.contactData?.phone ?? ""}
                   </span>
                 </div>
                 <div className="flex items-center">
                   <span className="text-sm">
-                    ✉ {data?.["contact-us"]?.[0]?.contactData?.email}
+                    ✉ {data?.["contact-us"]?.[0]?.contactData?.email ?? ""}
                   </span>
                 </div>
                 <div className="text-sm">
@@ -349,22 +333,13 @@ export default function Footer() {
                 <div className="text-sm">
                   <div className="font-bold mb-1">CONTACT HOURS</div>
                   <div>
-                    MON-WED:{" "}
-                    {
-                      data?.["contact-us"]?.[0]?.contactData?.contactHours
-                        ?.monWed
-                    }
+                    MON-WED: {data?.["contact-us"]?.[0]?.contactData?.contactHours?.monWed ?? ""}
                   </div>
                   <div>
-                    THU-FRI:{" "}
-                    {
-                      data?.["contact-us"]?.[0]?.contactData?.contactHours
-                        ?.thuFri
-                    }
+                    THU-FRI: {data?.["contact-us"]?.[0]?.contactData?.contactHours?.thuFri ?? ""}
                   </div>
                   <div>
-                    SAT:{" "}
-                    {data?.["contact-us"]?.[0]?.contactData?.contactHours?.sat}
+                    SAT: {data?.["contact-us"]?.[0]?.contactData?.contactHours?.sat ?? ""}
                   </div>
                 </div>
                 <div className="space-y-1">

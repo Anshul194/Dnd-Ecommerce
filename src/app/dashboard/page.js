@@ -25,7 +25,7 @@ export default function SidebarDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeComponent, setActiveComponent] = useState("dashboard");
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth ?? {});
 
   // Get active tab from URL on component mount
   useEffect(() => {
@@ -84,8 +84,10 @@ export default function SidebarDashboard() {
               <User size={20} className="text-red-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-center text-gray-900">{user?.name}</h3>
-              <p className="text-xs text-gray-500">{user?.email}</p>
+              <h3 className="font-semibold text-center text-gray-900">
+                {user?.name ?? "User"}
+              </h3>
+              <p className="text-xs text-gray-500">{user?.email ?? ""}</p>
             </div>
           </div>
 
@@ -103,18 +105,18 @@ export default function SidebarDashboard() {
               <span className="font-medium">Dashboard</span>
             </button>
 
-            {sidebarItems.map((item, index) => (
+            {sidebarItems?.map((item, index) => (
               <button
                 key={index}
-                onClick={() => handleTabChange(item.component)}
+                onClick={() => handleTabChange(item?.component ?? "")}
                 className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 w-full text-left ${
-                  activeComponent === item.component
+                  activeComponent === item?.component
                     ? "bg-red-100 text-red-600"
                     : "text-gray-700 hover:bg-gray-100 hover:text-red-600"
                 }`}
               >
-                <item.icon size={18} />
-                <span className="font-medium">{item.label}</span>
+                {item?.icon ? <item.icon size={18} /> : null}
+                <span className="font-medium">{item?.label ?? ""}</span>
               </button>
             ))}
           </nav>
