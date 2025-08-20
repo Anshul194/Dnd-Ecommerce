@@ -2,12 +2,12 @@ import mongoose from 'mongoose';
 
 const leadSchema = new mongoose.Schema(
   {
-    fullName: { type: String, required: true, trim: true },
-    email: { type: String, required: true, trim: true, lowercase: true },
-    phone: { type: String, trim: true },
+    fullName: { type: String, trim: true, default: null },
+    email: { type: String, trim: true, lowercase: true, default: null },
+    phone: { type: String, trim: true, default: null },
     source: {
       type: String,
-      enum: ['website', 'newsletter', 'popup', 'referral', 'manual', 'other'],
+      enum: ['website', 'newsletter', 'popup', 'referral', 'manual', 'other', 'IVR'],
       default: 'website',
     },
     status: {
@@ -28,6 +28,7 @@ const leadSchema = new mongoose.Schema(
     converted: { type: Boolean, default: false },
     lastContactedAt: { type: Date },
     nextFollowUpAt: { type: Date },
+    lastCallStatus: { type: String, default: null }, // Status of the last call
     followUpCount: { type: Number, default: 0 },
   },
   { timestamps: true }

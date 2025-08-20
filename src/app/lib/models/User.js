@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, default: false },
 
   createdAt: { type: Date, default: Date.now },
+
+  ivrUuid: { type: String, index: true, unique: true, sparse: true }, // IVR UUID for third-party sync
+  ivrRoleId: { type: String }, // IVR role_id from third-party
 });
 
 export default userSchema;
