@@ -93,8 +93,8 @@ export async function POST(request) {
     //console.log('user in POST /ivr/leads:', request.user);
 
     // ✅ Directly return the controller's response
-    return await manageAfterCall(body, conn);
-
+    const result = await manageAfterCall(body, conn);
+    return NextResponse.json(result, { status: 200 });
   } catch (err) {
     console.error('POST /crm/leads error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });

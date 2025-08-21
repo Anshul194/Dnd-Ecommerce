@@ -15,4 +15,4 @@ const CallLogSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.models.CallLog || mongoose.model("CallLog", CallLogSchema);
+export default CallLogSchema;

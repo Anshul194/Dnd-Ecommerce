@@ -154,11 +154,26 @@ const DynamicProductSlider = ({ content }) => {
                   {/* Product Header */}
                   <div className="rounded-xl relative">
                     <div className="flex h-40  justify-center">
-                      <img
+                      {/* <img
                         src={product?.thumbnail?.url || product?.images[0]?.url}
                         alt={product?.thumbnail?.alt || product?.images[0]?.alt}
                         className="w-full h-full object-cover"
+                      /> */}
+                      <img
+                        src={
+                          product?.thumbnail?.url ||
+                          product?.images?.[0]?.url ||
+                          "/images/placeholder.png" // fallback image in public/images
+                        }
+                        alt={
+                          product?.thumbnail?.alt ||
+                          product?.images?.[0]?.alt ||
+                          product?.name ||
+                          "Product image"
+                        }
+                        className="w-full h-full object-cover"
                       />
+
                     </div>
                   </div>
 
