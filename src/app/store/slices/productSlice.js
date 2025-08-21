@@ -43,6 +43,7 @@ export const fetchProducts = createAsyncThunk(
 export const fetchProductById = createAsyncThunk(
   "product/fetchProductById",
   async (id) => {
+    console.log("Fetching reviews for productId:", productId);
     const response = await axiosInstance.get(`/product/${id}`);
     console.log("Product Data:", response);
     console.log("Ingredients fetched:", response.data.data.ingredients);
