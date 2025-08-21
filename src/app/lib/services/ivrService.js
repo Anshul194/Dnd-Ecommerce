@@ -1,4 +1,6 @@
 import IVRRepository from '../repository/ivrRepository';
+import LeadSchema from '../models/Lead.js';
+import CallLogSchema from '../models/CallLog.js'; // Now imports only the schema
 
 class IVRService {
   constructor(conn) {
@@ -45,9 +47,11 @@ class IVRService {
 
       // --- Setup repositories ---
       const userRepo = this.repo;
-      // Inline LeadRepository for brevity
-      const LeadModel = conn.models.Lead || conn.model('Lead', require('../models/Lead.js'));
-      const CallLogModel = conn.models.CallLog || conn.model('CallLog', require('../models/CallLog.js'));
+      // Use schema from existing model if available, fallback to imported schema
+      const LeadSchemaFinal = conn.models.Lead?.schema || LeadSchema;
+      const CallLogSchemaFinal = conn.models.CallLog?.schema || CallLogSchema;
+      const LeadModel = conn.models.Lead || conn.model('Lead', LeadSchemaFinal);
+      const CallLogModel = conn.models.CallLog || conn.model('CallLog', CallLogSchemaFinal);
 
       // Helper functions for lead operations
       const findLead = async (query) => LeadModel.findOne(query);
