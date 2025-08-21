@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSubdomain, getDbConnection } from '../../lib/tenantDb.js';
 import callLogController from '../../lib/controllers/CallLogController.js';
-import { withUserAuth } from '../../middleware/commonAuth.js';
 
-// GET: Fetch all call logs with pagination, search, and population
+// GET: Fetch all call logs with pagination, search, and dynamic filters
 export async function GET(request) {
   try {
     const subdomain = getSubdomain(request);
