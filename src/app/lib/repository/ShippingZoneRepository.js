@@ -6,7 +6,7 @@ class ShippingZoneRepository {
   constructor() {
     this.getShippingZoneModel = this.getShippingZoneModel.bind(this);
     this.createShippingZone = this.createShippingZone.bind(this);
-    this.getShippingZoneById = this.getShippingZoneById.bind(this);
+    this.getShippingZoneByShippingId = this.getShippingZoneByShippingId.bind(this);
     this.getAllShippingZones = this.getAllShippingZones.bind(this);
     this.updateShippingZone = this.updateShippingZone.bind(this);
     this.deleteShippingZone = this.deleteShippingZone.bind(this);
@@ -33,11 +33,10 @@ class ShippingZoneRepository {
     return await shippingZone.save();
   }
 
-  async getShippingZoneById(id, conn) {
+  async getShippingZoneByShippingId(shippingId, conn) {
     const ShippingZone = this.getShippingZoneModel(conn);
-    if (!mongoose.Types.ObjectId.isValid(id)) throw new Error('Invalid shipping zone ID');
-    const shippingZone = await ShippingZone.findById(id).populate('shippingId');
-    if (!shippingZone) throw new Error('Shipping zone not found');
+    if (!mongoose.Types.ObjectId.isValid(shippingId)) throw new Error('Invalid shipping ID');
+    const shippingZone = await ShippingZone.findOne({ shippingId }).populate('shippingId');
     return shippingZone;
   }
 
@@ -83,10 +82,10 @@ class ShippingZoneRepository {
     return shippingZone;
   }
 
-  async deleteShippingZone(id, conn) {
+  async deleteShippingZone(shippingId, conn) {
     const ShippingZone = this.getShippingZoneModel(conn);
-    if (!mongoose.Types.ObjectId.isValid(id)) throw new Error('Invalid shipping zone ID');
-    const shippingZone = await ShippingZone.findByIdAndDelete(id);
+    if (!mongoose.Types.ObjectId.isValid(shippingId)) throw new Error('Invalid shipping ID');
+    const shippingZone = await ShippingZone.findOneAndDelete({ shippingId });
     if (!shippingZone) throw new Error('Shipping zone not found');
     return shippingZone;
   }

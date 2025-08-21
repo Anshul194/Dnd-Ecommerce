@@ -5,13 +5,17 @@ import { shippingSchema } from '../models/Shipping.js'; // Import the schema
 class ShippingZoneService {
   async createShippingZone(data, conn) {
     console.log('[ShippingZoneService.createShippingZone] Creating shipping zone:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
+    const existing = await this.getShippingZoneByShippingId(data.shippingId, conn);
+    if (existing) {
+      throw new Error('Shipping zone already exists for this shipping ID');
+    }
     await this.validateShippingZoneData(data, false, conn);
     return await shippingZoneRepository.createShippingZone(data, conn);
   }
 
-  async getShippingZoneById(id, conn) {
-    console.log('[ShippingZoneService.getShippingZoneById] Fetching shipping zone:', id, 'Connection:', conn.name || 'global mongoose');
-    return await shippingZoneRepository.getShippingZoneById(id, conn);
+  async getShippingZoneByShippingId(shippingId, conn) {
+    console.log('[ShippingZoneService.getShippingZoneByShippingId] Fetching shipping zone for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
+    return await shippingZoneRepository.getShippingZoneByShippingId(shippingId, conn);
   }
 
   async getAllShippingZones(conn, { page = 1, limit = 10, search = '' }) {
@@ -24,15 +28,22 @@ class ShippingZoneService {
     return await shippingZoneRepository.getShippingZonesByShippingId(shippingId, conn);
   }
 
-  async updateShippingZone(id, data, conn) {
-    console.log('[ShippingZoneService.updateShippingZone] Updating shipping zone:', id, 'Data:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
-    await this.validateShippingZoneData(data, true, conn);
-    return await shippingZoneRepository.updateShippingZone(id, data, conn);
+  async updateShippingZone(shippingId, data, conn) {
+    console.log('[ShippingZoneService.updateShippingZone] Updating shipping zone for shippingId:', shippingId, 'Data:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
+    const existing = await this.getShippingZoneByShippingId(shippingId, conn);
+    if (existing) {
+      await this.validateShippingZoneData(data, true, conn);
+      return await shippingZoneRepository.updateShippingZone(existing._id, data, conn);
+    } else {
+      data.shippingId = shippingId;
+      await this.validateShippingZoneData(data, false, conn);
+      return await this.createShippingZone(data, conn);
+    }
   }
 
-  async deleteShippingZone(id, conn) {
-    console.log('[ShippingZoneService.DELETE] Deleting shipping zone:', id, 'Connection:', conn.name || 'global mongoose');
-    return await shippingZoneRepository.deleteShippingZone(id, conn);
+  async deleteShippingZone(shippingId, conn) {
+    console.log('[ShippingZoneService.deleteShippingZone] Deleting shipping zone for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
+    return await shippingZoneRepository.deleteShippingZone(shippingId, conn);
   }
 
   async validateShippingZoneData(data, isUpdate = false, conn) {

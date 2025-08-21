@@ -14,13 +14,13 @@ class ShippingZoneController {
     }
   }
 
-  async getShippingZoneById(req, _res, id, conn) {
+  async getShippingZoneByShippingId(req, _res, shippingId, conn) {
     try {
-      console.log('[ShippingZoneController.getShippingZoneById] Fetching shipping zone:', id, 'Connection:', conn.name || 'global mongoose');
-      const shippingZone = await shippingZoneService.getShippingZoneById(id, conn);
+      console.log('[ShippingZoneController.getShippingZoneByShippingId] Fetching shipping zone for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
+      const shippingZone = await shippingZoneService.getShippingZoneByShippingId(shippingId, conn);
       return NextResponse.json({ status: 'success', message: 'Shipping zone fetched successfully', shippingZone }, { status: 200 });
     } catch (err) {
-      console.error('[ShippingZoneController.getShippingZoneById] Error:', err.message, err.stack);
+      console.error('[ShippingZoneController.getShippingZoneByShippingId] Error:', err.message, err.stack);
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
   }
@@ -66,23 +66,23 @@ class ShippingZoneController {
     }
   }
 
-  async updateShippingZone(req, _res, body, id, conn) {
+  async updateShippingZone(req, _res, body, shippingId, conn) {
     try {
       const userId = req.user._id;
-      console.log('[ShippingZoneController.updateShippingZone] Updating shipping zone:', id, 'for user:', userId, 'Body:', JSON.stringify(body, null, 2), 'Connection:', conn.name || 'global mongoose');
-      const shippingZone = await shippingZoneService.updateShippingZone(id, body, conn);
-      return NextResponse.json({ status: 'success', message: 'Shipping zone updated successfully', shippingZone }, { status: 200 });
+      console.log('[ShippingZoneController.updateShippingZone] Updating shipping zone for shippingId:', shippingId, 'for user:', userId, 'Body:', JSON.stringify(body, null, 2), 'Connection:', conn.name || 'global mongoose');
+      const shippingZone = await shippingZoneService.updateShippingZone(shippingId, body, conn);
+      return NextResponse.json({ status: 'success', message: shippingZone._id ? 'Shipping zone updated successfully' : 'Shipping zone created successfully', shippingZone }, { status: shippingZone._id ? 200 : 201 });
     } catch (err) {
       console.error('[ShippingZoneController.updateShippingZone] Error:', err.message, err.stack);
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
   }
 
-  async deleteShippingZone(req, _res, id, conn) {
+  async deleteShippingZone(req, _res, shippingId, conn) {
     try {
       const userId = req.user._id;
-      console.log('[ShippingZoneController.deleteShippingZone] Deleting shipping zone:', id, 'for user:', userId, 'Connection:', conn.name || 'global mongoose');
-      const shippingZone = await shippingZoneService.deleteShippingZone(id, conn);
+      console.log('[ShippingZoneController.deleteShippingZone] Deleting shipping zone for shippingId:', shippingId, 'for user:', userId, 'Connection:', conn.name || 'global mongoose');
+      const shippingZone = await shippingZoneService.deleteShippingZone(shippingId, conn);
       return NextResponse.json({ status: 'success', message: 'Shipping zone deleted successfully', shippingZone }, { status: 200 });
     } catch (err) {
       console.error('[ShippingZoneController.deleteShippingZone] Error:', err.message, err.stack);
