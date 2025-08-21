@@ -27,6 +27,32 @@ class CallLogController {
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
   }
+
+  async getCallLogsByLeadId(req, _res, leadId, conn) {
+    try {
+      console.log('[CallLogController.getCallLogsByLeadId] Fetching call logs for leadId:', leadId, 'Connection:', conn.name || 'global mongoose');
+      const { searchParams } = new URL(req.url);
+      const page = parseInt(searchParams.get('page')) || 1;
+      const limit = parseInt(searchParams.get('limit')) || 10;
+      const search = searchParams.get('search') || '';
+      
+      const result = await callLogService.getCallLogsByLeadId(conn, { leadId, page, limit, search });
+      return NextResponse.json({ 
+        status: 'success', 
+        message: 'Call logs for lead fetched successfully', 
+        callLogs: result.callLogs,
+        pagination: {
+          currentPage: result.currentPage,
+          totalPages: result.totalPages,
+          totalItems: result.totalItems,
+          itemsPerPage: result.itemsPerPage,
+        }
+      }, { status: 200 });
+    } catch (err) {
+      console.error('[CallLogController.getCallLogsByLeadId] Error:', err.message, err.stack);
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+  }
 }
 
 const callLogController = new CallLogController();

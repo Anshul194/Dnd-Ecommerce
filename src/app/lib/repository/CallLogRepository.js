@@ -1,12 +1,13 @@
 import mongoose from 'mongoose';
 import CallLogSchema from '../models/CallLog.js';
 import leadSchema from '../models/Lead.js';
-import userSchema from '../models/User.js'; // Placeholder for User schema
+import userSchema from '../models/User.js';
 
 class CallLogRepository {
   constructor() {
     this.getCallLogModel = this.getCallLogModel.bind(this);
     this.getAllCallLogs = this.getAllCallLogs.bind(this);
+    this.getCallLogsByLeadId = this.getCallLogsByLeadId.bind(this);
   }
 
   getCallLogModel(conn) {
@@ -35,6 +36,37 @@ class CallLogRepository {
           ],
         }
       : {};
+    const skip = (page - 1) * limit;
+    const [callLogs, totalItems] = await Promise.all([
+      CallLog.find(query)
+        .populate('agent leadId')
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      CallLog.countDocuments(query),
+    ]);
+
+    return {
+      callLogs,
+      totalItems,
+      currentPage: Number(page),
+      itemsPerPage: Number(limit),
+      totalPages: Math.ceil(totalItems / limit),
+    };
+  }
+
+  async getCallLogsByLeadId(conn, { leadId, page, limit, search }) {
+    const CallLog = this.getCallLogModel(conn);
+    const query = {
+      leadId,
+      ...(search && {
+        $or: [
+          { caller: { $regex: search, $options: 'i' } },
+          { agentName: { $regex: search, $options: 'i' } },
+          { status: { $regex: search, $options: 'i' } },
+        ],
+      }),
+    };
     const skip = (page - 1) * limit;
     const [callLogs, totalItems] = await Promise.all([
       CallLog.find(query)
