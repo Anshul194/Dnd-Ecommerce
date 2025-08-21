@@ -30,7 +30,7 @@ import {
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
 function ProductPage({ params }) {
-  const { id: slug } = params; // treat 'id' param as slug
+  const { id: slug } = React.use(params); // unwrap params with React.use()
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [expandedSection, setExpandedSection] = useState(null);
@@ -719,6 +719,8 @@ function ProductPage({ params }) {
           <HowToUse data={data} />
           {/* <Ingredient /> */}
           <Ingredient data={data} />
+
+{console?.log("data review",data)}
 
           <DescriptionLayout data={data} />
           <ProductReview id={data?._id} />

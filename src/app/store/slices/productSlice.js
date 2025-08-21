@@ -72,16 +72,20 @@ export const addReview = createAsyncThunk(
 
 export const fetchProductReviews = createAsyncThunk(
   "product/fetchProductReviews",
-  async (productId) => {
+  async (id) => {
     try {
+      console?.log("Fetching reviews for productId:", id);
       const response = await axiosInstance.get(
-        `/review?productId=${productId}`,
-        { timeout: 30000 } // Increase timeout to 30 seconds
-      );
+        `/review?productId=${id}`      );
+      // Check for success property in response
+      if (response.data && response.data.success === false) {
+        // Backend returned an error, return empty array
+        return [];
+      }
       console.log("Product Reviews Data:", response);
       return response.data.data;
     } catch (error) {
-      console.error("Error fetching product reviews:", error);
+      console.log("Error fetching product reviews:", error?.message);
       // Return empty array to avoid crashing
       return [];
     }
