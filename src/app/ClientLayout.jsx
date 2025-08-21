@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import useTokenRefresh from "../hooks/useTokenRefresh";
 
 export default function ClientLayout({ children }) {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth ?? {});
   
   // Use the token refresh hook only if user is authenticated
   useTokenRefresh();
@@ -14,7 +14,7 @@ export default function ClientLayout({ children }) {
   return (
     <>
       <Navbar />
-      {children}
+      {children ?? null}
       <Footer />
     </>
   );

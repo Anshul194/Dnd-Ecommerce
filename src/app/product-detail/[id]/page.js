@@ -67,6 +67,7 @@ function ProductPage({ params }) {
   const getProductData = async () => {
     try {
       const response = await dispatch(fetchProductById(id));
+      console.log("product data :[[[[]]]] ", response);
       console.log("Fetched Product Data:", response.payload);
       setSelectedPack(response?.payload?.variants[0]?._id);
       setData(response.payload);
@@ -516,75 +517,78 @@ function ProductPage({ params }) {
                   )}
 
                 {/* Benefits Accordion */}
-                {Array.isArray(data.benefits) && data.benefits.length > 0 && (
-                  <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <button
-                      onClick={() => toggleSection("benefits")}
-                      className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
-                        expandedSection === "benefits"
-                          ? "bg-green-50 hover:bg-green-100"
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <span
-                        className={`font-semibold text-base ${
+                {data?.benefits &&
+                  Array.isArray(data?.benefits) &&
+                  data?.benefits?.length > 0 && (
+                    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                      <button
+                        onClick={() => toggleSection("benefits")}
+                        className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
                           expandedSection === "benefits"
-                            ? "text-green-700"
-                            : "text-green-600"
+                            ? "bg-green-50 hover:bg-green-100"
+                            : "hover:bg-gray-50"
                         }`}
                       >
-                        Benefits
-                      </span>
-                      <div
-                        className={`p-1 rounded-full transition-all duration-300 ${
-                          expandedSection === "benefits"
-                            ? "bg-green-200 rotate-180"
-                            : "bg-gray-100"
-                        }`}
-                      >
-                        <ChevronDown
-                          className={`transition-colors duration-200 ${
+                        <span
+                          className={`font-semibold text-base ${
                             expandedSection === "benefits"
                               ? "text-green-700"
-                              : "text-gray-600"
+                              : "text-green-600"
                           }`}
-                          size={18}
-                        />
-                      </div>
-                    </button>
-                    <div
-                      className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
-                        expandedSection === "benefits"
-                          ? "max-h-96 opacity-100"
-                          : "max-h-0 opacity-0"
-                      } overflow-hidden`}
-                    >
-                      <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
-                        <ul className="space-y-2">
-                          {data?.benefits?.length > 0 &&
-                            data?.benefits?.map((item, idx) => (
-                              <li
-                                key={item._id || idx}
-                                className="flex items-start gap-2"
-                              >
-                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                                <div
-                                  className="leading-relaxed"
-                                  dangerouslySetInnerHTML={{
-                                    __html: item.description,
-                                  }}
-                                ></div>
-                              </li>
-                            ))}
-                        </ul>
+                        >
+                          Benefits
+                        </span>
+                        <div
+                          className={`p-1 rounded-full transition-all duration-300 ${
+                            expandedSection === "benefits"
+                              ? "bg-green-200 rotate-180"
+                              : "bg-gray-100"
+                          }`}
+                        >
+                          <ChevronDown
+                            className={`transition-colors duration-200 ${
+                              expandedSection === "benefits"
+                                ? "text-green-700"
+                                : "text-gray-600"
+                            }`}
+                            size={18}
+                          />
+                        </div>
+                      </button>
+                      <div
+                        className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
+                          expandedSection === "benefits"
+                            ? "max-h-96 opacity-100"
+                            : "max-h-0 opacity-0"
+                        } overflow-hidden`}
+                      >
+                        <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
+                          <ul className="space-y-2">
+                            {data?.benefits?.length > 0 &&
+                              data?.benefits?.map((item, idx) => (
+                                <li
+                                  key={item._id || idx}
+                                  className="flex items-start gap-2"
+                                >
+                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                                  <div
+                                    className="leading-relaxed"
+                                    dangerouslySetInnerHTML={{
+                                      __html: item.description,
+                                    }}
+                                  ></div>
+                                </li>
+                              ))}
+                          </ul>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Precautions Accordion */}
-                {Array.isArray(data.precautions) &&
-                  data.precautions.length > 0 && (
+                {data?.precautions &&
+                  Array.isArray(data?.precautions) &&
+                  data?.precautions?.length > 0 && (
                     <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                       <button
                         onClick={() => toggleSection("precautions")}
@@ -715,7 +719,7 @@ function ProductPage({ params }) {
           <Ingredient data={data} />
 
           <DescriptionLayout data={data} />
-          <ProductReview id={data._id} />
+          <ProductReview id={data?._id} />
           <FrequentlyPurchased />
         </div>
       </div>

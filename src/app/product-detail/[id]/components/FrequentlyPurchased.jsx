@@ -114,7 +114,7 @@ export default function FrequentlyPurchased() {
           <div className="flex gap-3 justify-between pb-4 w-full">
             {products?.products?.length > 0 &&
               products.products.map((product) => (
-                <Link key={product.id} href={`/product-detail/${product._id}`}>
+                <Link key={product._id} href={`/product-detail/${product._id}`}>
                   <div className="bg-white flex-shrink-0 min-w-64 max-w-[300px] w-1/4">
                     {/* Product Image */}
                     <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">

@@ -1,6 +1,6 @@
 import shippingZoneRepository from '../repository/ShippingZoneRepository.js';
 import mongoose from 'mongoose';
-import { ShippingModel } from '../models/Shipping.js';
+import { shippingSchema } from '../models/Shipping.js'; // Import the schema
 
 class ShippingZoneService {
   async createShippingZone(data, conn) {
@@ -19,6 +19,11 @@ class ShippingZoneService {
     return await shippingZoneRepository.getAllShippingZones(conn, { page, limit, search });
   }
 
+  async getShippingZonesByShippingId(shippingId, conn) {
+    console.log('[ShippingZoneService.getShippingZonesByShippingId] Fetching shipping zones for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
+    return await shippingZoneRepository.getShippingZonesByShippingId(shippingId, conn);
+  }
+
   async updateShippingZone(id, data, conn) {
     console.log('[ShippingZoneService.updateShippingZone] Updating shipping zone:', id, 'Data:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
     await this.validateShippingZoneData(data, true, conn);
@@ -26,7 +31,7 @@ class ShippingZoneService {
   }
 
   async deleteShippingZone(id, conn) {
-    console.log('[ShippingZoneService.deleteShippingZone] Deleting shipping zone:', id, 'Connection:', conn.name || 'global mongoose');
+    console.log('[ShippingZoneService.DELETE] Deleting shipping zone:', id, 'Connection:', conn.name || 'global mongoose');
     return await shippingZoneRepository.deleteShippingZone(id, conn);
   }
 
@@ -61,7 +66,7 @@ class ShippingZoneService {
 
     // Check if shippingId exists in the Shipping collection
     if (data.shippingId) {
-      const Shipping = conn.models.Shipping || conn.model('Shipping', mongoose.model('Shipping').schema);
+      const Shipping = conn.models.Shipping || conn.model('Shipping', shippingSchema);
       const shipping = await Shipping.findById(data.shippingId);
       if (!shipping) {
         throw new Error('Shipping ID does not exist');

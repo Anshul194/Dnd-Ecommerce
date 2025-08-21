@@ -51,6 +51,21 @@ class ShippingZoneController {
     }
   }
 
+  async getShippingZonesByShippingId(req, _res, shippingId, conn) {
+    try {
+      console.log('[ShippingZoneController.getShippingZonesByShippingId] Fetching shipping zones for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
+      const shippingZones = await shippingZoneService.getShippingZonesByShippingId(shippingId, conn);
+      return NextResponse.json({
+        status: 'success',
+        message: 'Shipping zones fetched successfully',
+        shippingZones,
+      }, { status: 200 });
+    } catch (err) {
+      console.error('[ShippingZoneController.getShippingZonesByShippingId] Error:', err.message, err.stack);
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+  }
+
   async updateShippingZone(req, _res, body, id, conn) {
     try {
       const userId = req.user._id;

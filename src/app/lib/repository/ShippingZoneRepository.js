@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { shippingZoneSchema } from '../models/ShippingZone.js';
+import { shippingSchema } from '../models/Shipping.js'; // Import the schema
 
 class ShippingZoneRepository {
   constructor() {
@@ -9,6 +10,7 @@ class ShippingZoneRepository {
     this.getAllShippingZones = this.getAllShippingZones.bind(this);
     this.updateShippingZone = this.updateShippingZone.bind(this);
     this.deleteShippingZone = this.deleteShippingZone.bind(this);
+    this.getShippingZonesByShippingId = this.getShippingZonesByShippingId.bind(this);
   }
 
   getShippingZoneModel(conn) {
@@ -18,6 +20,10 @@ class ShippingZoneRepository {
     console.log('ShippingZoneRepository using connection:', conn.name || 'global mongoose');
     // Clear cached model for this connection to ensure updated schema is used
     delete conn.models.ShippingZone;
+    // Ensure Shipping model is registered for the connection
+    if (!conn.models.Shipping) {
+      conn.model('Shipping', shippingSchema);
+    }
     return conn.models.ShippingZone || conn.model('ShippingZone', shippingZoneSchema);
   }
 
@@ -55,6 +61,14 @@ class ShippingZoneRepository {
       itemsPerPage: Number(limit),
       totalPages: Math.ceil(totalItems / limit),
     };
+  }
+
+  async getShippingZonesByShippingId(shippingId, conn) {
+    const ShippingZone = this.getShippingZoneModel(conn);
+    const shippingZones = await ShippingZone.find({ shippingId })
+      .populate('shippingId')
+      .lean();
+    return shippingZones;
   }
 
   async updateShippingZone(id, update, conn) {

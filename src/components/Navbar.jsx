@@ -121,6 +121,18 @@ const Navbar = () => {
     }
   };
 
+  // Hydration-safe user name display
+  const [displayName, setDisplayName] = useState("User");
+  useEffect(() => {
+    if (isAuthenticated && user?.name) {
+      setDisplayName(user.name);
+    } else if (isAuthenticated) {
+      setDisplayName("User");
+    } else {
+      setDisplayName("Guest");
+    }
+  }, [isAuthenticated, user?.name]);
+
   if (
     pathname.includes("/signup") ||
     pathname.includes("/login") ||
@@ -190,7 +202,7 @@ const Navbar = () => {
                   </button>
                 </div>
                 <span className="text-gray-600 text-sm">
-                  {isAuthenticated ? user?.name || "User" : "Guest"}
+                  {displayName ?? "User"}
                 </span>
               </div>
             </div>
@@ -321,7 +333,7 @@ const Navbar = () => {
                     </button>
                   </div>
                   <span className="text-gray-600 text-sm">
-                    {isAuthenticated ? user?.name || "User" : "Guest"}
+                    {displayName ?? "User"}
                   </span>
                 </div>
               </div>

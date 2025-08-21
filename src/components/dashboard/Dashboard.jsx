@@ -41,8 +41,8 @@ const Dashboard = ({ user }) => {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
         <p className="text-gray-600">
           Hello{" "}
-          <span className="font-semibold text-gray-900">{user?.name}</span> (
-          not <span className="font-semibold text-gray-900">{user?.name}</span>{" "}
+          <span className="font-semibold text-gray-900">{user?.name ?? "User"}</span> (
+          not <span className="font-semibold text-gray-900">{user?.name ?? "User"}</span>{" "}
           ?{" "}
           <a href="/logout" className="text-green-500 hover:underline">
             Log out
@@ -81,21 +81,21 @@ const Dashboard = ({ user }) => {
 
       {/* Dashboard Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {dashboardCards.map((card, index) => (
+        {(dashboardCards ?? []).map((card, index) => (
           <div
             key={index}
             className="bg-white rounded-lg p-6 text-center shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer"
           >
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 hover:bg-red-200 transition-colors">
-              <card.icon size={24} className="text-red-600" />
+              {card?.icon ? <card.icon size={24} className="text-red-600" /> : null}
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">{card.title}</h3>
-            <p className="text-sm text-gray-600 mb-4">{card.description}</p>
+            <h3 className="font-semibold text-gray-900 mb-2">{card?.title ?? ""}</h3>
+            <p className="text-sm text-gray-600 mb-4">{card?.description ?? ""}</p>
             <a
-              href={card.href}
+              href={card?.href ?? "#"}
               className="inline-block text-sm text-green-500 font-medium hover:underline"
             >
-              {card.action}
+              {card?.action ?? ""}
             </a>
           </div>
         ))}

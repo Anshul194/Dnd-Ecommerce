@@ -33,7 +33,7 @@ export default function RootLayout({ children }) {
             />
             <CheckoutPopup />
             <OrderPopup />
-            {children}
+            {children ?? null}
           </ClientLayout>
         </Providers>
       </body>

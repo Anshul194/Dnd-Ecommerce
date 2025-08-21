@@ -58,12 +58,13 @@ export default function ProductReview({ id }) {
         console.log("reviews ==> ", response);
       } catch (error) {
         console.error("Error fetching reviews:", error);
+        setData([]); // fallback to empty array
       }
     };
     fetchReviews();
   }, [id]);
 
-  if (!data?.length > 0) return null;
+  if (!data || !data.Reviews || data.Reviews.length === 0) return null;
 
   return (
     <div className="py-10 lg:py-20 px-4">

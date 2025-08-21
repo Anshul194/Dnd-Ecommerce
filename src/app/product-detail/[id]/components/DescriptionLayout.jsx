@@ -54,7 +54,7 @@ export default function DescriptionLayout({ data }) {
           ></div>
           <div className="flex gap-4">
             <div className="flex flex-col gap-4 flex-1">
-              {data.descriptionImages?.slice(1).map((image, index) => (
+              {data?.descriptionImages?.slice(1)?.map((image, index) => (
                 <div
                   key={index}
                   className="bg-gray-400 rounded-lg flex-1 aspect-square"

@@ -184,11 +184,68 @@ async getAll(query, conn) {
   }
 }
 
-  async getById(id, conn) {
+ async getById(id, conn) {
     try {
       const product = await this.service.getProductById(id, conn);
-      if (!product)
+      if (!product) {
         return { success: false, message: "Product not found", data: null };
+      }
+      // Normalize images, descriptionImages, thumbnail, and influencerVideos
+      if (Array.isArray(product.images)) {
+        product.images = product.images.map(img => {
+          if (typeof img === 'string') {
+            return { url: img, alt: '' };
+          } else if (img && typeof img === 'object') {
+            return { url: img.url || img.file || '', alt: img.alt || '' };
+          }
+          return { url: '', alt: '' };
+        });
+      }
+      if (Array.isArray(product.descriptionImages)) {
+        product.descriptionImages = product.descriptionImages.map(img => {
+          if (typeof img === 'string') {
+            return { url: img, alt: '' };
+          } else if (img && typeof img === 'object') {
+            return { url: img.url || img.file || '', alt: img.alt || '' };
+          }
+          return { url: '', alt: '' };
+        });
+      }
+      if (product.thumbnail && typeof product.thumbnail === 'string') {
+        product.thumbnail = { url: product.thumbnail, alt: '' };
+      } else if (product.thumbnail && typeof product.thumbnail === 'object') {
+        product.thumbnail = { url: product.thumbnail.url || '', alt: product.thumbnail.alt || '' };
+      }
+      const nestedImageFields = ['ingredients', 'benefits', 'precautions'];
+      for (const field of nestedImageFields) {
+        if (Array.isArray(product[field])) {
+          product[field] = product[field].map(item => {
+            if (!item) return item;
+            if (typeof item.image === 'string') {
+              item.image = { url: item.image, alt: item.alt || '' };
+            } else if (item.image && typeof item.image === 'object') {
+              item.image = { url: item.image.url || '', alt: item.image.alt || item.alt || '' };
+            }
+            return item;
+          });
+        }
+      }
+      // Normalize influencerVideos
+      if (Array.isArray(product.influencerVideos)) {
+        product.influencerVideos = product.influencerVideos.map(video => ({
+          _id: video._id,
+          title: video.title || '',
+          description: video.description || '',
+          videoUrl: video.videoUrl || '',
+          videoType: video.videoType || '',
+          type: video.type || '',
+          productId: video.productId || null,
+          createdAt: video.createdAt || null,
+          updatedAt: video.updatedAt || null,
+        }));
+      } else {
+        product.influencerVideos = [];
+      }
       return { success: true, message: "Product fetched", data: product };
     } catch (error) {
       return { success: false, message: error.message, data: null };
