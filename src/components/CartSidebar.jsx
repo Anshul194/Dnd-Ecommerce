@@ -221,13 +221,15 @@ const CartSidebar = () => {
                   <Link href={`/product-detail//${item._id}`} key={index}>
                     <div className="relative w-fit flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
                       <div className="h-20 aspect-square  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                        <Image
-                          src={item?.thumbnail?.url}
-                          alt={item?.thumbnail?.alt || "Product"}
-                          width={56}
-                          height={64}
-                          className="object-cover h-full w-full"
-                        />
+                        {item?.thumbnail?.url && item.thumbnail.url !== "" ? (
+                          <Image
+                            src={item.thumbnail.url}
+                            alt={item.thumbnail.alt || "Product"}
+                            width={56}
+                            height={64}
+                            className="object-cover h-full w-full"
+                          />
+                        ) : null}
                       </div>
                       <div className="w-fit h-fit">
                         <div className="text-xs w-40  min-h-7 text-gray-600 mb-1">

@@ -113,63 +113,70 @@ export default function FrequentlyPurchased() {
         <div id="products-slider" className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-3 justify-between pb-4 w-full">
             {products?.products?.length > 0 &&
-              products.products.map((product) => (
-                <Link key={product._id} href={`/product-detail/${product._id}`}>
-                  <div className="bg-white flex-shrink-0 min-w-64 max-w-[300px] w-1/4">
-                    {/* Product Image */}
-                    <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">
-                      <img
-                        src={
-                          product?.thumbnail?.url || product?.images?.[0]?.url
-                        }
-                        alt={
-                          product?.thumbnail?.alt || product?.images?.[0]?.alt
-                        }
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                      {/* Heart Icon */}
-                      <div className="absolute top-3 right-3">
-                        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
-                          <Heart className="w-4 h-4 text-gray-400" />
-                        </div>
-                      </div>
+              products.products.map((product) => {
+                const imgSrc =
+                  product?.thumbnail?.url || product?.images?.[0]?.url || null;
+                return (
+                  <Link key={product._id} href={`/product-detail/${product._id}`}>
+                    <div className="bg-white flex-shrink-0 min-w-64 max-w-[300px] w-1/4">
+                      {/* Product Image */}
+                      <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">
+                        {imgSrc ? (
+                          <img
+                            src={imgSrc}
+                            alt={
+                              product?.thumbnail?.alt ||
+                              product?.images?.[0]?.alt ||
+                              "Product"
+                            }
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : null}
 
-                      {/* Out of Stock Badge */}
-                      {product.outOfStock && (
-                        <div className="absolute top-3 left-3">
-                          <div className="bg-gray-600 text-white text-xs px-2 py-1 rounded">
-                            OUT OF STOCK
+                        {/* Heart Icon */}
+                        <div className="absolute top-3 right-3">
+                          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+                            <Heart className="w-4 h-4 text-gray-400" />
                           </div>
                         </div>
-                      )}
-                    </div>
 
-                    {/* Product Info */}
-                    <div>
-                      <h3 className="font-medium poppins text-black mb-2">
-                        {product.name}
-                      </h3>
-                      {product?.reviews > 0 && (
-                        <StarRating
-                          rating={product.rating}
-                          reviews={product.reviews}
-                        />
-                      )}
-                      <div className="text-lg poppins-medium font-bold text-black">
-                        $
-                        {product.variants?.[0]?.salePrice ||
-                          product.variants?.[0]?.price ||
-                          200}
-                        {product.variants?.[0]?.salePrice && (
-                          <span className="line-through ml-2 text-gray-500">
-                            ${product.variants?.[0]?.price}
-                          </span>
+                        {/* Out of Stock Badge */}
+                        {product.outOfStock && (
+                          <div className="absolute top-3 left-3">
+                            <div className="bg-gray-600 text-white text-xs px-2 py-1 rounded">
+                              OUT OF STOCK
+                            </div>
+                          </div>
                         )}
                       </div>
+
+                      {/* Product Info */}
+                      <div>
+                        <h3 className="font-medium poppins text-black mb-2">
+                          {product.name}
+                        </h3>
+                        {product?.reviews > 0 && (
+                          <StarRating
+                            rating={product.rating}
+                            reviews={product.reviews}
+                          />
+                        )}
+                        <div className="text-lg poppins-medium font-bold text-black">
+                          $
+                          {product.variants?.[0]?.salePrice ||
+                            product.variants?.[0]?.price ||
+                            200}
+                          {product.variants?.[0]?.salePrice && (
+                            <span className="line-through ml-2 text-gray-500">
+                              ${product.variants?.[0]?.price}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
           </div>
         </div>
       </div>
