@@ -67,7 +67,10 @@ const CartSidebar = () => {
   };
   const handelRedirect = (e, item) => {
     e.preventDefault();
-    route.push(`/product-detail/${item?.product?.id}`);
+    // Use slug for navigation
+    if (item?.product?.slug) {
+      route.push(`/product-detail/${item.product.slug}`);
+    }
   };
 
   // Fetch cart items whenever the cart sidebar is opened
@@ -128,10 +131,12 @@ const CartSidebar = () => {
               cartItems.map((item, index) => (
                 <div
                   key={index}
-                  onClick={(e) => handelRedirect(e, item)}
-                  className="flex items-center cursor-pointer gap-4 pb-6 border-b border-gray-200"
+                  className="flex items-center gap-4 pb-6 border-b border-gray-200"
                 >
-                  <div className="w-16 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
+                  <div
+                    className="w-16 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden cursor-pointer"
+                    onClick={(e) => handelRedirect(e, item)}
+                  >
                     <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
                       <div className="w-12 h-16 bg-white rounded-sm overflow-hidden shadow-sm flex items-center justify-center">
                         {item?.product ? (
@@ -154,7 +159,10 @@ const CartSidebar = () => {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900 leading-tight">
+                        <h3
+                          className="text-sm font-medium text-gray-900 leading-tight cursor-pointer"
+                          onClick={(e) => handelRedirect(e, item)}
+                        >
                           {item?.product?.name}
                         </h3>
                         {/* <p className="text-xs text-gray-500 mt-1">
@@ -218,7 +226,7 @@ const CartSidebar = () => {
             <div className="text-sm flex gap-2 overflow-auto">
               {products?.products?.length > 0 &&
                 products.products.map((item, index) => (
-                  <Link href={`/product-detail//${item._id}`} key={index}>
+                  <Link href={`/product-detail/${item?.slug}`} key={index}>
                     <div className="relative w-fit flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
                       <div className="h-20 aspect-square  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
                         {item?.thumbnail?.url && item.thumbnail.url !== "" ? (

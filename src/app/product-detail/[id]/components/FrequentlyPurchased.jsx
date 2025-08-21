@@ -117,7 +117,7 @@ export default function FrequentlyPurchased() {
                 const imgSrc =
                   product?.thumbnail?.url || product?.images?.[0]?.url || null;
                 return (
-                  <Link key={product._id} href={`/product-detail/${product._id}`}>
+                  <Link key={product._id} href={`/product-detail/${product.slug}`}>
                     <div className="bg-white flex-shrink-0 min-w-64 max-w-[300px] w-1/4">
                       {/* Product Image */}
                       <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">

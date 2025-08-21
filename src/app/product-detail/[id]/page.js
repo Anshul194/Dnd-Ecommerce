@@ -30,7 +30,7 @@ import {
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
 function ProductPage({ params }) {
-  const { id } = use(params);
+  const { id: slug } = params; // treat 'id' param as slug
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [expandedSection, setExpandedSection] = useState(null);
@@ -66,7 +66,8 @@ function ProductPage({ params }) {
 
   const getProductData = async () => {
     try {
-      const response = await dispatch(fetchProductById(id));
+      // Fetch by slug instead of id
+      const response = await dispatch(fetchProductById(slug));
       console.log("product data :[[[[]]]] ", response);
       console.log("Fetched Product Data:", response.payload);
       setSelectedPack(response?.payload?.variants[0]?._id);
@@ -153,7 +154,8 @@ function ProductPage({ params }) {
 
   useEffect(() => {
     getProductData();
-  }, [id]);
+    // Only run on mount or slug change
+  }, [slug]);
 
   return (
     <>

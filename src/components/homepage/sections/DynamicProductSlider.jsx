@@ -173,7 +173,6 @@ const DynamicProductSlider = ({ content }) => {
                         }
                         className="w-full h-full object-cover"
                       />
-
                     </div>
                   </div>
 
@@ -204,7 +203,7 @@ const DynamicProductSlider = ({ content }) => {
                     </div>
 
                     {/* Add to Cart Button */}
-                    <Link href={`/product-detail/${product._id}`}>
+                    <Link href={`/product-detail/${product.slug}`}>
                       <button className="w-full mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200">
                         View
                       </button>
