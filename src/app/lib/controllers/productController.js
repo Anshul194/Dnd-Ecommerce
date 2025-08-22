@@ -184,73 +184,123 @@ async getAll(query, conn) {
   }
 }
 
- async getById(id, conn) {
-    try {
-      const product = await this.service.getProductById(id, conn);
-      if (!product) {
-        return { success: false, message: "Product not found", data: null };
-      }
-      // Normalize images, descriptionImages, thumbnail, and influencerVideos
-      if (Array.isArray(product.images)) {
-        product.images = product.images.map(img => {
-          if (typeof img === 'string') {
-            return { url: img, alt: '' };
-          } else if (img && typeof img === 'object') {
-            return { url: img.url || img.file || '', alt: img.alt || '' };
-          }
-          return { url: '', alt: '' };
-        });
-      }
-      if (Array.isArray(product.descriptionImages)) {
-        product.descriptionImages = product.descriptionImages.map(img => {
-          if (typeof img === 'string') {
-            return { url: img, alt: '' };
-          } else if (img && typeof img === 'object') {
-            return { url: img.url || img.file || '', alt: img.alt || '' };
-          }
-          return { url: '', alt: '' };
-        });
-      }
-      if (product.thumbnail && typeof product.thumbnail === 'string') {
-        product.thumbnail = { url: product.thumbnail, alt: '' };
-      } else if (product.thumbnail && typeof product.thumbnail === 'object') {
-        product.thumbnail = { url: product.thumbnail.url || '', alt: product.thumbnail.alt || '' };
-      }
-      const nestedImageFields = ['ingredients', 'benefits', 'precautions'];
-      for (const field of nestedImageFields) {
-        if (Array.isArray(product[field])) {
-          product[field] = product[field].map(item => {
-            if (!item) return item;
-            if (typeof item.image === 'string') {
-              item.image = { url: item.image, alt: item.alt || '' };
-            } else if (item.image && typeof item.image === 'object') {
-              item.image = { url: item.image.url || '', alt: item.image.alt || item.alt || '' };
-            }
-            return item;
-          });
-        }
-      }
-      // Normalize influencerVideos
-      if (Array.isArray(product.influencerVideos)) {
-        product.influencerVideos = product.influencerVideos.map(video => ({
-          _id: video._id,
-          title: video.title || '',
-          description: video.description || '',
-          videoUrl: video.videoUrl || '',
-          videoType: video.videoType || '',
-          type: video.type || '',
-          productId: video.productId || null,
-          createdAt: video.createdAt || null,
-          updatedAt: video.updatedAt || null,
-        }));
-      } else {
-        product.influencerVideos = [];
-      }
-      return { success: true, message: "Product fetched", data: product };
-    } catch (error) {
-      return { success: false, message: error.message, data: null };
+async getById(id, conn) {
+  try {
+    const product = await this.service.getProductById(id, conn);
+    if (!product) {
+      return { success: false, message: "Product not found", data: null };
     }
+
+    // Convert product to plain object to avoid modifying the Mongoose document
+    const productObj = product.toObject ? product.toObject() : product;
+
+    // Normalize images, descriptionImages, thumbnail
+    if (Array.isArray(productObj.images)) {
+      productObj.images = productObj.images.map(img => {
+        if (typeof img === 'string') {
+          return { url: img, alt: '' };
+        } else if (img && typeof img === 'object') {
+          return { url: img.url || img.file || '', alt: img.alt || '' };
+        }
+        return { url: '', alt: '' };
+      });
+    }
+    if (Array.isArray(productObj.descriptionImages)) {
+      productObj.descriptionImages = productObj.descriptionImages.map(img => {
+        if (typeof img === 'string') {
+          return { url: img, alt: '' };
+        } else if (img && typeof img === 'object') {
+          return { url: img.url || img.file || '', alt: img.alt || '' };
+        }
+        return { url: '', alt: '' };
+      });
+    }
+    if (productObj.thumbnail && typeof productObj.thumbnail === 'string') {
+      productObj.thumbnail = { url: productObj.thumbnail, alt: '' };
+    } else if (productObj.thumbnail && typeof productObj.thumbnail === 'object') {
+      productObj.thumbnail = { url: productObj.thumbnail.url || '', alt: productObj.thumbnail.alt || '' };
+    }
+
+    // Normalize benefits to a single object with numeric keys
+    if (Array.isArray(productObj.benefits)) {
+      const benefitsObj = {};
+      productObj.benefits.forEach((item, index) => {
+        let description = '';
+        if (!item) {
+          return;
+        } else if (typeof item === 'object' && item.description) {
+          // Correct schema format: use description field
+          description = item.description;
+        } else if (typeof item === 'string' && /[0-9a-f]{24}$/.test(item)) {
+          // Handle malformed string with appended ObjectID
+          description = item.replace(/[0-9a-f]{24}$/, '').trim();
+        } else if (typeof item === 'object' && Object.keys(item).some(key => /^\d+$/.test(key))) {
+          // Handle previous character object format
+          description = Object.values(item).join('');
+        } else {
+          // Fallback: convert to string
+          description = String(item);
+        }
+        if (description) {
+          benefitsObj[index] = description;
+        }
+      });
+      productObj.benefits = benefitsObj;
+    } else {
+      productObj.benefits = {};
+    }
+
+    // Normalize precautions to a single object with numeric keys
+    if (Array.isArray(productObj.precautions)) {
+      const precautionsObj = {};
+      productObj.precautions.forEach((item, index) => {
+        let description = '';
+        if (!item) {
+          return;
+        } else if (typeof item === 'object' && item.description) {
+          // Correct schema format: use description field
+          description = item.description;
+        } else if (typeof item === 'string' && /[0-9a-f]{24}$/.test(item)) {
+          // Handle malformed string with appended ObjectID
+          description = item.replace(/[0-9a-f]{24}$/, '').trim();
+        } else if (typeof item === 'object' && Object.keys(item).some(key => /^\d+$/.test(key))) {
+          // Handle previous character object format
+          description = Object.values(item).join('');
+        } else {
+          // Fallback: convert to string
+          description = String(item);
+        }
+        if (description) {
+          precautionsObj[index] = description;
+        }
+      });
+      productObj.precautions = precautionsObj;
+    } else {
+      productObj.precautions = {};
+    }
+
+    // Normalize influencerVideos
+    if (Array.isArray(productObj.influencerVideos)) {
+      productObj.influencerVideos = productObj.influencerVideos.map(video => ({
+        _id: video._id,
+        title: video.title || '',
+        description: video.description || '',
+        videoUrl: video.videoUrl || '',
+        videoType: video.videoType || '',
+        type: video.type || '',
+        productId: video.productId || null,
+        createdAt: video.createdAt || null,
+        updatedAt: video.updatedAt || null,
+      }));
+    } else {
+      productObj.influencerVideos = [];
+    }
+
+    return { success: true, message: "Product fetched", data: productObj };
+  } catch (error) {
+    return { success: false, message: error.message, data: null };
   }
+}
 
   async update(id, body, conn) {
     body = normalizeProductBody(body);
