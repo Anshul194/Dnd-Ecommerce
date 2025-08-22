@@ -3,6 +3,14 @@ import slugify from 'slugify';
 
 const productSchema = new mongoose.Schema(
   {
+    price: {
+      type: Number,
+      default: null,
+    },
+    salePrice: {
+      type: Number,
+      default: null,
+    },
     name: {
       type: String,
       required: true,

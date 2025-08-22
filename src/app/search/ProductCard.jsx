@@ -38,6 +38,10 @@ const ProductCard = ({ product }) => {
     //   setShowAuthModal(true);
     //   return;
     // }
+
+    const price = product?.variants[0]
+      ? (product?.variants[0]?.salePrice || product?.variants[0]?.price)
+      : (product?.salePrice || product?.price);
     dispatch(
       addToCart({
         product: {
@@ -48,7 +52,7 @@ const ProductCard = ({ product }) => {
           slug: product.slug,
         },
         quantity: 1,
-        price: product?.variants[0]?.salePrice || product?.price,
+        price: price,
         variant: product?.variants[0]?._id,
       })
     );
@@ -146,27 +150,26 @@ const ProductCard = ({ product }) => {
               {/* Price and Rating */}
               <div className="flex justify-between items-start mb-4">
                 <div className="flex flex-col">
-                  {product?.variants[0]?.salePrice &&
-                  product?.variants[0]?.price ? (
+                  {product?.variants?.[0]?.price ? (
                     <>
-                      <span className="text-lg font-bold text-gray-800">
-                        Rs {product?.variants[0]?.salePrice}
-                      </span>
+                      {product?.variants[0]?.salePrice && (
+                        <span className="text-lg font-bold text-gray-800">
+                          Rs {product?.variants[0]?.salePrice}
+                        </span>
+                      )}
                       <span className="text-xs text-gray-400 h-5  line-through">
                         Rs {product?.variants[0]?.price}
                       </span>
                     </>
                   ) : (
                     <>
-                      {" "}
-                      <span className="text-lg font-bold text-gray-800">
-                        Rs{" "}
-                        {product?.variants[0]?.salePrice ||
-                          product?.variants[0]?.price ||
-                          200}
-                      </span>
-                      <span className="text-lg h-5  font-bold text-gray-800">
-                        {product?.variants[0]?.salePrice}
+                      {product?.salePrice && (
+                        <span className="text-lg font-bold text-gray-800">
+                          Rs {product?.salePrice}
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-400 h-5  line-through">
+                        Rs {product?.price}
                       </span>
                     </>
                   )}
