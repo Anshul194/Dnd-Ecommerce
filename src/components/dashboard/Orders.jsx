@@ -700,11 +700,13 @@ const Orders = () => {
                               key={product?._id}
                               className="flex-1 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                             >
-                              <img
-                                src={product?.thumbnail?.url}
-                                alt={product?.name}
-                                className="w-full h-32 object-cover rounded-lg mb-3"
-                              />
+                              {product?.thumbnail?.url ? (
+                                <img
+                                  src={product.thumbnail.url}
+                                  alt={product?.name}
+                                  className="w-full h-32 object-cover rounded-lg mb-3"
+                                />
+                              ) : null}
                               <h3 className="font-medium text-sm text-gray-900 mb-1">
                                 {product?.name}
                               </h3>

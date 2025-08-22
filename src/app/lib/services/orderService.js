@@ -69,10 +69,10 @@ class OrderService {
       // Fetch customer email from User model
       const User = conn.models.User || conn.model('User', UserSchema);
       const user = await User.findById(userId).select('email').exec();
-      if (!user || !user.email) {
-        throw new Error(`User with ID ${userId} not found or has no email`);
+      let customerEmail = null;
+      if (user && user.email) {
+        customerEmail = user.email;
       }
-      const customerEmail = user.email;
 
       // Validate delivery option
       const validDeliveryOptions = [
