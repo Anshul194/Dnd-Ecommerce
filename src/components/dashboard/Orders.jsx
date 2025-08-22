@@ -662,7 +662,7 @@ const Orders = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-white text-black rounded-lg shadow-sm p-6">
+              <div className="bg-white text-black rounded-lg shadow-sm p-6 mt-8">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold">You Might Also Like</h2>
                   <div className="flex space-x-2">
