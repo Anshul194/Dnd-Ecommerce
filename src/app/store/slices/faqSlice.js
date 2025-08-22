@@ -7,7 +7,6 @@ export const fetchFaqs = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/faqs?type=website");
-      console?.log("faq", response.data);
       return response.data?.faqs?.data || [];
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

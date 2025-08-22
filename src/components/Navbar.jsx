@@ -285,9 +285,9 @@ const Navbar = () => {
               <div className="space-y-4 mb-6">
                 {categories?.length > 0 &&
                   categories?.map((item, index) => (
-                    <a
+                    <Link
                       key={item.name}
-                      href={item.href}
+                      href={`/search?category=${item._id}`}
                       className="block text-gray-700 cursor-pointer capitalize hover:text-green-500 py-2 text-sm font-medium transition-all duration-200 hover:translate-x-2 hover:bg-green-50 rounded px-2"
                       onClick={toggleMenu}
                       style={{
@@ -299,7 +299,7 @@ const Navbar = () => {
                       }}
                     >
                       {item.name}
-                    </a>
+                    </Link>
                   ))}
               </div>
 

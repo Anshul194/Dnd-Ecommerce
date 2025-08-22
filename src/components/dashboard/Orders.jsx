@@ -202,26 +202,26 @@ const Orders = () => {
   };
 
   useEffect(() => {
-    // Fetch orders when the component mounts
-    if (user?._id) {
+    // Fetch orders only once when user._id changes
+    if (user?._id && orders.length === 0) {
       dispatch(
         fetchOrders({
           userId: user._id,
         })
       );
     }
-  }, [dispatch, user?._id]);
+  }, [dispatch, user?._id, orders.length]);
 
   useEffect(() => {
-    if (orderId) {
+    // Only fetch order details if not already loaded
+    if (orderId && (!currentOrder || currentOrder._id !== orderId)) {
       dispatch(fetchOrderById(orderId));
     }
-  }, [orderId, dispatch]);
+  }, [orderId, dispatch, currentOrder]);
 
   useEffect(() => {
-    console.log("Products effect");
-    if (products.length === 0) {
-      console.log("Fetching products condition...");
+    // Only fetch products if not already loaded
+    if (!products?.products || products.products.length === 0) {
       dispatch(
         fetchProducts({
           page: 1,
@@ -230,9 +230,8 @@ const Orders = () => {
         })
       );
     }
-  }, [products, orderId]);
+  }, [dispatch, products]);
 
-  console.log("Products Data is===>", products);
   if (orderId) {
     return (
       <>
@@ -700,11 +699,13 @@ const Orders = () => {
                               key={product?._id}
                               className="flex-1 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                             >
-                              <img
-                                src={product?.thumbnail?.url}
-                                alt={product?.name}
-                                className="w-full h-32 object-cover rounded-lg mb-3"
-                              />
+                              {product?.thumbnail?.url ? (
+                                <img
+                                  src={product.thumbnail.url}
+                                  alt={product?.name}
+                                  className="w-full h-32 object-cover rounded-lg mb-3"
+                                />
+                              ) : null}
                               <h3 className="font-medium text-sm text-gray-900 mb-1">
                                 {product?.name}
                               </h3>
