@@ -171,6 +171,7 @@ export default function CheckoutPopup() {
   };
 
   const handleAddAddress = async () => {
+    console.log("Adding address:", formData);
     if (
       formData.pincode === "" ||
       formData.firstName === "" ||
