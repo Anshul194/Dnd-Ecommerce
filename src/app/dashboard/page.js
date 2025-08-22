@@ -85,9 +85,11 @@ export default function SidebarDashboard() {
             </div>
             <div>
               <h3 className="font-semibold text-center text-gray-900">
-                {user?.name ?? "User"}
+                {typeof user?.name === "string" && user?.name.trim() !== "" ? user.name : "User"}
               </h3>
-              <p className="text-xs text-gray-500">{user?.email ?? ""}</p>
+              <p className="text-xs text-gray-500">
+                {typeof user?.email === "string" && user?.email.trim() !== "" ? user.email : ""}
+              </p>
             </div>
           </div>
 

@@ -33,6 +33,8 @@ const Dashboard = ({ user }) => {
     },
   ];
 
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
   return (
     <>
       {/* Dashboard Content */}
@@ -41,13 +43,16 @@ const Dashboard = ({ user }) => {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
         <p className="text-gray-600">
           Hello{" "}
-          <span className="font-semibold text-gray-900">{user?.name ?? "User"}</span> (
-          not <span className="font-semibold text-gray-900">{user?.name ?? "User"}</span>{" "}
-          ?{" "}
+          <span className="font-semibold text-gray-900">
+            {mounted ? (typeof user?.name === "string" && user?.name.trim() !== "" ? user.name : "User") : ""}
+          </span>
+          {mounted && user?.email ? (
+            <span className="text-xs text-gray-500"> ({user.email})</span>
+          ) : null}
+          {" "}
           <a href="/logout" className="text-green-500 hover:underline">
             Log out
-          </a>{" "}
-          )
+          </a>
         </p>
       </div>
 
