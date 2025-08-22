@@ -3,7 +3,7 @@ import slugify from 'slugify';
 
 const productSchema = new mongoose.Schema(
   {
-    productPrice: {
+    price: {
       type: Number,
       default: null,
     },
