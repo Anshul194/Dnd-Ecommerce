@@ -7,7 +7,6 @@ export const fetchBlogs = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/blog");
-      console.log("Fetched blogs:", response.data);
       return response.data?.data || [];
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -20,7 +19,6 @@ export const fetchBlogById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(`/blog/${id}`);
-      console.log("Fetched blog by ID:", response.data);
       return response.data?.data || null;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

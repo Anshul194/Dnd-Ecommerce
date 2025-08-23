@@ -22,7 +22,6 @@ export const fetchOrders = createAsyncThunk(
       params: queryParams,
     });
 
-    console.log("Orders Data:", response.data.data);
     return response.data.data;
   }
 );
@@ -32,7 +31,6 @@ export const fetchOrderById = createAsyncThunk(
   "order/fetchOrderById",
   async (id) => {
     const response = await axiosInstance.get(`/orders/${id}`);
-    console.log("Order Details:------------->", response);
     return response.data.data;
   }
 );

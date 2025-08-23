@@ -1,5 +1,6 @@
 import axiosInstance from "@/axiosConfig/axiosInstance";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { toast } from "react-toastify";
 
 const isBrowser =
   typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -130,6 +131,21 @@ export const createUserAddress = createAsyncThunk(
     }
   }
 );
+
+export const updateUserProfile = createAsyncThunk(
+  "auth/updateUserProfile",
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.put(`/user?id=${id}`, data);
+      console.log("User profile updated successfully:", response.data);
+
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const updateUserAddress = createAsyncThunk(
   "auth/updateUserAddress",
   async ({ addressId, addressData }, { rejectWithValue }) => {
@@ -154,6 +170,21 @@ export const deleteUserAddress = createAsyncThunk(
       console.log("Address deleted successfully:", response.data);
       return addressId; // Return the address ID to remove it from the state
     } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const changePassword = createAsyncThunk(
+  "auth/changePassword",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post(`/user/change-password`, data);
+      console.log("Password changed successfully:", response.data);
+      return response.data.data;
+    } catch (error) {
+      console.log("Error changing password: ===>", error);
+      toast.error(error?.response.data?.message);
       return rejectWithValue(error.response.data);
     }
   }
@@ -267,6 +298,20 @@ const authSlice = createSlice({
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        console.log("pay load is ===>", action.payload);
+        state.loading = false;
+        state.user = action.payload;
+        localStorage.setItem("user", JSON.stringify(action.payload));
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

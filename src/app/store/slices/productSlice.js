@@ -5,7 +5,6 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 export const fetchProducts = createAsyncThunk(
   "product/fetchProducts",
   async (payload) => {
-    console.log("Fetching products with payload:", payload);
     const quaryParams = new URLSearchParams();
     payload.page && quaryParams.append("page", payload.page);
     payload.limit && quaryParams.append("limit", payload.limit);
@@ -34,8 +33,6 @@ export const fetchProducts = createAsyncThunk(
     const response = await axiosInstance.get("/product", {
       params: quaryParams,
     });
-    console.log("Response from fetchProducts:", response);
-    console.log("Products Data:", response.data.products.data);
     return response.data.products.data;
   }
 );
@@ -43,10 +40,7 @@ export const fetchProducts = createAsyncThunk(
 export const fetchProductById = createAsyncThunk(
   "product/fetchProductById",
   async (id) => {
-    console.log("Fetching reviews for productId:", productId);
     const response = await axiosInstance.get(`/product/${id}`);
-    console.log("Product Data:", response);
-    console.log("Ingredients fetched:", response.data.product.ingredients);
 
     return response.data.product;
   }
@@ -61,10 +55,8 @@ export const addReview = createAsyncThunk(
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("Review added successfully:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error adding review:", error);
       throw error;
     }
   }
@@ -72,16 +64,17 @@ export const addReview = createAsyncThunk(
 
 export const fetchProductReviews = createAsyncThunk(
   "product/fetchProductReviews",
-  async (productId) => {
-    try {
+  async (id) => {
+  try {
       const response = await axiosInstance.get(
-        `/review?productId=${productId}`,
-        { timeout: 30000 } // Increase timeout to 30 seconds
-      );
-      console.log("Product Reviews Data:", response);
+        `/review?productId=${id}`      );
+      // Check for success property in response
+      if (response.data && response.data.success === false) {
+        // Backend returned an error, return empty array
+        return [];
+      }
       return response.data.data;
     } catch (error) {
-      console.error("Error fetching product reviews:", error);
       // Return empty array to avoid crashing
       return [];
     }

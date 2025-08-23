@@ -146,9 +146,9 @@ const DynamicProductSlider = ({ content }) => {
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {products?.products?.length > 0 &&
-              products?.products?.map((product) => (
+              products?.products?.map((product, index) => (
                 <div
-                  key={product.id}
+                  key={index}
                   className="min-w-[200px] bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200"
                 >
                   {/* Product Header */}
@@ -173,7 +173,6 @@ const DynamicProductSlider = ({ content }) => {
                         }
                         className="w-full h-full object-cover"
                       />
-
                     </div>
                   </div>
 
@@ -204,7 +203,7 @@ const DynamicProductSlider = ({ content }) => {
                     </div>
 
                     {/* Add to Cart Button */}
-                    <Link href={`/product-detail/${product._id}`}>
+                    <Link href={`/product-detail/${product.slug}`}>
                       <button className="w-full mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200">
                         View
                       </button>

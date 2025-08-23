@@ -233,7 +233,7 @@ const Wishlist = () => {
                   </button>
                   <div className="flex space-x-2">
                     <Link
-                      href={`/product-detail/${item.product.slug}`}
+                      href={`/product-detail/${item?.product?.slug}`}
                       className="w-1/2"
                     >
                       <button className="flex-1 px-3 py-2 border w-full border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 text-sm">

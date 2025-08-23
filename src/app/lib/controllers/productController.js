@@ -2,9 +2,7 @@ import { categorySchema } from '../models/Category.js';
 import { attributeSchema } from '../models/Attribute.js';
 import mongoose from 'mongoose';
 
-
 function normalizeProductBody(body) {
-  // Parse JSON arrays/objects if sent as strings (from FormData)
   const arrayFields = [
     "howToUseSteps",
     "ingredients",
@@ -12,26 +10,101 @@ function normalizeProductBody(body) {
     "precautions",
     "attributeSet",
     "frequentlyPurchased",
-    "highlights"
+    "highlights",
+    "searchKeywords"
   ];
+  
   arrayFields.forEach((field) => {
     if (typeof body[field] === "string") {
       try {
         body[field] = JSON.parse(body[field]);
       } catch {
-        // fallback: wrap single value in array of object if needed
-        if (["howToUseSteps", "ingredients", "benefits", "precautions"].includes(field)) {
-          body[field] = [ { description: body[field] } ];
-        } else {
-          body[field] = [body[field]];
-        }
+        body[field] = [];
       }
+    } else if (body[field] === "" || body[field] === null || body[field] === undefined) {
+      body[field] = [];
+    }
+    
+    // Normalize array fields that expect objects
+    if (["howToUseSteps", "ingredients", "benefits", "precautions"].includes(field) && Array.isArray(body[field])) {
+      body[field] = body[field].filter(item => item && typeof item === 'object').map(item => ({
+        title: item.title || '',
+        description: item.description || '',
+        image: item.image || undefined, // Keep as string (URL)
+        alt: item.alt || undefined,
+        name: item.name || undefined, // For ingredients
+        quantity: item.quantity || undefined // For ingredients
+      }));
     }
   });
+
+  // Normalize images and descriptionImages
+  if (body.images) {
+    body.images = body.images.filter(Boolean).map(img => ({
+      url: img.url || '',
+      alt: img.alt || ''
+    }));
+  }
+  if (body.descriptionImages) {
+    body.descriptionImages = body.descriptionImages.filter(Boolean).map(img => ({
+      url: img.url || '',
+      alt: img.alt || ''
+    }));
+  }
+  
+  // Handle thumbnail normalization - FIXED
+  if (body.thumbnail) {
+    // If thumbnail is a string (URL), convert to object
+    if (typeof body.thumbnail === 'string') {
+      body.thumbnail = { 
+        url: body.thumbnail, 
+        alt: '' 
+      };
+    } else if (typeof body.thumbnail === 'object') {
+      // Ensure thumbnail object has both url and alt
+      body.thumbnail = { 
+        url: body.thumbnail.url || '', 
+        alt: body.thumbnail.alt || '' 
+      };
+    }
+    
+    // If no valid URL, remove thumbnail
+    if (!body.thumbnail.url) {
+      delete body.thumbnail;
+    }
+  }
+
   // Convert boolean fields
   if (typeof body.isTopRated === "string") {
     body.isTopRated = body.isTopRated === "true";
   }
+  if (typeof body.isAddon === "string") {
+    body.isAddon = body.isAddon === "true";
+  }
+
+  // Handle ObjectId fields
+  const optionalObjectIdFields = ['subcategory', 'brand', 'templateId'];
+  optionalObjectIdFields.forEach(field => {
+    if (body[field] === '' || body[field] === null || body[field] === undefined) {
+      body[field] = null;
+    } else if (body[field] && typeof body[field] === 'string' && mongoose.Types.ObjectId.isValid(body[field])) {
+      body[field] = new mongoose.Types.ObjectId(body[field]);
+    }
+  });
+
+  if (body.category && typeof body.category === 'string' && mongoose.Types.ObjectId.isValid(body.category)) {
+    body.category = new mongoose.Types.ObjectId(body.category);
+  }
+
+  // Normalize attributeSet
+  if (Array.isArray(body.attributeSet)) {
+    body.attributeSet = body.attributeSet.map(attr => ({
+      attributeId: typeof attr.attributeId === 'string' && mongoose.Types.ObjectId.isValid(attr.attributeId)
+        ? new mongoose.Types.ObjectId(attr.attributeId)
+        : attr.attributeId
+    }));
+  }
+
   return body;
 }
 
@@ -42,9 +115,9 @@ class ProductController {
 
   async create(body, conn) {
     body = normalizeProductBody(body);
+    console.log('Normalized product body:', JSON.stringify(body, null, 2));
+    
     try {
-      // Basic validation
-      console.log("Creating product with body:", conn);
       if (!body.name || !body.category) {
         return {
           success: false,
@@ -52,7 +125,7 @@ class ProductController {
           data: null,
         };
       }
-      // Check for duplicate by name or slug
+      
       const existing = await this.service.productRepository.model.findOne({
         $or: [
           { name: body.name },
@@ -68,7 +141,6 @@ class ProductController {
         };
       }
 
-      // Validate referenced ObjectIds
       if (!conn || !conn.models) {
         return {
           success: false,
@@ -76,11 +148,10 @@ class ProductController {
           data: null,
         };
       }
+      
       const models = conn.models;
-      console.log("Validating referenced ObjectIds:", models);
-      // Category
+      
       if (body.category) {
-        // Register Category model if missing
         if (!models.Category) {
           models.Category = conn.model("Category", categorySchema);
         }
@@ -96,7 +167,7 @@ class ProductController {
             data: null,
           };
       }
-      // Subcategory
+      
       if (body.subcategory) {
         if (!models.Subcategory) {
           models.Subcategory = conn.model("Subcategory", categorySchema);
@@ -113,29 +184,14 @@ class ProductController {
             data: null,
           };
       }
-      // Brand
-      if (body.brand) {
-        const brandExists = await models.Brand?.findById(body.brand);
-        if (!brandExists)
-          return {
-            success: false,
-            message: "Brand does not exist",
-            data: null,
-          };
-      }
-      // attributeSet
+      
       if (Array.isArray(body.attributeSet)) {
         for (const attr of body.attributeSet) {
           if (attr.attributeId) {
             if (!models.Attribute) {
-              models.Attribute = conn.model(
-                "Attribute",
-                require("../models/Attribute.js").attributeSchema
-              );
+              models.Attribute = conn.model("Attribute", attributeSchema);
             }
-            const attrExists = await models.Attribute?.findById(
-              attr.attributeId
-            );
+            const attrExists = await models.Attribute.findById(attr.attributeId);
             if (!attrExists)
               return {
                 success: false,
@@ -145,11 +201,10 @@ class ProductController {
           }
         }
       }
-      // frequentlyPurchased
+      
       if (Array.isArray(body.frequentlyPurchased)) {
         for (const prodId of body.frequentlyPurchased) {
-          const prodExists =
-            await this.service.productRepository.model.findById(prodId);
+          const prodExists = await this.service.productRepository.model.findById(prodId);
           if (!prodExists)
             return {
               success: false,
@@ -162,77 +217,74 @@ class ProductController {
       const product = await this.service.createProduct(body, conn);
       return { success: true, message: "Product created", data: product };
     } catch (error) {
+      console.error('Create error:', error);
       return { success: false, message: error.message, data: null };
     }
   }
 
-async getAll(query, conn) {
-  console.log('Controller received query:', query); // Log query
-  try {
-    const products = await this.service.getAllProducts(query, conn);
-    return {
-      success: true,
-      message: "Products fetched",
-      data: products
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: error.message,
-      data: null
-    };
+  async getAll(query, conn) {
+    console.log('Controller received query:', query);
+    try {
+      const products = await this.service.getAllProducts(query, conn);
+      return {
+        success: true,
+        message: "Products fetched",
+        data: products
+      };
+    } catch (error) {
+      console.error('GetAll error:', error);
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
   }
-}
 
- async getById(id, conn) {
+  async getById(id, conn) {
     try {
       const product = await this.service.getProductById(id, conn);
       if (!product) {
         return { success: false, message: "Product not found", data: null };
       }
-      // Normalize images, descriptionImages, thumbnail, and influencerVideos
-      if (Array.isArray(product.images)) {
-        product.images = product.images.map(img => {
-          if (typeof img === 'string') {
-            return { url: img, alt: '' };
-          } else if (img && typeof img === 'object') {
-            return { url: img.url || img.file || '', alt: img.alt || '' };
-          }
-          return { url: '', alt: '' };
-        });
+
+      const productObj = product.toObject ? product.toObject() : product;
+
+      if (Array.isArray(productObj.images)) {
+        productObj.images = productObj.images.map(img => ({
+          url: img.url || '',
+          alt: img.alt || ''
+        }));
       }
-      if (Array.isArray(product.descriptionImages)) {
-        product.descriptionImages = product.descriptionImages.map(img => {
-          if (typeof img === 'string') {
-            return { url: img, alt: '' };
-          } else if (img && typeof img === 'object') {
-            return { url: img.url || img.file || '', alt: img.alt || '' };
-          }
-          return { url: '', alt: '' };
-        });
+      if (Array.isArray(productObj.descriptionImages)) {
+        productObj.descriptionImages = productObj.descriptionImages.map(img => ({
+          url: img.url || '',
+          alt: img.alt || ''
+        }));
       }
-      if (product.thumbnail && typeof product.thumbnail === 'string') {
-        product.thumbnail = { url: product.thumbnail, alt: '' };
-      } else if (product.thumbnail && typeof product.thumbnail === 'object') {
-        product.thumbnail = { url: product.thumbnail.url || '', alt: product.thumbnail.alt || '' };
+      if (productObj.thumbnail) {
+        productObj.thumbnail = { url: productObj.thumbnail.url || '', alt: productObj.thumbnail.alt || '' };
       }
-      const nestedImageFields = ['ingredients', 'benefits', 'precautions'];
+
+      const nestedImageFields = ['ingredients', 'benefits', 'precautions', 'howToUseSteps'];
       for (const field of nestedImageFields) {
-        if (Array.isArray(product[field])) {
-          product[field] = product[field].map(item => {
+        if (Array.isArray(productObj[field])) {
+          productObj[field] = productObj[field].map(item => {
             if (!item) return item;
-            if (typeof item.image === 'string') {
-              item.image = { url: item.image, alt: item.alt || '' };
-            } else if (item.image && typeof item.image === 'object') {
-              item.image = { url: item.image.url || '', alt: item.image.alt || item.alt || '' };
-            }
-            return item;
+            return {
+              title: item.title || '',
+              description: item.description || '',
+              image: item.image || undefined, // Keep as string (URL)
+              alt: item.alt || undefined,
+              name: item.name || undefined,
+              quantity: item.quantity || undefined
+            };
           });
         }
       }
-      // Normalize influencerVideos
-      if (Array.isArray(product.influencerVideos)) {
-        product.influencerVideos = product.influencerVideos.map(video => ({
+
+      if (Array.isArray(productObj.influencerVideos)) {
+        productObj.influencerVideos = productObj.influencerVideos.map(video => ({
           _id: video._id,
           title: video.title || '',
           description: video.description || '',
@@ -244,10 +296,12 @@ async getAll(query, conn) {
           updatedAt: video.updatedAt || null,
         }));
       } else {
-        product.influencerVideos = [];
+        productObj.influencerVideos = [];
       }
-      return { success: true, message: "Product fetched", data: product };
+
+      return { success: true, message: "Product fetched", data: productObj };
     } catch (error) {
+      console.error('GetById error:', error);
       return { success: false, message: error.message, data: null };
     }
   }
@@ -255,7 +309,6 @@ async getAll(query, conn) {
   async update(id, body, conn) {
     body = normalizeProductBody(body);
     try {
-      // Check if product exists
       const existing = await this.service.getProductById(id, conn);
       if (!existing) {
         return {
@@ -264,22 +317,7 @@ async getAll(query, conn) {
           data: null,
         };
       }
-      // Optionally check for duplicate name/slug if updating name/slug
-      // if (body.name || body.slug) {
-      //   const duplicate = await this.service.productRepository.model.findOne({
-      //     $or: [
-      //       body.name ? { name: body.name } : {},
-      //       body.slug ? { slug: body.slug } : {}
-      //     ],
-      //     _id: { $ne: id },
-      //     deletedAt: null
-      //   });
-      //   if (duplicate) {
-      //     return { success: false, message: "Duplicate product found (name or slug already exists)", data: null };
-      //   }
-      // }
 
-      // Validate referenced ObjectIds
       const models = conn.models;
       if (body.category) {
         const catExists = await models.Category?.findById(body.category);
@@ -291,9 +329,7 @@ async getAll(query, conn) {
           };
       }
       if (body.subcategory) {
-        const subcatExists = await models.Subcategory?.findById(
-          body.subcategory
-        );
+        const subcatExists = await models.Subcategory?.findById(body.subcategory);
         if (!subcatExists)
           return {
             success: false,
@@ -314,31 +350,20 @@ async getAll(query, conn) {
         for (const attr of body.attributeSet) {
           if (attr.attributeId) {
             const Attribute = conn.models.Attribute || conn.model("Attribute", attributeSchema);
-            console?.log(`Checking if attribute exists: ${Attribute}`);
             if (!Attribute) {
               return { success: false, message: "Attribute model not found", data: null };
             }
-            // check type 
-          console?.log(`Checking attributeId type: ${typeof attr.attributeId}`);
-
-          if (typeof attr.attributeId == "string" && mongoose.Types.ObjectId.isValid(attr.attributeId)) {
-            console?.log(`Converting attributeId to ObjectId: ${attr.attributeId}`);
-            // Convert string to ObjectId
-            attr.attributeId = new mongoose.Types.ObjectId(attr.attributeId);
-          }
-
-          console?.log(`Checking if attribute exists in DB: ${typeof attr.attributeId}, ${attr.attributeId}`);
-
+            if (typeof attr.attributeId === "string" && mongoose.Types.ObjectId.isValid(attr.attributeId)) {
+              attr.attributeId = new mongoose.Types.ObjectId(attr.attributeId);
+            }
             const attrExists = await Attribute.findById(attr.attributeId);
-            console?.log(`Attribute exists: ${attrExists}`);
             if (!attrExists) return { success: false, message: `AttributeId ${attr.attributeId} does not exist`, data: null };
           }
         }
       }
       if (Array.isArray(body.frequentlyPurchased)) {
         for (const prodId of body.frequentlyPurchased) {
-          const prodExists =
-            await this.service.productRepository.model.findById(prodId);
+          const prodExists = await this.service.productRepository.model.findById(prodId);
           if (!prodExists)
             return {
               success: false,
@@ -351,13 +376,13 @@ async getAll(query, conn) {
       const product = await this.service.updateProduct(id, body, conn);
       return { success: true, message: "Product updated", data: product };
     } catch (error) {
+      console.error('Update error:', error);
       return { success: false, message: error.message, data: null };
     }
   }
 
   async delete(id, conn) {
     try {
-      // Check if product exists
       const existing = await this.service.getProductById(id, conn);
       if (!existing) {
         return {
@@ -373,6 +398,7 @@ async getAll(query, conn) {
         data: null,
       };
     } catch (error) {
+      console.error('Delete error:', error);
       return { success: false, message: error.message, data: null };
     }
   }

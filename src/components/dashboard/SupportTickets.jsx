@@ -8,13 +8,13 @@ import { toast } from 'react-toastify';
 const SupportTickets = () => {
   const dispatch = useDispatch();
   const { loading, error, success, tickets, fetchLoading, replyLoading } = useSelector((state) => state.supportTicket);
-  const { orders, loading: ordersLoading, error: ordersError } = useSelector((state) => state.orders);
+  const { orders, loading: ordersLoading, error: ordersError } = useSelector((state) => state.order);
   
   // Get user data for customer field
   const { user } = useSelector((state) => state.auth || {});
   
   // Debug: Log user data
-  console.log('Current user:', user);
+  // console.log('Current user:', user);
   
   // Debug: Log orders data
   console.log('Orders state:', orders);
@@ -379,13 +379,13 @@ const SupportTickets = () => {
           <div className="flex items-start space-x-4">
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-blue-600 font-medium text-sm">
-                {selectedTicket.customer?.name?.charAt(0)?.toUpperCase() || 'C'}
+                {typeof selectedTicket.customer?.name === 'string' ? selectedTicket.customer.name.charAt(0).toUpperCase() : 'C'}
               </span>
             </div>
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
                 <span className="font-medium text-gray-900">
-                  {selectedTicket.customer?.name || 'Customer'}
+                  {typeof selectedTicket.customer?.name === 'string' ? selectedTicket.customer.name : 'Customer'}
                 </span>
                 <span className="text-sm text-gray-500">{new Date(selectedTicket.createdAt).toLocaleString()}</span>
               </div>
@@ -441,10 +441,11 @@ const SupportTickets = () => {
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="font-medium text-gray-900">
-                      {typeof reply.repliedBy === 'object' && reply.repliedBy?.name 
-                        ? reply.repliedBy.name 
-                        : reply.repliedBy || 'Customer'
-                      }
+                      {typeof reply.repliedBy === 'object' && typeof reply.repliedBy?.name === 'string'
+                        ? reply.repliedBy.name
+                        : typeof reply.repliedBy === 'string'
+                          ? reply.repliedBy
+                          : 'Customer'}
                     </span>
                     {reply.isStaff && (
                       <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
@@ -616,7 +617,7 @@ const SupportTickets = () => {
           Loading your orders...
         </div>
       )}
-      {ordersError && (
+      {!ordersError && (
         <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-md">
           Warning: Unable to load orders. You can still create a ticket, but order selection will not be available.
         </div>

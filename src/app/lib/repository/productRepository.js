@@ -1,3 +1,4 @@
+// lib/repository/productRepository.js
 import CrudRepository from "./CrudRepository.js";
 import mongoose from 'mongoose';
 import { attributeSchema } from '../models/Attribute.js';

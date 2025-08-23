@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
 export default function ProductReview({ id }) {
+  console?.log("ProductReview component rendered with id:", id);
   const [data, setData] = useState(null);
   const dispatch = useDispatch();
   const StarRating = ({ filled, count }) => (
@@ -51,6 +52,7 @@ export default function ProductReview({ id }) {
   // ];
 
   useEffect(() => {
+    if (!id) return; // Only fetch if id is defined
     const fetchReviews = async () => {
       try {
         const response = await dispatch(fetchProductReviews(id));

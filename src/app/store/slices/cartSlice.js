@@ -124,10 +124,6 @@ export const getCartItems = createAsyncThunk(
         };
       }
 
-      console.log("Fetched Cart Items from localStorage:", {
-        cartId: cartData.cartId,
-        cartItems: cartData.cartItems || [],
-      });
 
       return {
         cartId: cartData.cartId,
@@ -278,7 +274,6 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(getCartItems.fulfilled, (state, action) => {
-        console.log("PayLoad:", action.payload);
         state.loading = false;
         state.cartItems = action.payload.cartItems;
         state.cartId = action.payload.cartId;

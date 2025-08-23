@@ -8,7 +8,6 @@ export const addToWishlist = createAsyncThunk(
         product,
         variant,
       });
-      console.log("Add to Wishlist Response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -20,9 +19,7 @@ export const fetchWishlist = createAsyncThunk(
   "wishlist/fetchWishlist",
   async (_, { rejectWithValue }) => {
     try {
-      console.log("Fetching wishlist...");
       const response = await axiosInstances.get("/wishlist");
-      console.log("Fetched Wishlist:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -34,11 +31,9 @@ export const removeFromWishlist = createAsyncThunk(
   "wishlist/removeFromWishlist",
   async ({ productId, variantId }, { rejectWithValue }) => {
     try {
-      console.log("Removing from wishlist:", productId, variantId);
       const response = await axiosInstances.delete(`/wishlist/`, {
         params: { productId, variantId },
       });
-      console.log("Remove from Wishlist Response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
