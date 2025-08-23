@@ -26,11 +26,17 @@ const reviewSchema = new mongoose.Schema(
       type: [String], // Array to store multiple image paths
       default: [],
     },
-    likes: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: [],
-    }],
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,

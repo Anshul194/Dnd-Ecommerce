@@ -1,3 +1,4 @@
+import { errorResponse, successResponse } from "@/app/utils/response.js";
 import TemplateService from "../services/templateService.js";
 
 // Remove global instance, always use tenant-based connection
@@ -30,24 +31,22 @@ export async function getTemplateById(id, conn) {
     const templateService = new TemplateService(conn);
     console.log("Fetching template by ID:", id);
     const result = await templateService.getTemplateById(id);
-    if (!result.data) {
+    console.log("result is ---> ", result);
+    if (!result.body.data) {
       return {
         status: 404,
-        body: errorResponse('Template not found', 404),
+        body: errorResponse("Template not found", 404),
       };
     }
     return {
       status: 200,
-      body: successResponse(
-        result.data,
-        'Template fetched successfully'
-      ),
+      body: successResponse(result.body.data, "Template fetched successfully"),
     };
   } catch (err) {
     console.error("getTemplateById error:", err.message);
     return {
       status: 500,
-      body: errorResponse('Server error', 500),
+      body: errorResponse("Server error", 500),
     };
   }
 }

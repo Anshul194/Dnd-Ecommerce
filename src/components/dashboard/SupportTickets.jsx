@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 const SupportTickets = () => {
   const dispatch = useDispatch();
   const { loading, error, success, tickets, fetchLoading, replyLoading } = useSelector((state) => state.supportTicket);
-  const { orders, loading: ordersLoading, error: ordersError } = useSelector((state) => state.orders);
+  const { orders, loading: ordersLoading, error: ordersError } = useSelector((state) => state.order);
   
   // Get user data for customer field
   const { user } = useSelector((state) => state.auth || {});
@@ -617,7 +617,7 @@ const SupportTickets = () => {
           Loading your orders...
         </div>
       )}
-      {ordersError && (
+      {!ordersError && (
         <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-md">
           Warning: Unable to load orders. You can still create a ticket, but order selection will not be available.
         </div>

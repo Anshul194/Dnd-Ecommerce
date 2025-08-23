@@ -59,7 +59,6 @@ const SearchPage = () => {
     currentPage,
     sortBy,
     dispatch,
-    products.length,
   ]);
 
   console.log("Products:", products);
