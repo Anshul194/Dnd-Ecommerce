@@ -48,8 +48,9 @@ export async function PUT(req, context) {
     const variant = await getVariantById(id, conn);
     const body = {};
 
+    console.log("existing variant:", variant);
     // Always start with old images
-    body.images = variant.images ? [...variant.images] : [];
+    body.images = variant.body.data.images ? [...variant.body.data.images] : [];
 
     for (const [key, value] of formData.entries()) {
       const match = key.match(/([\w]+)(\[(\d+)\])?(\[(\w+)\])?/);
