@@ -146,9 +146,9 @@ const DynamicProductSlider = ({ content }) => {
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {products?.products?.length > 0 &&
-              products?.products?.map((product) => (
+              products?.products?.map((product, index) => (
                 <div
-                  key={product.id}
+                  key={index}
                   className="min-w-[200px] bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200"
                 >
                   {/* Product Header */}

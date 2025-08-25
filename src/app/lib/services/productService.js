@@ -1,3 +1,4 @@
+// lib/services/productService.js
 import { VariantSchema } from "../../lib/models/Variant.js"; // Adjust path as needed
 import mongoose from "mongoose";
 import { attributeSchema } from "../models/Attribute.js";

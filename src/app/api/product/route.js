@@ -4,14 +4,13 @@ import ProductRepository from '../../lib/repository/productRepository';
 import ProductService from '../../lib/services/productService';
 import ProductController from '../../lib/controllers/productController';
 import ProductModel from '../../lib/models/Product';
-import { saveFile } from '../../config/fileUpload';
+import { saveFile, validateImageFile } from '../../config/fileUpload';
 
 // GET /api/product
 export async function GET(req) {
-  // Extract query parameters from req.nextUrl.searchParams
   const searchParams = req.nextUrl.searchParams;
   const query = Object.fromEntries(searchParams.entries());
-  console.log('Route received query:', query); // Log the parsed query
+  console.log('Route received query:', query);
 
   try {
     const subdomain = getSubdomain(req);
@@ -24,51 +23,10 @@ export async function GET(req) {
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
     const productsResult = await productController.getAll(query, conn);
-    
-    // Defensive: productsResult may be { success, message, data }
-    if (productsResult && productsResult.data && Array.isArray(productsResult.data)) {
-      for (const product of productsResult.data) {
-        // Normalize images
-        if (Array.isArray(product.images)) {
-          product.images = product.images.map(img => {
-            if (typeof img === 'string') {
-              return { url: img, alt: '' };
-            } else if (img && typeof img === 'object' && !img.url && Object.keys(img).every(k => !isNaN(Number(k)))) {
-              // Char-indexed object, convert to string then wrap
-              const url = Object.values(img).filter(v => typeof v === 'string').join('');
-              return { url, alt: '' };
-            } else {
-              return img;
-            }
-          });
-        }
-        
-        // Normalize descriptionImages
-        if (Array.isArray(product.descriptionImages)) {
-          product.descriptionImages = product.descriptionImages.map(img => {
-            if (typeof img === 'string') {
-              return { url: img, alt: '' };
-            } else if (img && typeof img === 'object' && !img.url && Object.keys(img).every(k => !isNaN(Number(k)))) {
-              const url = Object.values(img).filter(v => typeof v === 'string').join('');
-              return { url, alt: '' };
-            } else {
-              return img;
-            }
-          });
-        }
-        
-        // Normalize thumbnail if it's a string or char-indexed object
-        if (product.thumbnail && typeof product.thumbnail === 'string') {
-          product.thumbnail = { url: product.thumbnail, alt: '' };
-        } else if (product.thumbnail && typeof product.thumbnail === 'object' && !product.thumbnail.url && Object.keys(product.thumbnail).every(k => !isNaN(Number(k)))) {
-          const url = Object.values(product.thumbnail).filter(v => typeof v === 'string').join('');
-          product.thumbnail = { url, alt: '' };
-        }
-      }
-    }
-    
+
     return NextResponse.json({ success: true, products: productsResult });
   } catch (error) {
+    console.error('GET error:', error);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
@@ -86,318 +44,200 @@ export async function POST(req) {
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
 
-    // Handle FormData for new model structure (images, thumbnail, descriptionImages as objects)
     const contentType = req.headers.get('content-type') || '';
-    let body;
+    let body = {};
+    
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
-      body = {};
-          for (const [key, value] of formData.entries()) {
-            // Support .file keys for images, descriptionImages, thumbnail
-            const arrObjMatch = key.match(/([\w]+)\[(\d+)\](?:\.([\w]+|file))?/);
-            const objObjMatch = key.match(/([\w]+)\.(\w+)/); // thumbnail.url, thumbnail.alt, thumbnail.file
-            if (arrObjMatch) {
-              const arrKey = arrObjMatch[1];
-              const arrIdx = arrObjMatch[2];
-              const objKey = arrObjMatch[3];
-              // Handle .file for images/descriptionImages
-              if ((arrKey === 'images' || arrKey === 'descriptionImages') && objKey === 'file' && value instanceof File) {
-                if (!body[arrKey]) body[arrKey] = [];
-                if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = { url: '', alt: '' };
-                const url = await saveFile(value, 'uploads/Variant');
-                body[arrKey][arrIdx].url = url;
-              } else if ((arrKey === 'images' || arrKey === 'descriptionImages') && objKey) {
-                if (!body[arrKey]) body[arrKey] = [];
-                if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = { url: '', alt: '' };
-                body[arrKey][arrIdx][objKey] = value;
-              } else if (["attributeSet", "ingredients", "benefits", "precautions", "howToUseSteps"].includes(arrKey) && objKey) {
-                if (!body[arrKey]) body[arrKey] = [];
-                if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
-                if (["image", "url"].includes(objKey) && value instanceof File) {
-                  const url = await saveFile(value, 'uploads/Variant');
-                  body[arrKey][arrIdx][objKey] = url;
-                } else {
-                  body[arrKey][arrIdx][objKey] = value;
-                }
-              } else if ((arrKey === 'ingredients' || arrKey === 'benefits' || arrKey === 'precautions') && objKey === 'image' && value instanceof File) {
-                if (!body[arrKey]) body[arrKey] = [];
-                if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
-                const url = await saveFile(value, 'uploads/Variant');
-                body[arrKey][arrIdx][objKey] = url;
-              } else if (["attributeSet"].includes(arrKey) && !objKey) {
-                if (!body[arrKey]) body[arrKey] = [];
-                body[arrKey][arrIdx] = { attributeId: value };
-              } else {
-                if (!body[arrKey]) body[arrKey] = [];
-                body[arrKey][arrIdx] = value;
-              }
-            } else if (objObjMatch) {
-              const objKey = objObjMatch[1];
-              const prop = objObjMatch[2];
-              // Handle thumbnail.file
-              if (objKey === 'thumbnail' && prop === 'file' && value instanceof File) {
-                if (!body.thumbnail) body.thumbnail = { url: '', alt: '' };
-                body.thumbnail.url = await saveFile(value, 'uploads/Variant');
-              } else if ((objKey === 'thumbnail') && prop) {
-                if (!body.thumbnail) body.thumbnail = { url: '', alt: '' };
-                body.thumbnail[prop] = value;
-              } else {
-                body[key] = value;
-              }
-            } else {
-              body[key] = value;
-            }
-      }
-      // Normalize images and descriptionImages to always have url and alt
-      if (body.images) {
-        body.images = body.images.filter(Boolean).map(img => ({ url: img.url || '', alt: img.alt || '' }));
-      }
-      if (body.descriptionImages) {
-        body.descriptionImages = body.descriptionImages.filter(Boolean).map(img => ({ url: img.url || '', alt: img.alt || '' }));
-      }
-      if (body.thumbnail) {
-        body.thumbnail = { url: body.thumbnail.url || '', alt: body.thumbnail.alt || '' };
-      }
-
-      // --- NEW: Ensure all image fields have URLs, not File objects ---
-      // Helper to process File objects in image fields
-      async function processImageField(fieldArr, uploadPath) {
-        if (!Array.isArray(fieldArr)) return fieldArr;
-        for (let i = 0; i < fieldArr.length; i++) {
-          if (fieldArr[i] && typeof fieldArr[i].url === 'object' && fieldArr[i].url instanceof File) {
-            fieldArr[i].url = await saveFile(fieldArr[i].url, uploadPath);
-          }
-        }
-        return fieldArr;
-      }
-      async function processSingleImageField(obj, uploadPath) {
-        if (obj && typeof obj.url === 'object' && obj.url instanceof File) {
-          obj.url = await saveFile(obj.url, uploadPath);
-        }
-        return obj;
-      }
-      // Images
-      if (body.images) {
-        body.images = await processImageField(body.images, 'uploads/Variant');
-      }
-      // DescriptionImages
-      if (body.descriptionImages) {
-        body.descriptionImages = await processImageField(body.descriptionImages, 'uploads/Variant');
-      }
-      // Thumbnail
-      if (body.thumbnail) {
-        body.thumbnail = await processSingleImageField(body.thumbnail, 'uploads/Variant');
-      }
-      // Nested image fields (ingredients, benefits, precautions)
-      const nestedImageFields = ['ingredients', 'benefits', 'precautions'];
-      for (const field of nestedImageFields) {
-        if (Array.isArray(body[field])) {
-          for (let i = 0; i < body[field].length; i++) {
-            if (body[field][i] && typeof body[field][i].image === 'object' && body[field][i].image instanceof File) {
-              body[field][i].image = await saveFile(body[field][i].image, 'uploads/Variant');
-            }
-          }
-        }
-      }
-      // --- END NEW ---
-    } else {
-      body = await req.json();
-    }
-
-    // Fix: Wrap string arrays in objects for embedded fields
-    const arrayObjectFields = ["howToUseSteps", "ingredients", "benefits", "precautions"];
-    for (const field of arrayObjectFields) {
-      if (Array.isArray(body[field]) && body[field].every(v => typeof v === "string")) {
-        body[field] = body[field].map(description => ({ description }));
-      }
-    }
-
-    console.log('Parsed product body:', JSON.stringify(body, null, 2));
-    const product = await productController.create(body,conn);
-    return NextResponse.json({ success: true, product}, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
-  }
-}
-
-// PUT /api/product?id=PRODUCT_ID
-export async function PUT(req) {
-  try {
-    const subdomain = getSubdomain(req);
-    const conn = await getDbConnection(subdomain);
-    if (!conn) {
-      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-    }
-    const Product = conn.models.Product || conn.model('Product', ProductModel.schema);
-    const productRepo = new ProductRepository(Product);
-    const productService = new ProductService(productRepo);
-    const productController = new ProductController(productService);
-
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-    const contentType = req.headers.get('content-type') || '';
-    let body;
-    if (contentType.includes('multipart/form-data')) {
-      const formData = await req.formData();
-      body = {};
+      
+      // Initialize thumbnail object to ensure it exists
+      body.thumbnail = { url: '', alt: '' };
+      
       for (const [key, value] of formData.entries()) {
-        // Support .file keys for images, descriptionImages, thumbnail, etc.
-        const arrObjMatch = key.match(/([\w]+)\[(\d+)\](?:\.([\w]+|file))?/);
-        const objObjMatch = key.match(/([\w]+)\.(\w+)/); // thumbnail.url, thumbnail.alt, thumbnail.file
-        if (arrObjMatch) {
-          const arrKey = arrObjMatch[1];
-          const arrIdx = arrObjMatch[2];
-          const objKey = arrObjMatch[3];
-          // Handle .file for images/descriptionImages
-          if ((arrKey === 'images' || arrKey === 'descriptionImages') && objKey === 'file' && value instanceof File) {
+        console.log(`Processing form field: ${key}=${value instanceof File ? `File(${value.name})` : value}`);
+        
+        // Handle thumbnail fields specifically
+        if (key === 'thumbnail.file' || (key === 'thumbnail' && value instanceof File)) {
+          if (value instanceof File) {
+            try {
+              validateImageFile(value);
+              const url = await saveFile(value, 'Uploads/Product');
+              body.thumbnail.url = url;
+              console.log(`Thumbnail URL set: ${url}`);
+            } catch (error) {
+              console.error(`Error saving thumbnail file (${value.name}):`, error.message);
+              body.thumbnail.url = '';
+            }
+          }
+          continue; // Skip further processing for this field
+        }
+        
+        if (key === 'thumbnail.alt') {
+          body.thumbnail.alt = value;
+          continue;
+        }
+        
+        // Handle nested object patterns like thumbnail[file], thumbnail[alt]
+        const thumbnailMatch = key.match(/^thumbnail\[(\w+)\]$/);
+        if (thumbnailMatch) {
+          const prop = thumbnailMatch[1]; // 'file' or 'alt'
+          if (prop === 'file' && value instanceof File) {
+            try {
+              validateImageFile(value);
+              const url = await saveFile(value, 'Uploads/Product');
+              body.thumbnail.url = url;
+              console.log(`Thumbnail URL set via bracket notation: ${url}`);
+            } catch (error) {
+              console.error(`Error saving thumbnail file (${value.name}):`, error.message);
+              body.thumbnail.url = '';
+            }
+          } else if (prop === 'alt') {
+            body.thumbnail.alt = value;
+          }
+          continue;
+        }
+
+        // Handle array patterns for other fields
+        const arrObjMatch = key.match(/([\w]+)\[(\d+)\](?:\[([\w]+)\])?/);
+        const arrDotMatch = key.match(/([\w]+)\[(\d+)\]\.(\w+)/);
+        const objObjMatch = key.match(/([\w]+)\.(\w+)/);
+
+        if (arrDotMatch || arrObjMatch) {
+          const match = arrDotMatch || arrObjMatch;
+          const arrKey = match[1]; // e.g., "images"
+          const arrIdx = parseInt(match[2]); // e.g., 0
+          const objKey = match[3]; // e.g., "file", "alt"
+          
+          if (["images", "descriptionImages"].includes(arrKey)) {
             if (!body[arrKey]) body[arrKey] = [];
             if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = { url: '', alt: '' };
-            const url = await saveFile(value, 'uploads/Variant');
-            body[arrKey][arrIdx].url = url;
-          } else if ((arrKey === 'images' || arrKey === 'descriptionImages') && objKey) {
-            if (!body[arrKey]) body[arrKey] = [];
-            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = { url: '', alt: '' };
-            body[arrKey][arrIdx][objKey] = value;
-          } else if (["attributeSet", "ingredients", "benefits", "precautions", "howToUseSteps"].includes(arrKey) && objKey) {
-            if (!body[arrKey]) body[arrKey] = [];
-            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
-            if (["image", "url"].includes(objKey) && value instanceof File) {
-              const url = await saveFile(value, 'uploads/Variant');
-              body[arrKey][arrIdx][objKey] = url;
-            } else {
+            if ((objKey === 'file' || objKey === 'url') && value instanceof File) {
+              try {
+                validateImageFile(value);
+                const url = await saveFile(value, 'Uploads/Product');
+                body[arrKey][arrIdx].url = url;
+              } catch (error) {
+                console.error(`Error saving file for ${arrKey}[${arrIdx}][${objKey}] (${value.name}):`, error.message);
+                body[arrKey][arrIdx].url = '';
+              }
+            } else if (objKey) {
               body[arrKey][arrIdx][objKey] = value;
             }
-          } else if ((arrKey === 'ingredients' || arrKey === 'benefits' || arrKey === 'precautions') && objKey === 'image' && value instanceof File) {
+          } else if (["howToUseSteps", "ingredients", "benefits", "precautions"].includes(arrKey)) {
             if (!body[arrKey]) body[arrKey] = [];
             if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
-            const url = await saveFile(value, 'uploads/Variant');
-            body[arrKey][arrIdx][objKey] = url;
-          } else if (["attributeSet"].includes(arrKey) && !objKey) {
+            if (objKey === 'image' && value instanceof File) {
+              try {
+                validateImageFile(value);
+                const url = await saveFile(value, 'Uploads/Product');
+                body[arrKey][arrIdx].image = url;
+              } catch (error) {
+                console.error(`Error saving file for ${arrKey}[${arrIdx}][image] (${value.name}):`, error.message);
+                body[arrKey][arrIdx].image = null;
+              }
+            } else if (objKey) {
+              body[arrKey][arrIdx][objKey] = value;
+            }
+          } else if (arrKey === "attributeSet") {
             if (!body[arrKey]) body[arrKey] = [];
-            body[arrKey][arrIdx] = { attributeId: value };
-          } else {
+            if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
+            body[arrKey][arrIdx][objKey] = value;
+          } else if (["searchKeywords", "highlights", "frequentlyPurchased"].includes(arrKey)) {
             if (!body[arrKey]) body[arrKey] = [];
             body[arrKey][arrIdx] = value;
           }
         } else if (objObjMatch) {
-          const objKey = objObjMatch[1];
-          const prop = objObjMatch[2];
-          // Handle thumbnail.file
-          if (objKey === 'thumbnail' && prop === 'file' && value instanceof File) {
-            if (!body.thumbnail) body.thumbnail = { url: '', alt: '' };
-            body.thumbnail.url = await saveFile(value, 'uploads/Variant');
-          } else if ((objKey === 'thumbnail') && prop) {
-            if (!body.thumbnail) body.thumbnail = { url: '', alt: '' };
-            body.thumbnail[prop] = value;
+          const objKey = objObjMatch[1]; // e.g., "thumbnail"
+          const prop = objObjMatch[2]; // e.g., "file", "alt"
+          
+          // Skip thumbnail here since we handled it above
+          if (objKey === 'thumbnail') {
+            continue;
           } else {
             body[key] = value;
+          }
+        } else if (key === 'images' && value instanceof File) {
+          try {
+            validateImageFile(value);
+            if (!body.images) body.images = [];
+            const url = await saveFile(value, 'Uploads/Product');
+            body.images.push({ url, alt: '' });
+          } catch (error) {
+            console.error(`Error saving images file (${value.name}):`, error.message);
+          }
+        } else if (key === 'descriptionImages' && value instanceof File) {
+          try {
+            validateImageFile(value);
+            if (!body.descriptionImages) body.descriptionImages = [];
+            const url = await saveFile(value, 'Uploads/Product');
+            body.descriptionImages.push({ url, alt: '' });
+          } catch (error) {
+            console.error(`Error saving descriptionImages file (${value.name}):`, error.message);
           }
         } else {
           body[key] = value;
         }
       }
-      // Normalize images and descriptionImages to always have url and alt
+
+      // Normalize array fields
+      const arrayObjectFields = ["howToUseSteps", "ingredients", "benefits", "precautions"];
+      for (const field of arrayObjectFields) {
+        if (Array.isArray(body[field])) {
+          body[field] = body[field].filter(item => item && typeof item === 'object').map(item => ({
+            title: item.title || '',
+            description: item.description || '',
+            image: item.image || undefined,
+            alt: item.alt || undefined,
+            name: item.name || undefined,
+            quantity: item.quantity || undefined
+          }));
+        } else {
+          body[field] = [];
+        }
+      }
+
+      // Normalize images and descriptionImages
       if (body.images) {
-        body.images = body.images.filter(Boolean).map(img => ({ url: img.url || '', alt: img.alt || '' }));
+        body.images = body.images.filter(img => img && img.url).map(img => ({
+          url: img.url || '',
+          alt: img.alt || ''
+        }));
       }
       if (body.descriptionImages) {
-        body.descriptionImages = body.descriptionImages.filter(Boolean).map(img => ({ url: img.url || '', alt: img.alt || '' }));
+        body.descriptionImages = body.descriptionImages.filter(img => img && img.url).map(img => ({
+          url: img.url || '',
+          alt: img.alt || ''
+        }));
       }
-      if (body.thumbnail) {
-        body.thumbnail = { url: body.thumbnail.url || '', alt: body.thumbnail.alt || '' };
+      
+      // Handle thumbnail - only keep if URL exists
+      if (body.thumbnail && body.thumbnail.url) {
+        body.thumbnail = { 
+          url: body.thumbnail.url, 
+          alt: body.thumbnail.alt || '' 
+        };
+        console.log(`Final thumbnail object:`, body.thumbnail);
+      } else {
+        // Remove thumbnail if no valid URL
+        delete body.thumbnail;
+        console.log('Thumbnail removed - no valid URL found');
       }
+
+      // Clean up any remaining thumbnail form fields
+      delete body['thumbnail[alt]'];
+      delete body['thumbnail[file]'];
+      delete body['thumbnail.alt'];
+      delete body['thumbnail.file'];
+      
     } else {
       body = await req.json();
     }
 
-    // Fix: Wrap string arrays in objects for embedded fields
-    const arrayObjectFields = ["howToUseSteps", "ingredients", "benefits", "precautions"];
-    for (const field of arrayObjectFields) {
-      if (Array.isArray(body[field]) && body[field].every(v => typeof v === "string")) {
-        body[field] = body[field].map(description => ({ description }));
-      }
-    }
-
-    const updateResult = await productController.update(id, body, conn);
-    // Always fetch the full updated product after update
-    let fullProduct = null;
-    if (updateResult && updateResult.success) {
-      const getResult = await productController.getById(id, conn);
-      if (getResult && getResult.success) {
-        fullProduct = getResult.data;
-        // Normalize images
-        if (Array.isArray(fullProduct.images)) {
-          fullProduct.images = fullProduct.images.map(img => {
-            if (typeof img === 'string') {
-              return { url: img, alt: '' };
-            } else if (img && typeof img === 'object') {
-              return { url: img.url || '', alt: img.alt || '' };
-            } else {
-              return { url: '', alt: '' };
-            }
-          });
-        }
-        // Normalize descriptionImages
-        if (Array.isArray(fullProduct.descriptionImages)) {
-          fullProduct.descriptionImages = fullProduct.descriptionImages.map(img => {
-            if (typeof img === 'string') {
-              return { url: img, alt: '' };
-            } else if (img && typeof img === 'object') {
-              return { url: img.url || '', alt: img.alt || '' };
-            } else {
-              return { url: '', alt: '' };
-            }
-          });
-        }
-        // Normalize thumbnail
-        if (fullProduct.thumbnail && typeof fullProduct.thumbnail === 'string') {
-          fullProduct.thumbnail = { url: fullProduct.thumbnail, alt: '' };
-        } else if (fullProduct.thumbnail && typeof fullProduct.thumbnail === 'object') {
-          fullProduct.thumbnail = { url: fullProduct.thumbnail.url || '', alt: fullProduct.thumbnail.alt || '' };
-        }
-        // Normalize nested image fields for ingredients, benefits, precautions
-        const nestedImageFields = ['ingredients', 'benefits', 'precautions'];
-        for (const field of nestedImageFields) {
-          if (Array.isArray(fullProduct[field])) {
-            fullProduct[field] = fullProduct[field].map(item => {
-              if (!item) return item;
-              // If image is a string, convert to { url, alt }
-              if (typeof item.image === 'string') {
-                item.image = { url: item.image, alt: item.alt || '' };
-              } else if (item.image && typeof item.image === 'object') {
-                item.image = { url: item.image.url || '', alt: item.image.alt || item.alt || '' };
-              }
-              return item;
-            });
-          }
-        }
-      }
-    }
-    return NextResponse.json({ success: true, product: fullProduct });
+    console.log('Final parsed product body:', JSON.stringify(body, null, 2));
+    const product = await productController.create(body, conn);
+    return NextResponse.json({ success: true, product }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
-  }
-}
-
-// DELETE /api/product?id=PRODUCT_ID
-export async function DELETE(req) {
-  try {
-    const subdomain = getSubdomain(req);
-    const conn = await getDbConnection(subdomain);
-    if (!conn) {
-      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-    }
-    const Product = conn.models.Product || conn.model('Product', ProductModel.schema);
-    const productRepo = new ProductRepository(Product);
-    const productService = new ProductService(productRepo);
-    const productController = new ProductController(productService);
-
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-
-    await productController.delete(id);
-    return NextResponse.json({ success: true, message: 'Product deleted successfully' });
-  } catch (error) {
+    console.error('POST error:', error);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }

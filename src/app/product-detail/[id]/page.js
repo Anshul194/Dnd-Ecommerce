@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import CouponSlider from "./components/CouponSlider";
 import HowToUse from "./components/HowToUse";
+import HowToUseTwo from "./components/varients/howtouse/HowToUseTwo";
+import HowToUseThird from "./components/varients/howtouse/HowToUseThird";
 import DescriptionLayout from "./components/DescriptionLayout";
 import ProductReview from "./components/ProductReview";
 import FrequentlyPurchased from "./components/FrequentlyPurchased";
@@ -714,6 +716,7 @@ function ProductPage({ params }) {
             </div>
           </div>
 
+          {/* <HowToUseTwo/> */}
           <HowToUse data={data} />
           {/* <Ingredient /> */}
           <Ingredient data={data} />

@@ -177,7 +177,7 @@ export default function Footer() {
               {/* Desktop/Large tablet view */}
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">QUICK LINKS</h3>
-                <ul className="space-y-1">
+                <ul className="space-y-1 flex flex-col">
                   {data?.["quick-links"]?.map?.((link, index) => (
                     <Link
                       href={`/pages/${link?._id ?? ""}`}
@@ -204,7 +204,7 @@ export default function Footer() {
                   )}
                 </button>
                 {openAccordions.quickLinks && (
-                  <ul className="space-y-1 pt-4">
+                <ul className="space-y-1 flex flex-col">
                     {data?.["quick-links"]?.map?.((link, index) => (
                       <Link
                         href={`/pages/${link?._id ?? ""}`}
@@ -224,7 +224,7 @@ export default function Footer() {
               {/* Desktop/Large tablet view */}
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">ABOUT US</h3>
-                <ul className="space-y-1">
+                <ul className="space-y-1 flex flex-col">
                   {data?.["about-us"]?.map?.((link, index) => (
                     <Link
                       href={`/pages/${link?._id ?? ""}`}
@@ -251,7 +251,7 @@ export default function Footer() {
                   )}
                 </button>
                 {openAccordions.aboutUs && (
-                  <ul className="space-y-1 pt-4">
+                <ul className="space-y-1 flex flex-col">
                     {data?.["about-us"]?.map?.((link, index) => (
                       <Link
                         href={`/pages/${link?._id ?? ""}`}
@@ -271,7 +271,7 @@ export default function Footer() {
               {/* Desktop/Large tablet view */}
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">CLIENT CARE</h3>
-                <ul className="space-y-1">
+                <ul className="space-y-1 flex flex-col">
                   {data?.["Client Care"]?.map?.((link, index) => (
                     <Link
                       href={`/pages/${link?._id ?? ""}`}
