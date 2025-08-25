@@ -47,7 +47,7 @@ export const POST = withUserAuth(async function (request) {
     // Map data to postalCodes array (columns: 'Dtdc Pincodes' and 'Price')
     const postalCodes = data.map((row) => ({
       code: row['Dtdc Pincodes']?.toString().trim(),
-      price: parseFloat(row['Price']),
+      price: 0
     }));
 
     // Basic validation for each row
