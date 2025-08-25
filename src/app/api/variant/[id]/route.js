@@ -40,17 +40,24 @@ export async function PUT(req, context) {
         { status: 404 }
       );
     }
-    const params = await context.params;
-    const { id } = params;
+
+    const { id } = await context.params;
     const formData = await req.formData();
+
+    // fetch existing variant
+    const variant = await getVariantById(id, conn);
     const body = {};
+
+    // Always start with old images
+    body.images = variant.images ? [...variant.images] : [];
+
     for (const [key, value] of formData.entries()) {
       const match = key.match(/([\w]+)(\[(\d+)\])?(\[(\w+)\])?/);
       if (match && (match[2] || match[4])) {
-        // e.g. attributes[0][attributeId] or images[0] or newImages[0]
         const arrKey = match[1];
         const arrIdx = match[3];
         const objKey = match[5];
+
         if (objKey) {
           // attributes[0][attributeId]
           if (!body[arrKey]) body[arrKey] = [];
@@ -59,11 +66,11 @@ export async function PUT(req, context) {
         } else if (arrIdx) {
           // images[0] or newImages[0]
           if (!body[arrKey]) body[arrKey] = [];
+
           if (typeof value === "object" && value.arrayBuffer && value.name) {
-            // Use shared fileUpload.js logic
-            body[arrKey][arrIdx] = await saveFile(value, "uploads/Variant");
+            const uploadedFile = await saveFile(value, "uploads/Variant");
+            body[arrKey][arrIdx] = uploadedFile;
           } else {
-            // String URL or plain value
             body[arrKey][arrIdx] = value;
           }
         }
@@ -71,15 +78,14 @@ export async function PUT(req, context) {
         body[key] = value;
       }
     }
-    // Merge newImages into images if present
+
+    // ✅ Merge newImages into existing images
     if (body.newImages && Array.isArray(body.newImages)) {
-      if (body.images && Array.isArray(body.images)) {
-        body.images = body.images.concat(body.newImages);
-      } else {
-        body.images = body.newImages;
-      }
+      body.images = [...body.images, ...body.newImages];
       delete body.newImages;
     }
+    console.log("variant body:", body);
+
     const result = await updateVariant(id, body, conn);
     return new Response(JSON.stringify(result.body), { status: result.status });
   } catch (error) {
