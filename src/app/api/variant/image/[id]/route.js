@@ -7,7 +7,7 @@ import {
   getVariantById,
   updateVariant,
 } from "../../../../lib/controllers/variantController.js";
-import VariantModel from "../../../../lib/models/Variant.js";
+import { variantSchema } from "../../../../lib/models/Variant.js";
 import mongoose from "mongoose";
 import VariantService from "@/app/lib/services/VariantService.js";
 
@@ -26,7 +26,7 @@ export async function DELETE(req, { params }) {
       index,
       "from:",
       type,
-      "variantId:", 
+      "variantId:",
       variantId
     );
 
@@ -61,7 +61,7 @@ export async function DELETE(req, { params }) {
     }
 
     const Variant =
-      conn.models.Variant || conn.model("Variant", VariantModel.schema);
+      conn?.models?.Variant || conn.model("Variant", variantSchema);
     const variantRepo = new VariantRepository(Variant);
     const variantService = new VariantService(variantRepo);
 
