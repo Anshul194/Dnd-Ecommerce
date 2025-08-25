@@ -67,9 +67,10 @@ const ProductCard = ({ product }) => {
 
   return (
     <>
-      <div
-        onClick={() => router.push(`/product-detail/${product.slug}`)}
+      <Link
+        href={`/product-detail/${product.slug}`}
         className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all"
+        prefetch
       >
         <div className="bg-white flex flex-col justify-between border h-96 border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-[320px]">
           {/* Product Header */}
@@ -190,7 +191,7 @@ const ProductCard = ({ product }) => {
             </div>
           </div>
         </div>
-      </div>
+  </Link>
       <AuthRequiredModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
