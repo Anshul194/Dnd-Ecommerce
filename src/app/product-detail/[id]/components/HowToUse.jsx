@@ -72,7 +72,7 @@ const HowToUse = ({ data }) => {
   return (
     <section
       ref={sectionRef}
-      className="min-h-screen bg-white py-10 lg:py-20 px-4"
+      className="min-h-screen bg-white py-10 lg:py-20 "
     >
       <div className="max-w-full mx-auto">
         {/* Heading with style matching the image */}

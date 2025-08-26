@@ -18,6 +18,10 @@ import HowToUse from "./components/HowToUse";
 import HowToUseTwo from "./components/varients/howtouse/HowToUseTwo";
 import HowToUseThird from "./components/varients/howtouse/HowToUseThird";
 import DescriptionLayout from "./components/DescriptionLayout";
+import DescriptionLayoutTwo from "./components/varients/description/DescriptionLayoutTwo";
+import DescriptionLayoutThree from "./components/varients/description/DescriptionLayoutThree";
+import ProductReviewTwo from "./components/varients/review/ProductReviewTwo";
+import ProductReviewThree from "./components/varients/review/ProductReviewThree";
 import ProductReview from "./components/ProductReview";
 import FrequentlyPurchased from "./components/FrequentlyPurchased";
 import { useDispatch } from "react-redux";
@@ -725,8 +729,12 @@ function ProductPage({ params }) {
 
 {console?.log("data review",data)}
 
-          <DescriptionLayout data={data} />
-          <ProductReview id={data?._id} />
+          <DescriptionLayoutThree/>
+          {/* <DescriptionLayoutTwo/> */}
+          {/* <DescriptionLayout data={data} /> */}
+          {/* <ProductReviewTwo/> */}
+          <ProductReviewThree/>
+          {/* <ProductReview id={data?._id} /> */}
           <FrequentlyPurchased />
         </div>
       </div>
