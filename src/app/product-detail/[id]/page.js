@@ -70,18 +70,16 @@ function ProductPage({ params }) {
     }
   };
 
-  const getProductData = async () => {
+  const getProductData = React.useCallback(async () => {
     try {
       // Fetch by slug instead of id
       const response = await dispatch(fetchProductById(slug));
-      console.log("product data :[[[[]]]] ", response);
-      console.log("Fetched Product Data:", response.payload);
       setSelectedPack(response?.payload?.variants[0]?._id);
       setData(response.payload);
     } catch (error) {
-      console.error("Error fetching product data:", error);
+      // Optionally show a toast or error UI
     }
-  };
+  }, [dispatch, slug]);
 
   const handleAddToCart = async () => {
     // if (!isAuthenticated) {
@@ -161,7 +159,7 @@ function ProductPage({ params }) {
   useEffect(() => {
     getProductData();
     // Only run on mount or slug change
-  }, [slug]);
+  }, [getProductData]);
 
   return (
     <>
@@ -727,7 +725,6 @@ function ProductPage({ params }) {
           {/* <Ingredient /> */}
           <Ingredient data={data} />
 
-{console?.log("data review",data)}
 
           <DescriptionLayoutThree/>
           {/* <DescriptionLayoutTwo/> */}

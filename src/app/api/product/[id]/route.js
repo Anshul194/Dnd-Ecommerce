@@ -107,8 +107,8 @@ export async function PUT(req, { params }) {
       const formData = await req.formData();
       
       // Initialize arrays as empty to only include what's sent in the request
-      body.images = [];
-      body.descriptionImages = [];
+      body.images = existingProduct.images || [];
+      body.descriptionImages = existingProduct.descriptionImages || [];
       body.thumbnail = existingProduct.thumbnail || null;
       body.ingredients = existingProduct.ingredients || [];
       body.benefits = existingProduct.benefits || [];
