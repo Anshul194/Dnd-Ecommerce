@@ -36,8 +36,6 @@ class CategoryService {
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
 
-      console.log("Page Number:", pageNum);
-      console.log("Limit Number:", limitNum);
 
       // Parse JSON strings from query parameters to objects
       const parsedFilters = JSON.parse(filters);

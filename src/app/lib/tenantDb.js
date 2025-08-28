@@ -27,7 +27,7 @@ export async function getDbConnection(subdomain) {
     
     const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', tenantSchema);
     const tenant = await Tenant.findOne({ subdomain });
-    console.log('Tenant found:', tenant);
+    // console.log('Tenant found:', tenant);
     if (!tenant?.dbUri) return null;
     return await dbConnect(tenant.dbUri);
   }
