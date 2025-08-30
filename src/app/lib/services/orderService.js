@@ -38,7 +38,26 @@ class OrderService {
         deliveryOption,
       } = data;
 
-      if (!tenant || !userId || !items?.length || !shippingAddress || !billingAddress || !paymentId || !deliveryOption || !paymentMethod) {
+      // Validate required fields
+      console.log("Checking order data: ===>");
+      console.log(
+        userId,
+        items,
+        items.length,
+        shippingAddress,
+        billingAddress,
+        paymentId,
+        deliveryOption
+      );
+      if (
+        !userId ||
+        !items ||
+        !items.length ||
+        !shippingAddress ||
+        !billingAddress ||
+        !paymentId ||
+        !deliveryOption
+      ) {
         throw new Error("All required fields must be provided");
       }
 
@@ -159,12 +178,43 @@ class OrderService {
       // Send email to admin
       const adminEmailResult = await this.emailService.sendOrderEmail({
         templateName: 'Order Created For Owner',
-        to: 'smaisuriya1206@gmail.com', 
+        to: 'smaisuriya1206@gmail.com',
         replacements,
         conn,
       });
       if (!adminEmailResult.success) {
         console.error('Failed to send admin email:', adminEmailResult.message);
+      }
+
+      try {
+        // Only trigger auto-call for COD orders if enabled in settings
+        if (settings.orderConfirmEnabled) {
+          const apiUrl = "https://obd-api.myoperator.co/obd-api-v1";
+          const payload = {
+            company_id: settings.myOperatorCompanyId || "683aebae503f2118",
+            secret_token: settings.myOperatorSecretToken || "2a67cfdb278391cf9ae47a7fffd6b0ec8d93494ff0004051c0f328a501553c98",
+            type: "2",
+            number: '+91' + user.phone || shippingAddress.phone, // fallback to shipping phone if user phone not present
+            public_ivr_id: settings.myOperatorIvrId || "68b0383927f53564"
+          };
+
+          // Use fetch or axios for HTTP request
+          const res = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              "x-api-key": settings.myOperatorApiKey || "oomfKA3I2K6TCJYistHyb7sDf0l0F6c8AZro5DJh",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await res.json();
+          if (!result.success) {
+            console.error("Auto-call API failed:", result);
+          }
+        }
+      } catch (err) {
+        console.error("Auto-call order confirm error:", err.message);
       }
 
       return {
