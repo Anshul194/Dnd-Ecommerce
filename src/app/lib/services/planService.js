@@ -30,14 +30,10 @@ class PlanService {
     }
     async getPlans(query) {
         try {
-            console.log("Query Parameters:", query);
             const { page = 1, limit = 10, filters = "{}", searchFields = "{}", sort = "{}" } = query;
 
             const pageNum = parseInt(page);
             const limitNum = parseInt(limit);
-
-            console.log("Page Number:", pageNum);
-            console.log("Limit Number:", limitNum);
 
             // Parse JSON strings from query parameters to objects
             const parsedFilters = JSON.parse(filters);

@@ -63,10 +63,8 @@ export async function getUserById(userId, tenantId = null, conn = null) {
             }
         }
 
-        console.log('[getUserById] Query:', query, 'TenantId:', tenantId, 'Using tenant DB:', conn !== mongoose);
         
         user = await UserModel.findOne(query).lean();
-        console.log('[getUserById] Result:', user ? 'User found' : 'User not found');
         return user;
     } catch (err) {
         console.log('Error fetching user:', err.message);

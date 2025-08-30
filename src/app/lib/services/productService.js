@@ -18,7 +18,6 @@ class ProductService {
   }
 
   async getAllProducts(query = {}, conn) {
-    console.log("Service received query:", query);
     if (conn && conn.models && conn.models.Product) {
       this.productRepository.model = conn.models.Product;
     }
@@ -39,15 +38,6 @@ class ProductService {
       name,
     } = query;
 
-    console.log("Parsed query parameters:", {
-      page,
-      limit,
-      status,
-      category,
-      minPrice,
-      maxPrice,
-      name,
-    });
 
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
@@ -115,8 +105,6 @@ class ProductService {
       sortConditions[field] = direction === "asc" ? 1 : -1;
     }
 
-    console.log("Filter conditions:", filterConditions);
-    console.log("Sort conditions:", sortConditions);
 
     return await this.productRepository.getAll(
       filterConditions,

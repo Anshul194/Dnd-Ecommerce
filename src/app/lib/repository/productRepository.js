@@ -163,7 +163,6 @@ async getAll(filter = {}, sortConditions = {}, pageNum = 1, limitNum = 10, popul
 
  async findById(id) {
     try {
-      console.log('Repo findById called with:', id);
       const conn = this.model.db;
       
       if (!conn.models.Attribute) {

@@ -27,7 +27,6 @@ class UserRepository extends CrudRepository {
         query.tenant = new mongoose.Types.ObjectId(tenantId);
       }
 
-      console.log('UserRepo findById called with:', query); // ✅ Debug log
       return await this.model.findOne(query);
     } catch (error) {
       console.error('UserRepo findById error:', error);
