@@ -30,7 +30,7 @@ class CategoryService {
 
   async getAllCategories(query) {
     try {
-   
+      console.log("Query Parameters:", query);
       const { page = 1, limit = 10, filters = "{}", searchFields = "{}", sort = "{}" } = query;
 
       const pageNum = parseInt(page);

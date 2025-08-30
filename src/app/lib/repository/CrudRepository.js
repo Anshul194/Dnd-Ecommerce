@@ -59,6 +59,7 @@ class CrudRepository {
  
 
   async getAll(filterCon = {}, sortCon = {}, pageNum, limitNum, populateFields = [],selectFields = {}) {
+    console.log('dfgh', filterCon, sortCon, pageNum, limitNum, populateFields,selectFields);
     let query;
     sortCon = Object.keys(sortCon).length === 0 ? { createdAt: -1 } : sortCon;
     if(pageNum > 0){
@@ -85,6 +86,7 @@ class CrudRepository {
       });
     }
 
+    console.log('query', query);
     const result = await query;
     // Get the total count of documents matching the filter
     const totalDocuments = await this.model.countDocuments(filterCon);
