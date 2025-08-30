@@ -245,9 +245,9 @@ class OrderService {
       paymentMethod = paymentMethod || "Prepaid";
       deliveryOption = deliveryOption || "standard";
 
-      if (!tenant || !userId || !items?.length || !shippingAddress || !billingAddress || !paymentId || !deliveryOption || !paymentMethod) {
-        throw new Error("All required fields must be provided");
-      }
+      // if (!tenant || !userId || !items?.length || !shippingAddress || !billingAddress || !paymentId || !deliveryOption || !paymentMethod) {
+      //   throw new Error("All required fields must be provided");
+      // }
 
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new Error(`Invalid userId: ${userId}`);
