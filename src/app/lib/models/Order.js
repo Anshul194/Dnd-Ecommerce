@@ -46,15 +46,25 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
     items: [orderItemSchema],
+    shippingCharge: { type: Number, default: 0 },
+    shippingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Shipping",
+      required: true,
+    },
     total: {
       type: Number,
       required: true,
     },
+    paymentMethod: { type: String, enum: ["COD", "Prepaid"], required: true },
+    paymentId: { type: String, required: true },
     coupon: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Coupon",
       default: null,
     },
+    subtotal: { type: Number, required: true },  // before discount & shipping
+
     discount: {
       type: Number,
       default: 0,
@@ -85,6 +95,8 @@ const orderSchema = new mongoose.Schema(
       enum: ["standard_delivery", "express_delivery", "overnight_delivery"],
       required: true,
     },
+    otpVerified: { type: Boolean, default: false }, // COD OTP flag
+    isCODRestricted: { type: Boolean, default: false },
   },
   {
     timestamps: true,
