@@ -284,7 +284,12 @@ export default function CheckoutPopup() {
             const payload = {
               userId: user._id,
               items: buyNowProduct
-                ? [...buyNowProduct]
+                ? [{
+                    product: buyNowProduct.product.id,
+                    quantity: buyNowProduct.quantity,
+                    price: buyNowProduct.price,
+                    variant: buyNowProduct.variant,
+                  }]
                 : cartItems.map((item) => ({
                     product: item.product.id,
                     quantity: item.quantity,

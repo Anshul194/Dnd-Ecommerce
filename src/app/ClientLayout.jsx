@@ -8,10 +8,8 @@ import useTokenRefresh from "../hooks/useTokenRefresh";
 export default function ClientLayout({ children }) {
   const { isAuthenticated } = useSelector((state) => state.auth ?? {});
 
-  // Use the token refresh hook only if user is authenticated
-  if (isAuthenticated) {
-    useTokenRefresh();
-  }
+  // Always call hooks at top level
+  useTokenRefresh();
 
   return (
     <>
