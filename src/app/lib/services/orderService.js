@@ -240,6 +240,11 @@ class OrderService {
         deliveryOption,
       } = data;
 
+
+      tenant = tenant || "tenant1";
+      paymentMethod = paymentMethod || "Prepaid";
+      deliveryOption = deliveryOption || "standard";
+
       if (!tenant || !userId || !items?.length || !shippingAddress || !billingAddress || !paymentId || !deliveryOption || !paymentMethod) {
         throw new Error("All required fields must be provided");
       }
