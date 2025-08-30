@@ -121,10 +121,6 @@ export const shippingSchema = new mongoose.Schema(
       enum: ["active", "inactive"],
       default: "active",
     },
-    priority: {
-      type: Number,
-      default: 0
-    },
     deletedAt: {
       type: Date,
       default: null,
