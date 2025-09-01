@@ -2,13 +2,17 @@ import mongoose from "mongoose";
 import OrderRepository from "../repository/OrderRepository";
 import CouponService from "./CouponService";
 import EmailService from "./EmailService";
+import { SettingSchema } from "../models/Setting";
 
-const UserSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
+const UserSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+    },
   },
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 class OrderService {
   constructor(orderRepository, couponService, emailService) {
@@ -19,7 +23,9 @@ class OrderService {
 
   async getTotalOrders(conn) {
     try {
-      const Order = conn.models.Order || conn.model('Order', mongoose.model('Order').schema);
+      const Order =
+        conn.models.Order ||
+        conn.model("Order", mongoose.model("Order").schema);
       return await Order.countDocuments().exec();
     } catch (error) {
       throw new Error(`Failed to fetch total orders: ${error.message}`);
@@ -67,8 +73,8 @@ class OrderService {
       }
 
       // Fetch customer email from User model
-      const User = conn.models.User || conn.model('User', UserSchema);
-      const user = await User.findById(userId).select('email').exec();
+      const User = conn.models.User || conn.model("User", UserSchema);
+      const user = await User.findById(userId).select("email").exec();
       let customerEmail = null;
       if (user && user.email) {
         customerEmail = user.email;
@@ -106,10 +112,14 @@ class OrderService {
         const { product, variant, quantity } = item;
         let price = 0;
         if (variant) {
-          const newVariant = await this.orderRepository.findVariantById(variant);
+          const newVariant = await this.orderRepository.findVariantById(
+            variant
+          );
           price = newVariant.price;
         } else {
-          const newProduct = await this.orderRepository.findProductById(product);
+          const newProduct = await this.orderRepository.findProductById(
+            product
+          );
           price = newProduct.price;
         }
         orderItems.push({
@@ -155,57 +165,70 @@ class OrderService {
       const order = await this.orderRepository.create(orderData);
 
       // Send email notifications
-      const orderDate = new Date().toISOString().split('T')[0];
+      const orderDate = new Date().toISOString().split("T")[0];
       const replacements = {
-        app_name: 'YourStore', // Replace with your app name
+        app_name: "YourStore", // Replace with your app name
         order_id: order._id.toString(),
         order_url: `https://yourstore.com/orders/${order._id}`, // Replace with your actual order URL
-        owner_name: 'Admin', // Replace with actual owner name if available
+        owner_name: "Admin", // Replace with actual owner name if available
         order_date: orderDate,
       };
 
       // Send email to customer
       const customerEmailResult = await this.emailService.sendOrderEmail({
-        templateName: 'Order Created',
+        templateName: "Order Created",
         to: customerEmail,
         replacements,
         conn,
       });
       if (!customerEmailResult.success) {
-        console.error('Failed to send customer email:', customerEmailResult.message);
+        console.error(
+          "Failed to send customer email:",
+          customerEmailResult.message
+        );
       }
 
       // Send email to admin
       const adminEmailResult = await this.emailService.sendOrderEmail({
-        templateName: 'Order Created For Owner',
-        to: 'smaisuriya1206@gmail.com',
+        templateName: "Order Created For Owner",
+        to: "smaisuriya1206@gmail.com",
         replacements,
         conn,
       });
       if (!adminEmailResult.success) {
-        console.error('Failed to send admin email:', adminEmailResult.message);
+        console.error("Failed to send admin email:", adminEmailResult.message);
       }
-
+      const tenant = "tenant1";
+      const Setting =
+        conn.models.Setting || conn.model("Setting", SettingSchema);
+      const settings = await Setting.findOne({ tenant }).lean();
       try {
         // Only trigger auto-call for COD orders if enabled in settings
+        console.log("Triggering auto-call for COD order", settings);
         if (settings.orderConfirmEnabled) {
           const apiUrl = "https://obd-api.myoperator.co/obd-api-v1";
           const payload = {
             company_id: settings.myOperatorCompanyId || "683aebae503f2118",
-            secret_token: settings.myOperatorSecretToken || "2a67cfdb278391cf9ae47a7fffd6b0ec8d93494ff0004051c0f328a501553c98",
+            secret_token:
+              settings.myOperatorSecretToken ||
+              "2a67cfdb278391cf9ae47a7fffd6b0ec8d93494ff0004051c0f328a501553c98",
             type: "2",
-            number: '+91' + user.phone || shippingAddress.phone, // fallback to shipping phone if user phone not present
-            public_ivr_id: settings.myOperatorIvrId || "68b0383927f53564"
+            number: "+91" + shippingAddress.phoneNumber, // fallback to shipping phone if user phone not present
+            public_ivr_id: settings.myOperatorIvrId || "68b0383927f53564",
           };
-
+          console.log("User phone number:", user);
+          console.log("Shipping address phone number:", shippingAddress);
+          console.log("Auto-call payload:", payload);
           // Use fetch or axios for HTTP request
           const res = await fetch(apiUrl, {
             method: "POST",
             headers: {
-              "x-api-key": settings.myOperatorApiKey || "oomfKA3I2K6TCJYistHyb7sDf0l0F6c8AZro5DJh",
-              "Content-Type": "application/json"
+              "x-api-key":
+                settings.myOperatorApiKey ||
+                "oomfKA3I2K6TCJYistHyb7sDf0l0F6c8AZro5DJh",
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
           });
 
           const result = await res.json();
