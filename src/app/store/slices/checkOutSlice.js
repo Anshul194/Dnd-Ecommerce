@@ -41,10 +41,12 @@ export const placeOrder = createAsyncThunk(
   }
 );
 
+
+
 const checkoutSlice = createSlice({
   name: "checkout",
   initialState: {
-    checkoutOpen: false,
+    checkoutOpen: true,
     checkoutData: {},
     addressAdded:
       (isBrowser && localStorage.getItem("address") && true) || false,
