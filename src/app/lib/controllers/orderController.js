@@ -19,6 +19,20 @@ class OrderController {
     }
   }
 
+  async check(req, conn) {
+    console.log('Controller received check order data:', req.body);
+    try {
+      const result = await this.orderService.checkOrder(req.body, conn);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
+
     async getUserOrders(request, conn) {
     console.log('Controller received get user orders request');
     try {
