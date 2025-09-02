@@ -7,8 +7,9 @@ class OrderController {
 
   async create(req, conn) {
     console.log('Controller received create order data:', req.body);
+    const tenant = req.headers.get('x-tenant');
     try {
-      const result = await this.orderService.createOrder(req.body, conn);
+      const result = await this.orderService.createOrder(req.body, conn, tenant);
       return result;
     } catch (error) {
       return {
@@ -21,8 +22,9 @@ class OrderController {
 
   async check(req, conn) {
     console.log('Controller received check order data:', req.body);
+    const tenant = req.headers.get('x-tenant');
     try {
-      const result = await this.orderService.checkOrder(req.body, conn);
+      const result = await this.orderService.checkOrder(req.body, conn, tenant);
       return result;
     } catch (error) {
       return {

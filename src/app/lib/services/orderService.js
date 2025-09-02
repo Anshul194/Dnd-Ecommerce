@@ -33,7 +33,7 @@ class OrderService {
   }
 
   //checkOrder
-  async checkOrder(data, conn) {
+  async checkOrder(data, conn, tenant) {
     try {
       const {
         userId,
@@ -214,7 +214,7 @@ class OrderService {
     }
   }
 
-  async createOrder(data, conn) {
+  async createOrder(data, conn, tenant) {
     try {
       const {
         userId,
@@ -301,7 +301,7 @@ class OrderService {
       }
 
       // Fetch settings
-      const tenant = "tenant1";
+      
       const Setting =
         conn.models.Setting || conn.model("Setting", SettingSchema);
       const settings = await Setting.findOne({ tenant }).lean();
