@@ -39,6 +39,7 @@ class ShippingRepository {
   }
 
   async updateShipping(id, update, conn) {
+    console.log("Updating shipping method:", id, update);
     const Shipping = this.getShippingModel(conn);
     if (!mongoose.Types.ObjectId.isValid(id)) throw new Error('Invalid shipping ID');
     const shipping = await Shipping.findOneAndUpdate(

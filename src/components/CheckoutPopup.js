@@ -321,8 +321,8 @@ export default function CheckoutPopup() {
 
       return response.data;
     } catch (error) {
-      console.error("Error checking payment status:", error);
-      toast.error("Payment status check failed. Please try again.");
+      console.log("Error checking payment status:", error);
+      toast.error(error.response.data.message);
     }
   };
 
