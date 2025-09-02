@@ -98,6 +98,24 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    shippingMethod: {
+      type: String,
+      required: false,
+    },
+    shippingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Shipping",
+      required: false,
+    },
+    shippingName: {
+      type: String,
+      required: false,
+    },
+    shippingPriority: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   {
     timestamps: true,

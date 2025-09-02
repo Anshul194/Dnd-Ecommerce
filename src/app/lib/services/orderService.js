@@ -493,10 +493,11 @@ class OrderService {
         shippingCharge,
         paymentMode,
         codBlockedReason,
-        shippingMethod: selectedShipping.shippingMethod, // add to order
-        shippingId: selectedShipping._id, // add to order
+        // --- Save shipping method details ---
+        shippingMethod: selectedShipping.shippingMethod,
+        shippingId: selectedShipping._id,
         shippingName: selectedShipping.name,
-        shippingPriority: selectedShipping.priority
+        shippingPriority: selectedShipping.priority,
       };
       const order = await this.orderRepository.create(orderData);
 
