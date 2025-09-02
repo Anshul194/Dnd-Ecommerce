@@ -38,12 +38,14 @@ import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import { toast } from "react-toastify";
+import { fetchSettings } from "@/app/store/slices/settingSlice";
+import axiosInstance from "@/axiosConfig/axiosInstance";
 
 export default function CheckoutPopup() {
   const checkoutOpen = useSelector((state) => state.checkout.checkoutOpen);
   const { addressData, addressAdded } = useSelector((state) => state.checkout);
   const { products } = useSelector((state) => state.product);
-
+  const [paymentMethod, setPaymentMethod] = useState("prepaid");
   const [userAddresses, setUserAddresses] = useState([]);
   const [addressType, setAddressType] = useState("");
   const router = useRouter();
@@ -57,7 +59,8 @@ export default function CheckoutPopup() {
     buyNowProduct,
   } = useSelector((state) => state.cart);
   const { selectedCoupon } = useSelector((state) => state.coupon);
-  console.log("Products ==> ", products);
+  const { settings } = useSelector((state) => state.setting);
+  console.log("Settings:", settings);
   const [couponCode, setCouponCode] = useState("");
   const [activeField, setActiveField] = useState(null);
   const [isLogged, setIsLogged] = useState(false);
@@ -267,89 +270,215 @@ export default function CheckoutPopup() {
     setSelectedProduct(null);
   };
 
-  const handelPayment = async () => {
+  const checkBeforePayment = async () => {
     try {
-      const options = {
-        key: "rzp_test_1DP5mmOlF5G5ag",
-        amount: buyNowProduct
-          ? (buyNowProduct.price * buyNowProduct.quantity -
-              (selectedCoupon?.discount || 0)) *
-            100
-          : (total - (selectedCoupon?.discount || 0)) * 100, // Convert to paise
-        currency: "INR",
-        name: "Tea Box",
-        description: "Slot Booking Fee",
-        handler: async (response) => {
-          try {
-            const payload = {
-              userId: user._id,
-              items: buyNowProduct
-                ? [{
+      const payload = {
+        userId: user._id,
+        paymentMode: paymentMethod === "cod" ? "COD" : "Prepaid",
+        items: buyNowProduct
+          ? [
+              {
+                product: buyNowProduct.product.id,
+                quantity: buyNowProduct.quantity,
+                price: buyNowProduct.price,
+                variant: buyNowProduct.variant,
+              },
+            ]
+          : cartItems.map((item) => ({
+              product: item.product.id,
+              quantity: item.quantity,
+              price: item.price,
+              variant: item.variant,
+            })),
+        total: buyNowProduct?.price || total,
+        shippingAddress: {
+          fullName: `${formData.firstName} ${formData.lastName}`,
+          addressLine1: formData.flatNumber,
+          addressLine2: formData.landmark,
+          city: formData.city,
+          state: formData.state,
+          postalCode: formData.pincode,
+          country: formData.country || "India",
+          phoneNumber: formData.phone,
+        },
+        billingAddress: {
+          fullName: `${formData.firstName} ${formData.lastName}`,
+          addressLine1: formData.flatNumber,
+          addressLine2: formData.landmark,
+          city: formData.city,
+          state: formData.state,
+          postalCode: formData.pincode,
+          country: formData.country || "India",
+          phoneNumber: formData.phone,
+        },
+        deliveryOption: "standard_delivery",
+      };
+      selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
+      selectedCoupon && (payload.discount = selectedCoupon.discount);
+      const response = await axiosInstance.post("/orders/check", payload);
+      console.log("check response");
+      console.log(response.data);
+
+      return response.data;
+    } catch (error) {
+      console.error("Error checking payment status:", error);
+      toast.error("Payment status check failed. Please try again.");
+    }
+  };
+
+  const handelPayment = async () => {
+    const check = await checkBeforePayment();
+    if (!check.success && check.message !== "Order is valid") {
+      toast.error(
+        check.message || "Order validation failed. Please try again."
+      );
+      return;
+    }
+    try {
+      if (paymentMethod === "prepaid") {
+        const options = {
+          key: "rzp_test_1DP5mmOlF5G5ag",
+          amount: buyNowProduct
+            ? (buyNowProduct.price * buyNowProduct.quantity -
+                (selectedCoupon?.discount || 0) +
+                calculateShipping()) *
+              100
+            : (total - (selectedCoupon?.discount || 0) + calculateShipping()) *
+              100, // Convert to paise
+          currency: "INR",
+          name: "Tea Box",
+          description: "Slot Booking Fee",
+          handler: async (response) => {
+            try {
+              const payload = {
+                userId: user._id,
+                paymentMode: paymentMethod === "cod" ? "COD" : "Prepaid",
+
+                items: buyNowProduct
+                  ? [
+                      {
+                        product: buyNowProduct.product.id,
+                        quantity: buyNowProduct.quantity,
+                        price: buyNowProduct.price,
+                        variant: buyNowProduct.variant,
+                      },
+                    ]
+                  : cartItems.map((item) => ({
+                      product: item.product.id,
+                      quantity: item.quantity,
+                      price: item.price,
+                      variant: item.variant,
+                    })),
+                total: buyNowProduct?.price || total,
+                paymentId: response.razorpay_payment_id,
+                shippingAddress: {
+                  fullName: `${formData.firstName} ${formData.lastName}`,
+                  addressLine1: formData.flatNumber,
+                  addressLine2: formData.landmark,
+                  city: formData.city,
+                  state: formData.state,
+                  postalCode: formData.pincode,
+                  country: formData.country || "India",
+                  phoneNumber: formData.phone,
+                },
+                billingAddress: {
+                  fullName: `${formData.firstName} ${formData.lastName}`,
+                  addressLine1: formData.flatNumber,
+                  addressLine2: formData.landmark,
+                  city: formData.city,
+                  state: formData.state,
+                  postalCode: formData.pincode,
+                  country: formData.country || "India",
+                  phoneNumber: formData.phone,
+                },
+                paymentDetails: response.razorpay_payment_id,
+                deliveryOption: "standard_delivery",
+              };
+              selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
+              selectedCoupon && (payload.discount = selectedCoupon.discount);
+
+              await dispatch(placeOrder(payload));
+              dispatch(setCheckoutClose());
+              dispatch(clearCart());
+              router.push(location + "?Order_status=success");
+            } catch (error) {
+              console.error("Error booking slot:", error);
+              toast.error("Booking failed. Please contact support.");
+              router.push(location + "?Order_status=failure");
+            }
+          },
+          prefill: {
+            email: localStorage.getItem("userEmail") || "",
+            contact: "",
+          },
+          theme: {
+            color: "#3c950d",
+          },
+          modal: {
+            ondismiss: function () {
+              toast.info("Payment cancelled");
+            },
+          },
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+      } else {
+        try {
+          const payload = {
+            userId: user._id,
+            paymentMode: paymentMethod === "cod" ? "COD" : "Prepaid",
+            items: buyNowProduct
+              ? [
+                  {
                     product: buyNowProduct.product.id,
                     quantity: buyNowProduct.quantity,
                     price: buyNowProduct.price,
                     variant: buyNowProduct.variant,
-                  }]
-                : cartItems.map((item) => ({
-                    product: item.product.id,
-                    quantity: item.quantity,
-                    price: item.price,
-                    variant: item.variant,
-                  })),
-              total: buyNowProduct?.price || total,
-              paymentId: response.razorpay_payment_id,
-              shippingAddress: {
-                fullName: `${formData.firstName} ${formData.lastName}`,
-                addressLine1: formData.flatNumber,
-                addressLine2: formData.landmark,
-                city: formData.city,
-                state: formData.state,
-                postalCode: formData.pincode,
-                country: formData.country || "India",
-                phoneNumber: formData.phone,
-              },
-              billingAddress: {
-                fullName: `${formData.firstName} ${formData.lastName}`,
-                addressLine1: formData.flatNumber,
-                addressLine2: formData.landmark,
-                city: formData.city,
-                state: formData.state,
-                postalCode: formData.pincode,
-                country: formData.country || "India",
-                phoneNumber: formData.phone,
-              },
-              paymentDetails: response.razorpay_payment_id,
-              deliveryOption: "standard_delivery",
-            };
-            selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
-            selectedCoupon && (payload.discount = selectedCoupon.discount);
+                  },
+                ]
+              : cartItems.map((item) => ({
+                  product: item.product.id,
+                  quantity: item.quantity,
+                  price: item.price,
+                  variant: item.variant,
+                })),
+            total: buyNowProduct?.price || total,
+            shippingAddress: {
+              fullName: `${formData.firstName} ${formData.lastName}`,
+              addressLine1: formData.flatNumber,
+              addressLine2: formData.landmark,
+              city: formData.city,
+              state: formData.state,
+              postalCode: formData.pincode,
+              country: formData.country || "India",
+              phoneNumber: formData.phone,
+            },
+            billingAddress: {
+              fullName: `${formData.firstName} ${formData.lastName}`,
+              addressLine1: formData.flatNumber,
+              addressLine2: formData.landmark,
+              city: formData.city,
+              state: formData.state,
+              postalCode: formData.pincode,
+              country: formData.country || "India",
+              phoneNumber: formData.phone,
+            },
+            deliveryOption: "standard_delivery",
+          };
+          selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
+          selectedCoupon && (payload.discount = selectedCoupon.discount);
 
-            await dispatch(placeOrder(payload));
-            dispatch(setCheckoutClose());
-            dispatch(clearCart());
-            router.push(location + "?Order_status=success");
-          } catch (error) {
-            console.error("Error booking slot:", error);
-            toast.error("Booking failed. Please contact support.");
-            router.push(location + "?Order_status=failure");
-          }
-        },
-        prefill: {
-          email: localStorage.getItem("userEmail") || "",
-          contact: "",
-        },
-        theme: {
-          color: "#3c950d",
-        },
-        modal: {
-          ondismiss: function () {
-            toast.info("Payment cancelled");
-          },
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
+          await dispatch(placeOrder(payload));
+          dispatch(setCheckoutClose());
+          dispatch(clearCart());
+          router.push(location + "?Order_status=success");
+        } catch (error) {
+          console.error("Error placing order:", error);
+          toast.error("Order placement failed. Please try again.");
+          router.push(location + "?Order_status=failure");
+        }
+      }
     } catch (error) {
       console.error("Error initializing Razorpay:", error);
     }
@@ -510,6 +639,18 @@ export default function CheckoutPopup() {
     }
   };
 
+  const calculateShipping = () => {
+    const totalValue = 450; // Flat shipping cost
+
+    if (totalValue > 500) return 0;
+
+    if (paymentMethod === "cod") {
+      return settings?.codShippingChargeBelowThreshold || 80;
+    } else {
+      return settings?.prepaidShippingChargeBelowThreshold || 50;
+    }
+  };
+
   // Enhanced landmarks fetching function
   const fetchLandmarkSuggestions = async (input, location = null) => {
     if (!input || input.length < 2) {
@@ -557,6 +698,7 @@ export default function CheckoutPopup() {
         isAddon: true,
       })
     );
+    dispatch(fetchSettings());
   }, []);
 
   if (!checkoutOpen) return null;
@@ -1388,6 +1530,126 @@ export default function CheckoutPopup() {
 
           {isAuthenticated && (
             <div className="space-y-4 rounded-xl bg-white py-3 px-4">
+              <h3 className="font-semibold mb-3">Payment Method</h3>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    id="payment-method-2"
+                    name="payment-method"
+                    value="method2"
+                    checked={paymentMethod === "prepaid"}
+                    onChange={() => setPaymentMethod("prepaid")}
+                    className="checked:bg-green-600 h-4 w-4"
+                  />
+                  <label htmlFor="payment-method-2">Prepaid</label>
+                </div>
+                <div>
+                  <div
+                    className={`flex items-center gap-2 ${
+                      cartItems.reduce(
+                        (acc, item) => acc + item.price * item.quantity,
+                        0
+                      ) > settings?.codLimit && "opacity-50 cursor-not-allowed"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      id="payment-method-1"
+                      name="payment-method"
+                      value="method1"
+                      disabled={
+                        cartItems.reduce(
+                          (acc, item) => acc + item.price * item.quantity,
+                          0
+                        ) > settings?.codLimit
+                      }
+                      checked={paymentMethod === "cod"}
+                      onChange={() => setPaymentMethod("cod")}
+                      className={`checked:bg-green-600 h-4 w-4 `}
+                    />
+                    <label htmlFor="payment-method-1">Cash on delivery</label>
+                  </div>
+                  {cartItems.reduce(
+                    (acc, item) => acc + item.price * item.quantity,
+                    0
+                  ) > settings?.codLimit && (
+                    <h2 className="text-red-500 text-xs">
+                      COD not available for orders above ₹{settings.codLimit}
+                    </h2>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isAuthenticated && (
+            <div className="space-y-4 rounded-xl bg-white py-3 px-4">
+              <h3 className="font-semibold mb-3">Order Summary</h3>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between text-sm">
+                  <h2>Items ({cartItems.length})</h2>
+                  <h2>
+                    {" "}
+                    ₹
+                    {cartItems.reduce(
+                      (acc, item) => acc + item.price * item.quantity,
+                      0
+                    )}
+                  </h2>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <h2>Shipping</h2>
+                  {calculateShipping() === 0 ? (
+                    <h2 className="text-green-600 font-medium">Free</h2>
+                  ) : (
+                    "₹ " + calculateShipping()
+                  )}
+                </div>
+                {selectedCoupon && (
+                  <div className="flex justify-between text-sm">
+                    <h2>
+                      Coupon{" "}
+                      {selectedCoupon?.code ? `(${selectedCoupon.code})` : ""}
+                    </h2>
+                    <h2 className="font-semibold">
+                      -₹{selectedCoupon?.discount || 0}
+                    </h2>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
+                  <h2>Subtotal</h2>
+                  <h2>
+                    {" "}
+                    ₹
+                    {cartItems.reduce(
+                      (acc, item) => acc + item.price * item.quantity,
+                      0
+                    ) +
+                      calculateShipping() -
+                      (selectedCoupon?.discount || 0)}
+                  </h2>
+                </div>
+
+                <div className="flex justify-between font-semibold border-t-[1.5px] border-black pt-1">
+                  <h2>Total</h2>
+                  <h2>
+                    {" "}
+                    ₹
+                    {cartItems.reduce(
+                      (acc, item) => acc + item.price * item.quantity,
+                      0
+                    ) +
+                      calculateShipping() -
+                      (selectedCoupon?.discount || 0)}
+                  </h2>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isAuthenticated && (
+            <div className="space-y-4 rounded-xl bg-white py-3 px-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold mb-3">More Products</h3>
               </div>
@@ -1517,7 +1779,14 @@ export default function CheckoutPopup() {
               onClick={handelPayment}
               className="w-full mt-4 mb-4 text-sm bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition-colors "
             >
-              Place Order
+              Place Order ( ₹
+              {cartItems.reduce(
+                (acc, item) => acc + item.price * item.quantity,
+                0
+              ) +
+                calculateShipping() -
+                (selectedCoupon?.discount || 0)}{" "}
+              )
             </button>
           )}
           {/* Contact Info */}
