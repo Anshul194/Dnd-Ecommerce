@@ -15,6 +15,7 @@ import { withUserAuth } from '../../../middleware/commonAuth.js';
 
 export async function POST(req) {
   try {
+    const tenant = req.headers.get('x-tenant');
     const body = await req.json();
     console.log('Route received create order body:', JSON.stringify(body, null, 2));
     const subdomain = getSubdomain(req);
@@ -36,7 +37,7 @@ export async function POST(req) {
     const emailService = new EmailService();
     const orderService = new OrderService(orderRepo, couponService, emailService);
     const orderController = new OrderController(orderService);
-    const result = await orderController.create({ body }, conn);
+    const result = await orderController.create({ body }, conn, tenant);
     if (!result.success) {
       return NextResponse.json(result, { status: 400 });
     }
