@@ -126,6 +126,13 @@ export const shippingSchema = new mongoose.Schema(
       default: null,
     },
   },
+  //priority
+  {
+    priority: {
+      type: Number,
+      default: 0,
+    },
+  },
   {
     timestamps: true,
   }

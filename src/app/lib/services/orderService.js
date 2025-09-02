@@ -106,6 +106,45 @@ class OrderService {
         }
       }
 
+      // --- Postal code shipping method selection ---
+      const ShippingZone = conn.models.ShippingZone || conn.model("ShippingZone", require("../models/ShippingZone.js").shippingZoneSchema);
+      const Shipping = conn.models.Shipping || conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+
+      const userPostalCode = shippingAddress?.postalCode?.toString().trim();
+      if (!userPostalCode) {
+        return {
+          success: false,
+          message: "Postal code is required in shipping address",
+          data: null
+        };
+      }
+
+      // Find all shipping zones containing this postal code
+      const zones = await ShippingZone.find({ "postalCodes.code": userPostalCode }).lean();
+      if (!zones || zones.length === 0) {
+        return {
+          success: false,
+          message: "Delivery not available for this postal code",
+          data: null
+        };
+      }
+
+      // Get all shippingIds from zones
+      const shippingIds = zones.map(z => z.shippingId);
+
+      // Fetch all shipping methods for these IDs and sort by priority DESC
+      const shippingMethods = await Shipping.find({ _id: { $in: shippingIds }, status: "active" }).sort({ priority: -1 }).lean();
+      if (!shippingMethods || shippingMethods.length === 0) {
+        return {
+          success: false,
+          message: "No active shipping method found for this postal code",
+          data: null
+        };
+      }
+
+      // Pick the highest priority shipping method
+      const selectedShipping = shippingMethods[0];
+
       // Fetch settings
      
       const Setting =
@@ -202,7 +241,11 @@ class OrderService {
         data: {
           order_total,
           shippingCharge,
-          discount
+          discount,
+          shippingMethod: selectedShipping.shippingMethod,
+          shippingId: selectedShipping._id,
+          shippingName: selectedShipping.name,
+          shippingPriority: selectedShipping.priority
         }
       };
     } catch (error) {
@@ -299,6 +342,41 @@ class OrderService {
           throw new Error(`Invalid variantId: ${item.variantId}`);
         }
       }
+
+      // --- Postal code shipping method selection ---
+      const ShippingZone = conn.models.ShippingZone || conn.model("ShippingZone", require("../models/ShippingZone.js").shippingZoneSchema);
+      const Shipping = conn.models.Shipping || conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+
+      const userPostalCode = shippingAddress?.postalCode?.toString().trim();
+      if (!userPostalCode) {
+        throw new Error("Postal code is required in shipping address");
+      }
+
+      // Find all shipping zones containing this postal code
+      const zones = await ShippingZone.find({ "postalCodes.code": userPostalCode }).lean();
+      if (!zones || zones.length === 0) {
+        return {
+          success: false,
+          message: "Delivery not available for this postal code",
+          data: null
+        };
+      }
+
+      // Get all shippingIds from zones
+      const shippingIds = zones.map(z => z.shippingId);
+
+      // Fetch all shipping methods for these IDs and sort by priority DESC
+      const shippingMethods = await Shipping.find({ _id: { $in: shippingIds }, status: "active" }).sort({ priority: -1 }).lean();
+      if (!shippingMethods || shippingMethods.length === 0) {
+        return {
+          success: false,
+          message: "No active shipping method found for this postal code",
+          data: null
+        };
+      }
+
+      // Pick the highest priority shipping method
+      const selectedShipping = shippingMethods[0];
 
       // Fetch settings
       
@@ -415,6 +493,10 @@ class OrderService {
         shippingCharge,
         paymentMode,
         codBlockedReason,
+        shippingMethod: selectedShipping.shippingMethod, // add to order
+        shippingId: selectedShipping._id, // add to order
+        shippingName: selectedShipping.name,
+        shippingPriority: selectedShipping.priority
       };
       const order = await this.orderRepository.create(orderData);
 
