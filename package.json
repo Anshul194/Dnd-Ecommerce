@@ -65,5 +65,10 @@
     "npm": "^11.5.1",
     "supertest": "^7.1.3",
     "tailwindcss": "^4"
+  },
+  "overrides": {
+    "next-multipart": {
+      "next": "15.3.2"
+    }
   }
 }
