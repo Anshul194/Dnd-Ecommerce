@@ -101,9 +101,25 @@ class IVRService {
         await lead.save();
       }
 
-      await CallLogModel.create({
-        leadId: lead._id,
-        callId,
+      //check calllog already exist with same callId then update else create
+      const existingCallLog = await CallLogModel.findOne({ callId });
+      if (existingCallLog) {
+        existingCallLog.leadId = lead._id;
+        existingCallLog.caller = caller;
+        existingCallLog.webhookResponse = body; // Update webhook response
+        existingCallLog.duration = callDuration;
+        existingCallLog.durationMs = durationMs;
+        existingCallLog.status = callStatus;
+        existingCallLog.disposition = disposition;
+        existingCallLog.recordingUrl = recordingUrl;
+        existingCallLog.agent = agent ? agent._id : null;
+        existingCallLog.agentName = agentName;
+        existingCallLog.agentNumber = agentNumber;
+        await existingCallLog.save();
+      } else {
+        await CallLogModel.create({
+          leadId: lead._id,
+          callId,
         caller,
         duration: callDuration,
         durationMs,
@@ -113,6 +129,7 @@ class IVRService {
         agent: agent ? agent._id : null,
         agentName,
         agentNumber,
+        webhookResponse: body // Store entire webhook payload
       });
       // You can add your business logic here
       console.log('After call data processed successfully');
