@@ -80,7 +80,7 @@ const Wishlist = () => {
           <Star
             key={star}
             size={14}
-            className={`${
+            className={` ₹{
               star <= rating ? "text-yellow-400 fill-current" : "text-gray-300"
             }`}
           />
@@ -198,15 +198,15 @@ const Wishlist = () => {
                   {item?.variant?.salePrice ? (
                     <>
                       <span className="text-lg font-bold text-gray-900">
-                        ${item?.variant?.salePrice}
+                         ₹{item?.variant?.salePrice}
                       </span>
                       <span className="text-lg line-through font-bold text-gray-900">
-                        ${item?.variant?.price}
+                         ₹{item?.variant?.price}
                       </span>
                     </>
                   ) : (
                     <span className="text-lg font-bold text-gray-900">
-                      ${item?.variant?.price}
+                       ₹{item?.variant?.price}
                     </span>
                   )}
                 </div>
@@ -222,7 +222,7 @@ const Wishlist = () => {
                   <button
                     onClick={() => addToCartHandler(item)}
                     disabled={!item.product}
-                    className={`w-full px-4 py-2 rounded-md transition-colors flex items-center justify-center space-x-2 ${
+                    className={`w-full px-4 py-2 rounded-md transition-colors flex items-center justify-center space-x-2  ₹{
                       item.product
                         ? "bg-red-600 text-white hover:bg-red-700"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -233,7 +233,7 @@ const Wishlist = () => {
                   </button>
                   <div className="flex space-x-2">
                     <Link
-                      href={`/product-detail/${item?.product?.slug}`}
+                      href={`/product-detail/ ₹{item?.product?.slug}`}
                       className="w-1/2"
                     >
                       <button className="flex-1 px-3 py-2 border w-full border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 text-sm">

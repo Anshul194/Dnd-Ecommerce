@@ -1,11 +1,11 @@
-import dbConnect from '../../../connection/dbConnect';
 import { NextResponse } from 'next/server';
-import UserService from '../../../lib/services/userService.js';
-import { Token } from '../../../middleware/generateToken.js';
+import { Token } from '@/app/middleware/generateToken.js';
 import mongoose from 'mongoose';
-import { redisWrapper } from '../../../config/redis.js';
 import bcrypt from 'bcryptjs';
-import roleSchema from '../../../lib/models/role.js';
+import dbConnect from '@/app/connection/dbConnect.js';
+import UserService from '@/app/lib/services/userService.js';
+import redisWrapper from '@/app/config/redisWrapper.js';
+import roleSchema from '@/app/lib/models/role';
 
 // Helper to extract subdomain from x-tenant header or host header
 function getSubdomain(request) {
