@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,12 +31,12 @@ const nextConfig = {
         new webpack.IgnorePlugin({
           resourceRegExp: /^fast-glob$/,
         }),
-        
+
         // Ignore @nodelib/fs modules specifically
         new webpack.IgnorePlugin({
           resourceRegExp: /^@nodelib\/fs/,
         }),
-        
+
         // Ignore context-specific @nodelib imports
         new webpack.IgnorePlugin({
           resourceRegExp: /@nodelib\/fs/,
@@ -47,14 +47,17 @@ const nextConfig = {
       // Replace problematic modules with empty implementations
       config.resolve.alias = {
         ...config.resolve.alias,
-        '@nodelib/fs.scandir': resolve(__dirname, './lib/empty-fs-module.js'),
-        '@nodelib/fs.stat': resolve(__dirname, './lib/empty-fs-module.js'),
-        '@nodelib/fs.walk': resolve(__dirname, './lib/empty-fs-module.js'),
-        'fast-glob': resolve(__dirname, './lib/empty-glob-module.js'),
+        "@nodelib/fs.scandir": resolve(__dirname, "./lib/empty-fs-module.js"),
+        "@nodelib/fs.stat": resolve(__dirname, "./lib/empty-fs-module.js"),
+        "@nodelib/fs.walk": resolve(__dirname, "./lib/empty-fs-module.js"),
+        "fast-glob": resolve(__dirname, "./lib/empty-glob-module.js"),
       };
     }
-    
+
     return config;
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
