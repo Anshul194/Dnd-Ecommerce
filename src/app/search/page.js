@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Filter from "./Filter";
 import ProductCard from "./ProductCard";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import Category from "../lib/models/Category";
 import { fetchProducts } from "../store/slices/productSlice";
+import { LoadingSpinner } from "@/components/common/Loading";
 
 const SearchPage = () => {
   const [filters, setFilters] = useState({
@@ -157,4 +158,12 @@ const SearchPage = () => {
   );
 };
 
-export default SearchPage;
+const Search = () => {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <SearchPage />
+    </Suspense>
+  );
+};
+
+export default Search;

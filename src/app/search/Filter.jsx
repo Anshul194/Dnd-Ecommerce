@@ -1,8 +1,9 @@
 import { fetchCategories } from "../store/slices/categorySlice";
 import { useDispatch, useSelector } from "react-redux";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { LoadingSpinner } from "@/components/common/Loading";
 
 const Filter = ({ onFilterChange }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -272,4 +273,12 @@ const Filter = ({ onFilterChange }) => {
   );
 };
 
-export default Filter;
+const mainFilter = () => {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <Filter />
+    </Suspense>
+  );
+};
+
+export default mainFilter;

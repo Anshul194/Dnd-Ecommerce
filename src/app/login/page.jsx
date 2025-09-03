@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Eye, EyeOff, Star } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { login, signUp } from "../store/slices/authSlice";
 import { useRouter, useSearchParams } from "next/navigation";
+import { LoadingSpinner } from "@/components/common/Loading";
 
-export default function SignupPage() {
+export function SignupPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -202,5 +203,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <SignupPage />
+    </Suspense>
   );
 }
