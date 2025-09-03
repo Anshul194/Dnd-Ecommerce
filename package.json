@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --no-lint --no-typescript",
+    "build": "next build ",
     "start": "next start",
     "start:tenant1": "cross-env PORT=3001 next start --hostname tenant1.localhost",
     "dev:tenant1": "cross-env PORT=3001 next dev --hostname tenant1.localhost",
