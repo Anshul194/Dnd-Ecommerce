@@ -180,7 +180,6 @@ export default function CheckoutPopup() {
       formData.firstName === "" ||
       formData.lastName === "" ||
       formData.flatNumber === "" ||
-      formData.area === "" ||
       formData.landmark === ""
     ) {
       alert("Please fill all required fields");
