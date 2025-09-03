@@ -1,8 +1,8 @@
-import cartRepository from '../repository/CartRepository.js';
-import { productSchema } from '../models/Product.js';
+  import cartRepository from '../repository/CartRepository.js';
 import { variantSchema } from '../models/Variant.js';
 import mongoose from 'mongoose';
 import { CouponModel } from '../models/Coupon.js';
+import { ProductSchema } from '../models/Product.js';
 
 class CartService {
   async getCart(userId, conn) {
@@ -12,7 +12,7 @@ class CartService {
 
   async addItem(userId, { product, variant, quantity, price }, conn) {
     console.log('[CartService.addItem] Validating product:', product, 'variant:', variant, 'quantity:', quantity, 'price:', price, 'Connection:', conn.name || 'global mongoose');
-    const ProductModel = conn.models.Product || conn.model('Product', productSchema);
+    const ProductModel = conn.models.Product || conn.model('Product', ProductSchema);
     const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
     if (!product) throw new Error('Product is required');
     if (!mongoose.Types.ObjectId.isValid(product)) throw new Error('Invalid product ID');
