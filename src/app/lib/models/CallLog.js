@@ -13,6 +13,7 @@ const CallLogSchema = new mongoose.Schema({
   agentName: String,
   agentNumber: String,
   createdAt: { type: Date, default: Date.now },
+  webhookResponse: Object
 });
 
 
