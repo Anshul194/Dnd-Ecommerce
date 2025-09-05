@@ -65,9 +65,8 @@ export const addReview = createAsyncThunk(
 export const fetchProductReviews = createAsyncThunk(
   "product/fetchProductReviews",
   async (id) => {
-  try {
-      const response = await axiosInstance.get(
-        `/review?productId=${id}`      );
+    try {
+      const response = await axiosInstance.get(`/review?productId=${id}`);
       // Check for success property in response
       if (response.data && response.data.success === false) {
         // Backend returned an error, return empty array
@@ -84,6 +83,7 @@ export const fetchProductReviews = createAsyncThunk(
 const productSlice = createSlice({
   name: "product",
   initialState: {
+    selectedProduct: null,
     products: [],
     loading: false,
     error: null,
@@ -100,6 +100,18 @@ const productSlice = createSlice({
         state.products = action.payload;
       })
       .addCase(fetchProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchProductById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProductById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedProduct = action.payload;
+      })
+      .addCase(fetchProductById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

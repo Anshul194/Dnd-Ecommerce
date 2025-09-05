@@ -24,9 +24,19 @@ const columnSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// NEW: Section schema
+const sectionSchema = new mongoose.Schema(
+  {
+    sectionId: { type: String, required: true },
+    sectionTitle: { type: String }, // optional, if you want a title
+    columns: [columnSchema],
+  },
+  { _id: false }
+);
+
 const templateSchema = new mongoose.Schema(
   {
-    productId: { 
+    productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: false,
@@ -38,7 +48,8 @@ const templateSchema = new mongoose.Schema(
     columnGap: { type: Number, required: true },
     componentGap: { type: Number, required: true },
     rowGap: { type: Number, required: true },
-    columns: [columnSchema],
+    // columns: [columnSchema], // REMOVE THIS
+    sections: [sectionSchema], // ADD THIS
   },
   {
     timestamps: true,

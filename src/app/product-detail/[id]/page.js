@@ -13,7 +13,6 @@ import {
   ShoppingCart,
   Plus,
 } from "lucide-react";
-import CouponSlider from "./components/CouponSlider";
 import HowToUse from "./components/HowToUse";
 import HowToUseTwo from "./components/varients/howtouse/HowToUseTwo";
 import HowToUseThird from "./components/varients/howtouse/HowToUseThird";

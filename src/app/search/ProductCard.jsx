@@ -68,7 +68,7 @@ const ProductCard = ({ product }) => {
   return (
     <>
       <Link
-        href={`/product-detail/${product.slug}`}
+        href={`/productDetail/${product.slug}`}
         className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all"
         prefetch
       >

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState } from "react";
 import {
@@ -12,7 +12,7 @@ import {
   Truck,
   Shield,
   RotateCcw,
-  Clock
+  Clock,
 } from "lucide-react";
 
 function ProdDetTwo() {
@@ -28,9 +28,10 @@ function ProdDetTwo() {
       "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1599273830315-6b26c5e2f359?w=600&h=600&fit=crop",
       "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=600&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=600&h=600&fit=crop"
+      "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=600&h=600&fit=crop",
     ],
-    description: "Our premium organic turmeric powder is carefully sourced from the finest turmeric roots. Rich in curcumin, this golden spice offers powerful anti-inflammatory properties and adds vibrant color and earthy flavor to your dishes.",
+    description:
+      "Our premium organic turmeric powder is carefully sourced from the finest turmeric roots. Rich in curcumin, this golden spice offers powerful anti-inflammatory properties and adds vibrant color and earthy flavor to your dishes.",
     variants: [
       {
         _id: "pack1",
@@ -38,7 +39,7 @@ function ProdDetTwo() {
         price: "299",
         salePrice: "399",
         discount: "25",
-        color: "green"
+        color: "green",
       },
       {
         _id: "pack2",
@@ -46,7 +47,7 @@ function ProdDetTwo() {
         price: "649",
         salePrice: "849",
         discount: "30",
-        color: "orange"
+        color: "orange",
       },
       {
         _id: "pack3",
@@ -54,34 +55,40 @@ function ProdDetTwo() {
         price: "1199",
         salePrice: "1599",
         discount: "35",
-        color: "green"
-      }
+        color: "green",
+      },
     ],
     ingredients: [
       { _id: "1", description: "100% Pure Organic Turmeric Root Powder" },
       { _id: "2", description: "Rich in Curcumin (Active Compound)" },
       { _id: "3", description: "No Added Preservatives or Artificial Colors" },
-      { _id: "4", description: "Sourced from Certified Organic Farms" }
+      { _id: "4", description: "Sourced from Certified Organic Farms" },
     ],
     benefits: [
       { _id: "1", description: "Powerful Anti-inflammatory Properties" },
       { _id: "2", description: "Rich in Antioxidants" },
       { _id: "3", description: "Supports Immune System Health" },
       { _id: "4", description: "Promotes Digestive Health" },
-      { _id: "5", description: "May Help Reduce Joint Pain" }
+      { _id: "5", description: "May Help Reduce Joint Pain" },
     ],
     precautions: [
-      { _id: "1", description: "Consult your doctor before use if pregnant or nursing" },
+      {
+        _id: "1",
+        description: "Consult your doctor before use if pregnant or nursing",
+      },
       { _id: "2", description: "May interact with blood-thinning medications" },
       { _id: "3", description: "Start with small amounts to test tolerance" },
-      { _id: "4", description: "Store in a cool, dry place away from sunlight" }
-    ]
+      {
+        _id: "4",
+        description: "Store in a cool, dry place away from sunlight",
+      },
+    ],
   };
 
   const coupons = [
     { code: "SAVE20", discount: "20% OFF", minOrder: "₹500" },
     { code: "FIRST10", discount: "10% OFF", minOrder: "₹300" },
-    { code: "BULK30", discount: "30% OFF", minOrder: "₹1000" }
+    { code: "BULK30", discount: "30% OFF", minOrder: "₹1000" },
   ];
 
   const toggleSection = (section) => {
@@ -97,14 +104,19 @@ function ProdDetTwo() {
   };
 
   const prevImage = () => {
-    setSelectedImage((prev) => (prev - 1 + productData.images.length) % productData.images.length);
+    setSelectedImage(
+      (prev) =>
+        (prev - 1 + productData.images.length) % productData.images.length
+    );
   };
 
   const handleAddToCart = () => {
     alert(`Added ${quantity} item(s) to cart!`);
   };
 
-  const selectedVariant = productData.variants.find(v => v._id === selectedPack);
+  const selectedVariant = productData.variants.find(
+    (v) => v._id === selectedPack
+  );
 
   return (
     <div className=" min-h-screen">
@@ -120,8 +132,10 @@ function ProdDetTwo() {
 
       <div className="max-w-[90%] mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
           {/* Image Gallery - Left Side */}
+
+          {/* variant 3 */}
+
           <div className="lg:col-span-6">
             <div className="bg-white rounded-2xl sticky top-20 p-6 shadow-sm">
               {/* Main Image */}
@@ -132,14 +146,14 @@ function ProdDetTwo() {
                     alt="Product"
                     className="w-full h-full object-cover"
                   />
-                  
-                  <button 
+
+                  <button
                     onClick={prevImage}
                     className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105"
                   >
                     <ChevronLeft size={18} />
                   </button>
-                  <button 
+                  <button
                     onClick={nextImage}
                     className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:scale-105"
                   >
@@ -151,10 +165,15 @@ function ProdDetTwo() {
                     <button
                       onClick={() => setIsWishlisted(!isWishlisted)}
                       className={`w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-all ${
-                        isWishlisted ? "bg-red-500 text-white" : "bg-white text-gray-600 hover:text-red-500"
+                        isWishlisted
+                          ? "bg-red-500 text-white"
+                          : "bg-white text-gray-600 hover:text-red-500"
                       }`}
                     >
-                      <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
+                      <Heart
+                        size={18}
+                        fill={isWishlisted ? "currentColor" : "none"}
+                      />
                     </button>
                     <button className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
                       <Share2 size={18} />
@@ -169,13 +188,17 @@ function ProdDetTwo() {
                   <button
                     key={index}
                     className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === index 
-                        ? "border-green-500 shadow-md" 
+                      selectedImage === index
+                        ? "border-green-500 shadow-md"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                     onClick={() => setSelectedImage(index)}
                   >
-                    <img src={img} alt={`View ${index + 1}`} className="w-full h-full object-cover" />
+                    <img
+                      src={img}
+                      alt={`View ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -183,27 +206,43 @@ function ProdDetTwo() {
           </div>
 
           {/* Product Info - Right Side */}
+          {/* variant2 */}
+
           <div className="lg:col-span-6">
             <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
               {/* Title & Rating */}
-              <h1 className="text-3xl font-bold text-gray-900 mb-3">{productData.name}</h1>
-              
+              <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                {productData.name}
+              </h1>
+
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={18} className="fill-orange-400 text-orange-400" />
+                    <Star
+                      key={i}
+                      size={18}
+                      className="fill-orange-400 text-orange-400"
+                    />
                   ))}
-                  <span className="text-sm text-gray-600 ml-2">4.7 (390 reviews)</span>
+                  <span className="text-sm text-gray-600 ml-2">
+                    4.7 (390 reviews)
+                  </span>
                 </div>
                 <div className="h-4 w-px bg-gray-300"></div>
-                <span className="text-sm text-green-600 font-medium">In Stock</span>
+                <span className="text-sm text-green-600 font-medium">
+                  In Stock
+                </span>
               </div>
 
               {/* Price Section */}
               <div className="mb-6">
                 <div className="flex items-baseline gap-3 mb-2">
-                  <span className="text-3xl font-bold text-gray-900">₹{selectedVariant?.price}</span>
-                  <span className="text-xl text-gray-500 line-through">₹{selectedVariant?.salePrice}</span>
+                  <span className="text-3xl font-bold text-gray-900">
+                    ₹{selectedVariant?.price}
+                  </span>
+                  <span className="text-xl text-gray-500 line-through">
+                    ₹{selectedVariant?.salePrice}
+                  </span>
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
                     {selectedVariant?.discount}% OFF
                   </span>
@@ -213,7 +252,9 @@ function ProdDetTwo() {
 
               {/* Pack Selection */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Choose Size</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Choose Size
+                </h3>
                 <div className="grid grid-cols-3 gap-3">
                   {productData.variants.map((variant) => (
                     <button
@@ -225,8 +266,12 @@ function ProdDetTwo() {
                       }`}
                       onClick={() => setSelectedPack(variant._id)}
                     >
-                      <div className="font-semibold text-gray-900">{variant.title}</div>
-                      <div className="text-sm text-gray-600">₹{variant.price}</div>
+                      <div className="font-semibold text-gray-900">
+                        {variant.title}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        ₹{variant.price}
+                      </div>
                       {variant.discount && (
                         <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
                           -{variant.discount}%
@@ -240,7 +285,9 @@ function ProdDetTwo() {
               {/* Quantity & Actions */}
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700">Quantity:</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Quantity:
+                  </span>
                   <div className="flex items-center border border-gray-300 rounded-lg">
                     <button
                       onClick={() => handleQuantityChange(-1)}
@@ -248,7 +295,9 @@ function ProdDetTwo() {
                     >
                       -
                     </button>
-                    <span className="w-12 text-center font-medium">{quantity}</span>
+                    <span className="w-12 text-center font-medium">
+                      {quantity}
+                    </span>
                     <button
                       onClick={() => handleQuantityChange(1)}
                       className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 transition-colors"
@@ -295,15 +344,26 @@ function ProdDetTwo() {
 
               {/* Coupons */}
               <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Available Offers</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Available Offers
+                </h3>
                 <div className="space-y-2">
                   {coupons.map((coupon, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200"
+                    >
                       <div>
-                        <span className="font-semibold text-green-700">{coupon.code}</span>
-                        <span className="text-sm text-gray-600 ml-2">{coupon.discount} on orders above {coupon.minOrder}</span>
+                        <span className="font-semibold text-green-700">
+                          {coupon.code}
+                        </span>
+                        <span className="text-sm text-gray-600 ml-2">
+                          {coupon.discount} on orders above {coupon.minOrder}
+                        </span>
                       </div>
-                      <button className="text-green-600 text-sm font-medium hover:text-green-700">Copy</button>
+                      <button className="text-green-600 text-sm font-medium hover:text-green-700">
+                        Copy
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -318,7 +378,7 @@ function ProdDetTwo() {
                     { key: "details", label: "Details" },
                     { key: "ingredients", label: "Ingredients" },
                     { key: "benefits", label: "Benefits" },
-                    { key: "precautions", label: "Precautions" }
+                    { key: "precautions", label: "Precautions" },
                   ].map((tab) => (
                     <button
                       key={tab.key}
@@ -341,8 +401,10 @@ function ProdDetTwo() {
                     {productData.description}
                     <div className="mt-4">
                       <p className="text-sm">
-                        <strong>Usage:</strong> Add a pinch to warm milk or tea. Can be used in cooking and baking. 
-                        Mix 1/2 teaspoon with honey for daily consumption or add to your favorite recipes.
+                        <strong>Usage:</strong> Add a pinch to warm milk or tea.
+                        Can be used in cooking and baking. Mix 1/2 teaspoon with
+                        honey for daily consumption or add to your favorite
+                        recipes.
                       </p>
                     </div>
                   </div>
@@ -353,7 +415,9 @@ function ProdDetTwo() {
                     {productData.ingredients.map((item) => (
                       <div key={item._id} className="flex items-start gap-3">
                         <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <span className="text-gray-700">{item.description}</span>
+                        <span className="text-gray-700">
+                          {item.description}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -364,7 +428,9 @@ function ProdDetTwo() {
                     {productData.benefits.map((item) => (
                       <div key={item._id} className="flex items-start gap-3">
                         <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <span className="text-gray-700">{item.description}</span>
+                        <span className="text-gray-700">
+                          {item.description}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -375,7 +441,9 @@ function ProdDetTwo() {
                     {productData.precautions.map((item) => (
                       <div key={item._id} className="flex items-start gap-3">
                         <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                        <span className="text-gray-700">{item.description}</span>
+                        <span className="text-gray-700">
+                          {item.description}
+                        </span>
                       </div>
                     ))}
                   </div>

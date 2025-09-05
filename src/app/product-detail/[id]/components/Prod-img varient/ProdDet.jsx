@@ -109,6 +109,7 @@ function ProdDet() {
 
         <div className="flex flex-col md:flex-row gap-8">
           {/* Left Side - Product Details */}
+          {/* variant 2 */}
           <div className="lg:max-w-xl w-full md:w-1/2">
             {/* Product Title and Rating */}
             <div>

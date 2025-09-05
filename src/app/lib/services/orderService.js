@@ -565,6 +565,7 @@ class OrderService {
           });
 
           const result = await res.json();
+          console.log("Auto-call API response:", result);
           if (!result.success) {
             console.error("Auto-call API failed:", result);
           }
