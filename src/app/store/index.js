@@ -19,6 +19,7 @@ import orderReducer from "./slices/orderSlice";
 import contentReducer from "./slices/contentSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import faq from "./slices/faqSlice";
+import settingSlice from "./slices/settingSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -40,6 +41,7 @@ const store = configureStore({
     wishlist: wishlistReducer,
     content: contentReducer,
     faq: faq,
+    setting: settingSlice,
   },
 });
 

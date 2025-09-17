@@ -32,7 +32,232 @@ class OrderService {
     }
   }
 
-  async createOrder(data, conn) {
+  //checkOrder
+  async checkOrder(data, conn, tenant) {
+    try {
+      const {
+        userId,
+        items,
+        couponCode,
+        shippingAddress,
+        billingAddress,
+        deliveryOption,
+        paymentMode, // "COD" or "Prepaid"
+      } = data;
+
+      // Validate required fields (no paymentId needed here)
+      if (
+        !userId ||
+        !items ||
+        !items.length ||
+        !shippingAddress ||
+        !billingAddress ||
+        !deliveryOption ||
+        !paymentMode
+      ) {
+        return {
+          success: false,
+          message: "All required fields must be provided",
+          data: null
+        };
+      }
+
+      // Validate userId
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return {
+          success: false,
+          message: `Invalid userId: ${userId}`,
+          data: null
+        };
+      }
+
+      // Validate delivery option
+      const validDeliveryOptions = [
+        "standard_delivery",
+        "express_delivery",
+        "overnight_delivery",
+      ];
+      if (!validDeliveryOptions.includes(deliveryOption)) {
+        return {
+          success: false,
+          message: "Invalid delivery option",
+          data: null
+        };
+      }
+
+      // Validate items
+      for (const item of items) {
+        if (!item.product || !item.quantity || item.quantity <= 0) {
+          return {
+            success: false,
+            message: "Each item must have a valid product and positive quantity",
+            data: null
+          };
+        }
+        if (
+          item.variantId &&
+          !mongoose.Types.ObjectId.isValid(item.variantId)
+        ) {
+          return {
+            success: false,
+            message: `Invalid variantId: ${item.variantId}`,
+            data: null
+          };
+        }
+      }
+
+      // --- Postal code shipping method selection ---
+      const ShippingZone = conn.models.ShippingZone || conn.model("ShippingZone", require("../models/ShippingZone.js").shippingZoneSchema);
+      const Shipping = conn.models.Shipping || conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+
+      const userPostalCode = shippingAddress?.postalCode?.toString().trim();
+      if (!userPostalCode) {
+        return {
+          success: false,
+          message: "Postal code is required in shipping address",
+          data: null
+        };
+      }
+
+      // Find all shipping zones containing this postal code
+      const zones = await ShippingZone.find({ "postalCodes.code": userPostalCode }).lean();
+      if (!zones || zones.length === 0) {
+        return {
+          success: false,
+          message: "Delivery not available for this postal code",
+          data: null
+        };
+      }
+
+      // Get all shippingIds from zones
+      const shippingIds = zones.map(z => z.shippingId);
+
+      // Fetch all shipping methods for these IDs and sort by priority DESC
+      const shippingMethods = await Shipping.find({ _id: { $in: shippingIds }, status: "active" }).sort({ priority: -1 }).lean();
+      if (!shippingMethods || shippingMethods.length === 0) {
+        return {
+          success: false,
+          message: "No active shipping method found for this postal code",
+          data: null
+        };
+      }
+
+      // Pick the highest priority shipping method
+      const selectedShipping = shippingMethods[0];
+
+      // Fetch settings
+     
+      const Setting =
+        conn.models.Setting || conn.model("Setting", SettingSchema);
+      const settings = await Setting.findOne({ tenant }).lean();
+
+      // Calculate subtotal
+      let subtotal = 0;
+      for (const item of items) {
+        const { product, variant, quantity } = item;
+        let price = 0;
+        if (variant) {
+          const newVariant = await this.orderRepository.findVariantById(variant);
+          price = newVariant.price;
+        } else {
+          const newProduct = await this.orderRepository.findProductById(product);
+          price = newProduct.price;
+        }
+        subtotal += price * quantity;
+      }
+
+      // Apply coupon if provided
+      let discount = 0;
+      if (couponCode) {
+        const couponResult = await this.couponService.applyCoupon(
+          { code: couponCode, cartValue: subtotal },
+          conn
+        );
+        if (!couponResult.success) {
+          return {
+            success: false,
+            message: couponResult.message,
+            data: null
+          };
+        }
+        discount = couponResult.data.discount;
+      }
+
+      // Calculate order total after discount
+      const order_total = subtotal - discount;
+
+      // --- COD Order Limit ---
+      if (paymentMode === "COD" && order_total > (settings.codLimit ?? 1500)) {
+        return {
+          success: false,
+          message: "COD not available for orders above ₹1500",
+          data: null
+        };
+      }
+
+      // --- Repeat COD Restriction (per product, within 10 days) ---
+      if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
+        const Order =
+          conn.models.Order || conn.model("Order", mongoose.model("Order").schema);
+        for (const item of items) {
+          const lastOrder = await Order.findOne({
+            user: userId,
+            paymentMode: "COD",
+            "items.product": item.product,
+          })
+            .sort({ createdAt: -1 })
+            .lean();
+          if (lastOrder && lastOrder.createdAt) {
+            const lastDate = new Date(lastOrder.createdAt);
+            const now = new Date();
+            const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
+            if (diffDays < (settings.repeatOrderRestrictionDays ?? 10)) {
+              return {
+                success: false,
+                message: "COD not allowed for this product (ordered within last 10 days)",
+                data: null
+              };
+            }
+          }
+        }
+      }
+
+      // --- Shipping Charges ---
+      let shippingCharge = 0;
+      if (order_total >= (settings.freeShippingThreshold ?? 500)) {
+        shippingCharge = 0;
+      } else if (order_total < (settings.freeShippingThreshold ?? 500)) {
+        if (paymentMode === "COD") {
+          shippingCharge = settings.codShippingChargeBelowThreshold ?? 80;
+        } else {
+          shippingCharge = settings.prepaidShippingChargeBelowThreshold ?? 40;
+        }
+      }
+
+      // If all checks pass, return success and calculated charges
+      return {
+        success: true,
+        message: "Order is valid",
+        data: {
+          order_total,
+          shippingCharge,
+          discount,
+          shippingMethod: selectedShipping.shippingMethod,
+          shippingId: selectedShipping._id,
+          shippingName: selectedShipping.name,
+          shippingPriority: selectedShipping.priority
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
+
+  async createOrder(data, conn, tenant) {
     try {
       const {
         userId,
@@ -42,6 +267,7 @@ class OrderService {
         billingAddress,
         paymentId,
         deliveryOption,
+        paymentMode, // must be passed in data: "COD" or "Prepaid"
       } = data;
 
       // Validate required fields
@@ -53,7 +279,8 @@ class OrderService {
         shippingAddress,
         billingAddress,
         paymentId,
-        deliveryOption
+        deliveryOption,
+        paymentMode
       );
       if (
         !userId ||
@@ -61,10 +288,21 @@ class OrderService {
         !items.length ||
         !shippingAddress ||
         !billingAddress ||
-        !paymentId ||
-        !deliveryOption
+        !deliveryOption ||
+        !paymentMode
       ) {
         throw new Error("All required fields must be provided");
+      }
+      // Only require paymentId for Prepaid
+      if (paymentMode !== "COD" && !paymentId) {
+        throw new Error("paymentId is required for prepaid orders");
+      }
+
+      // If COD, generate a random paymentId
+      let finalPaymentId = paymentId;
+      if (paymentMode === "COD") {
+        finalPaymentId =
+          paymentId || "COD-" + Math.random().toString(36).substr(2, 12);
       }
 
       // Validate userId
@@ -104,6 +342,47 @@ class OrderService {
           throw new Error(`Invalid variantId: ${item.variantId}`);
         }
       }
+
+      // --- Postal code shipping method selection ---
+      const ShippingZone = conn.models.ShippingZone || conn.model("ShippingZone", require("../models/ShippingZone.js").shippingZoneSchema);
+      const Shipping = conn.models.Shipping || conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+
+      const userPostalCode = shippingAddress?.postalCode?.toString().trim();
+      if (!userPostalCode) {
+        throw new Error("Postal code is required in shipping address");
+      }
+
+      // Find all shipping zones containing this postal code
+      const zones = await ShippingZone.find({ "postalCodes.code": userPostalCode }).lean();
+      if (!zones || zones.length === 0) {
+        return {
+          success: false,
+          message: "Delivery not available for this postal code",
+          data: null
+        };
+      }
+
+      // Get all shippingIds from zones
+      const shippingIds = zones.map(z => z.shippingId);
+
+      // Fetch all shipping methods for these IDs and sort by priority DESC
+      const shippingMethods = await Shipping.find({ _id: { $in: shippingIds }, status: "active" }).sort({ priority: -1 }).lean();
+      if (!shippingMethods || shippingMethods.length === 0) {
+        return {
+          success: false,
+          message: "No active shipping method found for this postal code",
+          data: null
+        };
+      }
+
+      // Pick the highest priority shipping method
+      const selectedShipping = shippingMethods[0];
+
+      // Fetch settings
+      
+      const Setting =
+        conn.models.Setting || conn.model("Setting", SettingSchema);
+      const settings = await Setting.findOne({ tenant }).lean();
 
       // Calculate subtotal
       let subtotal = 0;
@@ -146,21 +425,79 @@ class OrderService {
         couponId = couponResult.data.coupon._id;
       }
 
-      // Calculate total
-      const total = subtotal - discount;
+      // Calculate order total after discount
+      const order_total = subtotal - discount;
 
-      // Create order
+      // --- COD Order Limit ---
+      if (paymentMode === "COD" && order_total > (settings.codLimit ?? 1500)) {
+        return {
+          success: false,
+          message: "COD not available for orders above ₹1500",
+          data: null,
+        };
+      }
+
+      // --- Repeat COD Restriction (per product, within 10 days) ---
+      let codBlockedReason = null;
+      if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
+        const Order =
+          conn.models.Order || conn.model("Order", mongoose.model("Order").schema);
+        for (const item of items) {
+          const lastOrder = await Order.findOne({
+            user: userId,
+            paymentMode: "COD",
+            "items.product": item.product,
+          })
+            .sort({ createdAt: -1 })
+            .lean();
+          if (lastOrder && lastOrder.createdAt) {
+            const lastDate = new Date(lastOrder.createdAt);
+            const now = new Date();
+            const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
+            if (diffDays < (settings.repeatOrderRestrictionDays ?? 10)) {
+              codBlockedReason = `COD blocked for product ${item.product} (ordered within last ${settings.repeatOrderRestrictionDays} days)`;
+              return {
+                success: false,
+                message: "COD not allowed for this product (ordered within last 10 days)",
+                data: null,
+              };
+            }
+          }
+        }
+      }
+
+      // --- Shipping Charges ---
+      let shippingCharge = 0;
+      if (order_total >= (settings.freeShippingThreshold ?? 500)) {
+        shippingCharge = 0;
+      } else if (order_total < (settings.freeShippingThreshold ?? 500)) {
+        if (paymentMode === "COD") {
+          shippingCharge = settings.codShippingChargeBelowThreshold ?? 80;
+        } else {
+          shippingCharge = settings.prepaidShippingChargeBelowThreshold ?? 40;
+        }
+      }
+
+      // --- Create order ---
       const orderData = {
         user: userId,
         items: orderItems,
-        total,
+        total: order_total + shippingCharge,
         coupon: couponId,
         discount,
         shippingAddress,
         billingAddress,
-        paymentId,
+        paymentId: finalPaymentId,
         deliveryOption,
         status: "pending",
+        shippingCharge,
+        paymentMode,
+        codBlockedReason,
+        // --- Save shipping method details ---
+        shippingMethod: selectedShipping.shippingMethod,
+        shippingId: selectedShipping._id,
+        shippingName: selectedShipping.name,
+        shippingPriority: selectedShipping.priority,
       };
       const order = await this.orderRepository.create(orderData);
 
@@ -198,10 +535,6 @@ class OrderService {
       if (!adminEmailResult.success) {
         console.error("Failed to send admin email:", adminEmailResult.message);
       }
-      const tenant = "tenant1";
-      const Setting =
-        conn.models.Setting || conn.model("Setting", SettingSchema);
-      const settings = await Setting.findOne({ tenant }).lean();
       try {
         // Only trigger auto-call for COD orders if enabled in settings
         console.log("Triggering auto-call for COD order", settings);
@@ -232,6 +565,7 @@ class OrderService {
           });
 
           const result = await res.json();
+          console.log("Auto-call API response:", result);
           if (!result.success) {
             console.error("Auto-call API failed:", result);
           }

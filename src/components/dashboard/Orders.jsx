@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { Suspense, use, useEffect, useState } from "react";
 import {
   Package,
   Calendar,
@@ -26,6 +26,7 @@ import Loading from "@/components/Loading";
 import { useRouter, useSearchParams } from "next/navigation";
 import { addReview, fetchProducts } from "@/app/store/slices/productSlice";
 import { set } from "mongoose";
+import { LoadingSpinner } from "../common/Loading";
 
 const Orders = () => {
   const { orders, loading, currentOrder } = useSelector((state) => state.order);
@@ -885,4 +886,12 @@ const Orders = () => {
   );
 };
 
-export default Orders;
+const OrderPage = () => {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <Orders />
+    </Suspense>
+  );
+};
+
+export default OrderPage;

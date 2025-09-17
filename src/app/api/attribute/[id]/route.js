@@ -85,22 +85,22 @@ export async function DELETE(req, context) {
 }
 
 // SEARCH /api/attribute/:id?name=Material
-export async function SEARCH(req, context) {
-  const { params } = context;
-  const id = params?.id;
-  const subdomain = getSubdomain(req);
-  const conn = await getDbConnection(subdomain);
-  if (!conn) {
-    return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-  }
-  const url = new URL(req.url);
-  const name = url.searchParams.get('name');
-  if (id !== 'search') {
-    return NextResponse.json({ success: false, message: 'Invalid search route. Use /api/attribute/search.' }, { status: 400 });
-  }
-  if (!name) {
-    return NextResponse.json({ success: false, message: 'Name query param is required', data: null }, { status: 400 });
-  }
-  const result = await searchAttributesByName({ query: { name } }, conn);
-  return NextResponse.json(result.body, { status: result.status });
-}
+// export async function SEARCH(req, context) {
+//   const { params } = context;
+//   const id = params?.id;
+//   const subdomain = getSubdomain(req);
+//   const conn = await getDbConnection(subdomain);
+//   if (!conn) {
+//     return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+//   }
+//   const url = new URL(req.url);
+//   const name = url.searchParams.get('name');
+//   if (id !== 'search') {
+//     return NextResponse.json({ success: false, message: 'Invalid search route. Use /api/attribute/search.' }, { status: 400 });
+//   }
+//   if (!name) {
+//     return NextResponse.json({ success: false, message: 'Name query param is required', data: null }, { status: 400 });
+//   }
+//   const result = await searchAttributesByName({ query: { name } }, conn);
+//   return NextResponse.json(result.body, { status: result.status });
+// }

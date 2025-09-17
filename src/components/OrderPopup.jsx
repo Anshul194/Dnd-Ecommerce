@@ -1,7 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { CheckCircle, XCircle, X, ShoppingBag } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { LoadingSpinner } from "./common/Loading";
 
 const OrderPopup = () => {
   const searchParams = useSearchParams();
@@ -18,8 +19,7 @@ const OrderPopup = () => {
     // Add your navigation logic here
     console.log("Navigating to explore page...");
     closePopup();
-        router.push("/search");
-
+    router.push("/search");
   };
 
   const handleTryAgain = () => {
@@ -28,12 +28,12 @@ const OrderPopup = () => {
     closePopup();
   };
 
-//   if (
-//     !orderStatus ||
-//     (orderStatus !== "success" && orderStatus !== "failure")
-//   ) {
-//     return null; // Don't render anything if no order status is provided
-//   }
+  //   if (
+  //     !orderStatus ||
+  //     (orderStatus !== "success" && orderStatus !== "failure")
+  //   ) {
+  //     return null; // Don't render anything if no order status is provided
+  //   }
 
   useEffect(() => {
     // This effect runs when the orderStatus changes
@@ -133,7 +133,6 @@ const OrderPopup = () => {
                 >
                   Close
                 </button>
-                
               </div>
             </div>
           </div>
@@ -173,4 +172,12 @@ const OrderPopup = () => {
   );
 };
 
-export default OrderPopup;
+const Popup = () => {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <OrderPopup />
+    </Suspense>
+  );
+};
+
+export default Popup;

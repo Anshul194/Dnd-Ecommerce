@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import {
   ShoppingBag,
   MapPin,
@@ -20,8 +20,9 @@ import AccountDetails from "../../components/dashboard/AccountDetails";
 import SupportTickets from "../../components/dashboard/SupportTickets";
 import { useSelector } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
+import { LoadingSpinner } from "@/components/common/Loading";
 
-export default function SidebarDashboard() {
+export function SidebarDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeComponent, setActiveComponent] = useState("dashboard");
@@ -85,10 +86,14 @@ export default function SidebarDashboard() {
             </div>
             <div>
               <h3 className="font-semibold text-center text-gray-900">
-                {typeof user?.name === "string" && user?.name.trim() !== "" ? user.name : "User"}
+                {typeof user?.name === "string" && user?.name.trim() !== ""
+                  ? user.name
+                  : "User"}
               </h3>
               <p className="text-xs text-gray-500">
-                {typeof user?.email === "string" && user?.email.trim() !== "" ? user.email : ""}
+                {typeof user?.email === "string" && user?.email.trim() !== ""
+                  ? user.email
+                  : ""}
               </p>
             </div>
           </div>
@@ -136,5 +141,13 @@ export default function SidebarDashboard() {
       {/* Main Content */}
       <div className="flex-1 p-8">{renderActiveComponent()}</div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <SidebarDashboard />
+    </Suspense>
   );
 }

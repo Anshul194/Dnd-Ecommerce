@@ -85,6 +85,37 @@ const orderSchema = new mongoose.Schema(
       enum: ["standard_delivery", "express_delivery", "overnight_delivery"],
       required: true,
     },
+    shippingCharge: {
+      type: Number,
+      default: 0,
+    },
+    paymentMode: {
+      type: String,
+      enum: ["COD", "Prepaid"],
+      required: true,
+    },
+    codBlockedReason: {
+      type: String,
+      default: null,
+    },
+    shippingMethod: {
+      type: String,
+      required: false,
+    },
+    shippingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Shipping",
+      required: false,
+    },
+    shippingName: {
+      type: String,
+      required: false,
+    },
+    shippingPriority: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   {
     timestamps: true,

@@ -5,10 +5,25 @@ class OrderController {
     this.orderService = orderService;
   }
 
-  async create(req, conn) {
+  async create(req, conn, tenant) {
     console.log('Controller received create order data:', req.body);
+    console.log('Controller tenant:', tenant);
     try {
-      const result = await this.orderService.createOrder(req.body, conn);
+      const result = await this.orderService.createOrder(req.body, conn, tenant);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null
+      };
+    }
+  }
+
+  async check(req, conn, tenant) {
+    console.log('Controller tenant:', tenant);
+    try {
+      const result = await this.orderService.checkOrder(req.body, conn, tenant);
       return result;
     } catch (error) {
       return {

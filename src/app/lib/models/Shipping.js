@@ -125,7 +125,12 @@ export const shippingSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    priority: {
+      type: Number,
+      default: 0,
+    },
   },
+
   {
     timestamps: true,
   }
@@ -149,5 +154,6 @@ shippingSchema.pre("findOneAndUpdate", function (next) {
 });
 
 export const ShippingSchema = shippingSchema;
-export const ShippingModel = mongoose.models.Shipping || mongoose.model("Shipping", shippingSchema);
+export const ShippingModel =
+  mongoose.models.Shipping || mongoose.model("Shipping", shippingSchema);
 export default ShippingModel;
