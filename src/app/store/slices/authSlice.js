@@ -5,14 +5,21 @@ import { toast } from "react-toastify";
 const isBrowser =
   typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 
+let parsedUser = null;
+if (isBrowser && localStorage.getItem("user")) {
+  try {
+    parsedUser = JSON.parse(localStorage.getItem("user"));
+  } catch (e) {
+    parsedUser = null;
+    localStorage.removeItem("user"); // Optionally clear invalid value
+  }
+}
+
 const initialState = {
   isAuthenticated:
     isBrowser && localStorage.getItem("accessToken") ? true : false,
   otpSended: false,
-  user:
-    isBrowser && localStorage.getItem("user")
-      ? JSON.parse(localStorage.getItem("user"))
-      : null,
+  user: parsedUser,
   loading: false,
   error: null,
 };
