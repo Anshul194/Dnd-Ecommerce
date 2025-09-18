@@ -1,4 +1,5 @@
 export default function NewDescriptionLayout({ data }) {
+  console.log("DescriptionLayout data:", data.name);
   const extractVideoId = (url) => {
     const regex =
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
@@ -8,17 +9,10 @@ export default function NewDescriptionLayout({ data }) {
 
   // Static data with real images and video
   const staticData = {
-    descriptionVideo: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    
-    descriptionImages: [
-      { url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&fit=crop&crop=center" },
-      { url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&h=400&fit=crop&crop=center" },
-      { url: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=600&h=400&fit=crop&crop=center" },
-      { url: "https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?w=600&h=400&fit=crop&crop=center" },
-      { url: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&h=400&fit=crop&crop=center" },
-      { url: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=600&h=400&fit=crop&crop=center" },
-      { url: "https://images.unsplash.com/photo-1600607688969-a5bfcd646154?w=600&h=400&fit=crop&crop=center" }
-    ]
+    descriptionVideo:
+      data?.descriptionVideo || "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+
+    descriptionImages: data?.descriptionImages,
   };
 
   const displayData = data || staticData;
@@ -53,7 +47,6 @@ export default function NewDescriptionLayout({ data }) {
 
         {/* Masonry Style Image Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          
           {/* Large Image - Spans 2 columns */}
           <div className="col-span-2 row-span-2">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
@@ -113,7 +106,6 @@ export default function NewDescriptionLayout({ data }) {
             ></div>
           </div>
         </div>
-
       </div>
     </div>
   );

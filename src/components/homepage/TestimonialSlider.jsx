@@ -55,7 +55,6 @@ export default function TestimonialSlider({ content }) {
     );
   };
 
-
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-16 bg-white">
       {/* Header Section */}
@@ -128,7 +127,18 @@ export default function TestimonialSlider({ content }) {
                   </div>
 
                   {/* Gray placeholder box */}
-                  <div className="w-full h-32 bg-gray-300 rounded-lg"></div>
+                  <div className="w-full h-32 bg-gray-300 rounded-lg">
+                    {/* Placeholder for image or additional content */}
+                    <Image
+                      src={
+                        "https://www.sampuranswadeshi.com/cdn/shop/articles/WhatsApp_Image_2024-10-24_at_6.19.46_PM_57819741-e522-475b-a1ca-8a258e62823b.jpg?v=1754996833&width=961"
+                      }
+                      alt="Testimonial Placeholder"
+                      width={400}
+                      height={128}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  </div>
                 </div>
               </div>
             ))}

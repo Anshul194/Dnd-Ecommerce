@@ -724,12 +724,11 @@ function ProductPage({ params }) {
           {/* <Ingredient /> */}
           <Ingredient data={data} />
 
-
-          <DescriptionLayoutThree/>
+          <DescriptionLayoutThree data={data} />
           {/* <DescriptionLayoutTwo/> */}
           {/* <DescriptionLayout data={data} /> */}
           {/* <ProductReviewTwo/> */}
-          <ProductReviewThree/>
+          <ProductReviewThree productData={data} />
           {/* <ProductReview id={data?._id} /> */}
           <FrequentlyPurchased />
         </div>

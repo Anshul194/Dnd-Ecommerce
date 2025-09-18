@@ -68,7 +68,7 @@ const ProductCard = ({ product }) => {
   return (
     <>
       <Link
-        href={`/productDetail/${product.slug}`}
+        href={`/product-detail/${product.slug}`}
         className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all"
         prefetch
       >
@@ -81,6 +81,7 @@ const ProductCard = ({ product }) => {
                 className="w-6 h-6 hover:scale-[1.1] bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
                 onClick={async (e) => {
                   e.stopPropagation();
+                  e.preventDefault();
                   if (!isAuthenticated) {
                     setShowAuthModal(true);
                     return;
@@ -119,8 +120,8 @@ const ProductCard = ({ product }) => {
             {/* Product Image */}
             <div className="flex h-40  justify-center items-center">
               <Image
-                src={product?.thumbnail?.url || "/api/placeholder/160/120"}
-                alt={product?.thumbnail?.alt || product.name}
+                src={product?.thumbnail?.url || product.images[0]?.url}
+                alt={product?.thumbnail?.alt ||  product.images[0]?.alt}
                 width={160}
                 height={120}
                 className="object-cover h-full w-full"

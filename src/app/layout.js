@@ -22,9 +22,6 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        {/* <body
-        className={`${geistSans.variable} ${geistMono.variable} ${cullenGinto.variable} antialiased`}
-      > */}
         <Providers>
           <ClientLayout>
             <ToastContainer

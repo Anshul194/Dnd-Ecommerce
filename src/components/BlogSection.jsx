@@ -142,12 +142,12 @@ export default function BlogSection({ content }) {
                       src={
                         product?.thumbnail?.url ||
                         product?.images[0]?.url ||
-                        "/placeholder.png"
+                        "/notfound.jpg"
                       }
                       alt={
                         product?.thumbnail?.alt ||
                         product?.images[0]?.alt ||
-                        "/placeholder.png"
+                        "/notfound.jpg"
                       }
                       layout="fill"
                       objectFit="cover"

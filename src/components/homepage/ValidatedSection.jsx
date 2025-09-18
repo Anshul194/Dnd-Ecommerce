@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 export default function ValidatedSection({ content }) {
   const scrollContainerRef = useRef(null);
@@ -72,7 +73,19 @@ export default function ValidatedSection({ content }) {
               <div
                 key={index}
                 className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-4 border-green-500 bg-white"
-              ></div>
+              >
+                <Image
+                  src={
+                    content?.images && content.images[index]
+                      ? content.images[index]
+                      : "/logo-place-holder.png"
+                  }
+                  alt={`Circle ${index + 1}`}
+                  width={160}
+                  height={160}
+                  className="w-full h-full scale-75 object-cover rounded-full"
+                />
+              </div>
             ))}
           </div>
         </div>

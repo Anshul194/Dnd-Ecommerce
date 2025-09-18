@@ -6,6 +6,7 @@ import { fetchCategories } from "@/app/store/slices/categorySlice";
 import CartSidebar from "./CartSidebar";
 import { getCartItems, toggleCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -151,8 +152,14 @@ const Navbar = () => {
             {/* Logo */}
             <div className="flex-shrink-0">
               <Link href="/" className="text-black">
-                <div className=" text-black py-1 rounded text-lg font-bold">
-                  YOUR LOGO
+                <div className="h-16 w-fit flex items-center overflow-hidden">
+                  <Image
+                    src="/images/BOTH_LOGO.webp"
+                    alt="Your Logo"
+                    width={100}
+                    height={80}
+                    className="h-24 w-full"
+                  />
                 </div>
               </Link>
             </div>

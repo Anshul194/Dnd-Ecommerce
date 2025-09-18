@@ -62,6 +62,14 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  images: {
+    domains: [
+      "www.sampuranswadeshi.com",
+      "cdn.shopify.com",
+      "cdn.sanity.io",
+      "images.unsplash.com",
+    ],
+  },
 };
 
 export default nextConfig;
