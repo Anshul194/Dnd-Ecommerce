@@ -73,12 +73,16 @@ const Categories = ({ dynamicContent = null }) => {
           </h1>
           <p className="text-black font-medium text-lg mt-2">
             {dynamicContent?.description ? (
-              <span dangerouslySetInnerHTML={{ __html: dynamicContent.description }} />
+              <span
+                dangerouslySetInnerHTML={{ __html: dynamicContent.description }}
+              />
             ) : (
               <>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do{" "}
-                <span className="text-fontGreen">eiusmod tempor incididunt</span> ut
-                labore et dolor magna{" "}
+                <span className="text-fontGreen">
+                  eiusmod tempor incididunt
+                </span>{" "}
+                ut labore et dolor magna{" "}
                 <span className="relative w-8">
                   aliqua{" "}
                   <Image
@@ -91,15 +95,15 @@ const Categories = ({ dynamicContent = null }) => {
               </>
             )}
           </p>
-          <Link href={dynamicContent?.cta?.link || '/shop'}>
+          <Link href={dynamicContent?.cta?.link || "/shop"}>
             <button className="mt-4 relative z-50 bg text-white px-6 py-2 rounded hover:bg-green-700 transition-colors">
-              {dynamicContent?.cta?.title || 'Explore'}
+              {dynamicContent?.cta?.title || "Explore"}
             </button>
           </Link>
         </div>
 
         <div>
-          <div className="w-full lg:max-w-lg">
+          <div className="w-full lg:max-w-xl">
             {categories.length > 6 ? (
               // Render as slider when more than 6 categories
               <Swiper
@@ -134,18 +138,18 @@ const Categories = ({ dynamicContent = null }) => {
                       href={`/search?category=${item.slug}`}
                       className="block"
                     >
-                      <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow min-h-48">
-                        <div className="bg text-white text-sm py-2 flex items-center justify-center w-full font-medium">
-                          {item?.name}
-                        </div>
-                        <div className="flex-1 flex items-center justify-center p-2">
+                      <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-lg flex flex-col overflow-hidden hover:shadow-md transition-shadow min-h-48">
+                        <div className="f h-40 w-full">
                           <Image
                             width={100}
                             height={100}
                             src={item?.thumbnail || "/placeholder.png"}
                             alt="Tea product"
-                            className="w-full h-full object-contain"
+                            className="w-full h-full"
                           />
+                        </div>
+                        <div className="bg h-20 px-2 text-white text-sm py-2 flex  justify-center w-full font-medium">
+                          {item?.name}
                         </div>
                       </div>
                     </Link>

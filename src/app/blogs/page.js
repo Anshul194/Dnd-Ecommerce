@@ -38,12 +38,12 @@ export default function BlogSection() {
                   src={
                     post?.thumbnail?.url ||
                     post?.images[0]?.url ||
-                    "/placeholder.png"
+                    "/Image-not-found.png"
                   }
                   alt={
                     post?.thumbnail?.alt ||
                     post?.images[0]?.alt ||
-                    "/placeholder.png"
+                    "/Image-not-found.png "
                   }
                   width={260}
                   height={224}

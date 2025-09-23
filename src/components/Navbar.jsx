@@ -230,6 +230,12 @@ const Navbar = () => {
         <div className="hidden md:block border-t border-gray-100 bg-gray-50">
           <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center space-x-8 py-3">
+              <Link
+                href={`/search`}
+                className="text-gray-700 cursor-pointer capitalize hover:text-green-500 text-sm font-medium transition-colors"
+              >
+                All
+              </Link>
               {categories?.length > 0 &&
                 categories?.map((item) => (
                   <Link

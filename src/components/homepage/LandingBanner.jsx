@@ -1,11 +1,15 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
-import leaf from '../../../public/images/leaf.png'
+import React, { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import leaf from "../../../public/images/leaf.png";
 
-const LandingBanner = ({ heroSections = [], autoPlay = true, autoPlayInterval = 5000 }) => {
+const LandingBanner = ({
+  heroSections = [],
+  autoPlay = true,
+  autoPlayInterval = 5000,
+}) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slides, setSlides] = useState([]);
   const [isAutoPlaying, setIsAutoPlaying] = useState(autoPlay);
@@ -14,30 +18,31 @@ const LandingBanner = ({ heroSections = [], autoPlay = true, autoPlayInterval = 
   useEffect(() => {
     if (heroSections && heroSections.length > 0) {
       const transformedSlides = heroSections
-        .filter(section => section.isVisible)
+        .filter((section) => section.isVisible)
         .sort((a, b) => a.order - b.order)
-        .map(section => ({
+        .map((section) => ({
           title: section.content.title,
           subtitle: section.content.description,
-          buttonText: section.content.cta?.title || 'Learn More',
-          buttonLink: section.content.cta?.link || '#',
+          buttonText: section.content.cta?.title || "Learn More",
+          buttonLink: section.content.cta?.link || "#",
           productImage: section.content.image,
           centerElements: `Featured Content ${section.order}`,
-          id: section._id
+          id: section._id,
         }));
-      
+
       setSlides(transformedSlides);
     } else {
       // Fallback to default slides if no hero sections provided
       setSlides([
         {
           title: "GOOD BUYS TAKE YOU TO GOOD PLACES.",
-          subtitle: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolor magna aliqua.",
+          subtitle:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolor magna aliqua.",
           buttonText: "Know more about us",
           buttonLink: "/about",
           productImage: "/images/one.webp",
-          centerElements: "[Tea Leaves & Ginger Images]"
-        }
+          centerElements: "[Tea Leaves & Ginger Images]",
+        },
       ]);
     }
   }, [heroSections]);
@@ -48,7 +53,7 @@ const LandingBanner = ({ heroSections = [], autoPlay = true, autoPlayInterval = 
       const interval = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
       }, autoPlayInterval);
-      
+
       return () => clearInterval(interval);
     }
   }, [isAutoPlaying, slides.length, autoPlayInterval]);
@@ -87,19 +92,31 @@ const LandingBanner = ({ heroSections = [], autoPlay = true, autoPlayInterval = 
   }
 
   return (
-    <div 
+    <div
       className="relative w-full min-h-[500px] overflow-hidden"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(autoPlay)}
     >
       {/* Fixed Left Leaf Image */}
       <div className="absolute -left-30 md:-left-50 top-1/2 transform -translate-y-1/2 z-50">
-            <Image className='w-[40vh] md:w-[60vh] rotate-[210deg] max-h-[600px]' src={leaf} alt="Leaf" width='auto' height='auto' />
+        <Image
+          className="w-[40vh] md:w-[60vh] rotate-[210deg] max-h-[600px]"
+          src={leaf}
+          alt="Leaf"
+          width="auto"
+          height="auto"
+        />
       </div>
 
       {/* Fixed Right Leaf Image */}
       <div className="absolute -right-50 top-1/2 transform -translate-y-1/2 z-50">
-        <Image className='w-[60vh] -rotate-[40deg] max-h-[600px]' src={leaf} alt="Leaf" width='auto' height='auto' />
+        <Image
+          className="w-[60vh] -rotate-[40deg] max-h-[600px]"
+          src={leaf}
+          alt="Leaf"
+          width="auto"
+          height="auto"
+        />
       </div>
 
       {/* Navigation Arrows - Only show if more than 1 slide */}
@@ -123,15 +140,15 @@ const LandingBanner = ({ heroSections = [], autoPlay = true, autoPlayInterval = 
 
       {/* Carousel Container */}
       <div className="relative h-full overflow-hidden">
-        <div 
+        <div
           className="flex transition-transform duration-700 ease-in-out h-full"
           style={{
             transform: `translateX(-${currentSlide * 100}%)`,
-            width: `${slides.length * 100}%`
+            width: `${slides.length * 100}%`,
           }}
         >
           {slides.map((slide, index) => (
-            <div 
+            <div
               key={slide.id || index}
               className="w-full flex-shrink-0"
               style={{ width: `${100 / slides.length}%` }}
@@ -148,7 +165,7 @@ const LandingBanner = ({ heroSections = [], autoPlay = true, autoPlayInterval = 
                       {slide.subtitle}
                     </p>
                     <a
-                      href={slide.buttonLink || '#'}
+                      href={slide.buttonLink || "#"}
                       className="bg-white border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-full font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 flex items-center gap-2 inline-flex"
                     >
                       {slide.buttonText}
@@ -178,7 +195,7 @@ const LandingBanner = ({ heroSections = [], autoPlay = true, autoPlayInterval = 
                           className="w-full h-full object-cover"
                           priority={index === 0}
                           onError={(e) => {
-                            e.target.src = '/images/placeholder.jpg'; // Fallback image
+                            e.target.src = "/images/placeholder.jpg"; // Fallback image
                           }}
                         />
                       </div>
@@ -199,9 +216,9 @@ const LandingBanner = ({ heroSections = [], autoPlay = true, autoPlayInterval = 
               key={index}
               onClick={() => goToSlide(index)}
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentSlide 
-                  ? 'bg-gray-800 scale-125' 
-                  : 'bg-gray-300 hover:bg-gray-400'
+                index === currentSlide
+                  ? "bg-gray-800 scale-125"
+                  : "bg-gray-300 hover:bg-gray-400"
               }`}
             />
           ))}

@@ -27,6 +27,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { addReview, fetchProducts } from "@/app/store/slices/productSlice";
 import { set } from "mongoose";
 import { LoadingSpinner } from "../common/Loading";
+import Link from "next/link";
 
 const Orders = () => {
   const { orders, loading, currentOrder } = useSelector((state) => state.order);
@@ -256,7 +257,10 @@ const Orders = () => {
               </div>
               <div className="flex mb-2 items-start space-x-4 p-2 bg-gray-500/5 rounded-lg">
                 <img
-                  src={reviewProduct?.product?.thumbnail?.url}
+                  src={
+                    reviewProduct?.product?.thumbnail?.url ||
+                    reviewProduct?.product?.images?.[0]?.url
+                  }
                   alt={reviewProduct?.product?.name}
                   className="w-16  h-16   object-cover rounded-lg bg-gray-100"
                 />
@@ -413,7 +417,10 @@ const Orders = () => {
                           className="flex items-start space-x-4 p-4 bg-gray-500/5 rounded-lg"
                         >
                           <img
-                            src={item?.product?.thumbnail?.url}
+                            src={
+                              item?.product?.thumbnail?.url ||
+                              item?.product?.images?.[0]?.url
+                            }
                             alt={item?.product?.name}
                             className="w-20 h-20 object-cover rounded-lg bg-gray-100"
                           />
@@ -696,46 +703,52 @@ const Orders = () => {
                         {products?.products
                           ?.slice(slideIndex * 3, slideIndex * 3 + 3)
                           .map((product) => (
-                            <div
-                              key={product?._id}
-                              className="flex-1 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                            <Link
+                              key={product._id}
+                              href={`/product-detail/${product.slug}`}
                             >
-                              {product?.thumbnail?.url ? (
-                                <img
-                                  src={product.thumbnail.url}
-                                  alt={product?.name}
-                                  className="w-full h-32 object-cover rounded-lg mb-3"
-                                />
-                              ) : null}
-                              <h3 className="font-medium text-sm text-gray-900 mb-1">
-                                {product?.name}
-                              </h3>
-                              <div className="flex items-center space-x-1 mb-2">
-                                <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                                <span className="text-xs text-gray-600">
-                                  {product?.rating}
-                                </span>
+                              <div className="flex-1 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                {product?.thumbnail?.url ||
+                                product?.images?.[0]?.url ? (
+                                  <img
+                                    src={
+                                      product?.thumbnail?.url ||
+                                      product?.images?.[0]?.url
+                                    }
+                                    alt={product?.name}
+                                    className="w-full h-32 object-cover rounded-lg mb-3"
+                                  />
+                                ) : null}
+                                <h3 className="font-medium text-sm text-gray-900 mb-1">
+                                  {product?.name}
+                                </h3>
+                                <div className="flex items-center space-x-1 mb-2">
+                                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                                  <span className="text-xs text-gray-600">
+                                    {product?.rating}
+                                  </span>
+                                </div>
+                                {product?.variants?.[0]?.salePrice ? (
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-xs text-gray-400 line-through">
+                                      ₹{product?.variants?.[0]?.salePrice}
+                                    </span>
+                                    <span className="font-semibold line-through text-green-500 text-sm">
+                                      ₹{product?.variants?.[0]?.price}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center space-x-2">
+                                    <span className="font-semibold text-green-500 text-sm">
+                                      ₹{product?.variants?.[0]?.price}
+                                    </span>
+                                  </div>
+                                )}
+                                <button className="w-full mt-3 bg-green-500 text-white text-sm py-2 rounded hover:bg-green-600 transition-colors">
+                                  View Product
+                                </button>
                               </div>
-                              {product?.variants?.[0]?.salePrice ? (
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-xs text-gray-400 line-through">
-                                    ₹{product?.variants?.[0]?.salePrice}
-                                  </span>
-                                  <span className="font-semibold line-through text-green-500 text-sm">
-                                    ₹{product?.variants?.[0]?.price}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center space-x-2">
-                                  <span className="font-semibold text-green-500 text-sm">
-                                    ₹{product?.variants?.[0]?.price}
-                                  </span>
-                                </div>
-                              )}
-                              <button className="w-full mt-3 bg-green-500 text-white text-sm py-2 rounded hover:bg-green-600 transition-colors">
-                                Add to Cart
-                              </button>
-                            </div>
+                            </Link>
                           ))}
                       </div>
                     ))}
@@ -813,7 +826,7 @@ const Orders = () => {
                       </div>
                       <span>•</span>
                       <span className="font-medium">
-                        ${order.total.toFixed(2)}
+                        ₹{order.total.toFixed(2)}
                       </span>
                       <span>•</span>
                       <span>
@@ -839,7 +852,7 @@ const Orders = () => {
                           {item.product.name} x{item.quantity}
                         </span>
                         <span className="font-medium text-black">
-                          ${item.price.toFixed(2)}
+                          ₹{item.price.toFixed(2)}
                         </span>
                       </div>
                     ))}

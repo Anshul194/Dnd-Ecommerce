@@ -51,7 +51,7 @@ const SeasonSaleBanner = () => {
       <div className="absolute inset-0 bg-black/60 bg-opacity-50"></div>
       
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center text-white">
+      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center ">
         {/* Season Sale Label */}
         <div className="mb-4">
           <span className="text-sm md:text-base font-medium tracking-wider uppercase">
@@ -70,7 +70,7 @@ const SeasonSaleBanner = () => {
         </p>
         
         {/* Countdown Timer */}
-        <div className="flex space-x-4 md:space-x-8 mb-8">
+        <div className="flex space-x-4 md:space-x-8 mb-8 ">
           <div className="text-center">
             <div className="text-2xl md:text-4xl font-bold">
               {String(timeLeft.days).padStart(2, '0')}

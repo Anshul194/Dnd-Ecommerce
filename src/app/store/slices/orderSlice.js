@@ -8,8 +8,9 @@ export const fetchOrders = createAsyncThunk(
   async (payload) => {
     const queryParams = new URLSearchParams();
     payload.page && queryParams.append("page", payload.page);
-    payload.limit && queryParams.append("limit", payload.limit);
-    payload.sortBy && queryParams.append("sortBy", payload.sortBy);
+    queryParams.append("limit", 10000);
+
+    queryParams.append("sort", JSON.stringify({ createdAt: "desc" }));
 
     // if (payload.userId) {
     //   queryParams.append("userId", payload.userId);

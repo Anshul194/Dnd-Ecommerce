@@ -80,7 +80,7 @@ const SearchPage = () => {
                 <p className="text-gray-600 text-sm">
                   Results for
                   <span className="font-semibold ml-2 text-black">
-                    {products.length}
+                    {products?.length}
                   </span>
                 </p>
               </div>
