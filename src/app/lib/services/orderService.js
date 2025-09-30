@@ -58,7 +58,7 @@ class OrderService {
         return {
           success: false,
           message: "All required fields must be provided",
-          data: null
+          data: null,
         };
       }
 
@@ -67,7 +67,7 @@ class OrderService {
         return {
           success: false,
           message: `Invalid userId: ${userId}`,
-          data: null
+          data: null,
         };
       }
 
@@ -81,7 +81,7 @@ class OrderService {
         return {
           success: false,
           message: "Invalid delivery option",
-          data: null
+          data: null,
         };
       }
 
@@ -90,8 +90,9 @@ class OrderService {
         if (!item.product || !item.quantity || item.quantity <= 0) {
           return {
             success: false,
-            message: "Each item must have a valid product and positive quantity",
-            data: null
+            message:
+              "Each item must have a valid product and positive quantity",
+            data: null,
           };
         }
         if (
@@ -101,44 +102,58 @@ class OrderService {
           return {
             success: false,
             message: `Invalid variantId: ${item.variantId}`,
-            data: null
+            data: null,
           };
         }
       }
 
       // --- Postal code shipping method selection ---
-      const ShippingZone = conn.models.ShippingZone || conn.model("ShippingZone", require("../models/ShippingZone.js").shippingZoneSchema);
-      const Shipping = conn.models.Shipping || conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+      const ShippingZone =
+        conn.models.ShippingZone ||
+        conn.model(
+          "ShippingZone",
+          require("../models/ShippingZone.js").shippingZoneSchema
+        );
+      const Shipping =
+        conn.models.Shipping ||
+        conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
 
       const userPostalCode = shippingAddress?.postalCode?.toString().trim();
       if (!userPostalCode) {
         return {
           success: false,
           message: "Postal code is required in shipping address",
-          data: null
+          data: null,
         };
       }
 
       // Find all shipping zones containing this postal code
-      const zones = await ShippingZone.find({ "postalCodes.code": userPostalCode }).lean();
+      const zones = await ShippingZone.find({
+        "postalCodes.code": userPostalCode,
+      }).lean();
       if (!zones || zones.length === 0) {
         return {
           success: false,
           message: "Delivery not available for this postal code",
-          data: null
+          data: null,
         };
       }
 
       // Get all shippingIds from zones
-      const shippingIds = zones.map(z => z.shippingId);
+      const shippingIds = zones.map((z) => z.shippingId);
 
       // Fetch all shipping methods for these IDs and sort by priority DESC
-      const shippingMethods = await Shipping.find({ _id: { $in: shippingIds }, status: "active" }).sort({ priority: -1 }).lean();
+      const shippingMethods = await Shipping.find({
+        _id: { $in: shippingIds },
+        status: "active",
+      })
+        .sort({ priority: -1 })
+        .lean();
       if (!shippingMethods || shippingMethods.length === 0) {
         return {
           success: false,
           message: "No active shipping method found for this postal code",
-          data: null
+          data: null,
         };
       }
 
@@ -146,7 +161,7 @@ class OrderService {
       const selectedShipping = shippingMethods[0];
 
       // Fetch settings
-     
+
       const Setting =
         conn.models.Setting || conn.model("Setting", SettingSchema);
       const settings = await Setting.findOne({ tenant }).lean();
@@ -157,10 +172,14 @@ class OrderService {
         const { product, variant, quantity } = item;
         let price = 0;
         if (variant) {
-          const newVariant = await this.orderRepository.findVariantById(variant);
+          const newVariant = await this.orderRepository.findVariantById(
+            variant
+          );
           price = newVariant.price;
         } else {
-          const newProduct = await this.orderRepository.findProductById(product);
+          const newProduct = await this.orderRepository.findProductById(
+            product
+          );
           price = newProduct.price;
         }
         subtotal += price * quantity;
@@ -177,7 +196,7 @@ class OrderService {
           return {
             success: false,
             message: couponResult.message,
-            data: null
+            data: null,
           };
         }
         discount = couponResult.data.discount;
@@ -191,14 +210,15 @@ class OrderService {
         return {
           success: false,
           message: "COD not available for orders above ₹1500",
-          data: null
+          data: null,
         };
       }
 
       // --- Repeat COD Restriction (per product, within 10 days) ---
       if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
         const Order =
-          conn.models.Order || conn.model("Order", mongoose.model("Order").schema);
+          conn.models.Order ||
+          conn.model("Order", mongoose.model("Order").schema);
         for (const item of items) {
           const lastOrder = await Order.findOne({
             user: userId,
@@ -214,8 +234,9 @@ class OrderService {
             if (diffDays < (settings.repeatOrderRestrictionDays ?? 10)) {
               return {
                 success: false,
-                message: "COD not allowed for this product (ordered within last 10 days)",
-                data: null
+                message:
+                  "COD not allowed for this product (ordered within last 10 days)",
+                data: null,
               };
             }
           }
@@ -245,14 +266,14 @@ class OrderService {
           shippingMethod: selectedShipping.shippingMethod,
           shippingId: selectedShipping._id,
           shippingName: selectedShipping.name,
-          shippingPriority: selectedShipping.priority
-        }
+          shippingPriority: selectedShipping.priority,
+        },
       };
     } catch (error) {
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -344,8 +365,15 @@ class OrderService {
       }
 
       // --- Postal code shipping method selection ---
-      const ShippingZone = conn.models.ShippingZone || conn.model("ShippingZone", require("../models/ShippingZone.js").shippingZoneSchema);
-      const Shipping = conn.models.Shipping || conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+      const ShippingZone =
+        conn.models.ShippingZone ||
+        conn.model(
+          "ShippingZone",
+          require("../models/ShippingZone.js").shippingZoneSchema
+        );
+      const Shipping =
+        conn.models.Shipping ||
+        conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
 
       const userPostalCode = shippingAddress?.postalCode?.toString().trim();
       if (!userPostalCode) {
@@ -353,25 +381,32 @@ class OrderService {
       }
 
       // Find all shipping zones containing this postal code
-      const zones = await ShippingZone.find({ "postalCodes.code": userPostalCode }).lean();
+      const zones = await ShippingZone.find({
+        "postalCodes.code": userPostalCode,
+      }).lean();
       if (!zones || zones.length === 0) {
         return {
           success: false,
           message: "Delivery not available for this postal code",
-          data: null
+          data: null,
         };
       }
 
       // Get all shippingIds from zones
-      const shippingIds = zones.map(z => z.shippingId);
+      const shippingIds = zones.map((z) => z.shippingId);
 
       // Fetch all shipping methods for these IDs and sort by priority DESC
-      const shippingMethods = await Shipping.find({ _id: { $in: shippingIds }, status: "active" }).sort({ priority: -1 }).lean();
+      const shippingMethods = await Shipping.find({
+        _id: { $in: shippingIds },
+        status: "active",
+      })
+        .sort({ priority: -1 })
+        .lean();
       if (!shippingMethods || shippingMethods.length === 0) {
         return {
           success: false,
           message: "No active shipping method found for this postal code",
-          data: null
+          data: null,
         };
       }
 
@@ -379,7 +414,7 @@ class OrderService {
       const selectedShipping = shippingMethods[0];
 
       // Fetch settings
-      
+
       const Setting =
         conn.models.Setting || conn.model("Setting", SettingSchema);
       const settings = await Setting.findOne({ tenant }).lean();
@@ -441,7 +476,8 @@ class OrderService {
       let codBlockedReason = null;
       if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
         const Order =
-          conn.models.Order || conn.model("Order", mongoose.model("Order").schema);
+          conn.models.Order ||
+          conn.model("Order", mongoose.model("Order").schema);
         for (const item of items) {
           const lastOrder = await Order.findOne({
             user: userId,
@@ -458,7 +494,8 @@ class OrderService {
               codBlockedReason = `COD blocked for product ${item.product} (ordered within last ${settings.repeatOrderRestrictionDays} days)`;
               return {
                 success: false,
-                message: "COD not allowed for this product (ordered within last 10 days)",
+                message:
+                  "COD not allowed for this product (ordered within last 10 days)",
                 data: null,
               };
             }
@@ -703,6 +740,60 @@ class OrderService {
       return income;
     } catch (error) {
       throw new Error(`Failed to calculate income: ${error.message}`);
+    }
+  }
+
+  async getAllOrders(request, conn) {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const {
+        page = 1,
+        limit = 10,
+        filters = "{}",
+        sort = "{}",
+        populateFields = ["items.product", "items.variant", "coupon", "user"],
+        selectFields = {},
+      } = Object.fromEntries(searchParams.entries());
+
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      const parsedFilters =
+        typeof filters === "string" ? JSON.parse(filters) : filters;
+      const parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort;
+
+      const filterConditions = { ...parsedFilters };
+      const sortConditions = {};
+
+      for (const [field, direction] of Object.entries(parsedSort)) {
+        sortConditions[field] = direction === "asc" ? 1 : -1;
+      }
+
+      const { results, totalCount, currentPage, pageSize } =
+        await this.orderRepository.getAllOrders(
+          filterConditions,
+          sortConditions,
+          pageNum,
+          limitNum,
+          populateFields,
+          selectFields
+        );
+
+      const totalPages = Math.ceil(totalCount / limitNum);
+
+      return {
+        success: true,
+        message: "All orders fetched successfully",
+        data: results,
+        currentPage,
+        totalPages,
+        totalCount,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
     }
   }
 }

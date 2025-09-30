@@ -1,4 +1,4 @@
-import OrderService from '../services/orderService.js';
+import OrderService from "../services/orderService.js";
 
 class OrderController {
   constructor(orderService) {
@@ -6,22 +6,26 @@ class OrderController {
   }
 
   async create(req, conn, tenant) {
-    console.log('Controller received create order data:', req.body);
-    console.log('Controller tenant:', tenant);
+    console.log("Controller received create order data:", req.body);
+    console.log("Controller tenant:", tenant);
     try {
-      const result = await this.orderService.createOrder(req.body, conn, tenant);
+      const result = await this.orderService.createOrder(
+        req.body,
+        conn,
+        tenant
+      );
       return result;
     } catch (error) {
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
 
   async check(req, conn, tenant) {
-    console.log('Controller tenant:', tenant);
+    console.log("Controller tenant:", tenant);
     try {
       const result = await this.orderService.checkOrder(req.body, conn, tenant);
       return result;
@@ -29,13 +33,13 @@ class OrderController {
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
 
-    async getUserOrders(request, conn) {
-    console.log('Controller received get user orders request');
+  async getUserOrders(request, conn) {
+    console.log("Controller received get user orders request");
     try {
       const result = await this.orderService.getUserOrders(request, conn);
       return result;
@@ -43,21 +47,42 @@ class OrderController {
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
 
   async getOrderDetails(request, conn, params) {
-    console.log('Controller received get order details request for orderId:', params.id);
+    console.log(
+      "Controller received get order details request for orderId:",
+      params.id
+    );
     try {
-      const result = await this.orderService.getOrderDetails(request, conn, params);
+      const result = await this.orderService.getOrderDetails(
+        request,
+        conn,
+        params
+      );
       return result;
     } catch (error) {
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
+      };
+    }
+  }
+
+  async getAllOrders(request, conn) {
+    console.log("Controller received get all orders request");
+    try {
+      const result = await this.orderService.getAllOrders(request, conn);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
       };
     }
   }
