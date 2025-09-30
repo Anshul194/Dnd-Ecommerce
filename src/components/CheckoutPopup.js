@@ -40,6 +40,7 @@ import { fetchProducts } from "@/app/store/slices/productSlice";
 import { toast } from "react-toastify";
 import { fetchSettings } from "@/app/store/slices/settingSlice";
 import axiosInstance from "@/axiosConfig/axiosInstance";
+import { LoadingSpinner } from "./common/Loading";
 
 export default function CheckoutPopup() {
   const checkoutOpen = useSelector((state) => state.checkout.checkoutOpen);
@@ -48,6 +49,8 @@ export default function CheckoutPopup() {
   const [paymentMethod, setPaymentMethod] = useState("prepaid");
   const [userAddresses, setUserAddresses] = useState([]);
   const [addressType, setAddressType] = useState("");
+  const [pinCodeVerified, setPinCodeVerified] = useState(null);
+  const [pincodeChecking, setPincodeChecking] = useState(false);
   const router = useRouter();
   const location = usePathname();
   const { isAuthenticated, otpSended, loading, user } = useSelector(
@@ -480,6 +483,29 @@ export default function CheckoutPopup() {
       }
     } catch (error) {
       console.error("Error initializing Razorpay:", error);
+    }
+  };
+
+  const checkPincode = async () => {
+    setPincodeChecking(true);
+    try {
+      const response = await axiosInstance.post("/delivery/check-pincode", {
+        orgPincode: "110001",
+        desPincode: formData.pincode,
+      });
+
+      const data = await response.data;
+      console.log("checkPincode response:", data);
+      if (data.success) {
+        toast.success("Pincode is deliverable");
+        setPinCodeVerified(data);
+      } else {
+        toast.error("Pincode is not deliverable");
+      }
+    } catch (error) {
+      console.error("Error checking pincode:", error);
+    } finally {
+      setPincodeChecking(false);
     }
   };
 
@@ -1775,19 +1801,30 @@ export default function CheckoutPopup() {
 
           {isAuthenticated && addressAdded && (
             <button
-              onClick={handelPayment}
-              className="w-full mt-4 mb-4 text-sm bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition-colors "
+              onClick={pinCodeVerified ? handelPayment : checkPincode}
+              className={`w-full mt-4  text-sm ${
+                pinCodeVerified?.success
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : " bg-green-600 hover:bg-green-700"
+              } text-white py-3 rounded-md  transition-colors`}
             >
-              Place Order ( ₹
-              {cartItems.reduce(
-                (acc, item) => acc + item.price * item.quantity,
-                0
-              ) +
+              {pincodeChecking
+                ? "Checking..."
+                : pinCodeVerified?.success
+                ? `  Place Order (₹
+            ${
+                cartItems.reduce(
+                  (acc, item) => acc + item.price * item.quantity,
+                  0
+                ) +
                 calculateShipping() -
-                (selectedCoupon?.discount || 0)}{" "}
-              )
+                (selectedCoupon?.discount || 0)
+              }
+              )`
+                : "Check Pincode"}
             </button>
           )}
+
           {/* Contact Info */}
           {isAuthenticated && (
             <div className="flex justify-between items-center gap-2 bg-white rounded-xl text-gray-600 py-3 px-4">
