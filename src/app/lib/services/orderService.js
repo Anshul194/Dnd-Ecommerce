@@ -743,6 +743,114 @@ class OrderService {
     }
   }
 
+  // Fetch DTDC services
+  async getDtdcServices(order) {
+    console.log('Fetching DTDC services for order:', order.shippingAddress.postalCode);
+    const originPincode = "110001";
+    const destinationPincode = order.shippingAddress.postalCode; // replace if needed
+
+    const resp = await axios.post(
+      "http://smarttrack.ctbsplus.dtdc.com/ratecalapi/PincodeApiCall",
+      { orgPincode: originPincode, desPincode: destinationPincode }
+    );
+    // console.log('DTDC response:', resp.data);
+
+    const services = resp.data.SERV_LIST_DTLS || [];
+    // console.log('Services:', services);
+    return services.map((s) => ({
+      code: s.CODE,
+      name: s.NAME,
+      courier: "DTDC",
+      priority: 0, // default, will override from ShippingModel
+    }));
+  }
+
+  // Fetch Delhivery services
+  async getDelhiveryServices(order) {
+    const originPincode = "110001";
+    const destinationPincode = order.shippingAddress.postalCode; // replace if needed
+    const agent = new https.Agent({ rejectUnauthorized: false });
+    return [
+      { code: "SD1", name: "Express", courier: "DELHIVERY", priority: 0 },
+      { code: "SD2", name: "Standard", courier: "DELHIVERY", priority: 0 },
+    ];
+    const headers = { Authorization: `Token ${process.env.DELHIVERY_TOKEN}` };
+    const [originResp, destResp] = await Promise.all([
+      axios.get(
+        `https://staging-express.delhivery.com/c/api/pin-codes/json/?filter_codes=${originPincode}`,
+        { headers, httpsAgent: agent }
+          ),
+      axios.get(
+        `https://staging-express.delhivery.com/c/api/pin-codes/json/?filter_codes=${destinationPincode}`,
+        { headers, httpsAgent: agent }
+      ),
+    ]);
+    
+
+    console.log("Delhivery origin response:", originResp);
+    console.log("Delhivery destination response:", destResp);
+
+    const serviceable =
+      originResp.data.success &&
+      destResp.data.success &&
+      originResp.data.data[0].serviceable === "Y" &&
+      destResp.data.data[0].serviceable === "Y";
+
+    if (!serviceable) return [];
+
+    return [
+      { code: "SD1", name: "Express", courier: "DELHIVERY", priority: 0 },
+      { code: "SD2", name: "Standard", courier: "DELHIVERY", priority: 0 },
+    ];
+  }
+
+  // Fetch Bluedart services
+  async getBluedartServices(order) {
+    // Example placeholder API, replace with actual Bluedart API call
+    return [
+      { code: "BD1", name: "Bluedart Express", courier: "BLUEDART", priority: 0 },
+      { code: "BD2", name: "Bluedart Standard", courier: "BLUEDART", priority: 0 },
+    ];
+  }
+
+  // Fetch all shipping methods with priority from DB
+  async attachPriority(services, conn, tenant) {
+    const Shipping =
+      conn.models.Shipping || conn.model("Shipping", ShippingSchema);
+    const shippings = await Shipping.find({ status: "active" }).lean();
+    
+
+    return services.map((s) => {
+      const match = shippings.find(
+        (sh) =>
+          sh.carrier.toUpperCase() === s.courier.toUpperCase() &&
+          sh.shippingMethod.toLowerCase().includes(s.name.toLowerCase())
+      );
+      return { ...s, priority: match ? match.priority : 0 };
+    });
+  }
+
+
+
+  //getServiceOptions
+  async getServiceOptions(order, conn, tenant) {
+    let services = [];
+
+    const [dtdc, delhivery, bluedart] = await Promise.all([
+      this.getDtdcServices(order),
+      this.getDelhiveryServices(order),
+      this.getBluedartServices(order),
+    ]);
+
+    services = [...dtdc, ...delhivery, ...bluedart];
+    services = await this.attachPriority(services, conn, tenant);
+
+    // Sort by priority (highest first)
+    services.sort((a, b) => b.priority - a.priority);
+
+    return services;
+  }
+
   async getAllOrders(request, conn) {
     try {
       const searchParams = request.nextUrl.searchParams;

@@ -86,6 +86,26 @@ class OrderController {
       };
     }
   }
+
+  //serviceList
+
+  async serviceList({ body }, conn, tenant) {
+    console.log('Controller received service list request with body:', body);
+    const { orderId } = body;
+
+    // Fetch order from DB
+    const order = await this.orderService.getOrderById(orderId);
+    if (!order) return { success: false, message: 'Order not found' };
+    // console.log('F
+    // etched order:', order);
+    const services = await this.orderService.getServiceOptions(order,conn);
+
+    return { success: true, orderId, services };
+
+  };
 }
+
+
+
 
 export default OrderController;
