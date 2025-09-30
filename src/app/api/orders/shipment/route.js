@@ -25,6 +25,7 @@ export async function POST(req) {
       console.error('No database connection established');
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
+    
     console.log('Connection name in route:', conn.name);
     const Order = conn.models.Order || conn.model('Order', OrderSchema);
     const Coupon = conn.models.Coupon || conn.model('Coupon', CouponSchema);

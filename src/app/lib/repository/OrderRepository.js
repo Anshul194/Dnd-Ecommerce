@@ -161,9 +161,9 @@ class OrderRepository extends CrudRepository {
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
       }
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-        throw new Error(`Invalid userId: ${userId}`);
-      }
+      // if (!mongoose.Types.ObjectId.isValid(userId)) {
+      //   throw new Error(`Invalid userId: ${userId}`);
+      // }
 
       let query = this.model.findOne({ _id: orderId }).select(selectFields);
 
