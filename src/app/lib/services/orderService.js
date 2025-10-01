@@ -821,6 +821,170 @@ class OrderService {
 
     return services;
   }
+
+
+  /**
+  * Create Shipment on the selected courier
+  */
+  async createShipment(order, courier, serviceCode) {
+    switch (courier.toUpperCase()) {
+      case "DTDC":
+        return this.createDtdcShipment(order, serviceCode);
+      case "DELHIVERY":
+        return this.createDelhiveryShipment(order, serviceCode);
+      case "BLUEDART":
+        return this.createBluedartShipment(order, serviceCode);
+      default:
+        throw new Error("Unsupported courier");
+    }
+  }
+
+ // ========== Build Common Helpers ========== //
+async function buildProductDescription(order) {
+  return order.items
+    .map(i => `${i.quantity}x ${i.product?.name || "Item"}`)
+    .join(", ");
+}
+
+async function buildPiecesDetail(order) {
+  return order.items.map(i => ({
+    description: i.product?.name || "Product",
+    declared_value: i.price.toString(),
+    weight: (i.price / 1000).toFixed(2), // dummy logic: price ≈ weight/1000
+    height: "5",
+    length: "5",
+    width: "5"
+  }));
+}
+
+// ========== DELHIVERY SERVICE ========== //
+async function createDelhiveryShipment(order, shipping) {
+  const payload = {
+    format: "json",
+    data: JSON.stringify({
+      shipments: [
+        {
+          name: order.shippingAddress.fullName,
+          add: `${order.shippingAddress.addressLine1}, ${order.shippingAddress.addressLine2 || ""}`,
+          pin: order.shippingAddress.postalCode,
+          city: order.shippingAddress.city,
+          state: order.shippingAddress.state,
+          country: order.shippingAddress.country,
+          phone: order.shippingAddress.phoneNumber,
+          order: order._id.toString(),
+          payment_mode: order.paymentMode === "COD" ? "COD" : "Prepaid",
+          cod_amount: order.paymentMode === "COD" ? order.total : "",
+          total_amount: order.total,
+          products_desc: buildProductDescription(order),
+          hsn_code: order.items[0]?.hsn || "",
+          quantity: order.items.reduce((sum, i) => sum + i.quantity, 0),
+          seller_add: order.billingAddress.addressLine1,
+          seller_name: order.billingAddress.fullName,
+          seller_inv: order.paymentId,
+          waybill: "",
+          shipment_width: "50",
+          shipment_height: "50",
+          weight: (order.total / 1000).toFixed(2), // dummy approx
+          shipping_mode: shipping?.shippingMethod || "Surface",
+          address_type: "home"
+        }
+      ],
+      pickup_location: {
+        name: "Warehouse",
+        add: "Warehouse Address Line",
+        city: "New Delhi",
+        pin: "110046",
+        country: "India",
+        phone: "9999999999"
+      }
+    })
+  };
+
+  const res = await axios.post(
+    process.env.DELHIVERY_API_URL || "https://staging-express.delhivery.com/api/cmu/create.json",
+    payload,
+    {
+      headers: {
+        Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      }
+    }
+  );
+
+  return res.data;
+}
+
+// ========== DTDC (Shipsy) SERVICE ========== //
+async function createDtdcShipment(order, shipping) {
+  const payload = {
+    consignments: [
+      {
+        customer_code: process.env.DTDC_CUSTOMER_CODE,
+        service_type_id: "B2C PRIORITY",
+        load_type: "NON-DOCUMENT",
+        description: buildProductDescription(order),
+        dimension_unit: "cm",
+        length: "10.0",
+        width: "10.0",
+        height: "10.0",
+        weight_unit: "kg",
+        weight: (order.total / 1000).toFixed(2), // dummy logic
+        declared_value: order.total.toString(),
+        num_pieces: order.items.length.toString(),
+        origin_details: {
+          name: order.billingAddress.fullName,
+          phone: order.billingAddress.phoneNumber,
+          address_line_1: order.billingAddress.addressLine1,
+          address_line_2: order.billingAddress.addressLine2 || "",
+          pincode: order.billingAddress.postalCode,
+          city: order.billingAddress.city,
+          state: order.billingAddress.state
+        },
+        destination_details: {
+          name: order.shippingAddress.fullName,
+          phone: order.shippingAddress.phoneNumber,
+          address_line_1: order.shippingAddress.addressLine1,
+          address_line_2: order.shippingAddress.addressLine2 || "",
+          pincode: order.shippingAddress.postalCode,
+          city: order.shippingAddress.city,
+          state: order.shippingAddress.state
+        },
+        customer_reference_number: order._id.toString(),
+        cod_collection_mode: order.paymentMode === "COD" ? "cash" : "none",
+        cod_amount: order.paymentMode === "COD" ? order.total.toString() : "0",
+        commodity_id: "7",
+        pieces_detail: buildPiecesDetail(order)
+      }
+    ]
+  };
+
+  const res = await axios.post(
+    process.env.DTDC_API_URL || "https://alphademodashboardapi.shipsy.io/api/customer/integration/consignment/softdata",
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.DTDC_API_TOKEN}`,
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  return res.data;
+}
+
+// ========== BLUEDART (Mock) SERVICE ========== //
+async function createBluedartShipment(order, shipping) {
+  // No API call, just mock response
+  return {
+    success: true,
+    message: "Bluedart shipment created (mock).",
+    orderId: order._id.toString(),
+    courier: "Bluedart",
+    trackingNumber: `BD-${Date.now()}`
+  };
+}
+
 }
 
 export default OrderService;

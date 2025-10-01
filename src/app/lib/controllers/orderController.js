@@ -78,6 +78,28 @@ class OrderController {
     return { success: true, orderId, services };
 
   };
+
+  async createShipment({ body }) {
+    const { orderId, courier, serviceCode } = body;
+    if (!orderId || !courier || !serviceCode)
+      return { success: false, message: "Missing data" };
+
+    const order = await this.orderService.getOrderById(orderId);
+    if (!order) return { success: false, message: "Order not found" };
+
+    const shipmentResp = await this.orderService.createShipment(
+      order,
+      courier,
+      serviceCode
+    );
+
+    return {
+      success: true,
+      orderId,
+      courier,
+      response: shipmentResp.response,
+    };
+  }
 }
 
 
