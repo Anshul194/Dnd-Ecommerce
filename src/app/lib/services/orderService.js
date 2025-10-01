@@ -3,10 +3,9 @@ import OrderRepository from "../repository/OrderRepository";
 import CouponService from "./CouponService";
 import EmailService from "./EmailService";
 import { SettingSchema } from "../models/Setting";
-import { ShippingSchema } from "../models/Shipping.js";
 import axios from "axios";
-import https from "https";
-
+import https from "https"; // if using ES modules
+import { ShippingSchema } from "../models/Shipping.js";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -62,7 +61,7 @@ class OrderService {
         return {
           success: false,
           message: "All required fields must be provided",
-          data: null
+          data: null,
         };
       }
 
@@ -71,7 +70,7 @@ class OrderService {
         return {
           success: false,
           message: `Invalid userId: ${userId}`,
-          data: null
+          data: null,
         };
       }
 
@@ -85,7 +84,7 @@ class OrderService {
         return {
           success: false,
           message: "Invalid delivery option",
-          data: null
+          data: null,
         };
       }
 
@@ -94,8 +93,9 @@ class OrderService {
         if (!item.product || !item.quantity || item.quantity <= 0) {
           return {
             success: false,
-            message: "Each item must have a valid product and positive quantity",
-            data: null
+            message:
+              "Each item must have a valid product and positive quantity",
+            data: null,
           };
         }
         if (
@@ -105,44 +105,58 @@ class OrderService {
           return {
             success: false,
             message: `Invalid variantId: ${item.variantId}`,
-            data: null
+            data: null,
           };
         }
       }
 
       // --- Postal code shipping method selection ---
-      const ShippingZone = conn.models.ShippingZone || conn.model("ShippingZone", require("../models/ShippingZone.js").shippingZoneSchema);
-      const Shipping = conn.models.Shipping || conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+      const ShippingZone =
+        conn.models.ShippingZone ||
+        conn.model(
+          "ShippingZone",
+          require("../models/ShippingZone.js").shippingZoneSchema
+        );
+      const Shipping =
+        conn.models.Shipping ||
+        conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
 
       const userPostalCode = shippingAddress?.postalCode?.toString().trim();
       if (!userPostalCode) {
         return {
           success: false,
           message: "Postal code is required in shipping address",
-          data: null
+          data: null,
         };
       }
 
       // Find all shipping zones containing this postal code
-      const zones = await ShippingZone.find({ "postalCodes.code": userPostalCode }).lean();
+      const zones = await ShippingZone.find({
+        "postalCodes.code": userPostalCode,
+      }).lean();
       if (!zones || zones.length === 0) {
         return {
           success: false,
           message: "Delivery not available for this postal code",
-          data: null
+          data: null,
         };
       }
 
       // Get all shippingIds from zones
-      const shippingIds = zones.map(z => z.shippingId);
+      const shippingIds = zones.map((z) => z.shippingId);
 
       // Fetch all shipping methods for these IDs and sort by priority DESC
-      const shippingMethods = await Shipping.find({ _id: { $in: shippingIds }, status: "active" }).sort({ priority: -1 }).lean();
+      const shippingMethods = await Shipping.find({
+        _id: { $in: shippingIds },
+        status: "active",
+      })
+        .sort({ priority: -1 })
+        .lean();
       if (!shippingMethods || shippingMethods.length === 0) {
         return {
           success: false,
           message: "No active shipping method found for this postal code",
-          data: null
+          data: null,
         };
       }
 
@@ -161,10 +175,14 @@ class OrderService {
         const { product, variant, quantity } = item;
         let price = 0;
         if (variant) {
-          const newVariant = await this.orderRepository.findVariantById(variant);
+          const newVariant = await this.orderRepository.findVariantById(
+            variant
+          );
           price = newVariant.price;
         } else {
-          const newProduct = await this.orderRepository.findProductById(product);
+          const newProduct = await this.orderRepository.findProductById(
+            product
+          );
           price = newProduct.price;
         }
         subtotal += price * quantity;
@@ -181,7 +199,7 @@ class OrderService {
           return {
             success: false,
             message: couponResult.message,
-            data: null
+            data: null,
           };
         }
         discount = couponResult.data.discount;
@@ -195,14 +213,15 @@ class OrderService {
         return {
           success: false,
           message: "COD not available for orders above ₹1500",
-          data: null
+          data: null,
         };
       }
 
       // --- Repeat COD Restriction (per product, within 10 days) ---
       if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
         const Order =
-          conn.models.Order || conn.model("Order", mongoose.model("Order").schema);
+          conn.models.Order ||
+          conn.model("Order", mongoose.model("Order").schema);
         for (const item of items) {
           const lastOrder = await Order.findOne({
             user: userId,
@@ -218,8 +237,9 @@ class OrderService {
             if (diffDays < (settings.repeatOrderRestrictionDays ?? 10)) {
               return {
                 success: false,
-                message: "COD not allowed for this product (ordered within last 10 days)",
-                data: null
+                message:
+                  "COD not allowed for this product (ordered within last 10 days)",
+                data: null,
               };
             }
           }
@@ -249,14 +269,14 @@ class OrderService {
           shippingMethod: selectedShipping.shippingMethod,
           shippingId: selectedShipping._id,
           shippingName: selectedShipping.name,
-          shippingPriority: selectedShipping.priority
-        }
+          shippingPriority: selectedShipping.priority,
+        },
       };
     } catch (error) {
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -348,8 +368,15 @@ class OrderService {
       }
 
       // --- Postal code shipping method selection ---
-      const ShippingZone = conn.models.ShippingZone || conn.model("ShippingZone", require("../models/ShippingZone.js").shippingZoneSchema);
-      const Shipping = conn.models.Shipping || conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+      const ShippingZone =
+        conn.models.ShippingZone ||
+        conn.model(
+          "ShippingZone",
+          require("../models/ShippingZone.js").shippingZoneSchema
+        );
+      const Shipping =
+        conn.models.Shipping ||
+        conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
 
       const userPostalCode = shippingAddress?.postalCode?.toString().trim();
       if (!userPostalCode) {
@@ -357,25 +384,32 @@ class OrderService {
       }
 
       // Find all shipping zones containing this postal code
-      const zones = await ShippingZone.find({ "postalCodes.code": userPostalCode }).lean();
+      const zones = await ShippingZone.find({
+        "postalCodes.code": userPostalCode,
+      }).lean();
       if (!zones || zones.length === 0) {
         return {
           success: false,
           message: "Delivery not available for this postal code",
-          data: null
+          data: null,
         };
       }
 
       // Get all shippingIds from zones
-      const shippingIds = zones.map(z => z.shippingId);
+      const shippingIds = zones.map((z) => z.shippingId);
 
       // Fetch all shipping methods for these IDs and sort by priority DESC
-      const shippingMethods = await Shipping.find({ _id: { $in: shippingIds }, status: "active" }).sort({ priority: -1 }).lean();
+      const shippingMethods = await Shipping.find({
+        _id: { $in: shippingIds },
+        status: "active",
+      })
+        .sort({ priority: -1 })
+        .lean();
       if (!shippingMethods || shippingMethods.length === 0) {
         return {
           success: false,
           message: "No active shipping method found for this postal code",
-          data: null
+          data: null,
         };
       }
 
@@ -445,7 +479,8 @@ class OrderService {
       let codBlockedReason = null;
       if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
         const Order =
-          conn.models.Order || conn.model("Order", mongoose.model("Order").schema);
+          conn.models.Order ||
+          conn.model("Order", mongoose.model("Order").schema);
         for (const item of items) {
           const lastOrder = await Order.findOne({
             user: userId,
@@ -462,7 +497,8 @@ class OrderService {
               codBlockedReason = `COD blocked for product ${item.product} (ordered within last ${settings.repeatOrderRestrictionDays} days)`;
               return {
                 success: false,
-                message: "COD not allowed for this product (ordered within last 10 days)",
+                message:
+                  "COD not allowed for this product (ordered within last 10 days)",
                 data: null,
               };
             }
@@ -650,10 +686,6 @@ class OrderService {
     }
   }
 
-  async getOrderById(orderId) {
-    return this.orderRepository.findById(orderId);
-  }
-
   async getOrderDetails(request, conn, params) {
     try {
       const userId = request.user?._id;
@@ -663,7 +695,7 @@ class OrderService {
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new Error(`Invalid userId: ${userId}`);
       }
-      const { id } = params;
+      const { id } = await params;
       if (!id) {
         throw new Error("orderId is required");
       }
@@ -679,6 +711,36 @@ class OrderService {
       return {
         success: true,
         message: "Order details fetched successfully",
+        data: order,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
+    }
+  }
+
+  async getOrderById(orderId, userId, populateFields = [], selectFields = {}) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        throw new Error(`Invalid orderId: ${orderId}`);
+      }
+      if (userId && !mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error(`Invalid userId: ${userId}`);
+      }
+
+      const order = await this.orderRepository.getOrderById(
+        orderId,
+        userId,
+        populateFields,
+        selectFields
+      );
+
+      return {
+        success: true,
+        message: "Order fetched successfully",
         data: order,
       };
     } catch (error) {
@@ -716,9 +778,16 @@ class OrderService {
 
   // Fetch DTDC services
   async getDtdcServices(order) {
-    console.log('Fetching DTDC services for order:', order.shippingAddress.postalCode);
+    console.log("order in dtdc ====>", order);
+    if (!order?.data?.shippingAddress?.postalCode) {
+      throw new Error("Shipping address or postal code is missing");
+    }
+    console.log(
+      "Fetching DTDC services for order:",
+      order.data.shippingAddress.postalCode
+    );
     const originPincode = "110001";
-    const destinationPincode = order.shippingAddress.postalCode; // replace if needed
+    const destinationPincode = order?.data?.shippingAddress?.postalCode; // replace if needed
 
     const resp = await axios.post(
       "http://smarttrack.ctbsplus.dtdc.com/ratecalapi/PincodeApiCall",
@@ -737,9 +806,67 @@ class OrderService {
   }
 
   // Fetch Delhivery services
+  async getDtdcServices(order) {
+    console.log(
+      "Fetching DTDC services for order:",
+      order?.data?.shippingAddress?.postalCode
+    );
+    const originPincode = "110001";
+    const destinationPincode = order?.data?.shippingAddress.postalCode; // replace if needed
+
+    const resp = await axios.post(
+      "http://smarttrack.ctbsplus.dtdc.com/ratecalapi/PincodeApiCall",
+      { orgPincode: originPincode, desPincode: destinationPincode }
+    );
+    // console.log('DTDC response:', resp.data);
+
+    const services = resp.data.SERV_LIST_DTLS || [];
+    // console.log('Services:', services);
+    return services.map((s) => ({
+      code: s.CODE,
+      name: s.NAME,
+      courier: "DTDC",
+      priority: 0, // default, will override from ShippingModel
+    }));
+  }
+  // Fetch Bluedart services
+  async getBluedartServices(order) {
+    // Example placeholder API, replace with actual Bluedart API call
+    return [
+      {
+        code: "BD1",
+        name: "Bluedart Express",
+        courier: "BLUEDART",
+        priority: 0,
+      },
+      {
+        code: "BD2",
+        name: "Bluedart Standard",
+        courier: "BLUEDART",
+        priority: 0,
+      },
+    ];
+  }
+
+  // Fetch all shipping methods with priority from DB
+  async attachPriority(services, conn, tenant) {
+    const Shipping =
+      conn.models.Shipping || conn.model("Shipping", ShippingSchema);
+    const shippings = await Shipping.find({ status: "active" }).lean();
+
+    return services.map((s) => {
+      const match = shippings.find(
+        (sh) =>
+          sh.carrier.toUpperCase() === s.courier.toUpperCase() &&
+          sh.shippingMethod.toLowerCase().includes(s.name.toLowerCase())
+      );
+      return { ...s, priority: match ? match.priority : 0 };
+    });
+  }
+
   async getDelhiveryServices(order) {
     const originPincode = "110001";
-    const destinationPincode = order.shippingAddress.postalCode; // replace if needed
+    const destinationPincode = order?.data?.shippingAddress?.postalCode; // replace if needed
     const agent = new https.Agent({ rejectUnauthorized: false });
     return [
       { code: "SD1", name: "Express", courier: "DELHIVERY", priority: 0 },
@@ -750,13 +877,12 @@ class OrderService {
       axios.get(
         `https://staging-express.delhivery.com/c/api/pin-codes/json/?filter_codes=${originPincode}`,
         { headers, httpsAgent: agent }
-          ),
+      ),
       axios.get(
         `https://staging-express.delhivery.com/c/api/pin-codes/json/?filter_codes=${destinationPincode}`,
         { headers, httpsAgent: agent }
       ),
     ]);
-    
 
     console.log("Delhivery origin response:", originResp);
     console.log("Delhivery destination response:", destResp);
@@ -775,34 +901,6 @@ class OrderService {
     ];
   }
 
-  // Fetch Bluedart services
-  async getBluedartServices(order) {
-    // Example placeholder API, replace with actual Bluedart API call
-    return [
-      { code: "BD1", name: "Bluedart Express", courier: "BLUEDART", priority: 0 },
-      { code: "BD2", name: "Bluedart Standard", courier: "BLUEDART", priority: 0 },
-    ];
-  }
-
-  // Fetch all shipping methods with priority from DB
-  async attachPriority(services, conn, tenant) {
-    const Shipping =
-      conn.models.Shipping || conn.model("Shipping", ShippingSchema);
-    const shippings = await Shipping.find({ status: "active" }).lean();
-    
-
-    return services.map((s) => {
-      const match = shippings.find(
-        (sh) =>
-          sh.carrier.toUpperCase() === s.courier.toUpperCase() &&
-          sh.shippingMethod.toLowerCase().includes(s.name.toLowerCase())
-      );
-      return { ...s, priority: match ? match.priority : 0 };
-    });
-  }
-
-
-
   //getServiceOptions
   async getServiceOptions(order, conn, tenant) {
     let services = [];
@@ -820,6 +918,60 @@ class OrderService {
     services.sort((a, b) => b.priority - a.priority);
 
     return services;
+  }
+
+  async getAllOrders(request, conn) {
+    try {
+      const searchParams = request.nextUrl.searchParams;
+      const {
+        page = 1,
+        limit = 10,
+        filters = "{}",
+        sort = "{}",
+        populateFields = ["items.product", "items.variant", "coupon", "user"],
+        selectFields = {},
+      } = Object.fromEntries(searchParams.entries());
+
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      const parsedFilters =
+        typeof filters === "string" ? JSON.parse(filters) : filters;
+      const parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort;
+
+      const filterConditions = { ...parsedFilters };
+      const sortConditions = {};
+
+      for (const [field, direction] of Object.entries(parsedSort)) {
+        sortConditions[field] = direction === "asc" ? 1 : -1;
+      }
+
+      const { results, totalCount, currentPage, pageSize } =
+        await this.orderRepository.getAllOrders(
+          filterConditions,
+          sortConditions,
+          pageNum,
+          limitNum,
+          populateFields,
+          selectFields
+        );
+
+      const totalPages = Math.ceil(totalCount / limitNum);
+
+      return {
+        success: true,
+        message: "All orders fetched successfully",
+        data: results,
+        currentPage,
+        totalPages,
+        totalCount,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
+    }
   }
 
 
