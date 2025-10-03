@@ -1,5 +1,5 @@
 export default function NewDescriptionLayout({ data }) {
-  console.log("DescriptionLayout data:", data.name);
+  console.log("DescriptionLayout data:", data?.name);
   const extractVideoId = (url) => {
     const regex =
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
