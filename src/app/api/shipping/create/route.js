@@ -42,8 +42,8 @@ export async function POST(req) {
     }
 
     // Get Order model and fetch order details
-    const OrderSchema = OrderSchema;
-    const Order = conn.models.Order || conn.model("Order", OrderSchema);
+    const orderSchema = OrderSchema;
+    const Order = conn.models.Order || conn.model("Order", orderSchema);
 
     const order = await Order.findById(body.orderId).populate("items");
     if (!order) {
