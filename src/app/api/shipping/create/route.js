@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getSubdomain, getDbConnection } from "../../lib/tenantDb.js";
-import {
-  DTDCShippingService,
-  BlueDartShippingService,
-} from "../../lib/services/shippingProviderService.js";
-import { ShippingValidation } from "../../lib/validation/shippingValidation.js";
+
+import { OrderSchema } from "@/app/lib/models/Order.js";
+import { ShippingValidation } from "@/app/lib/validation/shippingValidation.js";
+import { getDbConnection, getSubdomain } from "@/app/lib/tenantDb.js";
+import { BlueDartShippingService } from "@/app/lib/services/shippingProviderService";
+import DTDCShippingService from "@/app/lib/services/DTDCShippingService";
 
 export async function POST(req) {
   try {
@@ -42,7 +42,7 @@ export async function POST(req) {
     }
 
     // Get Order model and fetch order details
-    const OrderSchema = (await import("../../lib/models/Order.js")).default;
+    const OrderSchema = OrderSchema;
     const Order = conn.models.Order || conn.model("Order", OrderSchema);
 
     const order = await Order.findById(body.orderId).populate("items");

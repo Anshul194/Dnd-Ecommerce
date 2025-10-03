@@ -154,11 +154,11 @@ const Navbar = () => {
               <Link href="/" className="text-black">
                 <div className="h-16 w-fit flex items-center overflow-hidden">
                   <Image
-                    src="/images/BOTH_LOGO.webp"
+                    src="/logo.webp"
                     alt="Your Logo"
                     width={100}
                     height={80}
-                    className="h-24 w-full"
+                    className="h-14 w-full"
                   />
                 </div>
               </Link>

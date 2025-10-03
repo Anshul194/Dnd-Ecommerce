@@ -106,14 +106,16 @@ class OrderController {
 
   async createShipment({ body }) {
     const { orderId, courier, serviceCode } = body;
+
     if (!orderId || !courier || !serviceCode)
       return { success: false, message: "Missing data" };
 
     const order = await this.orderService.getOrderById(orderId);
+    console.log("Order fetched in controller for shipment:", order);
     if (!order) return { success: false, message: "Order not found" };
 
     const shipmentResp = await this.orderService.createShipment(
-      order,
+      order.data,
       courier,
       serviceCode
     );
