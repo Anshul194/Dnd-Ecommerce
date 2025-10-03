@@ -15,6 +15,7 @@ const LandingBanner = ({
   const [isAutoPlaying, setIsAutoPlaying] = useState(autoPlay);
 
   // Transform hero sections data into slides format
+  console.log("Hero Sections Data:", heroSections);
   useEffect(() => {
     if (heroSections && heroSections.length > 0) {
       const transformedSlides = heroSections
@@ -143,7 +144,7 @@ const LandingBanner = ({
         <div
           className="flex transition-transform duration-700 ease-in-out h-full"
           style={{
-            transform: `translateX(-${currentSlide * 100}%)`,
+            transform: `translateX(-${currentSlide * 50}%)`,
             width: `${slides.length * 100}%`,
           }}
         >
