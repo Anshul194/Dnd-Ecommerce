@@ -831,21 +831,50 @@ class OrderService {
   }
   // Fetch Bluedart services
   async getBluedartServices(order) {
-    // Example placeholder API, replace with actual Bluedart API call
-    return [
-      {
-        code: "BD1",
-        name: "Bluedart Express",
+    try {
+      const originPincode = process.env.BLUEDART_ORIGIN_PINCODE || "110001";
+      const destinationPincode = order?.data?.shippingAddress?.postalCode;
+
+      if (!destinationPincode) {
+        throw new Error("Destination postal code missing for Bluedart service check");
+      }
+
+      // Generate JWT Token (assuming you store in ENV or helper)
+      const tokenResp = await axios.post(
+        process.env.BLUEDART_AUTH_URL, // e.g. https://api.bluedart.com/Authenticate
+        {
+          client_id: process.env.BLUEDART_CLIENT_ID,
+          client_secret: process.env.BLUEDART_CLIENT_SECRET,
+        }
+      );
+      const jwtToken = tokenResp.data?.access_token;
+
+      const resp = await axios.post(
+        process.env.BLUEDART_API_URL + "/GetServicesforPincodeAndProduct",
+        {
+          OriginPincode: originPincode,
+          DestinationPincode: destinationPincode,
+          ProductCode: "A", // Example product code (A = Express)
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const services = resp.data?.Services || [];
+      return services.map((s) => ({
+        code: s.ServiceCode,
+        name: s.ServiceName,
         courier: "BLUEDART",
         priority: 0,
-      },
-      {
-        code: "BD2",
-        name: "Bluedart Standard",
-        courier: "BLUEDART",
-        priority: 0,
-      },
-    ];
+      }));
+    } catch (error) {
+      console.error("Bluedart service fetch error:", error.message);
+      return [];
+    }
   }
 
   // Fetch all shipping methods with priority from DB
@@ -1126,15 +1155,79 @@ async function createDtdcShipment(order, shipping) {
 }
 
 // ========== BLUEDART (Mock) SERVICE ========== //
-async function createBluedartShipment(order, shipping) {
-  // No API call, just mock response
-  return {
-    success: true,
-    message: "Bluedart shipment created (mock).",
-    orderId: order._id.toString(),
-    courier: "Bluedart",
-    trackingNumber: `BD-${Date.now()}`
-  };
+// ========= BLUEDART CREATE SHIPMENT ========= //
+async createBluedartShipment(order, shipping) {
+  try {
+    // Generate JWT Token
+    const tokenResp = await axios.post(
+      process.env.BLUEDART_AUTH_URL,
+      {
+        client_id: process.env.BLUEDART_CLIENT_ID,
+        client_secret: process.env.BLUEDART_CLIENT_SECRET,
+      }
+    );
+    const jwtToken = tokenResp.data?.access_token;
+
+    const payload = {
+      Consignee: {
+        Name: order.shippingAddress.fullName,
+        Address1: order.shippingAddress.addressLine1,
+        Address2: order.shippingAddress.addressLine2 || "",
+        Pincode: order.shippingAddress.postalCode,
+        City: order.shippingAddress.city,
+        State: order.shippingAddress.state,
+        Mobile: order.shippingAddress.phoneNumber,
+      },
+      Shipper: {
+        Name: order.billingAddress.fullName,
+        Address1: order.billingAddress.addressLine1,
+        Address2: order.billingAddress.addressLine2 || "",
+        Pincode: order.billingAddress.postalCode,
+        City: order.billingAddress.city,
+        State: order.billingAddress.state,
+        Mobile: order.billingAddress.phoneNumber,
+      },
+      Services: {
+        ProductCode: "A", // Express product
+        SubProductCode: "P", // Prepaid
+        PickupDate: new Date().toISOString().split("T")[0],
+        PickupTime: "1500",
+        PieceCount: order.items.length,
+        Weight: (order.total / 1000).toFixed(2), // approx kg
+        DeclaredValue: order.total,
+        CollectableAmount: order.paymentMode === "COD" ? order.total : 0,
+        Commodity: "General",
+      },
+      ReferenceNo: order._id.toString(),
+    };
+
+    const res = await axios.post(
+      process.env.BLUEDART_API_URL + "/GenerateWayBill",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      message: "Bluedart shipment created successfully",
+      orderId: order._id.toString(),
+      courier: "Bluedart",
+      trackingNumber: res.data?.AWBNo,
+      label: res.data?.LabelURL,
+    };
+  } catch (error) {
+    console.error("Bluedart shipment creation failed:", error.message);
+    return {
+      success: false,
+      message: "Bluedart shipment creation failed",
+      error: error.message,
+    };
+  }
 }
 
 }
