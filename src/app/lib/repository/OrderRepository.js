@@ -217,6 +217,24 @@ class OrderRepository extends CrudRepository {
     }
   }
 
+  //updateOrder
+  async updateOrder(orderId, updateData) {
+    try {
+      // console.log('Updating order:', orderId, 'with data:', updateData);
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        throw new Error(`Invalid orderId: ${orderId}`);
+      }
+      const updatedOrder = await this.model.findByIdAndUpdate(orderId, updateData, { new: true });
+      if (!updatedOrder) {
+        throw new Error('Order not found');
+      }
+      return updatedOrder;
+    } catch (error) {
+      console.error('OrderRepository updateOrder Error:', error.message);
+      throw error;
+    }
+  }
+
   async getAllOrders(
     filterConditions = {},
     sortConditions = {},

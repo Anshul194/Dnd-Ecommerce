@@ -124,9 +124,65 @@ class OrderController {
       success: true,
       orderId,
       courier,
-      response: shipmentResp.response,
+      response: shipmentResp.data,
+    };
+  }
+
+  //generateLabel
+  async generateLabel({ body }) {
+    const { orderId, courier } = body;
+
+    if(courier === 'dtdc'){
+      if(!body.labelCode){
+        return { success: false, message: "Missing label code" };
+      }
+    }
+
+    if (!orderId || !courier)
+      return { success: false, message: "Missing data" };
+
+    const order = await this.orderService.getOrderById(orderId);
+    // console.log("Order fetched in controller for label generation:", order);
+    if (!order) return { success: false, message: "Order not found" };
+    
+    const labelResp = await this.orderService.generateLabel(
+      order.data,
+      courier,
+      body
+    );
+    return {
+      success: true,
+      orderId,
+      courier,
+      response: labelResp,
+    };
+  }
+
+
+  //trackShipment
+  async trackShipment({ body }) {
+    const { orderId, trackingNumber } = body;
+
+    // console.log("Order fetched in controller for tracking:", order.data.shipping_details);
+    if (!orderId || !trackingNumber)
+      return { success: false, message: "Missing OrderId Or TrackingNumber" };
+    
+    const order = await this.orderService.getOrderById(orderId);
+    if (!order) return { success: false, message: "Order not found" };  
+    const trackResp = await this.orderService.trackShipment(
+      order.data,
+      trackingNumber,
+      body
+    );
+    
+    return {
+      success: true,
+      orderId,
+      trackingNumber,
+      response: trackResp.data,
     };
   }
 }
+
 
 export default OrderController;

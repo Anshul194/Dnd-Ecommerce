@@ -6,6 +6,8 @@ import { SettingSchema } from "../models/Setting";
 import axios from "axios";
 import https from "https"; // if using ES modules
 import { ShippingSchema } from "../models/Shipping.js";
+import path from "path";
+import fs from "fs";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -1019,6 +1021,189 @@ class OrderService {
     }
   }
 
+  //generateLabel
+  async generateLabel(order, courier, data) {
+    switch (courier.toUpperCase()) {
+      case "DTDC":
+        return this.generateDtdcLabel(order, data);
+      case "DELHIVERY":
+        return this.generateDelhiveryLabel(order, data);
+      case "BLUEDART":
+        return this.generateBluedartLabel(order, data);
+      default:
+        throw new Error("Unsupported courier for label generation");
+    }
+  }
+
+  // DTDC label generation
+  async generateDtdcLabel(order, data) {
+    // data.labelCode should be present
+    if (!data?.labelCode) {
+      throw new Error("labelCode is required for DTDC label generation");
+    }
+    const apiKey = process.env.DTDC_API_KEY;
+    const referenceNumber = encodeURIComponent(order.shipping_details.reference_number);
+    const labelCode = data.labelCode || "SHIP_LABEL_4X6"; // default to A4Z
+    const labelFormat = "pdf";
+    const url = `https://pxapi.dtdc.in/api/customer/integration/consignment/shippinglabel/stream?reference_number=${referenceNumber}&label_code=${labelCode}&label_format=${labelFormat}`;
+
+    // Use GET request for label streaming
+    const res = await axios.get(
+      url,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": apiKey,
+        },
+        responseType: "arraybuffer", // PDF stream
+      }
+    );
+
+    // console.log("DTDC label response status:", res.data);
+
+    const labelDir = path.join(process.cwd(), "public/labels");
+if (!fs.existsSync(labelDir)) fs.mkdirSync(labelDir, { recursive: true });
+
+const fileName = `DTDC_${order._id}_${Date.now()}.pdf`;
+const filePath = path.join(labelDir, fileName);
+
+// Write binary data to file
+fs.writeFileSync(filePath, res.data);
+
+// Optionally make a public URL (if served via Express static)
+const labelUrl = `/labels/${fileName}`;
+const shippingDetails = {
+  ...order.shipping_details,
+  labelUrl: labelUrl,
+};
+
+//update order with label URL
+await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
+
+
+    // Return PDF buffer and label URL
+    return {
+      success: true,
+      message: "DTDC label generated successfully",
+      // labelBuffer: res.data,
+      labelUrl: labelUrl,
+      reference_number: order.shipping_details.reference_number,
+    };
+  }
+
+  // Delhivery label generation (stub)
+  async generateDelhiveryLabel(order, data) {
+    // For now, return static response
+    return {
+      success: true,
+      message: "Delhivery label generation not implemented yet",
+      labelUrl: "https://delhivery.com/static-label.pdf",
+    };
+  }
+
+  // Bluedart label generation (stub)
+  async generateBluedartLabel(order, data) {
+    // For now, return static response
+    return {
+      success: true,
+      message: "Bluedart label generation not implemented yet",
+      labelUrl: "https://bluedart.com/static-label.pdf",
+    };
+  }
+
+  //trackShipment
+  async trackShipment(order, trackingNumber, data) {
+    const courier = order?.shipping_details?.platform;
+    // console.log("Tracking shipment for courier:", courier);
+    if (!courier) {
+      throw new Error("Courier information missing in order");
+    }
+    if (!trackingNumber) {
+      throw new Error("Tracking number is required for tracking");
+    }
+    switch (courier.toUpperCase()) {
+      case "DTDC":
+        return this.trackDtdcShipment(order);
+      case "DELHIVERY":
+        return this.trackDelhiveryShipment(order);
+      case "BLUEDART":
+        return this.trackBluedartShipment(order);
+      default:
+        throw new Error("Unsupported courier for tracking");
+    }
+  }
+
+  // DTDC tracking
+  async trackDtdcShipment(order) {
+    // console.log("Tracking DTDC shipment for order:", order);
+    // You should store DTDC tracking username/password in env
+    const username = process.env.DTDC_TRACK_USERNAME;
+    const password = process.env.DTDC_TRACK_PASSWORD;
+    if (!username || !password) {
+      throw new Error("DTDC tracking credentials missing in environment");
+    }
+    const referenceNumber = order?.shipping_details?.reference_number;
+    if (!referenceNumber) {
+      throw new Error("Order missing DTDC reference number");
+    }
+
+    // console.log("DTDC tracking reference number:", referenceNumber);
+
+
+    // Step 1: Authenticate to get token
+    const authUrl = `https://blktracksvc.dtdc.com/dtdc-api/api/dtdc/authenticate?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+    console.log("DTDC auth URL:", authUrl);
+    const authResp = await axios.get(authUrl);
+    console.log("DTDC auth response:", authResp.data);
+    const token = authResp.data?.token || authResp.data?.access_token;
+    if (!token) {
+      throw new Error("Failed to get DTDC tracking token");
+    }
+
+    // Step 2: Get tracking details
+    const trackUrl = "https://blktracksvc.dtdc.com/dtdc-api/rest/JSONCnTrk/getTrackDetails";
+    const payload = {
+      trkType: "reference",
+      strcnno: referenceNumber,
+      addtnlDtl: "Y",
+    };
+    const trackResp = await axios.post(trackUrl, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
+    });
+
+    return {
+      success: true,
+      message: "DTDC tracking fetched successfully",
+      trackingNumber: referenceNumber,
+      data: trackResp.data,
+    };
+  }
+
+  // Delhivery tracking (stub)
+  async trackDelhiveryShipment(order) {
+    // For now, return static response
+    return {
+      success: true,
+      message: "Delhivery tracking not implemented yet",
+      trackingNumber: order?.shipping_details?.reference_number || "",
+      data: {},
+    };
+  }
+
+  // Bluedart tracking (stub)
+  async trackBluedartShipment(order) {
+    // For now, return static response
+    return {
+      success: true,
+      message: "Bluedart tracking not implemented yet",
+      trackingNumber: order?.shipping_details?.reference_number || "",
+      data: {},
+    };
+  }
+
   // ========== Build Common Helpers ========== //
   async buildProductDescription(order) {
     console.log("Building product description for order:", order);
@@ -1116,66 +1301,128 @@ class OrderService {
 
   // ========== DTDC (Shipsy) SERVICE ========== //
   async createDtdcShipment(order, shipping) {
-    console.log("Creating DTDC shipment for order:", order);
+    // Build payload dynamically from order object
+    const isCOD = order.paymentMode === "COD";
+    const origin = {
+      fullName: 'BHARATGRAM B2C',
+      phoneNumber: order.billingAddress.phoneNumber,
+      addressLine1: "34   GOHANA VPO THASKA MAHARA,",
+      addressLine2:  "GOHANA VPO THASKA MAHARA, Sonipat, HARYANA ,India 131301",
+      postalCode: "131301",
+      city: "SONEPAT",
+      state: "HARYANA",
+    };
+    const destination = order.shippingAddress;
+
+    // Build pieces_detail from order items
+    const piecesDetail = order.items.map((item) => ({
+      description: item.product?.name || "Product",
+      declared_value: (item.price * item.quantity).toString(),
+      weight: item.weight?.toString() || "0.5",
+      height: item.product?.dimensions?.height?.toString() || "5",
+      length: item.product?.dimensions?.length?.toString() || "5",
+      width: item.product?.dimensions?.width?.toString() || "5",
+    }));
+
     const payload = {
       consignments: [
         {
           customer_code: process.env.DTDC_CUSTOMER_CODE,
-          service_type_id: "B2C PRIORITY",
+          service_type_id: shipping?.service_type_id || "B2C PRIORITY",
           load_type: "NON-DOCUMENT",
-          description: this.buildProductDescription(order),
+          description: order.items
+            .map((i) => i.product?.name || "Product")
+            .join(", "),
           dimension_unit: "cm",
-          length: "10.0",
-          width: "10.0",
-          height: "10.0",
+          length: shipping?.dimensions?.length?.toString() || "10.0",
+          width: shipping?.dimensions?.width?.toString() || "10.0",
+          height: shipping?.dimensions?.height?.toString() || "10.0",
           weight_unit: "kg",
-          weight: (order.total / 1000).toFixed(2), // dummy logic
+          weight: shipping?.weight?.toString() || (order.total / 1000).toFixed(2),
           declared_value: order.total.toString(),
           num_pieces: order.items.length.toString(),
           origin_details: {
-            name: order.billingAddress.fullName,
-            phone: order.billingAddress.phoneNumber,
-            address_line_1: order.billingAddress.addressLine1,
-            address_line_2: order.billingAddress.addressLine2 || "",
-            pincode: order.billingAddress.postalCode,
-            city: order.billingAddress.city,
-            state: order.billingAddress.state,
+            name: origin.fullName,
+            phone: origin.phoneNumber,
+            alternate_phone: "",
+            address_line_1: origin.addressLine1,
+            address_line_2: origin.addressLine2 || "",
+            pincode: origin.postalCode,
+            city: origin.city,
+            state: origin.state,
           },
           destination_details: {
-            name: order.shippingAddress.fullName,
-            phone: order.shippingAddress.phoneNumber,
-            address_line_1: order.shippingAddress.addressLine1,
-            address_line_2: order.shippingAddress.addressLine2 || "",
-            pincode: order.shippingAddress.postalCode,
-            city: order.shippingAddress.city,
-            state: order.shippingAddress.state,
+            name: destination.fullName,
+            phone: destination.phoneNumber,
+            alternate_phone: "",
+            address_line_1: destination.addressLine1,
+            address_line_2: destination.addressLine2 || "",
+            pincode: destination.postalCode,
+            city: destination.city,
+            state: destination.state,
           },
           customer_reference_number: order._id.toString(),
-          // cod_collection_mode: order.paymentMode === "COD" ? "cash" : "none",
-          // cod_amount:
-          //   order.paymentMode === "COD" ? order.total.toString() : "0",
+          cod_collection_mode: isCOD ? "cash" : "",
+          cod_amount: isCOD ? order.total.toString() : "0",
           commodity_id: "7",
-          pieces_detail: await this.buildPiecesDetail(order),
+          reference_number: "",
+          pieces_detail: piecesDetail,
         },
       ],
     };
 
-    console.log("DTDC shipment payload:", payload?.consignments?.pieces_detail);
+    // console.log("DTDC shipment payload:", payload);
+    // console.log("Using DTDC API Key:", process.env.DTDC_API_KEY);
 
+    // Make API call
     const res = await axios.post(
-      process.env.DTDC_API_URL ||
-        "https://alphademodashboardapi.shipsy.io/api/customer/integration/consignment/softdata",
+      "https://pxapi.dtdc.in/api/customer/integration/consignment/softdata",
       payload,
       {
         headers: {
           "Content-Type": "application/json",
-          "API-KEY": "da66dccac00b76c795e827ffaafd5d", // Try this header
-          "X-Access-Token": "GL017_trk_json:521ce7881cb576b9a084489e02534e2e", // if required
+          "api-key": process.env.DTDC_API_KEY,
         },
       }
     );
+
     console.log("DTDC shipment response:", res.data);
-    return res.data;
+
+    if (res.data.status == 'OK' && res.data?.data?.[0]?.reference_number) {
+    // Save shipping_details in order model
+    const shippingDetails = {
+      platform: "dtdc",
+      reference_number: res.data?.data?.[0]?.reference_number || null,
+      tracking_url: `https://www.dtdc.in/tracking?awb=${res.data?.data?.[0]?.reference_number}`,
+      raw_response: res.data,
+    };
+    // console.log("Shipping details to save:", shippingDetails);
+
+    //save to order
+    await this.orderRepository.updateOrder(order._id, {
+      shipping_details: shippingDetails,
+    });
+
+  }else{
+    throw new Error(`DTDC shipment creation failed: ${res.data.message || 'Unknown error'}`);
+  }
+
+
+
+
+    // Update order with shipping_details
+   
+    // console.log("DTDC shipment response:", res.data);
+
+
+
+    // Return formatted response
+    return {
+      success: true,
+      message: "DTDC shipment created successfully",
+      trackingNumber: res.data?.consignments?.[0]?.reference_number || res.data?.consignments?.[0]?.awb_number,
+      data: res.data,
+    };
   }
 
 // ========== BLUEDART (Mock) SERVICE ========== //

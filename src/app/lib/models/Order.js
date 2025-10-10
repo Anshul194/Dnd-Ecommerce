@@ -116,6 +116,13 @@ const orderSchema = new mongoose.Schema(
       required: false,
       default: 0,
     },
+    shipping_details: {
+      platform: { type: String, enum: ['dtdc', 'delhivery', 'bluedart', null], default: null },
+      reference_number: { type: String, default: null }, // e.g., AWB, order_ref, consignment_no
+      tracking_url: { type: String, default: null },
+      raw_response: { type: Object, default: null }, // Store full API response safely
+      labelUrl: { type: String, default: null },
+    }
   },
   {
     timestamps: true,
