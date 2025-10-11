@@ -1770,7 +1770,7 @@ Dimensions: Array.from({ length: totalPieces }, () => ({
   Length: 10
 })),
           ECCN: "",
-          PDFOutputNotRequired: true, // Set to false if you need PDF
+          PDFOutputNotRequired: false, // Set to false if you need PDF
           OTPBasedDelivery: 0, // 0 = No OTP, 1 = OTP required
           OTPCode: "",
           itemdtl: [],

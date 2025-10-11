@@ -267,24 +267,25 @@ const CartSidebar = () => {
                                   key={index}
                                   onClick={(e) => {
                                     e.preventDefault();
+                                    console.log(item);
                                     handleSelectVariant(
                                       {
-                                        id: item._id,
+                                        id: item?._id,
                                         image: {
                                           url:
-                                            item.thumbnail.url ||
-                                            item.image?.[0].url,
+                                            item?.thumbnail?.url ||
+                                            item?.images?.[0]?.url,
                                           alt:
-                                            item.thumbnail.alt ||
-                                            item.image?.[0].alt,
+                                            item?.thumbnail?.alt ||
+                                            item?.images?.[0]?.alt,
                                         },
-                                        name: item.name,
-                                        slug: item.slug,
-                                        variant: variant._id,
+                                        name: item?.name,
+                                        slug: item?.slug,
+                                        variant: variant?._id,
                                       },
-                                      variant._id,
+                                      variant?._id,
                                       1,
-                                      variant.salePrice || variant.price
+                                      variant?.salePrice || variant?.price
                                     );
                                   }}
                                   className="cursor-pointer hover:font-semibold "

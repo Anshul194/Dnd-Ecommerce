@@ -438,13 +438,37 @@ const Orders = () => {
                       </p>
                     </div>
 
-                    <a
-                      target="_blank"
-                      href="https://www.dtdc.com/track-your-shipment/"
-                      className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
-                    >
-                      Track here
-                    </a>
+                    {currentOrder?.shipping_details?.platform === "dtdc" && (
+                      <a
+                        target="_blank"
+                        href="https://www.dtdc.com/track-your-shipment/"
+                        className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
+                      >
+                        Track here
+                      </a>
+                    )}
+
+                    {currentOrder?.shipping_details?.platform ===
+                      "bluedart" && (
+                      <a
+                        target="_blank"
+                        href={currentOrder?.shipping_details?.tracking_url}
+                        className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
+                      >
+                        Track here
+                      </a>
+                    )}
+
+                    {currentOrder?.shipping_details?.platform ===
+                      "delhivery" && (
+                      <a
+                        target="_blank"
+                        href="https://www.dtdc.com/track-your-shipment/"
+                        className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
+                      >
+                        Track here
+                      </a>
+                    )}
                   </div>
                 </div>
               )}

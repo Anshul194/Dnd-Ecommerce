@@ -178,7 +178,7 @@ export default function Footer() {
               <div className="hidden lg:block">
                 <h3 className="font-bold text-sm mb-3">QUICK LINKS</h3>
                 <ul className="space-y-1 flex flex-col">
-                  {data?.["quick-links"]?.map?.((link, index) => (
+                  {/* {data?.["quick-links"]?.map?.((link, index) => (
                     <Link
                       href={`/pages/${link?._id ?? ""}`}
                       key={index}
@@ -186,7 +186,19 @@ export default function Footer() {
                     >
                       {link?.title ?? ""}
                     </Link>
-                  ))}
+                  ))} */}
+                  <Link
+                    href={`/pages/68cbb81892f12535adaa3894`}
+                    className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
+                  >
+                    About
+                  </Link>
+                  <Link
+                    href={`/blogs`}
+                    className="text-[10px] hover:text-emerald-300 transition-colors font-gintoNord block"
+                  >
+                    Blogs
+                  </Link>
                 </ul>
               </div>
 
@@ -204,7 +216,7 @@ export default function Footer() {
                   )}
                 </button>
                 {openAccordions.quickLinks && (
-                <ul className="space-y-1 flex flex-col">
+                  <ul className="space-y-1 flex flex-col">
                     {data?.["quick-links"]?.map?.((link, index) => (
                       <Link
                         href={`/pages/${link?._id ?? ""}`}
@@ -251,7 +263,7 @@ export default function Footer() {
                   )}
                 </button>
                 {openAccordions.aboutUs && (
-                <ul className="space-y-1 flex flex-col">
+                  <ul className="space-y-1 flex flex-col">
                     {data?.["about-us"]?.map?.((link, index) => (
                       <Link
                         href={`/pages/${link?._id ?? ""}`}
@@ -333,13 +345,19 @@ export default function Footer() {
                 <div className="text-sm">
                   <div className="font-bold mb-1">CONTACT HOURS</div>
                   <div>
-                    MON-WED: {data?.["contact-us"]?.[0]?.contactData?.contactHours?.monWed ?? ""}
+                    MON-WED:{" "}
+                    {data?.["contact-us"]?.[0]?.contactData?.contactHours
+                      ?.monWed ?? ""}
                   </div>
                   <div>
-                    THU-FRI: {data?.["contact-us"]?.[0]?.contactData?.contactHours?.thuFri ?? ""}
+                    THU-FRI:{" "}
+                    {data?.["contact-us"]?.[0]?.contactData?.contactHours
+                      ?.thuFri ?? ""}
                   </div>
                   <div>
-                    SAT: {data?.["contact-us"]?.[0]?.contactData?.contactHours?.sat ?? ""}
+                    SAT:{" "}
+                    {data?.["contact-us"]?.[0]?.contactData?.contactHours
+                      ?.sat ?? ""}
                   </div>
                 </div>
                 <div className="space-y-1">
