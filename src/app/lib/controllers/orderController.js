@@ -111,7 +111,7 @@ class OrderController {
       return { success: false, message: "Missing data" };
 
     const order = await this.orderService.getOrderById(orderId);
-    console.log("Order fetched in controller for shipment:", order);
+    // console.log("Order fetched in controller for shipment:", order);
     if (!order) return { success: false, message: "Order not found" };
 
     const shipmentResp = await this.orderService.createShipment(
