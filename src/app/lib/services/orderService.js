@@ -1091,14 +1091,62 @@ await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDe
     };
   }
 
-  // Delhivery label generation (stub)
+  // Delhivery label generation
   async generateDelhiveryLabel(order, data) {
-    // For now, return static response
-    return {
-      success: true,
-      message: "Delhivery label generation not implemented yet",
-      labelUrl: "https://delhivery.com/static-label.pdf",
-    };
+    try {
+      if (!order?.shipping_details?.waybill) {
+        throw new Error("Waybill number not found in order shipping details");
+      }
+
+      const waybill = order.shipping_details.waybill;
+      const apiUrl = `https://track.delhivery.com/api/p/packing_slip?wbns=${waybill}&pdf=true`;
+
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
+        },
+        responseType: 'arraybuffer',
+      });
+
+      // Save the PDF to public/labels directory
+      const labelDir = path.join(process.cwd(), "public/labels");
+      if (!fs.existsSync(labelDir)) {
+        fs.mkdirSync(labelDir, { recursive: true });
+      }
+
+      const fileName = `DELHIVERY_${order._id}_${Date.now()}.pdf`;
+      const filePath = path.join(labelDir, fileName);
+
+      // Write binary data to file
+      fs.writeFileSync(filePath, response.data);
+
+      // Create public URL
+      const labelUrl = `/labels/${fileName}`;
+
+      // Update order with label URL
+      const shippingDetails = {
+        ...order.shipping_details,
+        labelUrl: labelUrl,
+      };
+
+      await this.orderRepository.updateOrder(order._id, { 
+        shipping_details: shippingDetails 
+      });
+
+      return {
+        success: true,
+        message: "Delhivery label generated successfully",
+        labelUrl: labelUrl,
+        waybill: waybill,
+      };
+    } catch (error) {
+      console.error("Delhivery label generation failed:", error);
+      return {
+        success: false,
+        message: `Delhivery label generation failed: ${error.message}`,
+        error: error.message,
+      };
+    }
   }
 
   // Bluedart label generation (stub)
@@ -1182,15 +1230,41 @@ await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDe
     };
   }
 
-  // Delhivery tracking (stub)
+  // Delhivery tracking
   async trackDelhiveryShipment(order) {
-    // For now, return static response
-    return {
-      success: true,
-      message: "Delhivery tracking not implemented yet",
-      trackingNumber: order?.shipping_details?.reference_number || "",
-      data: {},
-    };
+    try {
+      const waybill = order?.shipping_details?.waybill;
+      if (!waybill) {
+        throw new Error("Waybill number not found in order shipping details");
+      }
+
+      const apiUrl = `https://track.delhivery.com/api/v1/packages/json/?waybill=${waybill}`;
+      
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log("Delhivery tracking response:", response.data);
+
+      return {
+        success: true,
+        message: "Delhivery tracking fetched successfully",
+        trackingNumber: waybill,
+        data: response.data,
+      };
+    } catch (error) {
+      console.error("Delhivery tracking failed:", error);
+      return {
+        success: false,
+        message: `Delhivery tracking failed: ${error.message}`,
+        trackingNumber: order?.shipping_details?.waybill || "",
+        data: {},
+        error: error.message,
+      };
+    }
   }
 
   // Bluedart tracking (stub)
@@ -1236,72 +1310,206 @@ await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDe
   }
 
   // ========== DELHIVERY SERVICE ========== //
-  async createDelhiveryShipment(order, shipping) {
+   // ✅ Create Delhivery Shipment (Single or Multi-Package)
+  
+
+ // 📦 Create Delhivery Shipment (Supports MPS)
+async createDelhiveryShipment(order, shipping) {
+  try {
+    console.log("Creating Delhivery shipment for order:", order);
+
+    const isCOD = order.paymentMode === "COD";
+    const packageCount = order.items?.length > 1 ? order.items.length : 1;
+
+    // --- 1️⃣ Get Waybills ---
+    const waybillsResp = await this.getDelhiveryWaybill(packageCount);
+    const waybills = Array.isArray(waybillsResp)
+      ? waybillsResp
+      : typeof waybillsResp === "string"
+      ? waybillsResp.split(",").map(w => w.trim())
+      : [];
+
+    if (!waybills.length) throw new Error("Failed to get Delhivery waybill numbers");
+
+    const masterWaybill = waybills[0];
+    const childrenWaybills = waybills.slice(1);
+
+    // --- 2️⃣ Verify Serviceability ---
+    const pin = order.shippingAddress.postalCode;
+    const serviceResp = await axios.get(
+      `https://track.delhivery.com/c/api/pin-codes/json/?token=${process.env.DELHIVERY_API_TOKEN}&filter_codes=${pin}`
+    );
+
+    const serviceData = serviceResp.data.delivery_codes?.[0]?.postal_code;
+    console.log("📦 Checking Delhivery serviceability for PIN:", pin, serviceData);
+
+    if (!serviceData)
+      throw new Error(`Invalid response received for PIN ${pin}`);
+
+    const isServiceable =
+      serviceData.pre_paid === "Y" ||
+      serviceData.cod === "Y" ||
+      serviceData.pickup === "Y";
+
+    if (!isServiceable || serviceData.is_oda === "Y")
+      throw new Error(`Destination PIN ${pin} is not serviceable by Delhivery`);
+
+    // --- 3️⃣ Build Pickup Location ---
+    const pickup_location = {
+      name: "BHARATGRAM B2C",
+      add: "34 GOHANA VPO THASKA MAHARA, GOHANA VPO THASKA MAHARA, Sonipat, HARYANA, India 131301",
+      city: "SONEPAT",
+      pin: "131301",
+      country: "India",
+      phone: order.billingAddress.phoneNumber || "9999999999",
+    };
+
+    // --- 4️⃣ Build Shipments Array ---
+    const shipments = [];
+
+    // 🧱 Master Shipment
+    shipments.push({
+      waybill: masterWaybill,
+      order: `${order._id}-MASTER`,
+      weight: Math.max(100, Math.round(order.total / 10)),
+      shipment_height: shipping?.dimensions?.height || 10,
+      shipment_width: shipping?.dimensions?.width || 11,
+      shipment_length: shipping?.dimensions?.length || 12,
+      seller_inv: order.paymentId || order._id.toString(),
+      pin,
+      products_desc: await this.buildProductDescription(order),
+      add: `${order.shippingAddress.addressLine1}${
+        order.shippingAddress.addressLine2 ? ", " + order.shippingAddress.addressLine2 : ""
+      }`,
+      state: order.shippingAddress.state,
+      city: order.shippingAddress.city,
+      phone: order.shippingAddress.phoneNumber,
+      payment_mode: isCOD ? "COD" : "Prepaid",
+      cod_amount: isCOD ? order.total : 0,
+      order_date: new Date(order.createdAt || Date.now()).toISOString(),
+      name: order.shippingAddress.fullName,
+      total_amount: order.total,
+      country: order.shippingAddress.country || "India",
+      hsn_code: order.items[0]?.hsn || "",
+      quantity: order.items.reduce((sum, i) => sum + i.quantity, 0),
+      shipping_mode: shipping?.shippingMethod || "Surface",
+      address_type: "home",
+      mps_master: packageCount > 1 ? "Y" : undefined,
+    });
+
+    // 🧱 Child Shipments (if any)
+    if (childrenWaybills.length > 0) {
+      childrenWaybills.forEach((wb, idx) => {
+        shipments.push({
+          waybill: wb,
+          order: `${order._id}-CHILD${idx + 1}`,
+          weight: 100,
+          shipment_height: 10,
+          shipment_width: 11,
+          shipment_length: 12,
+          products_desc: `Part ${idx + 1} of ${packageCount}`,
+          add: shipments[0].add,
+          state: order.shippingAddress.state,
+          pin,
+          city: order.shippingAddress.city,
+          phone: order.shippingAddress.phoneNumber,
+          payment_mode: "Prepaid",   // ✅ Always Prepaid for child in COD orders
+          cod_amount: 0,              // ✅ COD only in master
+          name: order.shippingAddress.fullName,
+          total_amount: order.total,
+          country: "India",
+          mps_master: "N",
+          master_id: masterWaybill,
+        });
+      });
+    }
+
+    // --- 5️⃣ Final Payload ---
     const payload = {
       format: "json",
       data: JSON.stringify({
-        shipments: [
-          {
-            name: order.shippingAddress.fullName,
-            add: `${order.shippingAddress.addressLine1}, ${
-              order.shippingAddress.addressLine2 || ""
-            }`,
-            pin: order.shippingAddress.postalCode,
-            city: order.shippingAddress.city,
-            state: order.shippingAddress.state,
-            country: order.shippingAddress.country,
-            phone: order.shippingAddress.phoneNumber,
-            order: order._id.toString(),
-            payment_mode: order.paymentMode === "COD" ? "COD" : "Prepaid",
-            cod_amount: order.paymentMode === "COD" ? order.total : "",
-            total_amount: order.total,
-            products_desc: this.buildProductDescription(order),
-            hsn_code: order.items[0]?.hsn || "",
-            quantity: order.items.reduce((sum, i) => sum + i.quantity, 0),
-            seller_add: order.billingAddress.addressLine1,
-            seller_name: order.billingAddress.fullName,
-            seller_inv: order.paymentId,
-            waybill: "",
-            shipment_width: "50",
-            shipment_height: "50",
-            weight: (order.total / 1000).toFixed(2), // dummy approx
-            shipping_mode: shipping?.shippingMethod || "Surface",
-            address_type: "home",
-          },
-        ],
-        pickup_location: {
-          name: "Warehouse",
-          add: "Warehouse Address Line",
-          city: "New Delhi",
-          pin: "110046",
-          country: "India",
-          phone: "9999999999",
-        },
+        pickup_location,
+        shipments,
       }),
     };
 
-    console.log("Delhivery shipment payload:", payload);
+    console.log("🚚 Delhivery shipment payload:", JSON.stringify(payload, null, 2));
 
+    // --- 6️⃣ Create Shipment ---
     const res = await axios.post(
-      process.env.DELHIVERY_API_URL ||
-        "https://staging-express.delhivery.com/api/cmu/create.json",
+      "https://track.delhivery.com/api/cmu/create.json",
       payload,
       {
         headers: {
           Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
       }
     );
 
-    console.log("Delhivery shipment response:", res.data);
-    return res.data;
+    console.log("📦 Delhivery shipment response:", res.data);
+
+    // --- 7️⃣ Save Shipment Details ---
+    if (res.data.success === true || res.data.package_count > 0) {
+      const shippingDetails = {
+        platform: "delhivery",
+        waybill: masterWaybill,
+        tracking_url: `https://www.delhivery.com/track/package/${masterWaybill}`,
+        raw_response: res.data,
+        created_at: new Date(),
+      };
+
+      await this.orderRepository.updateOrder(order._id, {
+        shipping_details: shippingDetails,
+      });
+
+      return {
+        success: true,
+        message: "Delhivery shipment created successfully",
+        trackingNumber: masterWaybill,
+        waybills,
+        data: res.data,
+      };
+    } else {
+      throw new Error(`Delhivery API error: ${res.data.rmk || "Unknown error"}`);
+    }
+  } catch (error) {
+    console.error("❌ Delhivery shipment creation failed:", error);
+    return {
+      success: false,
+      message: `Delhivery shipment creation failed: ${error.message}`,
+      error: error.message,
+    };
   }
+}
+
+
+// 🔢 Get Delhivery Waybill Numbers
+async getDelhiveryWaybill(count = 1) {
+  try {
+    const response = await axios.get(
+      `https://track.delhivery.com/waybill/api/bulk/json/?token=${process.env.DELHIVERY_API_TOKEN}&cl=BHARATGRAM%20B2C&count=${count}`
+    );
+    console.log("🧾 Delhivery waybill response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Failed to get Delhivery waybill:", error.message);
+    throw new Error(`Failed to get Delhivery waybill: ${error.message}`);
+  }
+}
+
+// 🛍️ Build Product Description
+async buildProductDescription(order) {
+  return order.items.map(i => `${i.quantity}x ${i.name}`).join(", ");
+}
+
 
   // ========== DTDC (Shipsy) SERVICE ========== //
   async createDtdcShipment(order, shipping) {
     // Build payload dynamically from order object
+
+    console.log("Creating DTDC shipment for order:", order);
+
     const isCOD = order.paymentMode === "COD";
     const origin = {
       fullName: 'BHARATGRAM B2C',
