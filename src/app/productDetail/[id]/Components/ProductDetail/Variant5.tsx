@@ -61,7 +61,7 @@ function Variant5({ detailSettings }) {
           },
           quantity,
           price: price.salePrice || price.price,
-          variant: productData.variants[selectedVariant],
+          variant: productData.variants[selectedVariant]._id,
         })
       );
       if (resultAction.error) {

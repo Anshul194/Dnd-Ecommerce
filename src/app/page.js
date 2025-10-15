@@ -9,11 +9,9 @@
 // import WhyUs from "@/components/homepage/WhyUs";
 // import BlogSection from "@/components/BlogSection";
 import DynamicHomepage from "@/components/homepage/DynamicHomepage";
+import DynamicHomepage2 from "@/components/homepage/DynamicHomepage2";
 
 export default function HomePage() {
-  return (
-    <main>
-      <DynamicHomepage />
-    </main>
-  );
+  const page = 1;
+  return <main>{page === 2 ? <DynamicHomepage2 /> : <DynamicHomepage />}</main>;
 }

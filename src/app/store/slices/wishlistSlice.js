@@ -94,4 +94,8 @@ const wishlistSlice = createSlice({
   },
 });
 
+const selectWishlistItems = (state) => state.wishlist.items;
+
+export { selectWishlistItems };
+
 export default wishlistSlice.reducer;

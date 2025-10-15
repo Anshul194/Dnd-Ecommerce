@@ -1,0 +1,86 @@
+"use client";
+import React, { useEffect } from "react";
+import { HeroSlider } from "../HeroSlider";
+import { CustomerFavorites } from "../CustomerFavorites";
+import { TimerBanner } from "../TimerBanner";
+import { WhyUs } from "../WhyUs";
+import { NewLaunchBanner } from "../NewLaunchBanner";
+import { Reviews } from "../Reviews";
+import { FAQ } from "../FAQ";
+import { Certifications } from "../Certifications";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchGroupedContent } from "@/app/store/slices/contentSlice";
+
+function DynamicHomepage2() {
+  const { groupedContent, loading, error } = useSelector(
+    (state) => state.content
+  );
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchGroupedContent());
+  }, [dispatch]);
+
+  const renderSection = (section) => {
+    const { sectionType, content, _id } = section;
+    console.log("Rendering section:", section);
+    switch (sectionType) {
+      case "offerBanner":
+        return <HeroSlider key={_id} content={content} />;
+
+      case "productSlider":
+        return (
+          <div key={_id} className="max-w-7xl mx-auto px-4">
+            <HeroSlider content={content} />
+          </div>
+        );
+
+      case "whyUs":
+        return (
+          <div key={_id} className="max-w-7xl mx-auto px-4">
+            <WhyUs content={content} />
+          </div>
+        );
+
+      default:
+        console.warn("Unknown section type:", sectionType);
+        return null;
+    }
+  };
+
+  if (!groupedContent?.sections) {
+    return null;
+  }
+
+  // Sort all sections by order and filter only visible ones
+  const allSections = [];
+  const heroSections = []; // Collect hero sections separately for carousel
+  const categoryPickContent = []; // Collect categoryPick content for Categories component
+
+  Object?.keys(groupedContent?.sections).forEach((sectionType) => {
+    groupedContent?.sections[sectionType].forEach((section) => {
+      // Show all sections for testing - you can change back to section.isVisible later
+      if (true || section.isVisible) {
+        if (sectionType === "hero") {
+          heroSections.push(section); // Collect hero sections for carousel
+        } else if (sectionType === "categoryPick") {
+          categoryPickContent.push(section); // Collect categoryPick for Categories component
+        } else {
+          allSections.push({ ...section, sectionType });
+        }
+      }
+    });
+  });
+
+  // Debug logging to see what sections we have
+  console.log("Available sections:", groupedContent.sections);
+  console.log("Visible sections:", allSections);
+
+  // Sort by order
+  allSections.sort((a, b) => a.order - b.order);
+  heroSections.sort((a, b) => a.order - b.order);
+  categoryPickContent.sort((a, b) => a.order - b.order);
+  return <main className="text-black">{allSections.map(renderSection)}</main>;
+}
+
+export default DynamicHomepage2;

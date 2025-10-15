@@ -31,6 +31,8 @@ const CartSidebar = () => {
   const [SelectedProduct, setSelectedProduct] = useState(null);
   const shipping = 65;
 
+  console.log("cart is open is : ", isCartOpen);
+
   const handelCartToggle = () => {
     dispatch(toggleCart());
   };
@@ -95,7 +97,7 @@ const CartSidebar = () => {
   console.log("Cart Items:", cartItems);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex">
+    <div className="fixed top-0  inset-1 z-[999999] flex">
       {/* Backdrop */}
       <div
         className="flex-1 bg-black/5 bg-opacity-50"
