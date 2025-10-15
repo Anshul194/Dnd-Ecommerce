@@ -1,7 +1,16 @@
+import {
+  fetchFrequentlyPurchasedProducts,
+  selectSelectedProduct,
+} from "@/app/store/slices/productSlice";
 import { Heart, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import React, { use, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-export default function RenderSliderVariant({ products }) {
+export default function RenderSliderVariant() {
+  const [products, setProducts] = React.useState([]);
+  const selectedProducts = useSelector(selectSelectedProduct);
+  const dispatch = useDispatch();
   const scrollLeft = () => {
     const container = document.getElementById("products-slider");
     container.scrollBy({ left: -300, behavior: "smooth" });
@@ -11,6 +20,60 @@ export default function RenderSliderVariant({ products }) {
     const container = document.getElementById("products-slider");
     container.scrollBy({ left: 300, behavior: "smooth" });
   };
+
+  // const products = [
+  //   {
+  //     id: 1,
+  //     name: "Glamorous Garnets",
+  //     rating: 5,
+  //     reviews: 238,
+  //     price: 563,
+  //     outOfStock: false,
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Luxury Limelight",
+  //     rating: 4,
+  //     reviews: 839,
+  //     price: 238,
+  //     outOfStock: true,
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Sumptuous Splendor",
+  //     rating: 4,
+  //     reviews: 435,
+  //     price: 183,
+  //     outOfStock: false,
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Enchanting Ensembles",
+  //     rating: 5,
+  //     reviews: 954,
+  //     price: 39,
+  //     outOfStock: false,
+  //   },
+  // ];
+
+  const fetchProducts = async () => {
+    const res = await dispatch(
+      fetchFrequentlyPurchasedProducts({
+        frequentlyPurchased: true,
+        limit: 20,
+      })
+    );
+    console.log("frequently purchased products ====> ", res);
+    if (res.meta.requestStatus === "fulfilled") {
+      setProducts(res?.payload?.products || []);
+    } else {
+      console.error("Failed to fetch products");
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const StarRating = ({ rating, reviews }) => (
     <div className="flex items-center gap-1 mb-2">
@@ -64,11 +127,15 @@ export default function RenderSliderVariant({ products }) {
         <div id="products-slider" className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-3 justify-between pb-4 w-full">
             {products?.length > 0 &&
-              products?.map((product, index) => {
+              products?.map((product) => {
+                if (product._id === selectedProducts?._id) return null;
                 const imgSrc =
                   product?.thumbnail?.url || product?.images?.[0]?.url || null;
                 return (
-                  <Link key={index} href={`/product-detail/${product.slug}`}>
+                  <Link
+                    key={product._id}
+                    href={`/product-detail/${product.slug}`}
+                  >
                     <div className="bg-white flex-shrink-0 min-w-64 max-w-[300px] w-1/4">
                       {/* Product Image */}
                       <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">

@@ -1,25 +1,119 @@
 import React from "react";
-import { Check, ChevronDown, Gift, Minus, Plus, ShoppingCart, Sparkles, Star, Users } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Gift,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Sparkles,
+  Star,
+  Users,
+} from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import {
+  addToCart,
+  getCartItems,
+  setBuyNowProduct,
+  toggleCart,
+} from "@/app/store/slices/cartSlice";
+import { toast } from "react-toastify";
+import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
-function Variant4({ productData }) {
+function Variant4() {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
   const [quantity, setQuantity] = React.useState<number>(1);
-  const [selectedVariant, setSelectedVariant] = React.useState<number>(0);
-
+  const productData = useSelector(selectSelectedProduct);
+  const [selectedVariant, setSelectedVariant] = React.useState<number>(
+    productData?.variants[0] || null
+  );
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
   };
+  const dispatch = useDispatch();
 
   const handleQuantityChange = (delta: number) => {
     setQuantity(Math.max(1, quantity + delta));
   };
 
-  const handleAddToCart = () => {
-    console.log("Added to cart:", {
-      product: productData.name,
-      variant: productData.variants[selectedVariant],
-      quantity,
-    });
+  const handleAddToCart = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = productData.variants.find(
+      (variant) => variant._id === selectedVariant._id
+    );
+    try {
+      const resultAction = await dispatch(
+        addToCart({
+          product: {
+            id: productData._id,
+            name: productData.name,
+            image: productData.thumbnail || productData.images[0],
+            variant: selectedVariant,
+            slug: productData.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedVariant,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
+  };
+
+  const handleBuyNow = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = productData.variants.find(
+      (variant) => variant._id === selectedVariant._id
+    );
+    try {
+      const resultAction = await dispatch(
+        setBuyNowProduct({
+          product: {
+            id: productData._id,
+            name: productData.name,
+            image: productData.thumbnail || productData.images[0],
+            variant: selectedVariant,
+            slug: productData.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedVariant,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      dispatch(setCheckoutOpen(true));
+      // dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
   };
   return (
     <div className="space-y-8">
@@ -43,7 +137,7 @@ function Variant4({ productData }) {
                   key={i}
                   size={20}
                   className={`${
-                    i < Math.floor(productData.rating)
+                    i < Math.floor(productData?.reviews?.Average || 0)
                       ? "fill-orange-400 text-orange-400"
                       : "text-gray-300"
                   }`}
@@ -51,15 +145,15 @@ function Variant4({ productData }) {
               ))}
             </div>
             <span className="font-semibold text-gray-900">
-              {productData.rating}
+              {productData?.reviews?.Average.toFixed(1)}
             </span>
-            <span className="text-gray-500">({productData.reviewCount})</span>
+            <span className="text-gray-500">({productData?.reviews?.Reviews.length})</span>
           </div>
           <div className="h-4 w-px bg-gray-300"></div>
-          <div className="flex items-center gap-2 text-green-600">
+          {/* <div className="flex items-center gap-2 text-green-600">
             <Users size={16} />
             <span className="font-medium">{productData.soldCount}</span>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -67,13 +161,23 @@ function Variant4({ productData }) {
       <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-2xl border border-green-200">
         <div className="flex items-baseline gap-4 mb-2">
           <span className="text-4xl font-bold text-gray-900">
-            ₹{productData.variants[selectedVariant]?.price}
+            ₹{selectedVariant?.salePrice}
           </span>
           <span className="text-xl text-gray-500 line-through">
-            ₹{productData.variants[selectedVariant]?.salePrice}
+            ₹{selectedVariant?.price}
           </span>
           <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full text-sm font-bold">
-            Save {productData.variants[selectedVariant]?.discount}%
+            Save{" "}
+            {(() => {
+              const v =
+                productData?.variants?.find(
+                  (v) => v._id === selectedVariant._id
+                ) ?? productData?.variants?.[0];
+              const price = v?.price ?? 0;
+              const sale = v?.salePrice ?? 0;
+              return price > 0 ? Math.round(((price - sale) / price) * 100) : 0;
+            })()}
+            %
           </div>
         </div>
         <p className="text-sm text-gray-600">
@@ -91,11 +195,11 @@ function Variant4({ productData }) {
             <button
               key={variant._id}
               className={`relative p-4 border-2 rounded-2xl text-left transition-all hover:shadow-lg ${
-                productData?.variants[0]._id === variant._id
+                selectedVariant?._id === variant._id
                   ? "border-orange-400 bg-orange-50 shadow-md"
                   : "border-gray-200 hover:border-gray-300"
               }`}
-              // onClick={() => setSelectedVariant(variant._id)}
+              onClick={() => setSelectedVariant(variant)}
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -114,21 +218,21 @@ function Variant4({ productData }) {
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-lg font-bold text-gray-900">
-                      ₹{variant.price}
+                      ₹{variant.salePrice}
                     </span>
                     <span className="text-sm text-gray-500 line-through">
-                      ₹{variant.salePrice}
+                      ₹{variant.price}
                     </span>
                   </div>
                 </div>
                 <div
                   className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                    productData.variants[0]._id === variant._id
+                    selectedVariant._id === variant._id
                       ? "border-orange-400 bg-orange-400"
                       : "border-gray-300"
                   }`}
                 >
-                  {productData.variants[0]._id === variant._id && (
+                  {selectedVariant._id === variant._id && (
                     <Check size={14} className="text-white" />
                   )}
                 </div>
@@ -171,14 +275,17 @@ function Variant4({ productData }) {
           <ShoppingCart size={22} />
           Add to Cart
         </button>
-        <button className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-8 rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 shadow-lg">
+        <button
+          onClick={handleBuyNow}
+          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-8 rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 shadow-lg"
+        >
           Buy Now
         </button>
       </div>
 
       {/* Features Grid */}
       <div className="grid grid-cols-2 gap-4">
-        {productData.features.map((feature, index) => {
+        {productData?.features?.map((feature, index) => {
           const Icon = feature.icon;
           return (
             <div
@@ -202,7 +309,7 @@ function Variant4({ productData }) {
       </div>
 
       {/* Offers Section */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200">
+      {/* <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-2xl border border-purple-200">
         <div className="flex items-center gap-2 mb-4">
           <Gift className="text-purple-600" size={20} />
           <h3 className="text-lg font-semibold text-gray-900">
@@ -210,7 +317,7 @@ function Variant4({ productData }) {
           </h3>
         </div>
         <div className="space-y-3">
-          {productData.offers.map((offer, index) => (
+          {productData?.offers?.map((offer, index) => (
             <div
               key={index}
               className="flex items-center justify-between p-3 bg-white rounded-xl shadow-sm"
@@ -239,7 +346,7 @@ function Variant4({ productData }) {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

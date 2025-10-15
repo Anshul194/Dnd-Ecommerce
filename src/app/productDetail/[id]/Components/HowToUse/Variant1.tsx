@@ -1,4 +1,8 @@
-function Variant1({ data }) {
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import { useSelector } from "react-redux";
+
+function Variant1() {
+  const productData = useSelector(selectSelectedProduct);
   const extractVideoId = (url: string) => {
     const regex =
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
@@ -11,7 +15,7 @@ function Variant1({ data }) {
         {/* Heading with style matching the image */}
         <div className="text-start mb-16">
           <h2 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
-           {data?.howToUseTitle || "How to Use"}
+            HOW TO USE
           </h2>
           <p className="text-black max-w-xl relative poppins-medium leading-tight text-lg mb-8">
             Lorem ipsum dolor sit amet,{" "}
@@ -23,12 +27,12 @@ function Variant1({ data }) {
 
         {/* Video and Steps Grid */}
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-          {data?.howToUseVideo && (
+          {productData?.howToUseVideo && (
             <div className="relative h-full">
               <div className="aspect-video sticky top-10 bg-gray-900/5 rounded-2xl overflow-hidden shadow-2xl">
                 <iframe
                   src={`https://www.youtube.com/embed/${extractVideoId(
-                    data.howToUseVideo
+                    productData.howToUseVideo
                   )}`}
                   allowFullScreen
                   className="w-full h-full object-cover rounded-lg"
@@ -40,7 +44,7 @@ function Variant1({ data }) {
             </div>
           )}
           <div className="space-y-8">
-            {data?.howToUseSteps?.map((step, index) => (
+            {productData?.howToUseSteps?.map((step, index) => (
               <div key={index} className="flex gap-6 group">
                 {/* Step Number */}
                 <div className="flex-shrink-0">

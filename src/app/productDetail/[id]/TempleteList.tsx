@@ -17,7 +17,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 
 import PageMeta from "../../components/common/PageMeta";
 import PopupAlert from "../../components/popUpAlert";
-import { Link } from "next/link";
+import Link from "next/link";
 
 import { setSearchQuery } from "../../store/slices/categorySlice";
 import { deleteTemplate, fetchTemplates } from "../../store/slices/template";
@@ -62,7 +62,7 @@ const DeleteModal: React.FC<{
                 <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Delete Product
+                Delete Template
               </h3>
             </div>
             <button
@@ -78,7 +78,7 @@ const DeleteModal: React.FC<{
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Are you sure you want to delete the product{" "}
               <strong className="text-gray-900 dark:text-white">
-                "{category.name}"
+                "{category.layoutName}"
               </strong>
               ?
             </p>

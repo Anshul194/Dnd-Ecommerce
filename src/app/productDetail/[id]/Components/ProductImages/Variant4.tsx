@@ -1,11 +1,13 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { ChevronLeft, ChevronRight, Eye, Heart, Share2 } from "lucide-react";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
-// const imageUrl = import.meta.env.VITE_IMAGE_URL;
-
-const RenderVariant4 = ({ productData, imageSettings }) => {
+const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
+const RenderVariant4 = ({ imageSettings }) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const productData = useSelector(selectSelectedProduct);
 
   const nextImage = () => {
     setSelectedImage((prev) =>

@@ -40,8 +40,8 @@ const ProductCard = ({ product }) => {
     // }
 
     const price = product?.variants[0]
-      ? (product?.variants[0]?.salePrice || product?.variants[0]?.price)
-      : (product?.salePrice || product?.price);
+      ? product?.variants[0]?.salePrice || product?.variants[0]?.price
+      : product?.salePrice || product?.price;
     dispatch(
       addToCart({
         product: {
@@ -68,7 +68,7 @@ const ProductCard = ({ product }) => {
   return (
     <>
       <Link
-        href={`/product-detail/${product.slug}`}
+        href={`/productDetail/${product.slug}`}
         className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all"
         prefetch
       >
@@ -121,7 +121,7 @@ const ProductCard = ({ product }) => {
             <div className="flex h-40  justify-center items-center">
               <Image
                 src={product?.thumbnail?.url || product.images[0]?.url}
-                alt={product?.thumbnail?.alt ||  product.images[0]?.alt}
+                alt={product?.thumbnail?.alt || product.images[0]?.alt}
                 width={160}
                 height={120}
                 className="object-cover h-full w-full"
@@ -179,7 +179,8 @@ const ProductCard = ({ product }) => {
                 <div className="flex items-center space-x-1 pt-1">
                   <span className="text-orange-400 text-sm">⭐</span>
                   <span className="text-sm font-medium text-gray-700">
-                    {product.rating || 4.5} ({product.reviewCount || 1} reviews)
+                    {product.rating.Average || 4.5} ({product.reviewCount || 1}{" "}
+                    reviews)
                   </span>
                 </div>
               </div>
@@ -192,7 +193,7 @@ const ProductCard = ({ product }) => {
             </div>
           </div>
         </div>
-  </Link>
+      </Link>
       <AuthRequiredModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}

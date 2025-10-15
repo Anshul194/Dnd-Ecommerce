@@ -1,9 +1,11 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
-
-const RenderVariant1 = ({ productData }) => {
+const RenderVariant1 = () => {
   const [selectedImage, setSelectedImage] = useState(0);
+  const productData = useSelector(selectSelectedProduct);
 
   const nextImage = () => {
     setSelectedImage((prev) =>
@@ -18,9 +20,38 @@ const RenderVariant1 = ({ productData }) => {
   };
   return (
     <div className="flex-1 w-full ">
-      <div className="flex gap-4 h-fit sticky top-16">
+      <div
+        className="gap-4 h-fit sticky top-16 flex"
+        style={{
+          flexDirection:
+            typeof window !== "undefined" &&
+            (
+              document?.querySelector(
+                ".product-gallery-container"
+              ) as HTMLElement | null
+            )?.offsetWidth < 640
+              ? "column-reverse"
+              : "row",
+        }}
+        ref={(el) => {
+          if (el) el.classList.add("product-gallery-container");
+        }}
+      >
         {/* Thumbnail Images */}
-        <div className="flex flex-col gap-3">
+        <div
+          className="flex gap-3"
+          style={{
+            flexDirection:
+              typeof window !== "undefined" &&
+              (
+                document?.querySelector(
+                  ".product-gallery-container"
+                ) as HTMLElement | null
+              )?.offsetWidth < 640
+                ? "row"
+                : "column",
+          }}
+        >
           {productData?.images?.length > 0 &&
             [...productData.images].map((img, index) => (
               <div
@@ -60,7 +91,7 @@ const RenderVariant1 = ({ productData }) => {
 
             {productData?.images?.[selectedImage] ? (
               <img
-                src={ productData.images[selectedImage].url}
+                src={productData.images[selectedImage].url}
                 alt="Product Image"
                 className="w-full h-full object-cover"
               />

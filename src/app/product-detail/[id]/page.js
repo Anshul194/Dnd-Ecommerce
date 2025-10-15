@@ -80,42 +80,42 @@ function ProductPage({ params }) {
     }
   }, [dispatch, slug]);
 
-  const handleAddToCart = async () => {
-    // if (!isAuthenticated) {
-    //   setAuthModalOpen(true);
-    //   return;
-    // }
-    const price = data.variants.find((variant) => variant._id === selectedPack);
-    try {
-      const resultAction = await dispatch(
-        addToCart({
-          product: {
-            id: data._id,
-            name: data.name,
-            image: data.thumbnail || data.images[0],
+    const handleAddToCart = async () => {
+      // if (!isAuthenticated) {
+      //   setAuthModalOpen(true);
+      //   return;
+      // }
+      const price = data.variants.find((variant) => variant._id === selectedPack);
+      try {
+        const resultAction = await dispatch(
+          addToCart({
+            product: {
+              id: data._id,
+              name: data.name,
+              image: data.thumbnail || data.images[0],
+              variant: selectedPack,
+              slug: data.slug,
+            },
+            quantity,
+            price: price.salePrice || price.price,
             variant: selectedPack,
-            slug: data.slug,
-          },
-          quantity,
-          price: price.salePrice || price.price,
-          variant: selectedPack,
-        })
-      );
-      if (resultAction.error) {
-        // Show backend error (payload) if present, else generic
-        toast.error(
-          resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          })
         );
-        return;
+        if (resultAction.error) {
+          // Show backend error (payload) if present, else generic
+          toast.error(
+            resultAction.payload ||
+              resultAction.error.message ||
+              "Failed to add to cart"
+          );
+          return;
+        }
+        await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
+        dispatch(toggleCart());
+      } catch (error) {
+        toast.error(error?.message || "Failed to add to cart");
       }
-      await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
-      dispatch(toggleCart());
-    } catch (error) {
-      toast.error(error?.message || "Failed to add to cart");
-    }
-  };
+    };
 
   const handleBuyNow = async () => {
     // if (!isAuthenticated) {

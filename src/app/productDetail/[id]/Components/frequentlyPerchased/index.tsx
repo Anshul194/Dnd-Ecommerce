@@ -6,8 +6,6 @@ import {
   Star,
 } from "lucide-react";
 import renderSliderVariant from "./Variant1";
-import { useSelector } from "react-redux";
-import RenderSliderVariant from "./Variant1";
 
 export function FrequentlyPurchased({
   component,
@@ -39,17 +37,16 @@ export function FrequentlyPurchased({
     ...settings[component.id],
     variant: component.variant || settings[component.id]?.variant || "slider",
   };
-  const { products } = useSelector((state: any) => state.product);
- console.log("all products ==> ",products)
+
   // Grid Variant - Clean grid layout
 
   const renderVariant = () => {
     switch (frequentlyPurchasedSettings.variant) {
       case "grid":
-        return <RenderSliderVariant products={products.products} />;
+        return renderSliderVariant();
 
       default:
-        return <RenderSliderVariant products  ={products.products} />;
+        return renderSliderVariant();
     }
   };
 

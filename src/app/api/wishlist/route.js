@@ -51,6 +51,7 @@ export const POST = withUserAuth(async function (request) {
     request.user = request.user || {};
     return await wishlistController.addItem(request, null, body, conn);
   } catch (err) {
+    console.log("error ", err);
     return NextResponse.json(
       { success: false, message: err.message },
       { status: 400 }

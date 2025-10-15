@@ -1,11 +1,15 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { ChevronLeft, ChevronRight, Heart, Share2 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
-// // const imageUrl = import.meta.env.VITE_IMAGE_URL;
+const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
 
-const RenderVariant2 = ({ productData }) => {
+const RenderVariant2 = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const productData = useSelector(selectSelectedProduct);
 
   const nextImage = () => {
     setSelectedImage((prev) =>
@@ -24,10 +28,12 @@ const RenderVariant2 = ({ productData }) => {
         {/* Main Image */}
         <div className="relative mb-4">
           <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative group">
-            <img
-              src={productData?.images?.[selectedImage]?.url}
+            <Image
+              src={productData.images[selectedImage].url}
               alt="Product"
               className="w-full h-full object-cover"
+              layout="fill"
+              objectFit="cover"
             />
 
             <button

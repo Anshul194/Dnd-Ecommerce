@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import slugify from 'slugify';
+import mongoose from "mongoose";
+import slugify from "slugify";
 
 const productSchema = new mongoose.Schema(
   {
@@ -28,12 +28,12 @@ const productSchema = new mongoose.Schema(
     // Category, Subcategory, Brand as references
     category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Category',
+      ref: "Category",
       required: true,
     },
     subcategory: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Subcategory',
+      ref: "Subcategory",
     },
     searchKeywords: {
       type: [String],
@@ -41,7 +41,7 @@ const productSchema = new mongoose.Schema(
     },
     brand: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Brand',
+      ref: "Brand",
     },
     // Media
     images: [
@@ -120,7 +120,7 @@ const productSchema = new mongoose.Schema(
       {
         userId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
+          ref: "User",
         },
         name: String,
         rating: Number,
@@ -136,7 +136,7 @@ const productSchema = new mongoose.Schema(
       {
         attributeId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Attribute',
+          ref: "Attribute",
         },
       },
     ],
@@ -144,22 +144,26 @@ const productSchema = new mongoose.Schema(
     frequentlyPurchased: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
+        ref: "Product",
       },
     ],
+    isFrequentlyPurchased: {
+      type: Boolean,
+      default: false,
+    },
     custom_template: {
       type: Boolean,
       default: false,
     }, // Custom template for product page
     templateId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Template',
+      ref: "Template",
     },
     // Status and Soft Delete
     status: {
       type: String,
-      enum: ['active', 'inactive'],
-      default: 'active',
+      enum: ["active", "inactive"],
+      default: "active",
     },
     deletedAt: {
       type: Date,
@@ -171,14 +175,14 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-productSchema.pre('save', function (next) {
-  if (this.isModified('name')) {
+productSchema.pre("save", function (next) {
+  if (this.isModified("name")) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
   next();
 });
 
-productSchema.pre('findOneAndUpdate', function (next) {
+productSchema.pre("findOneAndUpdate", function (next) {
   const update = this.getUpdate();
   if (update.name) {
     update.slug = slugify(update.name, { lower: true, strict: true });
@@ -187,5 +191,6 @@ productSchema.pre('findOneAndUpdate', function (next) {
 });
 
 export const ProductSchema = productSchema;
-export const ProductModel = mongoose.models.Product || mongoose.model('Product', productSchema);
+export const ProductModel =
+  mongoose.models.Product || mongoose.model("Product", productSchema);
 export default ProductModel;

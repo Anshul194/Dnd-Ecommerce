@@ -1,60 +1,72 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { Star, ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
+
+const Base_url = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function RenderCardsVariant() {
-  const [data, setData] = useState({
-    Average: 4.3,
-    ratingBreakdown : [
-        { rating: 5, percentage: 70 },
-        { rating: 4, percentage: 15 },
-        { rating: 3, percentage: 10 },
-        { rating: 2, percentage: 3 },
-        { rating: 1, percentage: 2 },
-    ],
-    Reviews: [
-      {
-        name: "Pablo Kahastoria",
-        rating: 5,
-        text: "The goods landed safely, arrived quickly, use instant delivery, the quality of the goods is okay and works well, the packing is safe and the delivery is fast, great, thank you.",
-        likes: 10,
-        dislikes: 16,
-        comments: 14,
-        images: [
-          "https://in.teabox.com/cdn/shop/files/RoseGreenTea_Monocarton_CarouselImage_02.jpg?v=1755320724&width=400",
-        ],
-      },
-      {
-        name: "Thomas Chan",
-        rating: 5,
-        text: "The goods landed safely, arrived quickly, use instant delivery, the quality of the goods is okay and works well, the packing is safe and the delivery is fast, great, thank you.",
-        likes: 21,
-        dislikes: 23,
-        comments: 7,
-        images: [
-          "https://in.teabox.com/cdn/shop/files/RoseGreenTea_Monocarton_CarouselImage_02.jpg?v=1755320724&width=400",
-        ],
-      },
-      {
-        name: "Samuel Drya",
-        rating: 5,
-        text: "The laptop package has arrived complete with charger, 2 mics, 1 headset. The laptop is really cool, good performance and sturdy, hope it lasts long. Thank you. Good luck with the sale",
-        likes: 8,
-        dislikes: 12,
-        comments: 0,
-        images: [
-          "https://in.teabox.com/cdn/shop/files/RoseGreenTea_Monocarton_CarouselImage_02.jpg?v=1755320724&width=400",
-        ],
-      },
-    ],
-  });
+  const productData = useSelector(selectSelectedProduct);
+  // measure wrapper width
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [width, setWidth] = useState<number>(0);
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const measure = () =>
+      setWidth(Math.round(el.getBoundingClientRect().width));
+    measure();
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(measure);
+      ro.observe(el);
+    } else {
+      window.addEventListener("resize", measure);
+    }
+    return () => {
+      if (ro) ro.disconnect();
+      else window.removeEventListener("resize", measure);
+    };
+  }, []);
+
+  // optional: compute a title size based on measured width (adjust clamping as needed)
+  const computedTitleSize = Math.min(
+    130,
+    Math.max(40, Math.round(width * 0.01))
+  );
+  const titleStyle: React.CSSProperties = {
+    fontSize: `${computedTitleSize}px`,
+    lineHeight: 1,
+  };
+
+  // apply mobile layout when component width is less than 540px
+  const isMobileWidth = width < 540;
 
   return (
-    <div className="py-10 lg:py-20 px-4">
-      <div className="flex justify-between flex-col md:flex-row gap-12">
-        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-12"> */}
+    // attach ref to the main wrapper so we measure the actual component width
+    <div ref={wrapperRef} className="py-10 lg:py-20 px-4">
+      {/* badge showing measured width */}
+      <div className="absolute top-4 right-4 z-50">
+        <span className="bg-black/70 text-white text-xs rounded px-2 py-1">
+          {width}px
+        </span>
+      </div>
+
+      {/* top layout: force column on narrow component */}
+      <div
+        className={
+          isMobileWidth
+            ? "flex flex-col gap-8"
+            : "flex justify-between flex-col md:flex-row gap-12"
+        }
+      >
         {/* Left Column */}
-        <div className="max-w-2xl">
-          <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
+        <div className={isMobileWidth ? "w-full" : "max-w-2xl"}>
+          <h1
+            className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0"
+            style={titleStyle}
+          >
             PRODUCT REVIEW
           </h1>
           <p className="text-black relative max-w-sm poppins-medium leading-tight text-lg mb-8">
@@ -65,19 +77,25 @@ export default function RenderCardsVariant() {
         </div>
 
         {/* Right Column - Rating Overview */}
-        <div className="flex items-start justify-between max-w-sm w-full gap-8">
+        <div
+          className={
+            isMobileWidth
+              ? "flex flex-col items-start gap-6 w-full"
+              : "flex items-start justify-between max-w-sm w-full gap-8"
+          }
+        >
           {/* Rating Circle */}
           <div className="relative">
             <div className="w-20 h-20 rounded-full border-4 border-green-500 flex items-center justify-center bg-white">
               <span className="text-2xl font-bold text-black">
-                {data?.Average?.toFixed(1) || 0}
+                {productData?.reviews?.Average?.toFixed(1) || 0}
               </span>
             </div>
           </div>
 
           {/* Rating Bars */}
           <div className="flex-1 space-y-1">
-            {data?.ratingBreakdown?.map((item, index) => (
+            {productData?.reviews?.ratingBreakdown?.map((item, index) => (
               <div key={index} className="flex items-center gap-3">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
@@ -106,10 +124,15 @@ export default function RenderCardsVariant() {
         </div>
       </div>
 
-      {/* Review Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-        {data &&
-          data.Reviews.map((review, index) => (
+      {/* Review Cards: force 1 column if component is narrow */}
+      <div
+        className="grid gap-6 mt-12"
+        style={{
+          gridTemplateColumns: isMobileWidth ? "1fr" : "repeat(3, 1fr)",
+        }}
+      >
+        {productData &&
+          productData.reviews?.Reviews.map((review, index) => (
             <div key={index} className="bg-white relative">
               {/* User Info */}
               <div className="flex items-center justify-between gap-3 mb-3">
@@ -117,7 +140,7 @@ export default function RenderCardsVariant() {
                   <div className="w-8 h-8 bg-gray-400 rounded-full"></div>
                   <div>
                     <div className="font-medium text-sm text-black">
-                      {review?.name}
+                      {review?.userId?.name}
                     </div>
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
@@ -144,7 +167,7 @@ export default function RenderCardsVariant() {
 
               {/* Review Text */}
               <p className="text-sm text-gray-700 leading-relaxed mb-4">
-                {review?.text}
+                {review?.comment}
               </p>
 
               <div className="flex gap-2 justify-between">
@@ -158,7 +181,8 @@ export default function RenderCardsVariant() {
                       >
                         <img
                           src={
-                            "https://in.teabox.com/cdn/shop/files/TurmericGreenTea_Loose_d2c12316-52ab-4e2a-b722-3e6b4543c758.jpg?v=1755320737&width=1000"
+                            Base_url +
+                            (image.startsWith("/") ? image : `/${image}`)
                           }
                           alt={`Review Image ${idx + 1}`}
                           width={100}
@@ -175,16 +199,16 @@ export default function RenderCardsVariant() {
               <div className="flex items-center gap-6 text-xs text-gray-500">
                 <div className="flex items-center gap-1">
                   <ThumbsUp className="w-3 h-3" />
-                  <span>{review.likes}</span>
+                  <span>{review?.likeCount}</span>
                 </div>
-                <div className="flex items-center gap-1">
+                {/* <div className="flex items-center gap-1">
                   <ThumbsDown className="w-3 h-3" />
                   <span>{review.dislikes}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <MessageCircle className="w-3 h-3" />
                   <span>{review.comments}</span>
-                </div>
+                </div> */}
               </div>
             </div>
           ))}

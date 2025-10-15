@@ -13,11 +13,27 @@ import {
   Truck,
   Users,
 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import Image from "next/image";
+import {
+  addToCart,
+  getCartItems,
+  setBuyNowProduct,
+  toggleCart,
+} from "@/app/store/slices/cartSlice";
+import { toast } from "react-toastify";
+import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
+import { addToWishlist } from "@/app/store/slices/wishlistSlice";
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 
-function Variant5({ productData ,detailSettings }) {
+const Base_Url = process.env.NEXT_PUBLIC_BASE_URL;
+
+function Variant5({ detailSettings }) {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
   const [quantity, setQuantity] = React.useState<number>(1);
   const [selectedVariant, setSelectedVariant] = React.useState<number>(0);
+  const productData = useSelector(selectSelectedProduct);
+  const dispatch = useDispatch();
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
@@ -27,13 +43,81 @@ function Variant5({ productData ,detailSettings }) {
     setQuantity(Math.max(1, quantity + delta));
   };
 
-  const handleAddToCart = () => {
-    console.log("Added to cart:", {
-      product: productData.name,
-      variant: productData.variants[selectedVariant],
-      quantity,
-    });
+  const handleAddToCart = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = productData.variants[selectedVariant];
+    try {
+      const resultAction = await dispatch(
+        addToCart({
+          product: {
+            id: productData._id,
+            name: productData.name,
+            image: productData.thumbnail || productData.images[0],
+            variant: productData.variants[selectedVariant],
+            slug: productData.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: productData.variants[selectedVariant],
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
   };
+
+  const handleBuyNow = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = productData.variants[selectedVariant];
+    try {
+      const resultAction = await dispatch(
+        setBuyNowProduct({
+          product: {
+            id: productData._id,
+            name: productData.name,
+            image: productData.thumbnail || productData.images[0],
+            variant: productData.variants[selectedVariant],
+            slug: productData.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: productData.variants[selectedVariant],
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      dispatch(setCheckoutOpen(true));
+      // dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       {/* Main Product Info */}
@@ -61,22 +145,26 @@ function Variant5({ productData ,detailSettings }) {
                   <Star
                     key={i}
                     size={18}
-                    className="fill-orange-400 text-orange-400"
+                    className={`${
+                      i < Math.round(productData?.reviews?.Average || 0)
+                        ? "fill-orange-400 text-orange-400"
+                        : "text-gray-300"
+                    }`}
                   />
                 ))}
               </div>
               <span className="font-medium text-gray-900">
-                {productData.rating}
+                {productData?.reviews?.Average.toFixed(1)}
               </span>
               <span className="text-gray-500">
-                ({productData.reviewCount} reviews)
+                ({productData?.reviews?.Reviews.length} reviews)
               </span>
             </div>
             <div className="h-4 w-px bg-gray-300"></div>
-            <div className="flex items-center gap-2 text-green-600">
+            {/* <div className="flex items-center gap-2 text-green-600">
               <Users size={16} />
               <span className="font-medium">{productData.soldCount}</span>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -85,36 +173,41 @@ function Variant5({ productData ,detailSettings }) {
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
               Product Description
             </h3>
-            <p className="text-gray-700 leading-relaxed">
-              {productData.description}
-            </p>
+            <p
+              dangerouslySetInnerHTML={{
+                __html: productData.description,
+              }}
+              className="text-gray-700 leading-relaxed"
+            ></p>
           </div>
         )}
 
         {/* Features Grid */}
-        {detailSettings.showFeatures && (
+        {productData?.benefits?.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">
               Why Choose This Product
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {productData.features.map((feature, idx) => {
-                const Icon = feature.icon;
+              {productData?.benefits?.map((feature, idx) => {
                 return (
                   <div
                     key={idx}
                     className="flex items-start gap-4 p-4 bg-white rounded-xl border border-gray-200"
                   >
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Icon size={20} className="text-blue-600" />
+                    <div className="h-9 w-9 flex justify-center items-center  text-green-800 bg-green-100 rounded-lg">
+                      {idx + 1}
                     </div>
-                    <div>
+                    <div className="w-[90%]">
                       <div className="font-semibold text-gray-900">
                         {feature.title}
                       </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        {feature.description}
-                      </div>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: feature.description,
+                        }}
+                        className="text-sm text-gray-600 mt-1"
+                      ></div>
                     </div>
                   </div>
                 );
@@ -133,20 +226,31 @@ function Variant5({ productData ,detailSettings }) {
               <div className="space-y-3">
                 <div className="flex items-baseline gap-3">
                   <span className="text-3xl font-bold text-gray-900">
-                    ₹{productData.variants[selectedVariant].price}
+                    ₹{productData.variants[selectedVariant].salePrice}
                   </span>
                   <span className="text-xl text-gray-500 line-through">
-                    ₹{productData.variants[selectedVariant].originalPrice}
+                    ₹{productData.variants[selectedVariant].price}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    {productData.variants[selectedVariant].discount}% OFF
-                  </span>
+                  {(() => {
+                    const variant = productData.variants[selectedVariant] || {};
+                    const price = Number(variant.price) || 0;
+                    const salePrice = Number(variant.salePrice ?? price) || 0;
+                    const discount =
+                      price > 0
+                        ? Math.round(((price - salePrice) / price) * 100)
+                        : 0;
+                    return discount > 0 ? (
+                      <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                        {discount}% OFF
+                      </span>
+                    ) : null;
+                  })()}
                   <span className="text-green-600 text-sm font-medium">
                     Save ₹
-                    {productData.variants[selectedVariant].originalPrice -
-                      productData.variants[selectedVariant].price}
+                    {productData.variants[selectedVariant].price -
+                      productData.variants[selectedVariant].salePrice}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600">
@@ -179,16 +283,13 @@ function Variant5({ productData ,detailSettings }) {
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-600">
-                          {variant.size} • {variant.servings}
-                        </div>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-gray-900">
-                          ₹{variant.price}
+                          ₹{variant.salePrice}
                         </div>
                         <div className="text-sm text-gray-500 line-through">
-                          ₹{variant.originalPrice}
+                          ₹{variant.price}
                         </div>
                       </div>
                     </div>
@@ -221,7 +322,8 @@ function Variant5({ productData ,detailSettings }) {
                 <div className="text-sm text-gray-600">
                   Total: ₹
                   {(
-                    productData.variants[selectedVariant].price * quantity
+                    (productData.variants[selectedVariant].salePrice ||
+                      productData.variants[selectedVariant].price) * quantity
                   ).toLocaleString()}
                 </div>
               </div>
@@ -236,11 +338,24 @@ function Variant5({ productData ,detailSettings }) {
                 <ShoppingCart size={20} />
                 Add to Cart
               </button>
-              <button className="w-full bg-orange-500 text-white py-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors">
+              <button
+                onClick={handleBuyNow}
+                className="w-full bg-orange-500 text-white py-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+              >
                 Buy Now
               </button>
               <div className="flex gap-2">
-                <button className="flex-1 border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={async () => {
+                    await dispatch(
+                      addToWishlist({
+                        product: productData._id,
+                        variant: productData.variants[selectedVariant]._id,
+                      })
+                    );
+                  }}
+                  className="flex-1 border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                >
                   <Heart size={18} />
                   Wishlist
                 </button>

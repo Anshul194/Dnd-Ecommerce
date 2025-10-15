@@ -2,7 +2,6 @@ import { FileText } from "lucide-react";
 import Variant1 from "./Variant1";
 import Variant2 from "./Variant2";
 import Variant3 from "./Variant3";
-import { useSelector } from "react-redux";
 
 export function Description({
   component,
@@ -33,8 +32,6 @@ export function Description({
     ...settings[component.id],
     variant: component.variant || settings[component.id]?.variant || "layout",
   };
-
-  const { selectedProduct } = useSelector((state: any) => state.product);
 
   // Enhanced dummy data structure with more comprehensive content
   const dummyDescriptionData = {
@@ -82,11 +79,7 @@ export function Description({
   };
 
   // Use product data if available, otherwise fallback to dummy data
-  const data = {
-    description: product?.description || dummyDescriptionData.description,
-    descriptionVideo: product?.descriptionVideo || dummyDescriptionData.descriptionVideo,
-    descriptionImages: product?.descriptionImages || dummyDescriptionData.descriptionImages,
-  };
+  const data = dummyDescriptionData;
 
   const renderVariant = () => {
     switch (descriptionSettings.variant) {
@@ -107,7 +100,7 @@ export function Description({
         isPreviewMode
           ? "bg-transparent"
           : "bg-white rounded-2xl shadow-xl border border-gray-100"
-      } ${isPreviewMode ? "" : "p-6 mb-4"} ${isFullWidth ? "w-full" : ""}`}
+      } ${isPreviewMode ? "" : "p-6 mb-4"} ${isFullWidth ? "w-auto" : ""}`}
     >
       {!isPreviewMode && (
         <div className="flex justify-between items-center mb-6">

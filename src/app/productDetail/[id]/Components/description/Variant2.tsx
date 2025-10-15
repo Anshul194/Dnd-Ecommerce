@@ -1,6 +1,9 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import React from "react";
+import { useSelector } from "react-redux";
 
-function Variant2({ descriptionData }) {
+function Variant2() {
+  const productData = useSelector(selectSelectedProduct);
   const extractVideoId = (url: string) => {
     const regex =
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
@@ -18,10 +21,10 @@ function Variant2({ descriptionData }) {
           <div className="relative sm:h-auto">
             <div className="bg-white rounded-lg lg:rounded-3xl shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-500">
               <div className="!h-[182px] sm:!h-auto md:aspect-[21/9]">
-                {descriptionData?.descriptionVideo && (
+                {productData?.descriptionVideo && (
                   <iframe
                     src={`https://www.youtube.com/embed/${extractVideoId(
-                      descriptionData.descriptionVideo
+                      productData.descriptionVideo
                     )}`}
                     allowFullScreen
                     className="w-full h-full"
@@ -43,7 +46,7 @@ function Variant2({ descriptionData }) {
               <div
                 className="aspect-square bg-gray-200"
                 style={{
-                  backgroundImage: `url(${descriptionData?.descriptionImages?.[0]?.url})`,
+                  backgroundImage: `url(${productData?.descriptionImages?.[0]?.url})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -56,7 +59,7 @@ function Variant2({ descriptionData }) {
             <div
               className="aspect-square bg-gray-200"
               style={{
-                backgroundImage: `url(${descriptionData?.descriptionImages?.[1]?.url})`,
+                backgroundImage: `url(${productData?.descriptionImages?.[1]?.url})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
@@ -67,7 +70,7 @@ function Variant2({ descriptionData }) {
             <div
               className="aspect-square bg-gray-200"
               style={{
-                backgroundImage: `url(${descriptionData?.descriptionImages?.[2]?.url})`,
+                backgroundImage: `url(${productData?.descriptionImages?.[2]?.url})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
@@ -78,7 +81,7 @@ function Variant2({ descriptionData }) {
             <div
               className="aspect-square bg-gray-200"
               style={{
-                backgroundImage: `url(${descriptionData?.descriptionImages?.[3]?.url})`,
+                backgroundImage: `url(${productData?.descriptionImages?.[3]?.url})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
@@ -89,7 +92,7 @@ function Variant2({ descriptionData }) {
             <div
               className="aspect-square bg-gray-200"
               style={{
-                backgroundImage: `url(${descriptionData?.descriptionImages?.[4]?.url})`,
+                backgroundImage: `url(${productData?.descriptionImages?.[4]?.url})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
