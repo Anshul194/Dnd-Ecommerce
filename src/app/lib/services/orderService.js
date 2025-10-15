@@ -1117,7 +1117,7 @@ async generateDelhiveryLabel(order) {
     const token = process.env.DELHIVERY_API_TOKEN;
 
     // --- 2️⃣ Fetch packing slip metadata (NOT PDF) ---
-    const slipApi = `https://track.delhivery.com/api/p/packing_slip?wbns=${joined}&pdf=true&pdf_size=4R`;
+    const slipApi = `https://track.delhivery.com/api/p/packing_slip?wbns=${joined}&pdf=true&pdf_size=A6`;
     console.log("Fetching packing slip metadata:", slipApi);
 
     const res = await axios.get(slipApi, {
