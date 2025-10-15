@@ -1092,62 +1092,89 @@ await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDe
   }
 
   // Delhivery label generation
-  async generateDelhiveryLabel(order, data) {
-    try {
-      if (!order?.shipping_details?.waybill) {
-        throw new Error("Waybill number not found in order shipping details");
-      }
 
-      const waybill = order.shipping_details.waybill;
-      const apiUrl = `https://track.delhivery.com/api/p/packing_slip?wbns=${waybill}&pdf=true`;
+async generateDelhiveryLabel(order) {
+  try {
+    console.log("=== DELHIVERY LABEL GENERATION DEBUG ===");
 
-      const response = await axios.get(apiUrl, {
-        headers: {
-          Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
-        },
-        responseType: 'arraybuffer',
-      });
-
-      // Save the PDF to public/labels directory
-      const labelDir = path.join(process.cwd(), "public/labels");
-      if (!fs.existsSync(labelDir)) {
-        fs.mkdirSync(labelDir, { recursive: true });
-      }
-
-      const fileName = `DELHIVERY_${order._id}_${Date.now()}.pdf`;
-      const filePath = path.join(labelDir, fileName);
-
-      // Write binary data to file
-      fs.writeFileSync(filePath, response.data);
-
-      // Create public URL
-      const labelUrl = `/labels/${fileName}`;
-
-      // Update order with label URL
-      const shippingDetails = {
-        ...order.shipping_details,
-        labelUrl: labelUrl,
-      };
-
-      await this.orderRepository.updateOrder(order._id, { 
-        shipping_details: shippingDetails 
-      });
-
-      return {
-        success: true,
-        message: "Delhivery label generated successfully",
-        labelUrl: labelUrl,
-        waybill: waybill,
-      };
-    } catch (error) {
-      console.error("Delhivery label generation failed:", error);
-      return {
-        success: false,
-        message: `Delhivery label generation failed: ${error.message}`,
-        error: error.message,
-      };
+    // --- 1️⃣ Collect all waybills dynamically from order ---
+    let waybills = [];
+    if (order?.shipping_details?.waybill) {
+      waybills.push(order.shipping_details.waybill);
     }
+    if (order?.shipping_details?.raw_response?.packages) {
+      const packageWaybills = order.shipping_details.raw_response.packages
+        .map(pkg => pkg.waybill)
+        .filter(Boolean);
+      waybills.push(...packageWaybills);
+    }
+    waybills = [...new Set(waybills)];
+    console.log("Found waybills:", waybills);
+
+    if (!waybills.length) throw new Error("No waybill numbers found");
+
+    const joined = waybills.join(",");
+    const token = process.env.DELHIVERY_API_TOKEN;
+
+    // --- 2️⃣ Fetch packing slip metadata (NOT PDF) ---
+    const slipApi = `https://track.delhivery.com/api/p/packing_slip?wbns=${joined}&pdf=true&pdf_size=4R`;
+    console.log("Fetching packing slip metadata:", slipApi);
+
+    const res = await axios.get(slipApi, {
+      headers: { Authorization: `Token ${token}` },
+    });
+
+    console.log("Packing slip API response status:", res);
+
+    if (res.status !== 200 || !res.data) {
+      throw new Error("Failed to fetch packing slip data");
+    }
+
+    // --- 3️⃣ Log full response to see structure ---
+    console.log("Full API response:", JSON.stringify(res.data, null, 2));
+
+    // --- 4️⃣ Extract packages ---
+    const packages = res.data.packages || [];
+    if (!packages.length) {
+      throw new Error("No packages found in response");
+    }
+
+    console.log("Packages data:", JSON.stringify(packages, null, 2));
+
+    // --- 5️⃣ Collect all PDF links ---
+    const pdfLinks = packages
+      .map(pkg => pkg.pdf_download_link)
+      .filter(Boolean);
+
+    if (!pdfLinks.length) {
+      throw new Error("No PDF download links found in packages");
+    }
+
+    console.log("✅ PDF download links obtained:", pdfLinks);
+
+    // --- 6️⃣ Return the download link(s) ---
+    return {
+      success: true,
+      message: "Delhivery packing slip link(s) generated successfully",
+      waybills,
+      pdfDownloadLinks: pdfLinks,
+      primaryLink: pdfLinks[0], // First link as primary
+      packages: packages.map(pkg => ({
+        wbn: pkg.wbn,
+        pdf_download_link: pkg.pdf_download_link,
+      })),
+    };
+  } catch (error) {
+    console.error("❌ Delhivery label generation failed:", error.message);
+    console.error("Stack trace:", error.stack);
+    return {
+      success: false,
+      message: error.message,
+    };
   }
+}
+
+
 
   // Bluedart label generation (stub)
   async generateBluedartLabel(order, data) {
