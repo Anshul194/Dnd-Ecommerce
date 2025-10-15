@@ -18,6 +18,30 @@ async getAll(filter = {}, sortConditions = {}, pageNum = 1, limitNum = 10, popul
       connection.model('Attribute', attributeSchema);
     }
     
+    // Register Order model if not already registered
+    let Order;
+    if (!connection.models.Order) {
+      // Import Order schema - we'll use a basic schema structure
+      const orderItemSchema = new mongoose.Schema({
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+        variant: { type: mongoose.Schema.Types.ObjectId, ref: 'Variant', required: false },
+        quantity: { type: Number, required: true },
+        price: { type: Number, required: true }
+      }, { _id: false });
+
+      const orderSchema = new mongoose.Schema({
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        items: [orderItemSchema],
+        total: { type: Number, required: true },
+        status: { type: String, enum: ['pending', 'paid', 'shipped', 'completed', 'cancelled'], default: 'pending' },
+        paymentMode: { type: String, enum: ['COD', 'Prepaid'], required: true }
+      }, { timestamps: true });
+
+      Order = connection.model('Order', orderSchema);
+    } else {
+      Order = connection.models.Order;
+    }
+    
     // Register Wishlist model with your schema if not already registered
     let Wishlist;
     if (!connection.models.Wishlist) {
@@ -119,6 +143,34 @@ async getAll(filter = {}, sortConditions = {}, pageNum = 1, limitNum = 10, popul
       // Add wishlist count for convenience
       productObj.wishlistCount = uniqueUsers.length;
       
+      // Get order count for this product using aggregation
+      const orderCountResult = await Order.aggregate([
+        {
+          $match: {
+            "items.product": productDoc._id
+          }
+        },
+        {
+          $unwind: "$items"
+        },
+        {
+          $match: {
+            "items.product": productDoc._id
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalQuantity: { $sum: "$items.quantity" },
+            totalOrders: { $sum: 1 }
+          }
+        }
+      ]);
+      
+      // Add order count to product object
+      productObj.orderCount = orderCountResult.length > 0 ? orderCountResult[0].totalQuantity : 0;
+      productObj.orderInstances = orderCountResult.length > 0 ? orderCountResult[0].totalOrders : 0;
+      
       productObj.variants = variants;
       results.push(productObj);
     }
@@ -172,6 +224,29 @@ async getAll(filter = {}, sortConditions = {}, pageNum = 1, limitNum = 10, popul
         conn.model('InfluencerVideo', influencerVideoSchema);
       }
 
+      // Register Order model if not already registered
+      let Order;
+      if (!conn.models.Order) {
+        const orderItemSchema = new mongoose.Schema({
+          product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+          variant: { type: mongoose.Schema.Types.ObjectId, ref: 'Variant', required: false },
+          quantity: { type: Number, required: true },
+          price: { type: Number, required: true }
+        }, { _id: false });
+
+        const orderSchema = new mongoose.Schema({
+          user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+          items: [orderItemSchema],
+          total: { type: Number, required: true },
+          status: { type: String, enum: ['pending', 'paid', 'shipped', 'completed', 'cancelled'], default: 'pending' },
+          paymentMode: { type: String, enum: ['COD', 'Prepaid'], required: true }
+        }, { timestamps: true });
+
+        Order = conn.model('Order', orderSchema);
+      } else {
+        Order = conn.models.Order;
+      }
+
       const populateOptions = [
         { path: 'attributeSet.attributeId' }
       ];
@@ -196,9 +271,37 @@ async getAll(filter = {}, sortConditions = {}, pageNum = 1, limitNum = 10, popul
         type: 'product'
       }).select('title description videoUrl videoType type productId createdAt updatedAt');
 
+      // Get order count for this product using aggregation
+      const orderCountResult = await Order.aggregate([
+        {
+          $match: {
+            "items.product": productDoc._id
+          }
+        },
+        {
+          $unwind: "$items"
+        },
+        {
+          $match: {
+            "items.product": productDoc._id
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalQuantity: { $sum: "$items.quantity" },
+            totalOrders: { $sum: 1 }
+          }
+        }
+      ]);
+
       const productObj = productDoc.toObject ? productDoc.toObject() : productDoc;
       productObj.variants = variants;
       productObj.influencerVideos = influencerVideos;
+      
+      // Add order count to product object
+      productObj.orderCount = orderCountResult.length > 0 ? orderCountResult[0].totalQuantity : 0;
+      productObj.orderInstances = orderCountResult.length > 0 ? orderCountResult[0].totalOrders : 0;
 
       return productObj;
     } catch (error) {
