@@ -1,6 +1,10 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import React from "react";
+import { useSelector } from "react-redux";
 
-function Variant2({ data }) {
+function Variant2() {
+  const productData = useSelector(selectSelectedProduct);
+
   const extractVideoId = (url: string) => {
     const regex =
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
@@ -16,7 +20,7 @@ function Variant2({ data }) {
             className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0"
             style={{ fontFamily: "Bebas Neue, sans-serif" }}
           >
-           {data?.howToUseTitle || "How to Use"}
+            HOW TO USE
           </h2>
           <div className="w-32 h-1 bg-black mx-auto mb-8 rounded-full"></div>
           <p
@@ -49,9 +53,9 @@ function Variant2({ data }) {
           <div className="aspect-video bg-gray-900 rounded-2xl overflow-hidden shadow-xl relative group">
             <iframe
               src={`${
-                data?.howToUseVideo
+                productData?.howToUseVideo
                   ? `https://www.youtube.com/embed/${extractVideoId(
-                      data.howToUseVideo
+                      productData.howToUseVideo
                     )}`
                   : "https://www.youtube.com/embed/hWVJucr3Il8"
               }?autoplay=1&mute=1&rel=0&modestbranding=1`}
@@ -79,7 +83,7 @@ function Variant2({ data }) {
         {/* Step Navigation */}
         <div className="flex justify-center mb-12">
           <div className="flex items-center space-x-3 lg:space-x-6 bg-white rounded-full p-3 shadow-lg">
-            {data.howToUseSteps.map((step, index) => (
+            {productData.howToUseSteps.map((step, index) => (
               <button
                 key={index}
                 // onClick={() => setActiveStep(index)}
@@ -106,14 +110,12 @@ function Variant2({ data }) {
             <div
               className="h-full bg-black transition-all duration-700 rounded-full"
               style={{
-                width: `${
-                  ((0 + 1) / data.howToUseSteps.length) * 100
-                }%`,
+                width: `${((0 + 1) / productData.howToUseSteps.length) * 100}%`,
               }}
             ></div>
           </div>
           <div className="flex justify-between mt-2 px-1">
-            {data.howToUseSteps.map((_, index) => (
+            {productData.howToUseSteps.map((_, index) => (
               <span
                 key={index}
                 className={`text-xs transition-colors duration-300 ${
@@ -144,7 +146,7 @@ function Variant2({ data }) {
                     className="text-4xl lg:text-5xl font-bold text-black mb-2"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                   >
-                    {data.howToUseSteps[0]?.title}
+                    {productData.howToUseSteps[0]?.title}
                   </h3>
                   <div className="w-24 h-1 bg-black rounded-full"></div>
                 </div>
@@ -154,7 +156,7 @@ function Variant2({ data }) {
                 className="text-gray-600 text-lg lg:text-xl leading-relaxed max-w-4xl mx-auto"
                 style={{ fontFamily: "Poppins, sans-serif" }}
                 dangerouslySetInnerHTML={{
-                  __html: data.howToUseSteps[0]?.description,
+                  __html: productData.howToUseSteps[0]?.description,
                 }}
               />
             </div>

@@ -1,3 +1,4 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import {
   Star,
   ThumbsUp,
@@ -8,6 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState, useRef } from "react";
+import { useSelector } from "react-redux";
 
 export default function RenderListVariant() {
   const [data, setData] = useState({
@@ -52,6 +54,8 @@ export default function RenderListVariant() {
       { rating: 1, percentage: 2 },
     ],
   });
+
+  const productData = useSelector(selectSelectedProduct);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const sliderRef = useRef(null);
@@ -116,7 +120,7 @@ export default function RenderListVariant() {
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-4 bg-green-600 rounded-full px-6 py-3 mb-4">
                 <span className="text-3xl font-bold text-white">
-                  {data?.Average?.toFixed(1)}
+                  {productData?.reviews?.Average?.toFixed(1)}
                 </span>
                 <div className="text-white text-sm font-medium">OUT OF 5</div>
               </div>
@@ -124,7 +128,7 @@ export default function RenderListVariant() {
             </div>
 
             <div className="space-y-4">
-              {data?.ratingBreakdown?.map((item, index) => (
+              {productData?.reviews?.ratingBreakdown?.map((item, index) => (
                 <div key={index} className="flex items-center gap-4">
                   <span className="text-gray-900 font-medium w-8">
                     {item.rating}
@@ -169,7 +173,7 @@ export default function RenderListVariant() {
                 className="flex transition-transform duration-300 ease-in-out"
                 style={{ transform: `translateX(-${currentSlide * 100}%)` }}
               >
-                {data.Reviews.map((review, index) => (
+                {productData?.reviews?.Reviews.map((review, index) => (
                   <div
                     key={index}
                     className="min-w-full bg-white text-gray-900 rounded-2xl p-8 relative shadow-md"
@@ -268,7 +272,7 @@ export default function RenderListVariant() {
 
             {/* Desktop Grid */}
             <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {data.Reviews.map((review, index) => (
+              {productData.reviews.Reviews.map((review, index) => (
                 <div
                   key={index}
                   className="bg-white text-gray-900 rounded-2xl p-8 relative group hover:transform hover:scale-105 transition-all duration-300 shadow-md"
@@ -317,22 +321,22 @@ export default function RenderListVariant() {
                       <div className="flex items-center gap-2 text-gray-600 hover:text-green-600 cursor-pointer">
                         <ThumbsUp className="w-4 h-4" />
                         <span className="text-sm font-medium">
-                          {review.likes}
+                          {review.likeCount}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-600 hover:text-red-600 cursor-pointer">
+                      {/* <div className="flex items-center gap-2 text-gray-600 hover:text-red-600 cursor-pointer">
                         <ThumbsDown className="w-4 h-4" />
                         <span className="text-sm font-medium">
                           {review.dislikes}
                         </span>
-                      </div>
+                      </div> */}
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
+                    {/* <div className="flex items-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
                       <MessageCircle className="w-4 h-4" />
                       <span className="text-sm font-medium">
                         {review.comments} replies
                       </span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               ))}

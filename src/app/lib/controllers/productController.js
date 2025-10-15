@@ -244,6 +244,9 @@ class ProductController {
         }
       }
 
+      body.custom_template = true;
+      body.templateId = new mongoose.Types.ObjectId("68d24ac171a2e8abdeb160f0");
+
       const product = await this.service.createProduct(body, conn);
       return { success: true, message: "Product created", data: product };
     } catch (error) {

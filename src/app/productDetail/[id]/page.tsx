@@ -41,7 +41,6 @@ import {
   Gift,
   ArrowLeft,
   PlayCircle,
-  Link,
 } from "lucide-react";
 import {
   COMPONENT_TYPES,
@@ -49,10 +48,13 @@ import {
   ComponentRenderer,
 } from "./Variant";
 import { useDispatch } from "react-redux";
+
 import { fetchProductById } from "@/app/store/slices/productSlice";
+import { useParams, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { toast } from "react-toastify";
 import axiosInstance from "@/axiosConfig/axiosInstance";
-import { useSearchParams } from "next/navigation";
-import Loading from "@/components/Loading";
+import { LoadingSpinner } from "@/components/common/Loading";
 
 // Types for the component structure
 interface ComponentType {
@@ -372,8 +374,8 @@ function ComponentLibrary({
 
   return (
     <div>
-      <div className="w-56 bg-gray-50 border-r border-gray-200 p-2 overflow-y-auto">
-        <Link to="/custom-temple/list">
+      <div className=" w-56 bg-gray-50 border-r border-gray-200 p-2 overflow-y-auto">
+        <Link href="/custom-temple/list">
           <div className="flex items-center bg-blue-500/10 px-2 py-1 w-fit pr-4 rounded-md gap-2 mb-4 cursor-pointer">
             <ArrowLeft className="h-5 w-5" />
             <h2>Back</h2>
@@ -755,13 +757,14 @@ function ComponentLibrary({
 }
 
 // Main page builder component
-export default function ProductPageBuilder({ params }) {
+export default function ProductPageBuilder() {
   const [templateName, setTemplateName] = useState("");
   const [templateData, setTemplateData] = useState(null);
   const searchParams = useSearchParams();
-  const { id: slug } = React.use(params); // unwrap params with React.use()
-
-  const templateId = searchParams.get("templateId");
+  const [loading, setLoading] = useState(true);
+  const templateId = searchParams?.get("templateId") ?? null;
+  const params = useParams();
+  const productId = params.id;
 
   console.log("Template ID:", templateId);
   const [sections, setSections] = useState<SectionType[]>([
@@ -816,6 +819,7 @@ export default function ProductPageBuilder({ params }) {
   const [componentSettings, setComponentSettings] = useState<ComponentSettings>(
     {}
   );
+  // Start in preview mode by default (hide editor sidebar and toolbar actions)
   const [isPreviewMode, setIsPreviewMode] = useState(true);
   const [selectedComponent, setSelectedComponent] =
     useState<ComponentType | null>(null);
@@ -823,7 +827,6 @@ export default function ProductPageBuilder({ params }) {
     useState<ComponentType | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [columnGap, setColumnGap] = useState(2); // Gap between columns (0-8)
-  const [loadingTemplate, setLoadingTemplate] = useState(true);
   const [componentGap, setComponentGap] = useState(2); // Gap between components (0-8)
   const [rowGap, setRowGap] = useState(4); // Gap between rows (0-8)
   const [product, setProduct] = useState<Product | null>(null);
@@ -1451,56 +1454,10 @@ export default function ProductPageBuilder({ params }) {
     }));
   };
 
-  const handleSave = useCallback(async () => {
-    // try {
-    //   if (!templateName.trim()) {
-    //     alert("Please enter a template name before saving.");
-    //     return;
-    //   }
-    //   const sectionsData = transformSectionsForSave(
-    //     sections,
-    //     componentSettings
-    //   );
-    //   const templateData = {
-    //     // productId: 123456, // Use actual product ID or fallback
-    //     layoutId: 1,
-    //     layoutName: templateName,
-    //     totalColumns: 3, // Maximum columns supported
-    //     columnGap,
-    //     componentGap,
-    //     rowGap,
-    //     sections: sectionsData,
-    //   };
-    //   console.log("Saving template data:", templateData);
-    //   // Call the Redux action to create template
-    //   const result = templateId
-    //     ? await dispatch(updateTemplate({ id: templateId, data: templateData }))
-    //     : await dispatch(createTemplate(templateData));
-    //   if (result.type === "templates/create/fulfilled") {
-    //     toast.success("Template saved successfully!");
-    //     console.log("Template created:", result.payload);
-    //   } else {
-    //     toast.error("Failed to save template.");
-    //     console.log("Template save error:", result);
-    //   }
-    // } catch (error) {
-    //   alert("Failed to save template. Please try again.");
-    // }
-  }, [
-    sections,
-    componentSettings,
-    columnGap,
-    componentGap,
-    rowGap,
-    templateName,
-    product,
-    dispatch,
-  ]);
-
   const getProductData = async () => {
     try {
       // Fetch product data first
-      const response = await dispatch(fetchProductById(slug));
+      const response = await dispatch(fetchProductById(productId));
       console.log("Fetched Product Data:", response.payload);
       setProduct(response.payload);
 
@@ -1509,8 +1466,8 @@ export default function ProductPageBuilder({ params }) {
         const res = await axiosInstance.get(
           `/template?id=${response.payload.templateId}`
         );
-        console.log("Fetched Template Data:", res);
-        const data = res.data.body.data;
+        console.log("Fetched Template Data: ===>", res.data);
+        const data = res?.data?.body?.data || res.data;
         // Set layout configuration
         setColumnGap(data?.columnGap || 2);
         setComponentGap(data?.componentGap || 2);
@@ -1591,9 +1548,10 @@ export default function ProductPageBuilder({ params }) {
           setComponentSettings(componentSettingsToSet);
         }
 
-        setLoadingTemplate(false);
+        setLoading(false);
       }
     } catch (error) {
+      setLoading(false);
       console.error("Error fetching template/product data:", error);
     }
   };
@@ -1618,274 +1576,252 @@ export default function ProductPageBuilder({ params }) {
   }, []);
 
   return (
-    <>
-      {loadingTemplate ? (
-        <div className="flex items-center justify-center h-screen">
-          <Loading />
+    <div
+      className={`min-h-screen my-20  ${
+        isPreviewMode ? "bg-white" : "bg-gray-100"
+      } flex`}
+    >
+      {loading ? (
+        <div className="flex w-full justify-center items-center h-[60vh]">
+          <LoadingSpinner />
         </div>
       ) : (
-        <div
-          className={`min-h-screen max-w-7xl pt-10 mx-auto ${
-            isPreviewMode ? "bg-white" : "bg-gray-100"
-          } flex`}
-        >
-          {!isPreviewMode && (
-            <ComponentLibrary
-              onAddComponent={addComponent}
-              sections={sections}
-              columnGap={columnGap}
-              componentGap={componentGap}
-              rowGap={rowGap}
-              selectedComponent={selectedComponent}
-              componentSettings={componentSettings}
-              onUpdateSettings={updateComponentSettings}
-              onUpdateSpan={updateComponentSpan}
-              COMPONENT_SPANS={COMPONENT_SPANS}
-              onChangeName={(e) => setTemplateName(e.target.value)}
-              name={templateName}
-            />
-          )}
-
-          <div className="flex-1 flex flex-col max-w-8xl mx-auto ">
-            {/* Main content - Row-based layout */}
-            <div className="flex-1  overflow-auto">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
+        <div className="flex-1 flex flex-col">
+          {/* Main content - Row-based layout */}
+          <div className="flex-1  overflow-auto">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={sections.flatMap((section) =>
+                  section.type === "columns"
+                    ? section.columns.flatMap((col) =>
+                        col.components.map((c) => c.id)
+                      )
+                    : []
+                )}
+                strategy={verticalListSortingStrategy}
               >
-                <SortableContext
-                  items={sections.flatMap((section) =>
-                    section.type === "columns"
-                      ? section.columns.flatMap((col) =>
-                          col.components.map((c) => c.id)
-                        )
-                      : []
-                  )}
-                  strategy={verticalListSortingStrategy}
+                <div
+                  className={`p-4 max-w-7xl mx-auto ${
+                    SPACE_CLASSES[rowGap] || "space-y-4"
+                  }`}
                 >
-                  <div
-                    className={`p-4 ${SPACE_CLASSES[rowGap] || "space-y-4"}`}
-                  >
-                    {organizeSectionsForRender().map((row, rowIndex) => {
-                      if (row.type === "fullWidth") {
-                        return (
-                          <SortableItem
-                            key={`fullwidth-${row.component.id}`}
-                            id={row.component.id}
-                            columnId="fullwidth"
-                            span={row.component.span}
-                            totalColumns={3}
-                            isPreviewMode={isPreviewMode}
-                          >
-                            <div className="w-full">
-                              <div
-                                className={`relative ${
-                                  isPreviewMode ? "" : "group cursor-pointer"
-                                } ${
-                                  selectedComponent?.id === row.component.id
-                                    ? "ring-2 ring-blue-500 rounded-lg"
-                                    : ""
-                                }`}
-                                onClick={() =>
-                                  !isPreviewMode &&
-                                  setSelectedComponent(row.component)
-                                }
-                              >
-                                {!isPreviewMode && (
-                                  <>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeComponent(row.component.id);
-                                      }}
-                                      className="absolute top-2 left-2 z-40 p-1 bg-red-500 text-white rounded hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                      title="Remove component"
-                                    >
-                                      <Trash2 size={12} />
-                                    </button>
-                                    {selectedComponent?.id ===
-                                      row.component.id && (
-                                      <div className="absolute top-2 right-2 z-40 px-2 py-1 bg-blue-500 text-white text-xs rounded shadow-lg">
-                                        Selected
-                                      </div>
-                                    )}
-                                  </>
-                                )}
-                                <ComponentRenderer
-                                  component={row.component}
-                                  product={product}
-                                  settings={componentSettings}
-                                  onUpdateSettings={updateComponentSettings}
-                                  onUpdateSpan={updateComponentSpan}
-                                  totalColumns={3}
-                                  isPreviewMode={isPreviewMode}
-                                  COMPONENT_SPANS={COMPONENT_SPANS}
-                                />
-                              </div>
-                            </div>
-                          </SortableItem>
-                        );
-                      } else {
-                        return (
-                          <div key={`section-${row.sectionId}-row-${rowIndex}`}>
-                            {!isPreviewMode && (
-                              <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-sm font-medium text-gray-600">
-                                  Section{" "}
-                                  {sections.findIndex(
-                                    (s) => s.id === row.sectionId
-                                  ) + 1}
-                                </h3>
-                                {sections.length > 1 && (
-                                  <button
-                                    onClick={() => removeSection(row.sectionId)}
-                                    className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                                    title="Remove Section"
-                                  >
-                                    Remove Section
-                                  </button>
-                                )}
-                              </div>
-                            )}
+                  {organizeSectionsForRender().map((row, rowIndex) => {
+                    if (row.type === "fullWidth") {
+                      return (
+                        <SortableItem
+                          key={`fullwidth-${row.component.id}`}
+                          id={row.component.id}
+                          columnId="fullwidth"
+                          span={row.component.span}
+                          totalColumns={3}
+                          isPreviewMode={isPreviewMode}
+                        >
+                          <div className="w-full">
                             <div
-                              className={`flex ${
-                                GAP_CLASSES[columnGap] || "gap-2"
-                              } ${isPreviewMode ? "" : "mb-6"}`}
+                              className={`relative ${
+                                isPreviewMode ? "" : "group cursor-pointer"
+                              } ${
+                                selectedComponent?.id === row.component.id
+                                  ? "ring-2 ring-blue-500 rounded-lg"
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                !isPreviewMode &&
+                                setSelectedComponent(row.component)
+                              }
                             >
-                              {row.sectionColumns.map((column, columnIndex) => (
-                                <DroppableColumn
-                                  key={`${column.id}-row-${rowIndex}`}
-                                  id={column.id}
-                                  title={`Column ${columnIndex + 1}`}
-                                  isEmpty={
-                                    !row.columns[columnIndex] ||
-                                    row.columns[columnIndex].length === 0
-                                  }
-                                  width={column.width}
-                                  onWidthChange={(colIndex, width) =>
-                                    updateColumnWidth(
-                                      row.sectionId,
-                                      colIndex,
-                                      width
-                                    )
-                                  }
-                                  columnIndex={columnIndex}
-                                  onRemoveColumn={(colIndex) =>
-                                    removeColumn(row.sectionId, colIndex)
-                                  }
-                                  canRemove={row.sectionColumns.length > 1}
-                                  componentGap={componentGap}
-                                  isPreviewMode={isPreviewMode}
+                              {!isPreviewMode && (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      removeComponent(row.component.id);
+                                    }}
+                                    className="absolute top-2 left-2 z-40 p-1 bg-red-500 text-white rounded hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                    title="Remove component"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                  {selectedComponent?.id ===
+                                    row.component.id && (
+                                    <div className="absolute top-2 right-2 z-40 px-2 py-1 bg-blue-500 text-white text-xs rounded shadow-lg">
+                                      Selected
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                              <ComponentRenderer
+                                component={row.component}
+                                product={product}
+                                settings={componentSettings}
+                                onUpdateSettings={updateComponentSettings}
+                                onUpdateSpan={updateComponentSpan}
+                                totalColumns={3}
+                                isPreviewMode={isPreviewMode}
+                                COMPONENT_SPANS={COMPONENT_SPANS}
+                              />
+                            </div>
+                          </div>
+                        </SortableItem>
+                      );
+                    } else {
+                      return (
+                        <div key={`section-${row.sectionId}-row-${rowIndex}`}>
+                          {!isPreviewMode && (
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="text-sm font-medium text-gray-600">
+                                Section{" "}
+                                {sections.findIndex(
+                                  (s) => s.id === row.sectionId
+                                ) + 1}
+                              </h3>
+                              {sections.length > 1 && (
+                                <button
+                                  onClick={() => removeSection(row.sectionId)}
+                                  className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                                  title="Remove Section"
                                 >
-                                  {row.columns[columnIndex]?.map(
-                                    (component) => (
-                                      <SortableItem
-                                        key={component.id}
-                                        id={component.id}
-                                        columnId={column.id}
-                                        span={component.span}
+                                  Remove Section
+                                </button>
+                              )}
+                            </div>
+                          )}
+                          <div
+                            className={`flex ${
+                              GAP_CLASSES[columnGap] || "gap-2"
+                            } ${isPreviewMode ? "" : "mb-6"}`}
+                          >
+                            {row.sectionColumns.map((column, columnIndex) => (
+                              <DroppableColumn
+                                key={`${column.id}-row-${rowIndex}`}
+                                id={column.id}
+                                title={`Column ${columnIndex + 1}`}
+                                isEmpty={
+                                  !row.columns[columnIndex] ||
+                                  row.columns[columnIndex].length === 0
+                                }
+                                width={column.width}
+                                onWidthChange={(colIndex, width) =>
+                                  updateColumnWidth(
+                                    row.sectionId,
+                                    colIndex,
+                                    width
+                                  )
+                                }
+                                columnIndex={columnIndex}
+                                onRemoveColumn={(colIndex) =>
+                                  removeColumn(row.sectionId, colIndex)
+                                }
+                                canRemove={row.sectionColumns.length > 1}
+                                componentGap={componentGap}
+                                isPreviewMode={isPreviewMode}
+                              >
+                                {row.columns[columnIndex]?.map((component) => (
+                                  <SortableItem
+                                    key={component.id}
+                                    id={component.id}
+                                    columnId={column.id}
+                                    span={component.span}
+                                    totalColumns={3}
+                                    isPreviewMode={isPreviewMode}
+                                  >
+                                    <div
+                                      className={`relative ${
+                                        isPreviewMode
+                                          ? ""
+                                          : "group cursor-pointer"
+                                      } ${
+                                        selectedComponent?.id === component.id
+                                          ? "ring-2 ring-blue-500 rounded-lg"
+                                          : ""
+                                      }`}
+                                      onClick={() =>
+                                        !isPreviewMode &&
+                                        setSelectedComponent(component)
+                                      }
+                                    >
+                                      {!isPreviewMode && (
+                                        <>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              removeComponent(component.id);
+                                            }}
+                                            className="absolute top-2 left-2 z-10 p-1 bg-red-500 text-white rounded hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                            title="Remove component"
+                                          >
+                                            <Trash2 size={12} />
+                                          </button>
+                                          {selectedComponent?.id ===
+                                            component.id && (
+                                            <div className="absolute top-2 right-2 z-10 px-2 py-1 bg-blue-500 text-white text-xs rounded shadow-lg">
+                                              Selected
+                                            </div>
+                                          )}
+                                        </>
+                                      )}
+                                      <ComponentRenderer
+                                        component={component}
+                                        product={product}
+                                        settings={componentSettings}
+                                        onUpdateSettings={
+                                          updateComponentSettings
+                                        }
+                                        onUpdateSpan={updateComponentSpan}
                                         totalColumns={3}
                                         isPreviewMode={isPreviewMode}
-                                      >
-                                        <div
-                                          className={`relative ${
-                                            isPreviewMode
-                                              ? ""
-                                              : "group cursor-pointer"
-                                          } ${
-                                            selectedComponent?.id ===
-                                            component.id
-                                              ? "ring-2 ring-blue-500 rounded-lg"
-                                              : ""
-                                          }`}
-                                          onClick={() =>
-                                            !isPreviewMode &&
-                                            setSelectedComponent(component)
-                                          }
-                                        >
-                                          {!isPreviewMode && (
-                                            <>
-                                              <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  removeComponent(component.id);
-                                                }}
-                                                className="absolute top-2 left-2 z-10 p-1 bg-red-500 text-white rounded hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                                title="Remove component"
-                                              >
-                                                <Trash2 size={12} />
-                                              </button>
-                                              {selectedComponent?.id ===
-                                                component.id && (
-                                                <div className="absolute top-2 right-2 z-10 px-2 py-1 bg-blue-500 text-white text-xs rounded shadow-lg">
-                                                  Selected
-                                                </div>
-                                              )}
-                                            </>
-                                          )}
-                                          <ComponentRenderer
-                                            component={component}
-                                            product={product}
-                                            settings={componentSettings}
-                                            onUpdateSettings={
-                                              updateComponentSettings
-                                            }
-                                            onUpdateSpan={updateComponentSpan}
-                                            totalColumns={3}
-                                            isPreviewMode={isPreviewMode}
-                                            COMPONENT_SPANS={COMPONENT_SPANS}
-                                          />
-                                        </div>
-                                      </SortableItem>
-                                    )
-                                  ) || []}
-                                </DroppableColumn>
-                              ))}
-                            </div>
+                                        COMPONENT_SPANS={COMPONENT_SPANS}
+                                      />
+                                    </div>
+                                  </SortableItem>
+                                )) || []}
+                              </DroppableColumn>
+                            ))}
                           </div>
-                        );
-                      }
-                    })}
-
-                    {/* Empty state when no sections */}
-                    {organizeSectionsForRender().length === 0 && (
-                      <div className="flex items-center justify-center py-32">
-                        <div className="text-center">
-                          <div className="text-gray-400 mb-4">
-                            <Settings size={48} className="mx-auto" />
-                          </div>
-                          <h3 className="text-xl font-medium text-gray-900 mb-2">
-                            Start Building Your Page
-                          </h3>
-                          <p className="text-gray-600">
-                            Add components from the sidebar to begin creating
-                            your product page.
-                          </p>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </SortableContext>
+                      );
+                    }
+                  })}
 
-                <DragOverlay>
-                  {draggedComponent ? (
-                    <div className="bg-white rounded-lg shadow-xl border-2 border-blue-500 p-4 opacity-90 transform rotate-3">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {draggedComponent.title}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        Moving component...
-                      </p>
+                  {/* Empty state when no sections */}
+                  {organizeSectionsForRender().length === 0 && (
+                    <div className="flex items-center justify-center py-32">
+                      <div className="text-center">
+                        <div className="text-gray-400 mb-4">
+                          <Settings size={48} className="mx-auto" />
+                        </div>
+                        <h3 className="text-xl font-medium text-gray-900 mb-2">
+                          Start Building Your Page
+                        </h3>
+                        <p className="text-gray-600">
+                          Add components from the sidebar to begin creating your
+                          product page.
+                        </p>
+                      </div>
                     </div>
-                  ) : null}
-                </DragOverlay>
-              </DndContext>
-            </div>
+                  )}
+                </div>
+              </SortableContext>
+
+              <DragOverlay>
+                {draggedComponent ? (
+                  <div className="bg-white rounded-lg shadow-xl border-2 border-blue-500 p-4 opacity-90 transform rotate-3">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {draggedComponent.title}
+                    </h3>
+                    <p className="text-sm text-gray-500">Moving component...</p>
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

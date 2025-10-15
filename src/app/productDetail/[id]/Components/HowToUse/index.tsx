@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import Variant1 from "./Variant1";
 import Variant2 from "./Variant2";
 import Variant3 from "./Variant3";
@@ -32,12 +31,35 @@ export function HowToUse({
     ...settings[component.id],
     variant: component.variant || settings[component.id]?.variant || "standard",
   };
-  const { selectedProduct } = useSelector((state: any) => state.product);
 
   const dummyHowToUseData = {
-    howToUseVideo: selectedProduct?.howToUseVideo || "",
-    howToUseTitle: selectedProduct?.howToUseTitle || "How to Use",
-    howToUseSteps: selectedProduct?.howToUseSteps || [],
+    howToUseVideo: "https://www.youtube.com/watch?v=9bZkp7q19f0",
+    howToUseSteps: [
+      {
+        number: "01",
+        title: "Get Started",
+        description:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.",
+      },
+      {
+        number: "02",
+        title: "Configure Settings",
+        description:
+          "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.",
+      },
+      {
+        number: "03",
+        title: "Launch & Monitor",
+        description:
+          "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      },
+      {
+        number: "04",
+        title: "Optimize Results",
+        description:
+          "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.",
+      },
+    ],
   };
 
   const data = dummyHowToUseData;

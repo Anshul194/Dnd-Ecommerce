@@ -1,38 +1,56 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import React from "react";
+import { useSelector } from "react-redux";
 
-function Variant1({ descriptionData }) {
+type DescriptionImage = {
+  url?: string;
+};
+
+type DescriptionData = {
+  description?: string;
+  descriptionVideo?: string;
+  descriptionImages?: DescriptionImage[];
+};
+
+type Props = {
+  descriptionData?: DescriptionData;
+};
+
+function Variant1() {
+  const productData = useSelector(selectSelectedProduct);
   const extractVideoId = (url: string) => {
     const regex =
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regex);
     return match ? match[1] : url;
   };
+  const videoUrl = productData?.descriptionVideo;
+  if (videoUrl) console.log("Description Image:", videoUrl);
+
   return (
     <div className="py-10 lg:py-20 px-4">
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left Column */}
         <div className="flex flex-col space-y-6 flex-1">
           {/* Description Text */}
-          <div className="sticky top-10">
+          <div className="sticky top-10 self-start z-10">
             <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4">
               DESCRIPTION
             </h1>
             <div
               className="text-black relative poppins-medium leading-tight text-lg ml-auto mb-8"
-              dangerouslySetInnerHTML={{ __html: descriptionData?.description }}
+              dangerouslySetInnerHTML={{
+                __html: productData?.description ?? "",
+              }}
             />
 
             {/* Large Square Image */}
             <div className=" rounded-lg w-full h-[350px] max-h-[400px] overflow-hidden">
-              {console.log(
-                "Description Image:",
-                descriptionData?.descriptionVideo
-              )}
-              {descriptionData?.descriptionVideo && (
+              {productData?.descriptionVideo && (
                 <div className="rounded-lg w-full h-[350px] max-h-[400px] overflow-hidden">
                   <iframe
                     src={`https://www.youtube.com/embed/${extractVideoId(
-                      descriptionData.descriptionVideo
+                      productData?.descriptionVideo ?? ""
                     )}`}
                     allowFullScreen
                     className="w-full h-full object-cover rounded-lg"
@@ -52,16 +70,16 @@ function Variant1({ descriptionData }) {
           <div
             className=" rounded-lg flex-1 aspect-square"
             style={{
-              backgroundImage: `url(${descriptionData?.descriptionImages?.[0]?.url})`,
+              backgroundImage: `url(${productData?.descriptionImages?.[0]?.url})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
           ></div>
           <div className="flex gap-4">
             <div className="flex flex-col gap-4 flex-1">
-              {descriptionData?.descriptionImages
+              {productData?.descriptionImages
                 ?.slice(1)
-                ?.map((image, index) => (
+                ?.map((image: DescriptionImage, index: number) => (
                   <div
                     key={index}
                     className="bg-gray-400 rounded-lg flex-1 aspect-square"

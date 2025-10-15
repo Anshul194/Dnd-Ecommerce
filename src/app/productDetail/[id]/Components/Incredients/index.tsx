@@ -1,6 +1,5 @@
 import { BookOpen } from "lucide-react";
 import RenderScrollingVariant from "./Variant1";
-import { useSelector } from "react-redux";
 
 export function Ingredients({
   component,
@@ -32,8 +31,6 @@ export function Ingredients({
     variant:
       component.variant || settings[component.id]?.variant || "scrolling",
   };
-
-  const { selectedProduct } = useSelector((state: any) => state.product);
 
   const ingredients = [
     {
@@ -77,14 +74,10 @@ export function Ingredients({
   const renderVariant = () => {
     switch (ingredientSettings.variant) {
       case "scrolling":
-        return (
-          <RenderScrollingVariant data={selectedProduct?.ingredients || []} />
-        );
+        return <RenderScrollingVariant data={ingredients} />;
 
       default:
-        return (
-          <RenderScrollingVariant data={selectedProduct?.ingredients || []} />
-        );
+        return <RenderScrollingVariant data={ingredients} />;
     }
   };
 

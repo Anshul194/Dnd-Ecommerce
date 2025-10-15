@@ -1,3 +1,4 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import {
   Star,
   ThumbsUp,
@@ -6,14 +7,17 @@ import {
   Filter,
   ChevronDown,
 } from "lucide-react";
+import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 export default function RenderTestimonialVariant() {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [animateStats, setAnimateStats] = useState(false);
   const [visibleReviews, setVisibleReviews] = useState(6);
-
+  const productData = useSelector(selectSelectedProduct);
+  console.log("product data ===> ", productData);
   // Mock data - replace with your actual data
   const mockData = {
     Average: 4.3,
@@ -146,7 +150,7 @@ export default function RenderTestimonialVariant() {
     setAnimateStats(true);
   }, []);
 
-  const filteredReviews = mockData.Reviews.filter((review) => {
+  const filteredReviews = productData?.reviews?.Reviews.filter((review) => {
     if (selectedFilter === "all") return true;
     if (selectedFilter === "verified") return review.verified;
     if (selectedFilter === "images") return review.images.length > 0;
@@ -175,16 +179,19 @@ export default function RenderTestimonialVariant() {
             </p>
 
             {/* Quick Stats */}
-            <div className="flex gap-8">
+            <div className="flex !flex-col gap-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-black mb-1">
-                  <AnimatedCounter end={mockData.totalReviews} />
+                  <AnimatedCounter end={productData.reviews.Reviews.length} />
                 </div>
                 <div className="text-sm text-gray-600">Reviews</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-black mb-1">
-                  <AnimatedCounter end={mockData.Average * 10} suffix="/50" />
+                  <AnimatedCounter
+                    end={productData.reviews.Average}
+                    suffix="/50"
+                  />
                 </div>
                 <div className="text-sm text-gray-600">Rating</div>
               </div>
@@ -196,7 +203,7 @@ export default function RenderTestimonialVariant() {
             <div className="relative">
               <div className="w-24 h-24 rounded-full border-4 border-green-500 flex items-center justify-center bg-white shadow-lg mb-4">
                 <span className="text-3xl font-bold text-black">
-                  {mockData?.Average?.toFixed(1) || 0}
+                  {productData?.reviews?.Average?.toFixed(1) || 0}
                 </span>
               </div>
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
@@ -208,7 +215,7 @@ export default function RenderTestimonialVariant() {
             </div>
 
             <div className="flex-1 space-y-2">
-              {mockData?.ratingBreakdown?.map((item, index) => (
+              {productData?.reviews?.ratingBreakdown?.map((item, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <div className="flex items-center gap-1 w-12">
                     <span className="text-sm text-black font-medium">
@@ -330,7 +337,15 @@ export default function RenderTestimonialVariant() {
                     <div
                       key={imgIndex}
                       className="bg-gray-200 rounded h-16 w-16 border border-gray-300"
-                    />
+                    >
+                      <Image
+                        src={`${review.images[imgIndex]}`}
+                        alt={`Review Image ${imgIndex + 1}`}
+                        className="w-full h-full object-cover rounded"
+                        width={64}
+                        height={64}
+                      />
+                    </div>
                   ))}
                   {review.images.length > 3 && (
                     <div className="bg-gray-100 rounded h-16 w-16 border border-gray-300 flex items-center justify-center text-gray-500 text-xs">
@@ -344,16 +359,20 @@ export default function RenderTestimonialVariant() {
               <div className="flex items-center gap-6 text-xs text-gray-500 pt-3 border-t border-gray-100">
                 <button className="flex items-center gap-1 hover:text-green-500 transition-colors">
                   <ThumbsUp className="w-3 h-3" />
-                  <span>{review.likes}</span>
+                  <span>{review.likeCount}</span>
                 </button>
-                <button className="flex items-center gap-1 hover:text-red-500 transition-colors">
+                {/* <button className="flex items-center gap-1 hover:text-red-500 transition-colors">
                   <ThumbsDown className="w-3 h-3" />
                   <span>{review.dislikes}</span>
                 </button>
                 <button className="flex items-center gap-1 hover:text-blue-500 transition-colors">
                   <MessageCircle className="w-3 h-3" />
                   <span>{review.comments}</span>
-                </button>
+                </button> */}
+
+                {/* <h2>
+                  {review.createdAt && new Date(review.createdAt).toLocaleDateString()}
+                </h2> */}
 
                 {review.likes > 15 && (
                   <span className="ml-auto bg-orange-100 text-orange-600 px-2 py-1 rounded text-xs font-medium">

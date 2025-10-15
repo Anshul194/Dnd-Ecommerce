@@ -1,12 +1,15 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import React, { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 
-export default function RenderScrollingVariant({ data }) {
+export default function RenderScrollingVariant() {
+  const productData = useSelector(selectSelectedProduct);
   const [activeIngredient, setActiveIngredient] = useState(0);
   const ingredientsRef = useRef([]);
   const containerRef = useRef(null);
 
   // Use only actual data.ingredients, no fallback sample data
-  const ingredients = data || [];
+  const ingredients = productData?.ingredients || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -117,7 +120,7 @@ export default function RenderScrollingVariant({ data }) {
         </div>
 
         {/* Right Column - Sticky Image */}
-        <div className="hidden lg:flex flex-col flex-1">
+        <div className="hidden lg:hidden flex-col flex-1">
           <div className="sticky top-32">
             {/* Active Ingredient Image */}
             <div className="relative">

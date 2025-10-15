@@ -1,11 +1,32 @@
-import { Clock, RotateCcw, Shield, ShoppingCart, Star, Truck } from "lucide-react";
+import {
+  addToCart,
+  getCartItems,
+  setBuyNowProduct,
+  toggleCart,
+} from "@/app/store/slices/cartSlice";
+import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import {
+  Clock,
+  RotateCcw,
+  Shield,
+  ShoppingCart,
+  Star,
+  Truck,
+} from "lucide-react";
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
-function Variant3({ productData }) {
-  const [expandedSection, setExpandedSection] = React.useState<string>("");
+function Variant3() {
+  const [expandedSection, setExpandedSection] =
+    React.useState<string>("details");
   const [quantity, setQuantity] = React.useState<number>(1);
-  const [selectedVariant, setSelectedVariant] = React.useState<number>(0);
-
+  const productData = useSelector(selectSelectedProduct);
+  const dispatch = useDispatch();
+  const [selectedVariant, setSelectedVariant] = React.useState<number>(
+    productData?.variants[0]?._id || 0
+  );
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
   };
@@ -14,12 +35,83 @@ function Variant3({ productData }) {
     setQuantity(Math.max(1, quantity + delta));
   };
 
-  const handleAddToCart = () => {
-    console.log("Added to cart:", {
-      product: productData.name,
-      variant: productData.variants[selectedVariant],
-      quantity,
-    });
+  const handleAddToCart = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = productData.variants.find(
+      (variant) => variant._id === selectedVariant
+    );
+    try {
+      const resultAction = await dispatch(
+        addToCart({
+          product: {
+            id: productData._id,
+            name: productData.name,
+            image: productData.thumbnail || productData.images[0],
+            variant: selectedVariant,
+            slug: productData.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedVariant,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
+  };
+
+  const handleBuyNow = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = productData.variants.find(
+      (variant) => variant._id === selectedVariant
+    );
+    try {
+      const resultAction = await dispatch(
+        setBuyNowProduct({
+          product: {
+            id: productData._id,
+            name: productData.name,
+            image: productData.thumbnail || productData.images[0],
+            variant: selectedVariant,
+            slug: productData.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedVariant,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      dispatch(setCheckoutOpen(true));
+      // dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
   };
   return (
     <div className="lg:col-span-6">
@@ -35,11 +127,16 @@ function Variant3({ productData }) {
               <Star
                 key={i}
                 size={18}
-                className="fill-orange-400 text-orange-400"
+                className={`${
+                  i < Math.round(productData?.reviews?.Average || 0)
+                    ? "fill-orange-400 text-orange-400"
+                    : "text-gray-300"
+                }`}
               />
             ))}
             <span className="text-sm text-gray-600 ml-2">
-              4.7 (390 reviews)
+              ({productData?.reviews?.Average?.toFixed(1)}) (
+              {productData?.reviews?.Reviews.length} reviews)
             </span>
           </div>
           <div className="h-4 w-px bg-gray-300"></div>
@@ -50,13 +147,33 @@ function Variant3({ productData }) {
         <div className="mb-6">
           <div className="flex items-baseline gap-3 mb-2">
             <span className="text-3xl font-bold text-gray-900">
-              ₹{productData.variants[0]?.price}
+              ₹
+              {
+                productData.variants.filter(
+                  (variant) => variant._id === selectedVariant
+                )[0]?.salePrice
+              }
             </span>
             <span className="text-xl text-gray-500 line-through">
-              ₹{productData.variants[0]?.salePrice}
+              ₹{" "}
+              {
+                productData.variants.filter(
+                  (variant) => variant._id === selectedVariant
+                )[0]?.price
+              }
             </span>
             <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-              {productData.variants[0]?.discount}% OFF
+              {(((productData.variants.filter(
+                (variant) => variant._id === selectedVariant
+              )[0]?.salePrice -
+                productData.variants.filter(
+                  (variant) => variant._id === selectedVariant
+                )[0]?.price) *
+                100) /
+                productData.variants.filter(
+                  (variant) => variant._id === selectedVariant
+                )[0]?.price).toFixed(0)}
+              % OFF
             </span>
           </div>
           <p className="text-sm text-gray-600">Inclusive of all taxes</p>
@@ -72,16 +189,18 @@ function Variant3({ productData }) {
               <button
                 key={variant._id}
                 className={`relative p-4 border-2 rounded-xl text-center transition-all ${
-                  productData.variants[0]?._id === variant._id
+                  selectedVariant === variant._id
                     ? "border-green-500 bg-green-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
-                // onClick={() => setSelectedPack(variant._id)}
+                onClick={() => setSelectedVariant(variant._id)}
               >
                 <div className="font-semibold text-gray-900">
                   {variant.title}
                 </div>
-                <div className="text-sm text-gray-600">₹{variant.price}</div>
+                <div className="text-sm text-gray-600">
+                  ₹{variant.salePrice || variant.price}
+                </div>
                 {variant.discount && (
                   <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
                     -{variant.discount}%
@@ -123,7 +242,10 @@ function Variant3({ productData }) {
             <ShoppingCart size={20} />
             Add to Cart
           </button>
-          <button className="bg-orange-500 text-white py-4 px-8 rounded-xl font-semibold hover:bg-orange-600 transition-colors">
+          <button
+            onClick={handleBuyNow}
+            className="bg-orange-500 text-white py-4 px-8 rounded-xl font-semibold hover:bg-orange-600 transition-colors"
+          >
             Buy Now
           </button>
         </div>
@@ -178,16 +300,12 @@ function Variant3({ productData }) {
 
         <div className="p-6">
           {expandedSection === "details" && (
-            <div className="text-gray-700 leading-relaxed">
-              {productData.description}
-              <div className="mt-4">
-                <p className="text-sm">
-                  <strong>Usage:</strong> Add a pinch to warm milk or tea. Can
-                  be used in cooking and baking. Mix 1/2 teaspoon with honey for
-                  daily consumption or add to your favorite recipes.
-                </p>
-              </div>
-            </div>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: productData.description,
+              }}
+              className="text-gray-700 leading-relaxed"
+            ></div>
           )}
 
           {expandedSection === "ingredients" && (
@@ -195,7 +313,12 @@ function Variant3({ productData }) {
               {productData.ingredients.map((item) => (
                 <div key={item._id} className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-gray-700">{item.description}</span>
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: productData.description,
+                    }}
+                    className="text-gray-700"
+                  ></span>
                 </div>
               ))}
             </div>
@@ -203,10 +326,20 @@ function Variant3({ productData }) {
 
           {expandedSection === "benefits" && (
             <div className="space-y-3">
-              {productData.benefits.map((item) => (
-                <div key={item._id} className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-gray-700">{item.description}</span>
+              {productData.benefits.map((item, idx) => (
+                <div key={item._id} className="flex flex-col items-start gap-3">
+                  <span className="flex gap-2">
+                    <div className="w-2 h-2  bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <strong>
+                      {idx + 1}. {item.title}
+                    </strong>
+                  </span>
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: item.description,
+                    }}
+                    className="text-gray-700"
+                  ></span>
                 </div>
               ))}
             </div>
@@ -217,7 +350,12 @@ function Variant3({ productData }) {
               {productData.precautions.map((item) => (
                 <div key={item._id} className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-gray-700">{item.description}</span>
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: productData.description,
+                    }}
+                    className="text-gray-700"
+                  ></span>
                 </div>
               ))}
             </div>

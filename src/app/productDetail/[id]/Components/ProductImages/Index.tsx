@@ -3,7 +3,6 @@ import RenderVariant1 from "./Variant1";
 import RenderVariant2 from "./Variant2";
 import RenderVariant3 from "./Variant3";
 import RenderVariant4 from "./Variant4";
-import { useSelector } from "react-redux";
 
 export function ProductImages({
   component,
@@ -24,8 +23,6 @@ export function ProductImages({
   isPreviewMode?: boolean;
   COMPONENT_SPANS: any;
 }) {
-  const { selectedProduct } = useSelector((state: any) => state.product);
-
   const imageSettings = {
     ...{
       showThumbnails: true,
@@ -38,34 +35,34 @@ export function ProductImages({
   };
 
   // Dummy images if product images are not available
-  // const dummyImages = [
-  //   {
-  //     url: "https://in.teabox.com/cdn/shop/files/RoseGreenTea_Teabags_aa3e8528-95b5-423b-9869-16baff3a7710.jpg?v=1755320690&width=1000",
-  //     alt: "Sample Image 1",
-  //   },
-  //   {
-  //     url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_02.jpg?v=1755320690&width=1000",
-  //     alt: "Sample Image 1",
-  //   },
-  //   {
-  //     url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_08.jpg?v=1755320690&width=1000",
-  //     alt: "Sample Image 1",
-  //   },
-  //   {
-  //     url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_03.jpg?v=1755320690&width=1000",
-  //     alt: "Sample Image 1",
-  //   },
-  //   {
-  //     url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_04.jpg?v=1755320690&width=1000",
-  //     alt: "Sample Image 1",
-  //   },
-  // ];
+  const dummyImages = [
+    {
+      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTea_Teabags_aa3e8528-95b5-423b-9869-16baff3a7710.jpg?v=1755320690&width=1000",
+      alt: "Sample Image 1",
+    },
+    {
+      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_02.jpg?v=1755320690&width=1000",
+      alt: "Sample Image 1",
+    },
+    {
+      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_08.jpg?v=1755320690&width=1000",
+      alt: "Sample Image 1",
+    },
+    {
+      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_03.jpg?v=1755320690&width=1000",
+      alt: "Sample Image 1",
+    },
+    {
+      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_04.jpg?v=1755320690&width=1000",
+      alt: "Sample Image 1",
+    },
+  ];
 
   const productData = {
-    name: selectedProduct?.name || "Premium Wireless Headphones",
+    name: product?.name || "Premium Wireless Headphones",
     badges: ["Premium", "Best Seller", "Limited Edition"],
-    ...selectedProduct,
-    images: selectedProduct?.images || [],
+    ...product,
+    images: dummyImages,
   };
 
   const renderVariant = () => {
@@ -75,12 +72,7 @@ export function ProductImages({
       case "variant3":
         return <RenderVariant3 productData={productData} />;
       case "variant4":
-        return (
-          <RenderVariant4
-            productData={productData}
-            imageSettings={imageSettings}
-          />
-        );
+        return <RenderVariant4 productData={productData} imageSettings={imageSettings} />;
       default:
         return <RenderVariant1 productData={productData} />;
     }

@@ -41,8 +41,14 @@ export const fetchProductById = createAsyncThunk(
   "product/fetchProductById",
   async (id) => {
     const response = await axiosInstance.get(`/product/${id}`);
+    const response2 = await axiosInstance.get(
+      `/review?productId=${response.data.product._id}`
+    );
 
-    return response.data.product;
+    return {
+      ...response.data.product,
+      reviews: response2.data.data || [],
+    };
   }
 );
 
@@ -76,6 +82,34 @@ export const fetchProductReviews = createAsyncThunk(
     } catch (error) {
       // Return empty array to avoid crashing
       return [];
+    }
+  }
+);
+
+export const fetchFrequentlyPurchasedProducts = createAsyncThunk(
+  "product/fetchFrequentlyPurchasedProducts",
+  async (payload) => {
+    console.log("frequently api is calling")
+    try {
+      const quaryParams = new URLSearchParams();
+      payload.page && quaryParams.append("page", payload.page);
+      payload.limit && quaryParams.append("limit", payload.limit);
+      payload.sortBy && quaryParams.append("sortBy", payload.sortBy);
+
+      if (payload.category) {
+        quaryParams.append("category", payload.category);
+      }
+
+      if (payload.frequentlyPurchased) {
+        quaryParams.append("frequentlyPurchased", payload.frequentlyPurchased);
+      }
+
+      const response = await axiosInstance.get("/product", {
+        params: quaryParams,
+      });
+      return response.data.products.data;
+    } catch (error) {
+      throw error;
     }
   }
 );
@@ -117,5 +151,12 @@ const productSlice = createSlice({
       });
   },
 });
+
+const selectSelectedProduct = (state) => state.product.selectedProduct;
+const removeSelectedProduct = (state) => {
+  state.product.selectedProduct = null;
+};
+
+export { selectSelectedProduct, removeSelectedProduct };
 
 export default productSlice.reducer;

@@ -1,11 +1,24 @@
+import {
+  addToCart,
+  getCartItems,
+  setBuyNowProduct,
+  toggleCart,
+} from "@/app/store/slices/cartSlice";
+import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { ChevronDown, ShoppingCart, Star } from "lucide-react";
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
-function Variant1({ productData }) {
+function Variant1() {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
   const [quantity, setQuantity] = React.useState<number>(1);
-  const [selectedVariant, setSelectedVariant] = React.useState<number>(0);
-
+  const productData = useSelector(selectSelectedProduct);
+  const dispatch = useDispatch();
+  const [selectedVariant, setSelectedVariant] = React.useState<number>(
+    productData?.variants[0]?._id || 0
+  );
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
   };
@@ -14,12 +27,83 @@ function Variant1({ productData }) {
     setQuantity(Math.max(1, quantity + delta));
   };
 
-  const handleAddToCart = () => {
-    console.log("Added to cart:", {
-      product: productData.name,
-      variant: productData.variants[selectedVariant],
-      quantity,
-    });
+  const handleAddToCart = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = productData.variants.find(
+      (variant) => variant._id === selectedVariant
+    );
+    try {
+      const resultAction = await dispatch(
+        addToCart({
+          product: {
+            id: productData._id,
+            name: productData.name,
+            image: productData.thumbnail || productData.images[0],
+            variant: selectedVariant,
+            slug: productData.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedVariant,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
+  };
+
+  const handleBuyNow = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = productData.variants.find(
+      (variant) => variant._id === selectedVariant
+    );
+    try {
+      const resultAction = await dispatch(
+        setBuyNowProduct({
+          product: {
+            id: productData._id,
+            name: productData.name,
+            image: productData.thumbnail || productData.images[0],
+            variant: selectedVariant,
+            slug: productData.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedVariant,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      dispatch(setCheckoutOpen(true));
+      // dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
   };
   return (
     <div className=" w-full">
@@ -40,11 +124,18 @@ function Variant1({ productData }) {
             <Star
               key={i}
               size={16}
-              className="fill-orange-400 text-orange-400"
+              className={`${
+                i < Math.round(productData?.reviews?.Average || 0)
+                  ? "fill-orange-400 text-orange-400"
+                  : "text-gray-300"
+              }`}
             />
           ))}
         </div>
-        <span className="text-sm text-gray-600">(4.7) - 390 Product Sold</span>
+        {/* <span className="text-sm text-gray-600">({productData?.reviews?.Average?.toFixed(1)}) - 390 Product Sold</span> */}
+        <span className="text-sm text-gray-600">
+          ({productData?.reviews?.Average?.toFixed(1)})
+        </span>
       </div>
 
       {/* Delivery Options */}
@@ -74,11 +165,11 @@ function Variant1({ productData }) {
               <div
                 key={index}
                 className={`relative flex-1 border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                  productData?.variants[0]?._id === variant._id
+                  selectedVariant === variant._id
                     ? "border-green-600 bg-green-50"
                     : "border-gray-300 hover:border-gray-400"
                 }`}
-                // onClick={() => setSelectedPack(variant._id)}
+                onClick={() => setSelectedVariant(variant._id)}
               >
                 <div
                   className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${
@@ -89,7 +180,12 @@ function Variant1({ productData }) {
                       : "bg-blue-500"
                   }`}
                 >
-                  {variant.discount}
+                  {(variant.salePrice - variant.price) / variant.price
+                    ? `-${Math.round(
+                        ((variant.price - variant.salePrice) / variant.price) *
+                          100
+                      )}%`
+                    : ""}
                 </div>
                 <div className="text-center">
                   <div className="font-bold text-sm text-black">
@@ -152,7 +248,7 @@ function Variant1({ productData }) {
           Add to Cart
         </button>
         <button
-          // onClick={handleBuyNow}
+          onClick={handleBuyNow}
           className="flex-1 w-1/2 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
         >
           Buy Now

@@ -1,26 +1,31 @@
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { Eye, Heart, Share2 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
-// const imageUrl = import.meta.env.VITE_IMAGE_URL;
+const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
 
-const RenderVariant3 = ({ productData }) => {
+const RenderVariant3 = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const productData = useSelector(selectSelectedProduct);
 
   return (
     <div className="space-y-6 h-fit sticky top-20">
       {/* Main Image with Floating Elements */}
       <div className="relative group">
         <div className="aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-orange-100 to-yellow-100 relative">
-          <img
+          <Image
             src={productData.images[selectedImage].url}
             alt="Product"
             className="w-full h-full object-cover"
+            layout="fill"
           />
 
           {/* Floating Badges */}
           <div className="absolute top-6 left-6 flex flex-col gap-2">
-            {productData.badges.map((badge, index) => (
+            {productData?.badges?.map((badge, index) => (
               <div
                 key={index}
                 className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 shadow-lg"
