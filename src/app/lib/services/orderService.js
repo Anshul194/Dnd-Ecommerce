@@ -171,23 +171,29 @@ class OrderService {
         conn.models.Setting || conn.model("Setting", SettingSchema);
       const settings = await Setting.findOne({ tenant }).lean();
 
-      // Calculate subtotal
+      // Calculate subtotal - use the total from frontend if provided, otherwise calculate
       let subtotal = 0;
-      for (const item of items) {
-        const { product, variant, quantity } = item;
-        let price = 0;
-        if (variant) {
-          const newVariant = await this.orderRepository.findVariantById(
-            variant
-          );
-          price = newVariant.price;
-        } else {
-          const newProduct = await this.orderRepository.findProductById(
-            product
-          );
-          price = newProduct.price;
+      if (data.total) {
+        subtotal = data.total;
+      } else {
+        for (const item of items) {
+          const { product, variant, quantity, price } = item;
+          let itemPrice = price || 0;
+          if (!itemPrice) {
+            if (variant) {
+              const newVariant = await this.orderRepository.findVariantById(
+                variant
+              );
+              itemPrice = newVariant.price;
+            } else {
+              const newProduct = await this.orderRepository.findProductById(
+                product
+              );
+              itemPrice = newProduct.price;
+            }
+          }
+          subtotal += itemPrice * quantity;
         }
-        subtotal += price * quantity;
       }
 
       // Apply coupon if provided
@@ -424,30 +430,47 @@ class OrderService {
         conn.models.Setting || conn.model("Setting", SettingSchema);
       const settings = await Setting.findOne({ tenant }).lean();
 
-      // Calculate subtotal
+      // Calculate subtotal - use the total from frontend if provided, otherwise calculate
       let subtotal = 0;
       const orderItems = [];
-      for (const item of items) {
-        const { product, variant, quantity } = item;
-        let price = 0;
-        if (variant) {
-          const newVariant = await this.orderRepository.findVariantById(
-            variant
-          );
-          price = newVariant.price;
-        } else {
-          const newProduct = await this.orderRepository.findProductById(
-            product
-          );
-          price = newProduct.price;
+      
+      if (data.total) {
+        subtotal = data.total;
+        // Still create orderItems array for database storage
+        for (const item of items) {
+          const { product, variant, quantity, price } = item;
+          orderItems.push({
+            product: product,
+            variant: variant || null,
+            quantity,
+            price: price || 0,
+          });
         }
-        orderItems.push({
-          product: product,
-          variant: variant || null,
-          quantity,
-          price,
-        });
-        subtotal += price * quantity;
+      } else {
+        for (const item of items) {
+          const { product, variant, quantity, price } = item;
+          let itemPrice = price || 0;
+          if (!itemPrice) {
+            if (variant) {
+              const newVariant = await this.orderRepository.findVariantById(
+                variant
+              );
+              itemPrice = newVariant.price;
+            } else {
+              const newProduct = await this.orderRepository.findProductById(
+                product
+              );
+              itemPrice = newProduct.price;
+            }
+          }
+          orderItems.push({
+            product: product,
+            variant: variant || null,
+            quantity,
+            price: itemPrice,
+          });
+          subtotal += itemPrice * quantity;
+        }
       }
 
       // Apply coupon if provided
@@ -1152,13 +1175,28 @@ async generateDelhiveryLabel(order) {
 
     console.log("✅ PDF download links obtained:", pdfLinks);
 
-    // --- 6️⃣ Return the download link(s) ---
+    // --- 6️⃣ Update order with label URL ---
+    const primaryLabelUrl = pdfLinks[0]; // Use first PDF link as primary
+    const shippingDetails = {
+      ...order.shipping_details,
+      labelUrl: primaryLabelUrl,
+    };
+
+    // Update order with label URL
+    await this.orderRepository.updateOrder(order._id, { 
+      shipping_details: shippingDetails 
+    });
+
+    console.log("✅ Order updated with label URL:", primaryLabelUrl);
+
+    // --- 7️⃣ Return the download link(s) ---
     return {
       success: true,
       message: "Delhivery packing slip link(s) generated successfully",
       waybills,
       pdfDownloadLinks: pdfLinks,
-      primaryLink: pdfLinks[0], // First link as primary
+      primaryLink: primaryLabelUrl,
+      labelUrl: primaryLabelUrl, // Added for consistency with other courier methods
       packages: packages.map(pkg => ({
         wbn: pkg.wbn,
         pdf_download_link: pkg.pdf_download_link,
