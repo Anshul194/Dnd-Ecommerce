@@ -1,57 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import heart from "../../../public/images/heart.png";
 import Image from "next/image";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchReviews } from "@/app/store/slices/Reviews";
 
 export default function TestimonialSlider({ content }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { reviews, loading, error } = useSelector((state) => state.reviews);
+  const dispatch = useDispatch();
 
-  const testimonials = [
-    {
-      name: "CAMILLA SCIANNA",
-      quote:
-        "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD TEMPOR INCIDIDUNT UT LABORE ET DOLOR MAGNA.",
-    },
-    {
-      name: "GILLIAN FREEMAN",
-      quote:
-        "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD TEMPOR INCIDIDUNT UT.",
-    },
-    {
-      name: "ARJUN SINGH",
-      quote:
-        "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD.",
-    },
-    {
-      name: "PRERNA MAARUKHINE",
-      quote:
-        "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD TEMPOR INCIDIDUNT UT LABORE ET DOLOR MAGNA.",
-    },
-    {
-      name: "JOHN WILLIAMS",
-      quote:
-        "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD TEMPOR INCIDIDUNT UT LABORE.",
-    },
-    {
-      name: "SARAH JOHNSON",
-      quote:
-        "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD TEMPOR INCIDIDUNT.",
-    },
-  ];
+  useEffect(() => {
+    dispatch(fetchReviews());
+  }, []);
 
   const nextSlide = () => {
-    setCurrentSlide(
-      (prev) => (prev + 1) % Math.max(1, testimonials.length - 3)
-    );
+    setCurrentSlide((prev) => (prev + 1) % Math.max(1, reviews.length - 3));
   };
 
   const prevSlide = () => {
     setCurrentSlide(
       (prev) =>
-        (prev - 1 + Math.max(1, testimonials.length - 3)) %
-        Math.max(1, testimonials.length - 3)
+        (prev - 1 + Math.max(1, reviews.length - 3)) %
+        Math.max(1, reviews.length - 3)
     );
   };
 
@@ -105,7 +78,7 @@ export default function TestimonialSlider({ content }) {
               transform: `translateX(-${currentSlide * (100 / 4)}%)`,
             }}
           >
-            {testimonials.map((testimonial, index) => (
+            {reviews.map((testimonial, index) => (
               <div
                 key={index}
                 className="w-1/4 min-w-[270px] flex-shrink-0 px-3"
@@ -114,7 +87,7 @@ export default function TestimonialSlider({ content }) {
                   {/* Name with green icon */}
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-md bebas font-bold text-black uppercase tracking-wide">
-                      {testimonial.name}
+                      {testimonial?.userId?.name}
                     </h3>
                     <Image className="h-4 w-4" src={heart} alt="heart-icon" />
                   </div>
@@ -122,7 +95,8 @@ export default function TestimonialSlider({ content }) {
                   {/* Quote */}
                   <div className="flex-1 mb-6">
                     <blockquote className="text-gray-700 bebas text-2xl font-medium leading-tight uppercase">
-                      "{testimonial.quote}"
+                      "{testimonial.comment.slice(0, 115)}{" "}
+                      {testimonial.comment.length > 120 ? "..." : ""}"
                     </blockquote>
                   </div>
 
@@ -131,7 +105,9 @@ export default function TestimonialSlider({ content }) {
                     {/* Placeholder for image or additional content */}
                     <Image
                       src={
-                        "https://www.sampuranswadeshi.com/cdn/shop/articles/WhatsApp_Image_2024-10-24_at_6.19.46_PM_57819741-e522-475b-a1ca-8a258e62823b.jpg?v=1754996833&width=961"
+                        testimonial?.images[0] ||
+                        testimonial?.productId?.images[0]?.url ||
+                        "/images/testimonial-placeholder.jpg"
                       }
                       alt="Testimonial Placeholder"
                       width={400}
@@ -148,7 +124,7 @@ export default function TestimonialSlider({ content }) {
 
       {/* Slider Dots Indicator */}
       <div className="flex justify-center mt-8 space-x-2">
-        {Array.from({ length: Math.max(1, testimonials.length - 3) }).map(
+        {Array.from({ length: Math.max(1, reviews.length - 3) }).map(
           (_, index) => (
             <button
               key={index}

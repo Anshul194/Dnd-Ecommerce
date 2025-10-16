@@ -4,12 +4,15 @@ import { HeroSlider } from "../HeroSlider";
 import { CustomerFavorites } from "../CustomerFavorites";
 import { TimerBanner } from "../TimerBanner";
 import { WhyUs } from "../WhyUs";
+import { Features } from "../Features";
 import { NewLaunchBanner } from "../NewLaunchBanner";
 import { Reviews } from "../Reviews";
 import { FAQ } from "../FAQ";
 import { Certifications } from "../Certifications";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGroupedContent } from "@/app/store/slices/contentSlice";
+import Categories from "./Categories";
+import { LoadingSpinner } from "../common/Loading";
 
 function DynamicHomepage2() {
   const { groupedContent, loading, error } = useSelector(
@@ -21,24 +24,70 @@ function DynamicHomepage2() {
     dispatch(fetchGroupedContent());
   }, [dispatch]);
 
+  if (loading) {
+    return (
+      <main>
+        <div className="min-h-screen flex items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      </main>
+    );
+  }
+
   const renderSection = (section) => {
     const { sectionType, content, _id } = section;
-    console.log("Rendering section:", section);
+    console.log("Rendering section: ==>", section.sectionType);
     switch (sectionType) {
       case "offerBanner":
-        return <HeroSlider key={_id} content={content} />;
-
+        return (
+          <div key={_id} className=" mx-auto px-4">
+            <TimerBanner content={content} />
+          </div>
+        );
       case "productSlider":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
-            <HeroSlider content={content} />
+          <div
+            key={_id}
+            className=" mx-auto px-4 bg-gradient-to-b from-white to-gray-50"
+          >
+            <CustomerFavorites content={content} />
           </div>
         );
 
       case "whyUs":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
+          <div
+            key={_id}
+            className=" mx-auto px-4 bg-gradient-to-br from-[#3C950D]/5 via-transparent to-[#3C950D]/5"
+          >
             <WhyUs content={content} />
+          </div>
+        );
+
+      case "uniqueSellingPoints":
+        return (
+          <div
+            key={_id}
+            className=" mx-auto px-4 bg-gradient-to-br from-[#3C950D]/5 via-transparent to-[#3C950D]/5"
+          >
+            <Features content={content} />
+          </div>
+        );
+
+      case "genuineHeartStory":
+        return (
+          <div
+            key={_id}
+            className=" mx-auto bg-gradient-to-b from-gray-50 to-white relative overflow-hidden"
+          >
+            <Reviews content={content} />{" "}
+          </div>
+        );
+
+      case "noConfusion":
+        return (
+          <div key={_id} className="max-w-7xl mx-auto px-4">
+            <FAQ content={content} />
           </div>
         );
 
@@ -80,7 +129,17 @@ function DynamicHomepage2() {
   allSections.sort((a, b) => a.order - b.order);
   heroSections.sort((a, b) => a.order - b.order);
   categoryPickContent.sort((a, b) => a.order - b.order);
-  return <main className="text-black">{allSections.map(renderSection)}</main>;
+  return (
+    <main className="text-black">
+      <HeroSlider content={heroSections} />
+      <div className="max-w-7xl mx-auto px-4">
+        <Categories dynamicContent={categoryPickContent[0]?.content || null} />
+      </div>
+
+      {allSections.map(renderSection)}
+      {/* <NewLaunchBanner /> */}
+    </main>
+  );
 }
 
 export default DynamicHomepage2;

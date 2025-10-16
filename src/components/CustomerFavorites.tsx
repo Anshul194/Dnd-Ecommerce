@@ -5,41 +5,11 @@ import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { motion } from "motion/react";
-
-const products = [
-  {
-    id: 1,
-    name: "Assam Premium Black Tea",
-    price: "₹299",
-    rating: 4.8,
-    image:
-      "https://images.unsplash.com/photo-1758390285674-f1d55b9d1312?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhc3NhbSUyMHRlYSUyMGxlYXZlc3xlbnwxfHx8fDE3NjA0MjExMTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 2,
-    name: "Mizoram Green Tea",
-    price: "₹349",
-    rating: 4.9,
-    image:
-      "https://images.unsplash.com/photo-1728749177932-8fbf78de89f7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxncmVlbiUyMHRlYSUyMGN1cHxlbnwxfHx8fDE3NjA0MTIzNjd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 3,
-    name: "Herbal Wellness Tea",
-    price: "₹279",
-    rating: 4.7,
-    image:
-      "https://images.unsplash.com/photo-1504382103100-db7e92322d39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZXJiYWwlMjB0ZWF8ZW58MXx8fHwxNzYwMzA5MjYzfDA&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 4,
-    name: "Premium Tea Leaves",
-    price: "₹399",
-    rating: 5.0,
-    image:
-      "https://images.unsplash.com/photo-1617266982722-28a0deb420c4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWElMjBsZWF2ZXMlMjBjbG9zZXVwfGVufDF8fHx8MTc2MDQyMTExNnww&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { fetchProducts } from "@/app/store/slices/productSlice";
+import Link from "next/link";
+import { addToCart, toggleCart } from "@/app/store/slices/cartSlice";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -62,9 +32,53 @@ const itemVariants = {
   },
 };
 
-export function CustomerFavorites() {
+export function CustomerFavorites({ content }) {
+  const { products } = useSelector((state) => state.product.products);
+
+  const dispatch = useDispatch();
+
+  const handleAddToCart = (product) => {
+    // if (!isAuthenticated) {
+    //   setShowAuthModal(true);
+    //   return;
+    // }
+
+    const price = product?.variants[0]
+      ? product?.variants[0]?.salePrice || product?.variants[0]?.price
+      : product?.salePrice || product?.price;
+    dispatch(
+      addToCart({
+        product: {
+          id: product._id,
+          name: product.name,
+          image: product.thumbnail || product.images[0],
+          variant: product?.variants[0]?._id,
+          slug: product.slug,
+        },
+        quantity: 1,
+        price: price,
+        variant: product?.variants[0]?._id,
+      })
+    );
+    dispatch(toggleCart());
+  };
+
+  useEffect(() => {
+    console.log("CustomerFavorites content is ===> ", content);
+    dispatch(
+      fetchProducts({
+        page: 1,
+        limit: 8,
+        sortBy: "rating",
+        order: "desc",
+        category: content?.category || "",
+        search: "",
+      })
+    );
+  }, []);
+  console.log("product slider content is ===> ", products);
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+    <section className="max-w-7xl mx-auto py-20 ">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -74,10 +88,11 @@ export function CustomerFavorites() {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl mb-4 bg-gradient-to-r from-[#3C950D] to-[#2d7009] bg-clip-text text-transparent">
-            Customer Favorites
+            {content?.title || "Customer Favorites"}
           </h2>
           <p className="text-gray-600">
-            Discover what our customers love the most
+            {content?.description ||
+              "Discover our top-rated teas, loved by customers for their exceptional quality and flavor."}
           </p>
         </motion.div>
 
@@ -88,39 +103,53 @@ export function CustomerFavorites() {
           viewport={{ once: true }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {products.map((product, index) => (
-            <motion.div key={product.id} variants={itemVariants}>
-              <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="relative overflow-hidden">
-                    <ImageWithFallback
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute top-4 right-4 bg-gradient-to-r from-[#3C950D] to-[#2d7009] text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
-                      <Star className="w-4 h-4 fill-current" />
-                      <span className="text-sm">{product.rating}</span>
+          {products?.map((product, index) => (
+            <Link href={`/productDetail/${product.slug}`} key={product._id}>
+              <motion.div key={product.id} variants={itemVariants}>
+                <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="relative overflow-hidden">
+                      <ImageWithFallback
+                        src={product?.thumbnail?.url || product?.images[0]?.url}
+                        alt={
+                          product?.thumbnail?.alt ||
+                          product?.images[0]?.alt ||
+                          product.name
+                        }
+                        className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {product.rating > 3 && (
+                        <div className="absolute top-4 right-4 bg-gradient-to-r from-[#3C950D] to-[#2d7009] text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
+                          <Star className="w-4 h-4 fill-current" />
+                          <span className="text-sm">{product.rating}</span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="mb-3 group-hover:text-[#3C950D] transition-colors">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[#3C950D]">{product.price}</span>
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] shadow-lg hover:shadow-xl transition-all"
+                    <div className="p-5">
+                      <h3 className="mb-3 h-12 group-hover:text-[#3C950D] transition-colors">
+                        {product.name}
+                      </h3>
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToCart(product);
+                        }}
+                        className="flex items-center justify-between"
                       >
-                        <ShoppingCart className="w-4 h-4" />
-                      </Button>
+                        <span className="text-[#3C950D]">{product.price}</span>
+                        <Button
+                          size="sm"
+                          className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] shadow-lg hover:shadow-xl transition-all"
+                        >
+                          <ShoppingCart className="w-4 h-4 text-white" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </Link>
           ))}
         </motion.div>
       </div>

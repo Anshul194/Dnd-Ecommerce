@@ -20,6 +20,7 @@ import contentReducer from "./slices/contentSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import faq from "./slices/faqSlice";
 import settingSlice from "./slices/settingSlice";
+import reviewsSlice from "./slices/Reviews";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -42,6 +43,7 @@ const store = configureStore({
     content: contentReducer,
     faq: faq,
     setting: settingSlice,
+    reviews: reviewsSlice,
   },
 });
 

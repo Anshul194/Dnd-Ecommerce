@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { Button } from "./ui/button";
 import { motion } from "motion/react";
+import Link from "next/link";
 
-export function TimerBanner() {
+export function TimerBanner({ content }) {
   const [timeLeft, setTimeLeft] = useState({
     days: 2,
     hours: 15,
@@ -16,7 +17,7 @@ export function TimerBanner() {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         let { days, hours, minutes, seconds } = prev;
-        
+
         if (seconds > 0) {
           seconds--;
         } else {
@@ -35,7 +36,7 @@ export function TimerBanner() {
             }
           }
         }
-        
+
         return { days, hours, minutes, seconds };
       });
     }, 1000);
@@ -43,12 +44,38 @@ export function TimerBanner() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const end = content?.countdown?.endDate;
+    if (!end) return;
+
+    const computeTimeLeft = (iso: string) => {
+      const endTime = new Date(iso).getTime();
+      const now = Date.now();
+      let diff = Math.max(0, endTime - now);
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      diff -= days * 1000 * 60 * 60 * 24;
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      diff -= hours * 1000 * 60 * 60;
+      const minutes = Math.floor(diff / (1000 * 60));
+      diff -= minutes * 1000 * 60;
+      const seconds = Math.floor(diff / 1000);
+
+      return { days, hours, minutes, seconds };
+    };
+
+    setTimeLeft(computeTimeLeft(end));
+  }, [content?.countdown?.endDate]);
+
   return (
-    <section className="relative py-32 md:py-40 overflow-hidden">
+    <section className="relative  py-32 md:py-40 overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(https://images.unsplash.com/photo-1589009649715-641c60b982ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwdGVhJTIwc2V0fGVufDF8fHx8MTc2MDQyMTExN3ww&ixlib=rb-4.1.0&q=80&w=1080)`,
+          backgroundImage: `url(${
+            content?.image ||
+            "https://images.unsplash.com/photo-1589009649715-641c60b982ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwdGVhJTIwc2V0fGVufDF8fHx8MTc2MDQyMTExN3ww&ixlib=rb-4.1.0&q=80&w=1080"
+          })`,
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/60 to-black/70" />
@@ -68,14 +95,15 @@ export function TimerBanner() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="inline-block mb-4 px-6 py-2 bg-gradient-to-r from-[#3C950D] to-[#2d7009] rounded-full text-sm tracking-wider uppercase shadow-lg"
           >
-            Limited Time Only
+            {content?.tagline || "Limited Time Only"}
           </motion.div>
-          
+
           <h2 className="text-4xl md:text-6xl mb-4 drop-shadow-lg">
-            Limited Time Offer!
+            {content?.title || "Limited Time Offer!"}
           </h2>
           <p className="text-lg md:text-2xl mb-10 text-white/90">
-            Get 50% off on our premium tea collection
+            {content?.description ||
+              "Get 50% off on our premium tea collection"}
           </p>
 
           <div className="flex justify-center gap-4 mb-10">
@@ -98,16 +126,18 @@ export function TimerBanner() {
             ))}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-          >
-            <Button className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] text-white px-8 py-6 text-lg shadow-2xl hover:shadow-[#3C950D]/50 transition-all hover:scale-105">
-              Shop the Sale
-            </Button>
-          </motion.div>
+          <Link href={content?.cat?.link || "search"}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+            >
+              <Button className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] text-white px-8 py-6 text-lg shadow-2xl hover:shadow-[#3C950D]/50 transition-all hover:scale-105">
+                {content?.cta?.title || "Shop Now"}
+              </Button>
+            </motion.div>
+          </Link>
         </motion.div>
       </div>
     </section>

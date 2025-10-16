@@ -455,14 +455,16 @@ export default function Navbar() {
                     </SheetTitle>
                   </SheetHeader>
                   <div className="mt-6 flex flex-col gap-2">
-                    <Link href={`/search`}>
-                      <button
-                        onClick={() => setIsOpen(false)}
-                        className="w-full text-left px-4 py-3 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
-                      >
-                        All
-                      </button>
-                    </Link>
+                    {categories.length > 0 && (
+                      <Link href={`/search`}>
+                        <button
+                          onClick={() => setIsOpen(false)}
+                          className="w-full text-left px-4 py-3 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
+                        >
+                          All
+                        </button>
+                      </Link>
+                    )}
                     {categories.map((category, index) => (
                       <Link
                         key={index}
@@ -489,7 +491,6 @@ export default function Navbar() {
                   height={40}
                   className="rounded-full h-10 w-10 object-cover"
                 />
-               
               </div>
             </div>
 
