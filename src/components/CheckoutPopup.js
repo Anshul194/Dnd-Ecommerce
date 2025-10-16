@@ -665,8 +665,10 @@ export default function CheckoutPopup() {
   };
 
   const calculateShipping = () => {
-    const totalValue = 450; // Flat shipping cost
-
+    const totalValue = buyNowProduct 
+      ? buyNowProduct.price * buyNowProduct.quantity 
+      : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    console?.log("totalValue", totalValue);
     if (totalValue > 500) return 0;
 
     if (paymentMethod === "cod") {

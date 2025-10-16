@@ -26,6 +26,7 @@ class OrderController {
 
   async check(req, conn, tenant) {
     console.log("Controller tenant:", tenant);
+    console.log("Controller received check order data:", req.body);
     try {
       const result = await this.orderService.checkOrder(req.body, conn, tenant);
       return result;
