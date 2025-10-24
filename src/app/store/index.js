@@ -21,6 +21,7 @@ import wishlistReducer from "./slices/wishlistSlice";
 import faq from "./slices/faqSlice";
 import settingSlice from "./slices/settingSlice";
 import reviewsSlice from "./slices/Reviews";
+import pagesSlice from "./slices/pagesSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -44,6 +45,7 @@ const store = configureStore({
     faq: faq,
     setting: settingSlice,
     reviews: reviewsSlice,
+    pages: pagesSlice, // Import and add pagesSlice here
   },
 });
 

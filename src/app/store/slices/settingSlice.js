@@ -7,6 +7,7 @@ export const fetchSettings = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/settings");
+      console.log("setting response ===> ", response);
       return response.data.setting || {};
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -41,6 +42,7 @@ const settingSlice = createSlice({
       codDisableForHighRTO: true,
       codBlockOnRTOAddress: true,
       highRTOOrderCount: 3,
+      activeHomepageLayout: null,
     },
     loading: false,
     error: null,

@@ -12,8 +12,55 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { motion } from "motion/react";
+import Image from "next/image";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPages } from "@/app/store/slices/pagesSlice";
+import { useEffect } from "react";
+import Link from "next/link";
 
 export default function Footer() {
+  const { list } = useSelector((state: any) => state.pages);
+  const dispatch = useDispatch();
+
+  console.log("footer page links =======>", list);
+
+  useEffect(() => {
+    dispatch(fetchPages());
+  }, [dispatch]);
+  // Order the top-level page groups so important sections appear first.
+  // We normalize using either `mainTitle` (if present) or `_id` and replace hyphens.
+  const orderedTitles = [
+    "quick links",
+    "about us",
+    "client care",
+    "contact us",
+  ];
+
+  const normalizeTitle = (item: any) =>
+    (item?.mainTitle ?? item?._id ?? "")
+      .replace(/-/g, " ")
+      .toString()
+      .toLowerCase()
+      .trim();
+
+  const sortedList = Array.isArray(list)
+    ? [...list].sort((a: any, b: any) => {
+        const aT = normalizeTitle(a);
+        const bT = normalizeTitle(b);
+        const ai = orderedTitles.indexOf(aT);
+        const bi = orderedTitles.indexOf(bT);
+
+        // If either is in the preferred order, use that ordering
+        if (ai !== -1 || bi !== -1) {
+          if (ai === -1) return 1;
+          if (bi === -1) return -1;
+          return ai - bi;
+        }
+
+        // Fallback: alphabetical by normalized title
+        return aT.localeCompare(bT);
+      })
+    : [];
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
       {/* Decorative Elements */}
@@ -30,11 +77,17 @@ export default function Footer() {
             transition={{ duration: 0.5 }}
           >
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#3C950D] to-[#2d7009] rounded-full flex items-center justify-center shadow-lg shadow-[#3C950D]/30">
-                <span className="text-xl">🍃</span>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center ">
+                <Image
+                  src="/logo.webp"
+                  alt="TeaHaven Logo"
+                  width={30}
+                  height={30}
+                  className="object-contain h-full w-full"
+                />
               </div>
-              <span className="text-[#3C950D] text-xl tracking-tight">
-                TeaHaven
+              <span className="text-[#3C950D] capitalize text-xl tracking-tight">
+                bharat gram udyogsangh
               </span>
             </div>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
@@ -57,62 +110,93 @@ export default function Footer() {
           </motion.div>
 
           {/* Quick Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <h3 className="mb-6 bg-gradient-to-r from-[#3C950D] to-[#2d7009] bg-clip-text text-transparent">
-              Quick Links
-            </h3>
-            <ul className="space-y-3 text-sm">
-              {["About Us", "Shop", "Blog", "Wholesale", "Track Order"].map(
-                (link, index) => (
-                  <li key={index}>
-                    <a
-                      href="#"
-                      className="text-gray-400 hover:text-[#3C950D] transition-colors flex items-center gap-2 group"
-                    >
-                      <span className="w-0 h-0.5 bg-[#3C950D] group-hover:w-2 transition-all" />
-                      {link}
-                    </a>
-                  </li>
-                )
-              )}
-            </ul>
-          </motion.div>
+          {sortedList.map((item: any, index: number) => {
+            if (
+              item.mainTitle?.includes("contact") ||
+              item._id?.includes("contact")
+            )
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  <h3 className="mb-6 capitalize bg-gradient-to-r from-[#3C950D] to-[#2d7009] bg-clip-text text-transparent">
+                    {(item?.mainTitle ?? item?._id ?? "")
+                      .toString()
+                      .replace(/-/g, " ")}
+                  </h3>
 
-          {/* Customer Service */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <h3 className="mb-6 bg-gradient-to-r from-[#3C950D] to-[#2d7009] bg-clip-text text-transparent">
-              Customer Service
-            </h3>
-            <ul className="space-y-3 text-sm">
-              {[
-                "Contact Us",
-                "Shipping Policy",
-                "Returns & Exchanges",
-                "Privacy Policy",
-                "Terms & Conditions",
-              ].map((link, index) => (
-                <li key={index}>
-                  <a
-                    href="#"
-                    className="text-gray-400 hover:text-[#3C950D] transition-colors flex items-center gap-2 group"
-                  >
-                    <span className="w-0 h-0.5 bg-[#3C950D] group-hover:w-2 transition-all" />
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
+                  <div>
+                    <div className="space-y-3 text-sm">
+                      {item.pages.map((page: any) => (
+                        <div key={page._id} className="space-y-3 text-sm flex flex-col  ">
+                          <p
+                            dangerouslySetInnerHTML={{
+                              __html: page.contactData?.appointmentNote ?? "",
+                            }}
+                            className="text-gray-400 text-sm"
+                          ></p>
+                          <a
+                            href={`mailto:${page.contactData?.email}`}
+                            className="text-gray-400 text-sm"
+                          >
+                            {page.contactData?.email}
+                          </a>
+                          <a
+                            href={`tel:${page.contactData?.phone}`}
+                            className="text-gray-400 text-sm"
+                          >
+                            {page.contactData?.phone}
+                          </a>
+                          <Link
+                            className="text-gray-400 hover:text-[#3C950D] transition-colors flex items-center gap-2 group"
+                            href={`contact`}
+                          >
+                            contact us
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <h3 className="mb-6 capitalize bg-gradient-to-r from-[#3C950D] to-[#2d7009] bg-clip-text text-transparent">
+                  {(item?.mainTitle ?? item?._id ?? "")
+                    .toString()
+                    .replace(/-/g, " ")}
+                </h3>
+                <ul className="space-y-3 text-sm">
+                  {Array.isArray(item.pages) &&
+                    item.pages.map((page: any, pageIndex: number) => (
+                      <li key={pageIndex}>
+                        <a
+                          href={
+                            page?.redirectBySlug
+                              ? `/${page.slug}`
+                              : `/pages/${page._id}`
+                          }
+                          className="text-gray-400 hover:text-[#3C950D] transition-colors flex items-center gap-2 group"
+                        >
+                          <span className="w-0 h-0.5 bg-[#3C950D] capitalize group-hover:w-2 transition-all" />
+                          {page.title}
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              </motion.div>
+            );
+          })}
 
           {/* Newsletter */}
           <motion.div
@@ -137,7 +221,7 @@ export default function Footer() {
                 Subscribe
               </Button>
             </div>
-            <div className="space-y-3 text-sm">
+            {/* <div className="space-y-3 text-sm">
               {[
                 { Icon: Phone, text: "+91 1234567890" },
                 { Icon: Mail, text: "info@teahaven.com" },
@@ -151,7 +235,7 @@ export default function Footer() {
                   <span>{text}</span>
                 </div>
               ))}
-            </div>
+            </div> */}
           </motion.div>
         </div>
 

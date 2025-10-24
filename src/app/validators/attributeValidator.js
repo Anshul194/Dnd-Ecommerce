@@ -13,3 +13,5 @@ export const attributeUpdateValidator = Joi.object({
   values: Joi.array().items(Joi.string()),
   status: Joi.string().valid('active', 'inactive'),
 });
+
+

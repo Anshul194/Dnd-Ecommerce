@@ -52,7 +52,7 @@ export function HeroSlider({ content }) {
                   {content[currentSlide].content.title}
                 </motion.h1>
                 <motion.p
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 30 }}  
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
                   className="text-lg md:text-xl lg:text-2xl mb-10 text-white/90 drop-shadow-lg"
