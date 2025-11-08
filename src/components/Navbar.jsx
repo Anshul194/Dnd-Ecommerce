@@ -159,7 +159,7 @@ export default function Navbar() {
                         About Us
                       </button>
                     </Link>
-                    <Link href={`/pages/contact-us`}>
+                    <Link href={`/contact`}>
                       <button
                         onClick={() => setIsOpen(false)}
                         className="w-full text-left px-4 py-3 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
