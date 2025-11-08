@@ -1107,41 +1107,7 @@ export default function CheckoutPopup() {
                         ))}
                     </select>
                   </div>
-                  <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "pincode"
-                        ? "border-blue-600"
-                        : "border-gray-300"
-                    } rounded-md`}
-                  >
-                    <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "pincode" || formData.pincode !== ""
-                          ? "-translate-y-6"
-                          : "translate-y-0"
-                      }`}
-                    >
-                      Pincode{" "}
-                      <span
-                        className={
-                          activeField === "pincode"
-                            ? "text-red-500"
-                            : "text-black"
-                        }
-                      >
-                        *
-                      </span>
-                    </h2>
-                    <input
-                      type="text"
-                      name="pincode"
-                      value={formData.pincode}
-                      onChange={handleInputChange}
-                      onFocus={() => setActiveField("pincode")}
-                      onBlur={() => setActiveField(null)}
-                      className="outline-none text-md   w-full border-0 h-full "
-                    />
-                  </div>
+                 
                   <div
                     className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
                       activeField === "firstName"
@@ -1499,6 +1465,41 @@ export default function CheckoutPopup() {
                         className="outline-none text-md   w-full border-0 h-full "
                       />
                     </div>
+                     <div
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
+                      activeField === "pincode"
+                        ? "border-blue-600"
+                        : "border-gray-300"
+                    } rounded-md`}
+                  >
+                    <h2
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
+                        activeField === "pincode" || formData.pincode !== ""
+                          ? "-translate-y-6"
+                          : "translate-y-0"
+                      }`}
+                    >
+                      Pincode{" "}
+                      <span
+                        className={
+                          activeField === "pincode"
+                            ? "text-red-500"
+                            : "text-black"
+                        }
+                      >
+                        *
+                      </span>
+                    </h2>
+                    <input
+                      type="text"
+                      name="pincode"
+                      value={formData.pincode}
+                      onChange={handleInputChange}
+                      onFocus={() => setActiveField("pincode")}
+                      onBlur={() => setActiveField(null)}
+                      className="outline-none text-md   w-full border-0 h-full "
+                    />
+                  </div>
                   </div>
 
                   <div

@@ -8,6 +8,7 @@ import https from "https"; // if using ES modules
 import { ShippingSchema } from "../models/Shipping.js";
 import path from "path";
 import fs from "fs";
+import { current } from "@reduxjs/toolkit";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -974,6 +975,34 @@ class OrderService {
     return services;
   }
 
+  //getOrderForTracking
+  async getAllOrdersForTracking(request, conn)  
+      {
+    try {
+      // Ensure User model is registered on this connection so populate('user') works
+      const User = conn.models.User || conn.model("User", UserSchema);
+
+      const orders = await this.orderRepository.getAllOrdersForTracking([
+        "items.product",
+        "items.variant",
+        "user",
+      ]);
+      console.log("Orders for tracking fetched:", orders.length);
+      return {
+        success: true,
+        message: "All orders for tracking fetched successfully",
+        data: orders,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
+    }
+  }
+  
+
   async getAllOrders(request, conn) {
     try {
       const searchParams = request.nextUrl.searchParams;
@@ -1225,7 +1254,7 @@ async generateDelhiveryLabel(order) {
   }
 
   //trackShipment
-  async trackShipment(order, trackingNumber, data) {
+  async trackShipment(order, trackingNumber) {
     const courier = order?.shipping_details?.platform;
     // console.log("Tracking shipment for courier:", courier);
     if (!courier) {
@@ -1265,10 +1294,10 @@ async generateDelhiveryLabel(order) {
 
     // Step 1: Authenticate to get token
     const authUrl = `https://blktracksvc.dtdc.com/dtdc-api/api/dtdc/authenticate?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
-    console.log("DTDC auth URL:", authUrl);
+    // console.log("DTDC auth URL:", authUrl);
     const authResp = await axios.get(authUrl);
-    console.log("DTDC auth response:", authResp.data);
-    const token = authResp.data?.token || authResp.data?.access_token;
+    // console.log("DTDC auth response:", authResp.data);
+    const token = process.env.DTDC_TRACK_TOKEN || authResp.data;
     if (!token) {
       throw new Error("Failed to get DTDC tracking token");
     }
@@ -1276,7 +1305,7 @@ async generateDelhiveryLabel(order) {
     // Step 2: Get tracking details
     const trackUrl = "https://blktracksvc.dtdc.com/dtdc-api/rest/JSONCnTrk/getTrackDetails";
     const payload = {
-      trkType: "reference",
+      trkType: "cnno",
       strcnno: referenceNumber,
       addtnlDtl: "Y",
     };
@@ -1286,12 +1315,101 @@ async generateDelhiveryLabel(order) {
         "x-access-token": token,
       },
     });
+    // Build structured status history from DTDC response and persist to order
+    const header = trackResp.data?.trackHeader || {};
+    const details = Array.isArray(trackResp.data?.trackDetails)
+      ? trackResp.data.trackDetails.slice()
+      : [];
+
+    // helper to parse DTDC date/time formats like "06112025" and "1252"
+    function parseDtdcDate(dateStr, timeStr) {
+      if (!dateStr) return null;
+      // expect DDMMYYYY (8 chars) or DDM M? fallback
+      const d = dateStr.length === 8 ? dateStr.slice(0, 2) : dateStr.slice(0, 2);
+      const m = dateStr.length === 8 ? dateStr.slice(2, 4) : dateStr.slice(2, 4);
+      const y = dateStr.length === 8 ? dateStr.slice(4) : dateStr.slice(4);
+      const hh = (timeStr && timeStr.length >= 2) ? timeStr.slice(0, 2) : "00";
+      const mm = (timeStr && timeStr.length >= 4) ? timeStr.slice(2, 4) : "00";
+      // return ISO string (UTC)
+      const iso = new Date(`${y}-${m}-${d}T${hh}:${mm}:00Z`);
+      return isNaN(iso.getTime()) ? null : iso.toISOString();
+    }
+
+    // map DTDC track details to a normalized history array
+    const statusHistory = details.map((d) => {
+      return {
+        code: d.strCode || d.strActionCode || null,
+        action: d.strAction || d.strAction || null,
+        manifest: d.strManifestNo || null,
+        origin: d.strOrigin || null,
+        destination: d.strDestination || null,
+        actionDate: parseDtdcDate(d.strActionDate || d.strActionDate, d.strActionTime || d.strActionTime),
+        remarks: d.sTrRemarks || d.strRemarks || null,
+        latitude: d.strLatitude || null,
+        longitude: d.strLongitude || null,
+        raw: d,
+      };
+    });
+
+    // include header summary as the latest/top-level status entry (if present)
+    if (header && Object.keys(header).length) {
+      const headerDate = parseDtdcDate(header.strStatusTransOn || header.strExpectedDeliveryDate, header.strStatusTransTime || header.strStatusTransTime);
+      statusHistory.push({
+        code: header.strStatusRelCode || null,
+        action: header.strStatus || header.strCNProduct || null,
+        manifest: header.strRtoNumber || header.strRefNo || null,
+        origin: header.strOrigin || null,
+        destination: header.strDestination || null,
+        actionDate: headerDate,
+        remarks: header.strRemarks || null,
+        raw: header,
+      });
+    }
+
+    // sort history by date asc (oldest first). items with null date go to end.
+    statusHistory.sort((a, b) => {
+      if (!a.actionDate && !b.actionDate) return 0;
+      if (!a.actionDate) return 1;
+      if (!b.actionDate) return -1;
+      return new Date(a.actionDate) - new Date(b.actionDate);
+    });
+
+    // derive a friendly current status (prefer header.strStatus, fallback to last history action)
+    const latestStatus =
+      header.strStatus ||
+      statusHistory.length
+        ? (statusHistory[statusHistory.length - 1]?.action || statusHistory[statusHistory.length - 1]?.raw?.strAction || null)
+        : null;
+
+    // ensure the response has a place where existing code expects statusDescription
+    if (Array.isArray(trackResp.data.trackDetails) && trackResp.data.trackDetails.length) {
+      trackResp.data.trackDetails[0].statusDescription = trackResp.data.trackDetails[0].statusDescription || latestStatus;
+    } else {
+      // create a synthetic entry so downstream code can read statusDescription
+      trackResp.data.trackDetails = [{ statusDescription: latestStatus }];
+    }
+
+    // prepare shipping_details payload and persist
+    const shippingDetails = {
+      ...order.shipping_details,
+      platform: order.shipping_details?.platform || "dtdc",
+      reference_number: header.strShipmentNo || header.strRefNo || order.shipping_details?.reference_number || null,
+      tracking_url: order.shipping_details?.tracking_url || `https://www.dtdc.in/tracking?awb=${header.strShipmentNo || header.strRefNo || ""}`,
+      status_history: statusHistory,
+      current_status: latestStatus || order.status || "unknown",
+      last_updated: new Date().toISOString(),
+      raw_response: trackResp.data,
+    };
+
+    console.log("DTDC tracking details to be saved:", shippingDetails);
+
+    await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
+    
 
     return {
       success: true,
       message: "DTDC tracking fetched successfully",
       trackingNumber: referenceNumber,
-      data: trackResp.data,
     };
   }
 

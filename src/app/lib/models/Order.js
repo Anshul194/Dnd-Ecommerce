@@ -122,6 +122,10 @@ const orderSchema = new mongoose.Schema(
       tracking_url: { type: String, default: null },
       raw_response: { type: Object, default: null }, // Store full API response safely
       labelUrl: { type: String, default: null },
+      status_history: { type: Array, default: [] }, // Array of status updates
+      current_status: { type: String, default: null }, // Latest status
+      last_updated: { type: Date, default: Date.now },
+      
     }
   },
   {
