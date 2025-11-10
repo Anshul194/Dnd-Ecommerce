@@ -436,6 +436,7 @@ const DynamicProductSlider = ({ content }) => {
                             className="w-full h-full object-cover rounded-lg"
                             // controls
                             autoPlay
+                            muted
                           />
                         ) : (
                           <img
