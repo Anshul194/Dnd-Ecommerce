@@ -33,7 +33,6 @@ const DASHBOARD_CARDS = [
 ];
 
 const Dashboard = React.memo(({ user }) => {
-
   return (
     <>
       {/* Dashboard Content */}
@@ -86,13 +85,15 @@ const Dashboard = React.memo(({ user }) => {
 
       {/* Dashboard Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-  {DASHBOARD_CARDS.map((card, index) => (
+        {DASHBOARD_CARDS.map((card, index) => (
           <div
             key={index}
             className="bg-white rounded-lg p-6 text-center shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer"
           >
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 hover:bg-red-200 transition-colors">
-              {card.icon ? <card.icon size={24} className="text-red-600" /> : null}
+              {card.icon ? (
+                <card.icon size={24} className="text-red-600" />
+              ) : null}
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">{card.title}</h3>
             <p className="text-sm text-gray-600 mb-4">{card.description}</p>

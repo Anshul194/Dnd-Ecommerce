@@ -451,7 +451,7 @@ const AccountDetails = () => {
       )}
 
       {/* Account Statistics */}
-      {isAuthenticated && (
+      {/* {isAuthenticated && (
         <div className="bg-white rounded-lg p-6 shadow-sm">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
             Account Statistics
@@ -459,7 +459,7 @@ const AccountDetails = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600 mb-1">
-                {orders.length > 0 ? orders.length : 0}
+                {orders?.length > 0 ? orders?.length : 0}
               </div>
               <div className="text-sm text-gray-600">Total Orders</div>
             </div>
@@ -479,7 +479,7 @@ const AccountDetails = () => {
             )}
           </div>
         </div>
-      )}
+      )} */}
 
       {!isAuthenticated && (
         <div className="bg-white rounded-lg p-6 shadow-sm">

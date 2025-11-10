@@ -165,7 +165,9 @@ const Wishlist = () => {
                 )} */}
                 {/* Remove from Wishlist */}
                 <button
-                  onClick={() => handleRemoveItemFromWishlist(item.product._id)}
+                  onClick={() =>
+                    handleRemoveItemFromWishlist(item?.product?._id)
+                  }
                   className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow group"
                 >
                   <Heart
@@ -198,15 +200,15 @@ const Wishlist = () => {
                   {item?.variant?.salePrice ? (
                     <>
                       <span className="text-lg font-bold text-gray-900">
-                         ₹{item?.variant?.salePrice}
+                        ₹{item?.variant?.salePrice}
                       </span>
                       <span className="text-lg line-through font-bold text-gray-900">
-                         ₹{item?.variant?.price}
+                        ₹{item?.variant?.price}
                       </span>
                     </>
                   ) : (
                     <span className="text-lg font-bold text-gray-900">
-                       ₹{item?.variant?.price}
+                      ₹{item?.variant?.price}
                     </span>
                   )}
                 </div>

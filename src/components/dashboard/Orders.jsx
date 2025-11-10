@@ -206,14 +206,14 @@ const Orders = () => {
 
   useEffect(() => {
     // Fetch orders only once when user._id changes
-    if (user?._id && orders.length === 0) {
+    if (user?._id && orders?.length === 0) {
       dispatch(
         fetchOrders({
           userId: user._id,
         })
       );
     }
-  }, [dispatch, user?._id, orders.length]);
+  }, [dispatch, user?._id, orders?.length]);
 
   useEffect(() => {
     // Only fetch order details if not already loaded

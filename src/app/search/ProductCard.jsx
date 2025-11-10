@@ -120,8 +120,8 @@ const ProductCard = ({ product }) => {
             {/* Product Image */}
             <div className="flex h-40  justify-center items-center">
               <Image
-                src={product?.thumbnail?.url || product.images[0]?.url}
-                alt={product?.thumbnail?.alt || product.images[0]?.alt}
+                src={product?.thumbnail?.url || product.images?.[0]?.url}
+                alt={product?.thumbnail?.alt || product.images?.[0]?.alt}
                 width={160}
                 height={120}
                 className="object-cover h-full w-full"
@@ -132,16 +132,16 @@ const ProductCard = ({ product }) => {
           <div className="p-2">
             {/* Title */}
             <h3 className="text-xs  bg-[#F1FAEE] w-fit p-1 px-3 text poppins-medium  mb-1">
-              {product.name.slice(0, 27)}
+              {product?.name?.slice(0, 27)}
               {""}
-              {product.name.length > 29 ? "..." : ""}
+              {product?.name?.length > 29 ? "..." : ""}
             </h3>
 
             {/* Description */}
             <div
               className="text-sm h-10 text-black poppins-medium mb-3"
               dangerouslySetInnerHTML={{
-                __html: product.description.slice(0, 50),
+                __html: product?.description?.slice(0, 50),
               }}
             ></div>
           </div>
@@ -179,8 +179,8 @@ const ProductCard = ({ product }) => {
                 <div className="flex items-center space-x-1 pt-1">
                   <span className="text-orange-400 text-sm">⭐</span>
                   <span className="text-sm font-medium text-gray-700">
-                    {product.rating.Average || 4.5} ({product.reviewCount || 1}{" "}
-                    reviews)
+                    {product?.rating?.Average || 4.5} (
+                    {product?.reviewCount || 1} reviews)
                   </span>
                 </div>
               </div>

@@ -484,13 +484,15 @@ export default function Navbar() {
 
               {/* Logo */}
               <div className="flex items-center gap-2">
-                <Image
-                  src="/logo.webp"
-                  alt="TeaHaven Logo"
-                  width={40}
-                  height={40}
-                  className="rounded-full h-10 w-10 object-cover"
-                />
+                <Link href="/" className="text-black">
+                  <Image
+                    src="/logo.webp"
+                    alt="TeaHaven Logo"
+                    width={40}
+                    height={40}
+                    className="rounded-full h-10 w-10 object-cover"
+                  />
+                </Link>
               </div>
             </div>
 
