@@ -65,7 +65,7 @@ export default function PremiumIngredientsUI({ data }) {
               </span>
             </div>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black mb-6 bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 bg-clip-text text-transparent">
+          <h1 className="text-6xl pb-2 md:text-8xl font-black mb-6 bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 bg-clip-text text-transparent">
             Ingredients
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
