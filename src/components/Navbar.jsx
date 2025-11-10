@@ -258,11 +258,7 @@ export default function Navbar() {
                             </h3>
                             <div className="grid grid-cols-4 gap-4 max-h-[50%]  overflow-y-scroll">
                               {products?.products?.length > 0 &&
-                                [
-                                  ...products?.products,
-                                  ...products?.products,
-                                  ...products?.products,
-                                ]?.map((product) => (
+                               products?.products?.map((product) => (
                                   <Link
                                     key={product._id}
                                     href={`/productDetail/${product.slug}`}
