@@ -132,7 +132,10 @@ export default function Footer() {
                   <div>
                     <div className="space-y-3 text-sm">
                       {item.pages.map((page: any) => (
-                        <div key={page._id} className="space-y-3 text-sm flex flex-col  ">
+                        <div
+                          key={page._id}
+                          className="space-y-3 text-sm flex flex-col  "
+                        >
                           <p
                             dangerouslySetInnerHTML={{
                               __html: page.contactData?.appointmentNote ?? "",
@@ -238,6 +241,37 @@ export default function Footer() {
             </div> */}
           </motion.div>
         </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400"
+        >
+          <h2>We Accept</h2>
+
+          <div>
+            {[
+              { src: "/payments/gpay.png", alt: "Google Pay" },
+              { src: "/payments/netbanking.png", alt: "Net Banking" },
+              { src: "/payments/paypal.png", alt: "PayPal" },
+              { src: "/payments/PhonePe.png", alt: "PhonePe" },
+              { src: "/payments/Rupay.png", alt: "Rupa" },
+              { src: "/payments/UPI.png", alt: "UPI" },
+              { src: "/payments/visa.png", alt: "Visa" },
+            ].map((payment, index) => (
+              <Image
+                key={index}
+                src={payment.src}
+                alt={payment.alt}
+                width={50}
+                height={30}
+                className="h-10 min-w-20 w-fit rounded-md  inline-block mx-2"
+              />
+            ))}
+          </div>
+        </motion.div>
 
         {/* Bottom Bar */}
         <motion.div

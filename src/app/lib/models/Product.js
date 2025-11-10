@@ -89,6 +89,10 @@ const productSchema = new mongoose.Schema(
         alt: String,
       },
     ],
+    storyVideoUrl: {
+      type: String,
+      default: null,
+    },
     // Description Media Section
     descriptionImages: [
       {

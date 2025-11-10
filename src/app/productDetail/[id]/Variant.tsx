@@ -1,4 +1,3 @@
-
 export const COMPONENT_TYPES = {
   IMAGES: "images",
   DETAILS: "details",
@@ -76,6 +75,14 @@ export const COMPONENT_VARIANTS = {
       label: "Scrolling",
       description: "Interactive scroll-based ingredient showcase",
     },
+    modern: {
+      label: "Modern",
+      description: "Sleek modern ingredient display",
+    },
+    premium: {
+      label: "Premium",
+      description: "Luxury ingredient presentation",
+    },
   },
   [COMPONENT_TYPES.COUPONS]: {
     slider: {
@@ -129,8 +136,6 @@ import { ProductDetails } from "./Components/ProductDetail";
 import { Description } from "./Components/description";
 import { HowToUse } from "./Components/HowToUse";
 import { Coupons } from "./Components/coupons";
-
-
 
 export function ComponentRenderer({
   component,
