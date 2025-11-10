@@ -256,10 +256,13 @@ export default function Navbar() {
                               <span className="w-1 h-6 bg-[#3C950D] rounded-full"></span>
                               Featured Products
                             </h3>
-                            <div className="grid grid-cols-4 gap-4">
-                              {products?.products
-                                ?.slice(0, 6)
-                                ?.map((product) => (
+                            <div className="grid grid-cols-4 gap-4 max-h-[50%]  overflow-y-scroll">
+                              {products?.products?.length > 0 &&
+                                [
+                                  ...products?.products,
+                                  ...products?.products,
+                                  ...products?.products,
+                                ]?.map((product) => (
                                   <Link
                                     key={product._id}
                                     href={`/productDetail/${product.slug}`}
