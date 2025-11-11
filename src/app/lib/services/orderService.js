@@ -1401,7 +1401,7 @@ async generateDelhiveryLabel(order) {
       raw_response: trackResp.data,
     };
 
-    console.log("DTDC tracking details to be saved:", shippingDetails);
+    // console.log("DTDC tracking details to be saved:", shippingDetails);
 
     await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
     
@@ -1416,26 +1416,111 @@ async generateDelhiveryLabel(order) {
   // Delhivery tracking
   async trackDelhiveryShipment(order) {
     try {
-      const waybill = order?.shipping_details?.waybill;
-      if (!waybill) {
-        throw new Error("Waybill number not found in order shipping details");
+      const referenceNumber = order?.shipping_details?.reference_number;
+      if (!referenceNumber) {
+        throw new Error("Reference number not found in order shipping details");
       }
 
-      const apiUrl = `https://track.delhivery.com/api/v1/packages/json/?waybill=${waybill}`;
-      
+      const apiUrl = `https://track.delhivery.com/api/v1/packages/json/?waybill=${referenceNumber}`;
+
+      console.log("Fetching Delhivery tracking for waybill:", referenceNumber);
+      console.log("Delhivery tracking API URL:", apiUrl);
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
-      console.log("Delhivery tracking response:", response.data);
+      // Normalize response payload (supporting various shapes)
+      const respData = response.data || {};
+      const shipmentArray =
+        Array.isArray(respData.ShipmentData) && respData.ShipmentData.length
+          ? respData.ShipmentData
+          : respData.ShipmentData
+          ? [respData.ShipmentData]
+          : respData.Shipment
+          ? [{ Shipment: respData.Shipment }]
+          : [];
+
+      const firstEntry = shipmentArray[0];
+      const shipment = firstEntry ? firstEntry.Shipment || firstEntry : null;
+
+      // Build status history from Scans and top-level Status
+      const statusHistory = [];
+
+      if (shipment?.Scans && Array.isArray(shipment.Scans)) {
+        for (const scanWrapper of shipment.Scans) {
+          const sd = scanWrapper?.ScanDetail || scanWrapper;
+          const dateStr = sd?.ScanDateTime || sd?.StatusDateTime || null;
+          statusHistory.push({
+        code: sd?.StatusCode || null,
+        action: sd?.Scan || sd?.ScanType || sd?.Status || null,
+        manifest: shipment?.AWB || shipment?.ReferenceNo || null,
+        origin: sd?.ScannedLocation || shipment?.Origin || shipment?.PickupLocation || null,
+        destination:
+          shipment?.Consignee?.City ||
+          shipment?.Destination ||
+          (shipment?.Consignee?.PinCode ? String(shipment.Consignee.PinCode) : null),
+        actionDate: dateStr ? new Date(dateStr).toISOString() : null,
+        remarks: sd?.Instructions || sd?.Remarks || null,
+        raw: sd,
+          });
+        }
+      }
+
+      if (shipment?.Status) {
+        const s = shipment.Status;
+        const dateStr = s?.StatusDateTime || s?.StatusDateTime || null;
+        statusHistory.push({
+          code: s?.StatusCode || null,
+          action: s?.Status || s?.StatusType || null,
+          manifest: shipment?.AWB || shipment?.ReferenceNo || null,
+          origin: s?.StatusLocation || shipment?.Origin || null,
+          destination: shipment?.Consignee?.City || shipment?.Destination || null,
+          actionDate: dateStr ? new Date(dateStr).toISOString() : null,
+          remarks: s?.Instructions || null,
+          raw: s,
+        });
+      }
+
+      // sort by date ascending (oldest first). Null dates go to end.
+      statusHistory.sort((a, b) => {
+        if (!a.actionDate && !b.actionDate) return 0;
+        if (!a.actionDate) return 1;
+        if (!b.actionDate) return -1;
+        return new Date(a.actionDate) - new Date(b.actionDate);
+      });
+
+      // derive readable latest status
+      const latestStatus =
+        (shipment?.Status && shipment.Status.Status) ||
+        (statusHistory.length ? statusHistory[statusHistory.length - 1]?.action : null) ||
+        null;
+
+      // prepare shipping_details payload for DB
+      const referenceNum = shipment?.AWB || shipment?.ReferenceNo || referenceNumber;
+      const shippingDetails = {
+        ...order.shipping_details,
+        platform: "delhivery",
+        reference_number: referenceNum,
+        waybill: shipment?.AWB || shippingDetails?.waybill || referenceNum,
+        tracking_url: `https://track.delhivery.com/api/v1/packages/json/?waybill=${referenceNum}`,
+        status_history: statusHistory,
+        current_status: latestStatus || order.status || "unknown",
+        last_updated: new Date().toISOString(),
+        raw_response: respData,
+      };
+
+      // persist shipping details to order
+      await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
+
+      
 
       return {
         success: true,
         message: "Delhivery tracking fetched successfully",
-        trackingNumber: waybill,
+        trackingNumber: referenceNumber,
         data: response.data,
       };
     } catch (error) {
@@ -1636,7 +1721,7 @@ async createDelhiveryShipment(order, shipping) {
     if (res.data.success === true || res.data.package_count > 0) {
       const shippingDetails = {
         platform: "delhivery",
-        waybill: masterWaybill,
+        reference_number: masterWaybill,
         tracking_url: `https://www.delhivery.com/track/package/${masterWaybill}`,
         raw_response: res.data,
         created_at: new Date(),

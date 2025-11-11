@@ -245,7 +245,7 @@ class OrderRepository extends CrudRepository {
   //updateOrder
   async updateOrder(orderId, updateData) {
     try {
-        console.log('Updating order:', orderId, 'with data:', updateData);
+        // console.log('Updating order:', orderId, 'with data:', updateData);
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
       }
@@ -254,7 +254,7 @@ class OrderRepository extends CrudRepository {
       if (!updatedOrder) {
         throw new Error('Order not found');
       }
-      console.log('Order updated successfully:', updatedOrder);
+      // console.log('Order updated successfully:', updatedOrder);
       return updatedOrder;
     } catch (error) {
       console.error('OrderRepository updateOrder Error:', error.message);
