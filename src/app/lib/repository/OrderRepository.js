@@ -107,8 +107,27 @@ class OrderRepository extends CrudRepository {
       const queryFilters = { ...filterConditions, user: userId };
       let query = this.model.find(queryFilters).select(selectFields);
 
+      // Only populate fields that actually exist on the model schema or as virtuals
       if (populateFields.length > 0) {
-        populateFields.forEach((field) => {
+        const validPopulateFields = populateFields.filter((field) => {
+          let root;
+          if (typeof field === "string") {
+            root = field.split(".")[0];
+          } else if (field && typeof field === "object") {
+            root = (field.path || "").split(".")[0];
+          } else {
+            return false;
+          }
+          const hasPath =
+            !!this.model.schema.path(root) ||
+            !!(this.model.schema.virtuals && this.model.schema.virtuals[root]);
+          if (!hasPath) {
+            console.warn(`Skipping populate for missing field: ${root}`);
+          }
+          return hasPath;
+        });
+
+        validPopulateFields.forEach((field) => {
           query = query.populate(field);
         });
       }
@@ -161,14 +180,37 @@ class OrderRepository extends CrudRepository {
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
       }
-      // if (!mongoose.Types.ObjectId.isValid(userId)) {
-      //   throw new Error(`Invalid userId: ${userId}`);
-      // }
 
-      let query = this.model.findOne({ _id: orderId }).select(selectFields);
+      const queryFilters = { _id: orderId };
+      if (userId) {
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+          throw new Error(`Invalid userId: ${userId}`);
+        }
+        queryFilters.user = userId;
+      }
+
+      let query = this.model.findOne(queryFilters).select(selectFields);
 
       if (populateFields.length > 0) {
-        populateFields.forEach((field) => {
+        const validPopulateFields = populateFields.filter((field) => {
+          let root;
+          if (typeof field === "string") {
+            root = field.split(".")[0];
+          } else if (field && typeof field === "object") {
+            root = (field.path || "").split(".")[0];
+          } else {
+            return false;
+          }
+          const hasPath =
+            !!this.model.schema.path(root) ||
+            !!(this.model.schema.virtuals && this.model.schema.virtuals[root]);
+          if (!hasPath) {
+            console.warn(`Skipping populate for missing field: ${root}`);
+          }
+          return hasPath;
+        });
+
+        validPopulateFields.forEach((field) => {
           query = query.populate(field);
         });
       }

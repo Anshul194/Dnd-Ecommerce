@@ -592,22 +592,22 @@ const Orders = () => {
                       </div>
                       <div className="text-gray-600 space-y-1">
                         <p className="font-medium text-gray-900">
-                          {currentOrder.shippingAddress.fullName}
+                          {currentOrder?.shippingAddress?.fullName}
                         </p>
-                        <p>{currentOrder.shippingAddress.addressLine1}</p>
-                        <p>{currentOrder.shippingAddress.addressLine2}</p>
+                        <p>{currentOrder?.shippingAddress?.addressLine1}</p>
+                        <p>{currentOrder?.shippingAddress?.addressLine2}</p>
                         <p>
-                          {currentOrder.shippingAddress.city},{" "}
-                          {currentOrder.shippingAddress.state}
+                          {currentOrder?.shippingAddress?.city},{" "}
+                          {currentOrder?.shippingAddress?.state}
                         </p>
                         <p>
-                          {currentOrder.shippingAddress.postalCode},{" "}
-                          {currentOrder.shippingAddress.country}
+                          ?{currentOrder?.shippingAddress?.postalCode},{" "}
+                          {currentOrder?.shippingAddress?.country}
                         </p>
                         <div className="flex items-center space-x-1 pt-2">
                           <Phone className="w-4 h-4 text-gray-400" />
                           <span className="text-sm">
-                            {currentOrder.shippingAddress.phoneNumber}
+                            {currentOrder?.shippingAddress?.phoneNumber}
                           </span>
                         </div>
                       </div>
@@ -622,22 +622,22 @@ const Orders = () => {
                       </div>
                       <div className="text-gray-600 space-y-1">
                         <p className="font-medium text-gray-900">
-                          {currentOrder.billingAddress.fullName}
+                          {currentOrder?.billingAddress?.fullName}
                         </p>
-                        <p>{currentOrder.billingAddress.addressLine1}</p>
-                        <p>{currentOrder.billingAddress.addressLine2}</p>
+                        <p>{currentOrder?.billingAddress?.addressLine1}</p>
+                        <p>{currentOrder?.billingAddress?.addressLine2}</p>
                         <p>
-                          {currentOrder.billingAddress.city},{" "}
-                          {currentOrder.billingAddress.state}
+                          {currentOrder?.billingAddress?.city},{" "}
+                          {currentOrder?.billingAddress?.state}
                         </p>
                         <p>
-                          {currentOrder.billingAddress.postalCode},{" "}
-                          {currentOrder.billingAddress.country}
+                          {currentOrder?.billingAddress?.postalCode},{" "}
+                          {currentOrder?.billingAddress?.country}
                         </p>
                         <div className="flex items-center space-x-1 pt-2">
                           <Phone className="w-4 h-4 text-gray-400" />
                           <span className="text-sm">
-                            {currentOrder.billingAddress.phoneNumber}
+                            {currentOrder?.billingAddress?.phoneNumber}
                           </span>
                         </div>
                       </div>
