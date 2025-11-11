@@ -4,17 +4,16 @@ import { EmailTemplateSchema } from '../models/EmailTemplate.js';
 
 class EmailService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: process.env.SMTP_PORT || 587,
-      secure: process.env.SMTP_SECURE === 'true', // false for STARTTLS on port 587
+        this.transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.zoho.com',
+      port: Number(process.env.SMTP_PORT) || 465,
+      secure: process.env.SMTP_SECURE === 'true', // true for port 465
       auth: {
-        user: process.env.SMTP_USER || 'smaisuriya1206@gmail.com',
-        pass: process.env.SMTP_PASS || 'ggvnspbrwdfkvkkw',
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
       tls: {
-        // Temporary workaround for self-signed certificate error
-        rejectUnauthorized: false,
+        rejectUnauthorized: false, // optional
       },
     });
   }
@@ -22,11 +21,14 @@ class EmailService {
   async sendEmail({ to, subject, html, from }) {
     try {
       const mailOptions = {
-        from: from || process.env.EMAIL_FROM || 'smaisuriya1206@gmail.com',
+        from: from || process.env.EMAIL_FROM || process.env.SMTP_USER,
         to,
         subject,
         html,
       };
+
+      console.log('Sending email with options:', mailOptions);
+      
       const info = await this.transporter.sendMail(mailOptions);
       console.log('Email sent:', info.messageId);
       return { success: true, message: 'Email sent successfully', data: info };
