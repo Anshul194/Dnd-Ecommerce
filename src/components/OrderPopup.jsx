@@ -3,6 +3,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { CheckCircle, XCircle, X, ShoppingBag } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { LoadingSpinner } from "./common/Loading";
+import Link from "next/link";
 
 const OrderPopup = () => {
   const searchParams = useSearchParams();
@@ -13,13 +14,6 @@ const OrderPopup = () => {
 
   const closePopup = () => {
     router.push(pathname);
-  };
-
-  const handleExplore = () => {
-    // Add your navigation logic here
-    console.log("Navigating to explore page...");
-    closePopup();
-    router.push("/search");
   };
 
   const handleTryAgain = () => {
@@ -72,13 +66,12 @@ const OrderPopup = () => {
               </p>
 
               <div className="space-y-3">
-                <button
-                  onClick={handleExplore}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-                >
-                  <ShoppingBag size={20} />
-                  Explore More Products
-                </button>
+                <Link href="/search">
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
+                    <ShoppingBag size={20} />
+                    Explore More Products
+                  </button>
+                </Link>
 
                 <button
                   onClick={closePopup}

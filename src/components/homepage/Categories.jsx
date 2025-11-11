@@ -57,7 +57,7 @@ const Categories = ({ dynamicContent = null }) => {
           }
         }
       `}</style>
-      <div className="flex relative flex-col lg:flex-row justify-between w-full h-fit py-20 px-4 lg:px-0">
+      <div className="flex relative flex-col gap-8 justify-between w-full h-fit py-20 px-4 lg:px-0">
         <div className="absolute -left-30 md:-left-1/4 top-3/4 transform -translate-y-1/2 z-50">
           <Image
             className="w-[40vh] md:w-[50vh] rotate-[140deg] max-h-[600px]"
@@ -67,11 +67,11 @@ const Categories = ({ dynamicContent = null }) => {
             height="auto"
           />
         </div>
-        <div className="flex-1 relative lg:max-w-xl mb-8 lg:mb-0 lg:mr-8">
-          <h1 className="!font-bebas text-4xl md:text-5xl font-black text-gray-800 leading-tight mb-6">
+        <div className="flex-1 flex  flex-col relative lg:max-w-xl mb-8 lg:mb-0 ">
+          <h1 className="!font-bebas text-4xl  md:text-5xl font-black text-gray-800 leading-tight mb-6">
             {dynamicContent?.title || "WHAT'S YOUR PICK?"}
           </h1>
-          <p className="text-black font-medium text-lg mt-2">
+          <p className="text-black font-medium  text-lg mt-2">
             {dynamicContent?.description ? (
               <span
                 dangerouslySetInnerHTML={{ __html: dynamicContent.description }}
@@ -95,21 +95,21 @@ const Categories = ({ dynamicContent = null }) => {
               </>
             )}
           </p>
-          <Link href={dynamicContent?.cta?.link || "/shop"}>
-            <button className="mt-4 relative z-50 bg text-white px-6 py-2 rounded hover:bg-green-700 transition-colors">
+          <Link className="w-fit " href={dynamicContent?.cta?.link || "/shop"}>
+            <button className="mt-4   z-50 bg text-white px-6 py-2 rounded hover:bg-green-700 transition-colors">
               {dynamicContent?.cta?.title || "Explore"}
             </button>
           </Link>
         </div>
 
         <div>
-          <div className="w-full lg:max-w-xl">
+          <div className="w-full ">
             {categories.length > 6 ? (
               // Render as slider when more than 6 categories
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 spaceBetween={16}
-                slidesPerView={2}
+                slidesPerView={3}
                 navigation
                 pagination={{ clickable: true }}
                 autoplay={{
@@ -122,35 +122,34 @@ const Categories = ({ dynamicContent = null }) => {
                     spaceBetween: 16,
                   },
                   768: {
-                    slidesPerView: 3,
+                    slidesPerView: 4,
                     spaceBetween: 16,
                   },
                   1024: {
-                    slidesPerView: 3,
+                    slidesPerView: 4,
                     spaceBetween: 16,
                   },
+                  
                 }}
                 className="categories-swiper"
               >
                 {categories.map((item, index) => (
                   <SwiperSlide key={index}>
                     <Link
-                      href={`/search?category=${item.slug}`}
+                      href={`/search?category=${item._id}`}
                       className="block"
                     >
-                      <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-lg flex flex-col overflow-hidden hover:shadow-md transition-shadow min-h-48">
-                        <div className="f h-40 w-full">
-                          <Image
-                            width={100}
-                            height={100}
-                            src={item?.thumbnail || "/placeholder.png"}
-                            alt="Tea product"
-                            className="w-full h-full"
-                          />
-                        </div>
-                        <div className="bg h-20 px-2 text-white text-sm py-2 flex  justify-center w-full font-medium">
+                      <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-lg flex flex-col overflow-hidden hover:shadow-md transition-shadow  h-72">
+                        <Image
+                          width={100}
+                          height={100}
+                          src={item?.thumbnail || "/placeholder.png"}
+                          alt="Tea product"
+                          className="w-full h-full object-cover"
+                        />
+                        {/* <div className="bg h-20 px-2 text-white text-sm py-2 flex  justify-center w-full font-medium">
                           {item?.name}
-                        </div>
+                        </div> */}
                       </div>
                     </Link>
                   </SwiperSlide>

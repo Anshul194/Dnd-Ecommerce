@@ -33,8 +33,8 @@ const itemVariants = {
 };
 
 export function CustomerFavorites({ content }) {
-  const { products } = useSelector((state) => state.product.products);
-
+  const { products } = useSelector((state) => state.product);
+  console.log("products is =========>", products);
   const dispatch = useDispatch();
 
   const handleAddToCart = (product) => {
@@ -103,54 +103,59 @@ export function CustomerFavorites({ content }) {
           viewport={{ once: true }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {products?.map((product, index) => (
-            <Link href={`/productDetail/${product.slug}`} key={product._id}>
-              <motion.div key={product.id} variants={itemVariants}>
-                <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="relative overflow-hidden">
-                      <ImageWithFallback
-                        src={product?.thumbnail?.url || product?.images[0]?.url}
-                        alt={
-                          product?.thumbnail?.alt ||
-                          product?.images[0]?.alt ||
-                          product.name
-                        }
-                        className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      {product.rating > 3 && (
-                        <div className="absolute top-4 right-4 bg-gradient-to-r from-[#3C950D] to-[#2d7009] text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
-                          <Star className="w-4 h-4 fill-current" />
-                          <span className="text-sm">{product.rating}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      <h3 className="mb-3 h-12 group-hover:text-[#3C950D] transition-colors">
-                        {product.name}
-                      </h3>
-                      <div
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleAddToCart(product);
-                        }}
-                        className="flex items-center justify-between"
-                      >
-                        <span className="text-[#3C950D]">{product.price}</span>
-                        <Button
-                          size="sm"
-                          className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] shadow-lg hover:shadow-xl transition-all"
-                        >
-                          <ShoppingCart className="w-4 h-4 text-white" />
-                        </Button>
+          {products &&
+            products?.products?.map((product, index) => (
+              <Link href={`/productDetail/${product.slug}`} key={product._id}>
+                <motion.div key={product.id} variants={itemVariants}>
+                  <Card className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden">
+                    <CardContent className="p-0">
+                      <div className="relative overflow-hidden">
+                        <ImageWithFallback
+                          src={
+                            product?.thumbnail?.url || product?.images[0]?.url
+                          }
+                          alt={
+                            product?.thumbnail?.alt ||
+                            product?.images[0]?.alt ||
+                            product.name
+                          }
+                          className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        {product.rating > 3 && (
+                          <div className="absolute top-4 right-4 bg-gradient-to-r from-[#3C950D] to-[#2d7009] text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg">
+                            <Star className="w-4 h-4 fill-current" />
+                            <span className="text-sm">{product.rating}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Link>
-          ))}
+                      <div className="p-5">
+                        <h3 className="mb-3 h-12 group-hover:text-[#3C950D] transition-colors">
+                          {product.name}
+                        </h3>
+                        <div
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleAddToCart(product);
+                          }}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-[#3C950D]">
+                            {product.price}
+                          </span>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] shadow-lg hover:shadow-xl transition-all"
+                          >
+                            <ShoppingCart className="w-4 h-4 text-white" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </Link>
+            ))}
         </motion.div>
       </div>
     </section>
