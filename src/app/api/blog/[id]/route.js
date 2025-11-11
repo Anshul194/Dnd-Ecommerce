@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const { id } = params;
+    const { id } = await params;
     const repo = new BlogRepository(conn);
     let blog;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -37,7 +37,7 @@ export async function PATCH(request, { params }) {
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const { id } = params;
+    const { id } = await params;
     const form = await request.formData();
     const result = await updateBlogController(form, conn, id);
     return NextResponse.json(result.body, { status: result.status });
@@ -54,7 +54,7 @@ export async function DELETE(request, { params }) {
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const { id } = params;
+    const { id } = await params;
     const result = await deleteBlogController(conn, id);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
