@@ -150,7 +150,7 @@ export default function Navbar() {
                     <Link href={`/search`}>
                       <button
                         onClick={() => setIsOpen(false)}
-                        className="w-full text-left px-4 py-3 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
+                        className="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
                       >
                         All Products
                       </button>
@@ -158,7 +158,7 @@ export default function Navbar() {
 
                     <div className="border-t border-gray-200 my-2"></div>
 
-                    <p className="px-4 py-2 text-sm font-semibold text-gray-500">
+                    <p className="px-4 py-2 text-sm font-semibold text-gray-800">
                       Categories
                     </p>
                     {categories.map((category, index) => (
@@ -168,7 +168,7 @@ export default function Navbar() {
                       >
                         <button
                           onClick={() => setIsOpen(false)}
-                          className="w-full text-left px-4 py-3 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
+                          className="w-full text-left px-4 text-gray-500 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
                         >
                           {category?.name}
                         </button>
@@ -180,7 +180,7 @@ export default function Navbar() {
                     <Link href={`/pages/68fb0ce58b4cf00083b826d2`}>
                       <button
                         onClick={() => setIsOpen(false)}
-                        className="w-full text-left px-4 py-3 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
+                        className="w-full text-left px-4  text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
                       >
                         About Us
                       </button>
@@ -189,7 +189,7 @@ export default function Navbar() {
                     <Link href={`/contact`}>
                       <button
                         onClick={() => setIsOpen(false)}
-                        className="w-full text-left px-4 py-3 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
+                        className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
                       >
                         Contact Us
                       </button>
@@ -464,7 +464,7 @@ export default function Navbar() {
                 {filteredBlogs.length === 0 ? (
                   <p className="text-gray-500">No blogs found.</p>
                 ) : (
-                  <div className=" flex gap-4">
+                  <div className=" flex gap-4 max-sm:flex-wrap">
                     {filteredBlogs.map((blog) => (
                       <div
                         key={blog._id}
@@ -475,7 +475,7 @@ export default function Navbar() {
                           alt={blog?.thumbnail?.alt || blog?.images?.[0]?.alt}
                           width={100}
                           height={60}
-                          className="w-24 h-16 object-cover rounded-md"
+                          className="w-24 h-16 max-sm:w-20 max-sm:h-14 object-cover rounded-md"
                         />
 
                         <h3 className="text-gray-800 w-20 text-xs font-medium">
@@ -495,7 +495,7 @@ export default function Navbar() {
                 {products.length === 0 ? (
                   <p className="text-gray-500">No products found.</p>
                 ) : (
-                  <div className=" flex gap-4">
+                  <div className=" flex gap-4 max-sm:flex-wrap  ">
                     {products.map((product) => (
                       <Link
                         href={`/productDetail/${product.slug}`}
@@ -516,7 +516,7 @@ export default function Navbar() {
                             }
                             width={100}
                             height={60}
-                            className="w-24 h-16 object-cover rounded-md"
+                            className="w-24 h-16 max-sm:w-20 max-sm:h-14 object-cover rounded-md"
                           />
 
                           <div>

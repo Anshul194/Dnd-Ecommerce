@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { OrderSchema } from "../models/Order.js";
 import OrderRepository from "../repository/OrderRepository";
 import CouponService from "./CouponService";
 import EmailService from "./EmailService";
@@ -29,9 +30,7 @@ class OrderService {
 
   async getTotalOrders(conn) {
     try {
-      const Order =
-        conn.models.Order ||
-        conn.model("Order", mongoose.model("Order").schema);
+      const Order = conn.models.Order || conn.model("Order", OrderSchema);
       return await Order.countDocuments().exec();
     } catch (error) {
       throw new Error(`Failed to fetch total orders: ${error.message}`);
@@ -228,9 +227,7 @@ class OrderService {
 
       // --- Repeat COD Restriction (per product, within 10 days) ---
       if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
-        const Order =
-          conn.models.Order ||
-          conn.model("Order", mongoose.model("Order").schema);
+        const Order = conn.models.Order || conn.model("Order", OrderSchema);
         for (const item of items) {
           const lastOrder = await Order.findOne({
             user: userId,
@@ -434,7 +431,7 @@ class OrderService {
       // Calculate subtotal - use the total from frontend if provided, otherwise calculate
       let subtotal = 0;
       const orderItems = [];
-      
+
       if (data.total) {
         subtotal = data.total;
         // Still create orderItems array for database storage
@@ -504,9 +501,7 @@ class OrderService {
       // --- Repeat COD Restriction (per product, within 10 days) ---
       let codBlockedReason = null;
       if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
-        const Order =
-          conn.models.Order ||
-          conn.model("Order", mongoose.model("Order").schema);
+        const Order = conn.models.Order || conn.model("Order", OrderSchema);
         for (const item of items) {
           const lastOrder = await Order.findOne({
             user: userId,
@@ -565,6 +560,7 @@ class OrderService {
         shippingName: selectedShipping.name,
         shippingPriority: selectedShipping.priority,
       };
+      console.log("data before repo ===> ", orderData);
       const order = await this.orderRepository.create(orderData);
 
       // Send email notifications
@@ -862,7 +858,9 @@ class OrderService {
       const destinationPincode = order?.data?.shippingAddress?.postalCode;
 
       if (!destinationPincode) {
-        throw new Error("Destination postal code missing for Bluedart service check");
+        throw new Error(
+          "Destination postal code missing for Bluedart service check"
+        );
       }
 
       // Generate JWT Token (assuming you store in ENV or helper)
@@ -1094,44 +1092,44 @@ class OrderService {
       throw new Error("labelCode is required for DTDC label generation");
     }
     const apiKey = process.env.DTDC_API_KEY;
-    const referenceNumber = encodeURIComponent(order.shipping_details.reference_number);
+    const referenceNumber = encodeURIComponent(
+      order.shipping_details.reference_number
+    );
     const labelCode = data.labelCode || "SHIP_LABEL_4X6"; // default to A4Z
     const labelFormat = "pdf";
     const url = `https://pxapi.dtdc.in/api/customer/integration/consignment/shippinglabel/stream?reference_number=${referenceNumber}&label_code=${labelCode}&label_format=${labelFormat}`;
 
     // Use GET request for label streaming
-    const res = await axios.get(
-      url,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": apiKey,
-        },
-        responseType: "arraybuffer", // PDF stream
-      }
-    );
+    const res = await axios.get(url, {
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": apiKey,
+      },
+      responseType: "arraybuffer", // PDF stream
+    });
 
     // console.log("DTDC label response status:", res.data);
 
     const labelDir = path.join(process.cwd(), "public/labels");
-if (!fs.existsSync(labelDir)) fs.mkdirSync(labelDir, { recursive: true });
+    if (!fs.existsSync(labelDir)) fs.mkdirSync(labelDir, { recursive: true });
 
-const fileName = `DTDC_${order._id}_${Date.now()}.pdf`;
-const filePath = path.join(labelDir, fileName);
+    const fileName = `DTDC_${order._id}_${Date.now()}.pdf`;
+    const filePath = path.join(labelDir, fileName);
 
-// Write binary data to file
-fs.writeFileSync(filePath, res.data);
+    // Write binary data to file
+    fs.writeFileSync(filePath, res.data);
 
-// Optionally make a public URL (if served via Express static)
-const labelUrl = `/labels/${fileName}`;
-const shippingDetails = {
-  ...order.shipping_details,
-  labelUrl: labelUrl,
-};
+    // Optionally make a public URL (if served via Express static)
+    const labelUrl = `/labels/${fileName}`;
+    const shippingDetails = {
+      ...order.shipping_details,
+      labelUrl: labelUrl,
+    };
 
-//update order with label URL
-await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
-
+    //update order with label URL
+    await this.orderRepository.updateOrder(order._id, {
+      shipping_details: shippingDetails,
+    });
 
     // Return PDF buffer and label URL
     return {
@@ -1145,103 +1143,101 @@ await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDe
 
   // Delhivery label generation
 
-async generateDelhiveryLabel(order) {
-  try {
-    console.log("=== DELHIVERY LABEL GENERATION DEBUG ===");
+  async generateDelhiveryLabel(order) {
+    try {
+      console.log("=== DELHIVERY LABEL GENERATION DEBUG ===");
 
-    // --- 1️⃣ Collect all waybills dynamically from order ---
-    let waybills = [];
-    if (order?.shipping_details?.waybill) {
-      waybills.push(order.shipping_details.waybill);
-    }
-    if (order?.shipping_details?.raw_response?.packages) {
-      const packageWaybills = order.shipping_details.raw_response.packages
-        .map(pkg => pkg.waybill)
+      // --- 1️⃣ Collect all waybills dynamically from order ---
+      let waybills = [];
+      if (order?.shipping_details?.waybill) {
+        waybills.push(order.shipping_details.waybill);
+      }
+      if (order?.shipping_details?.raw_response?.packages) {
+        const packageWaybills = order.shipping_details.raw_response.packages
+          .map((pkg) => pkg.waybill)
+          .filter(Boolean);
+        waybills.push(...packageWaybills);
+      }
+      waybills = [...new Set(waybills)];
+      console.log("Found waybills:", waybills);
+
+      if (!waybills.length) throw new Error("No waybill numbers found");
+
+      const joined = waybills.join(",");
+      const token = process.env.DELHIVERY_API_TOKEN;
+
+      // --- 2️⃣ Fetch packing slip metadata (NOT PDF) ---
+      const slipApi = `https://track.delhivery.com/api/p/packing_slip?wbns=${joined}&pdf=true&pdf_size=A6`;
+      console.log("Fetching packing slip metadata:", slipApi);
+
+      const res = await axios.get(slipApi, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      console.log("Packing slip API response status:", res);
+
+      if (res.status !== 200 || !res.data) {
+        throw new Error("Failed to fetch packing slip data");
+      }
+
+      // --- 3️⃣ Log full response to see structure ---
+      console.log("Full API response:", JSON.stringify(res.data, null, 2));
+
+      // --- 4️⃣ Extract packages ---
+      const packages = res.data.packages || [];
+      if (!packages.length) {
+        throw new Error("No packages found in response");
+      }
+
+      console.log("Packages data:", JSON.stringify(packages, null, 2));
+
+      // --- 5️⃣ Collect all PDF links ---
+      const pdfLinks = packages
+        .map((pkg) => pkg.pdf_download_link)
         .filter(Boolean);
-      waybills.push(...packageWaybills);
+
+      if (!pdfLinks.length) {
+        throw new Error("No PDF download links found in packages");
+      }
+
+      console.log("✅ PDF download links obtained:", pdfLinks);
+
+      // --- 6️⃣ Update order with label URL ---
+      const primaryLabelUrl = pdfLinks[0]; // Use first PDF link as primary
+      const shippingDetails = {
+        ...order.shipping_details,
+        labelUrl: primaryLabelUrl,
+      };
+
+      // Update order with label URL
+      await this.orderRepository.updateOrder(order._id, {
+        shipping_details: shippingDetails,
+      });
+
+      console.log("✅ Order updated with label URL:", primaryLabelUrl);
+
+      // --- 7️⃣ Return the download link(s) ---
+      return {
+        success: true,
+        message: "Delhivery packing slip link(s) generated successfully",
+        waybills,
+        pdfDownloadLinks: pdfLinks,
+        primaryLink: primaryLabelUrl,
+        labelUrl: primaryLabelUrl, // Added for consistency with other courier methods
+        packages: packages.map((pkg) => ({
+          wbn: pkg.wbn,
+          pdf_download_link: pkg.pdf_download_link,
+        })),
+      };
+    } catch (error) {
+      console.error("❌ Delhivery label generation failed:", error.message);
+      console.error("Stack trace:", error.stack);
+      return {
+        success: false,
+        message: error.message,
+      };
     }
-    waybills = [...new Set(waybills)];
-    console.log("Found waybills:", waybills);
-
-    if (!waybills.length) throw new Error("No waybill numbers found");
-
-    const joined = waybills.join(",");
-    const token = process.env.DELHIVERY_API_TOKEN;
-
-    // --- 2️⃣ Fetch packing slip metadata (NOT PDF) ---
-    const slipApi = `https://track.delhivery.com/api/p/packing_slip?wbns=${joined}&pdf=true&pdf_size=A6`;
-    console.log("Fetching packing slip metadata:", slipApi);
-
-    const res = await axios.get(slipApi, {
-      headers: { Authorization: `Token ${token}` },
-    });
-
-    console.log("Packing slip API response status:", res);
-
-    if (res.status !== 200 || !res.data) {
-      throw new Error("Failed to fetch packing slip data");
-    }
-
-    // --- 3️⃣ Log full response to see structure ---
-    console.log("Full API response:", JSON.stringify(res.data, null, 2));
-
-    // --- 4️⃣ Extract packages ---
-    const packages = res.data.packages || [];
-    if (!packages.length) {
-      throw new Error("No packages found in response");
-    }
-
-    console.log("Packages data:", JSON.stringify(packages, null, 2));
-
-    // --- 5️⃣ Collect all PDF links ---
-    const pdfLinks = packages
-      .map(pkg => pkg.pdf_download_link)
-      .filter(Boolean);
-
-    if (!pdfLinks.length) {
-      throw new Error("No PDF download links found in packages");
-    }
-
-    console.log("✅ PDF download links obtained:", pdfLinks);
-
-    // --- 6️⃣ Update order with label URL ---
-    const primaryLabelUrl = pdfLinks[0]; // Use first PDF link as primary
-    const shippingDetails = {
-      ...order.shipping_details,
-      labelUrl: primaryLabelUrl,
-    };
-
-    // Update order with label URL
-    await this.orderRepository.updateOrder(order._id, { 
-      shipping_details: shippingDetails 
-    });
-
-    console.log("✅ Order updated with label URL:", primaryLabelUrl);
-
-    // --- 7️⃣ Return the download link(s) ---
-    return {
-      success: true,
-      message: "Delhivery packing slip link(s) generated successfully",
-      waybills,
-      pdfDownloadLinks: pdfLinks,
-      primaryLink: primaryLabelUrl,
-      labelUrl: primaryLabelUrl, // Added for consistency with other courier methods
-      packages: packages.map(pkg => ({
-        wbn: pkg.wbn,
-        pdf_download_link: pkg.pdf_download_link,
-      })),
-    };
-  } catch (error) {
-    console.error("❌ Delhivery label generation failed:", error.message);
-    console.error("Stack trace:", error.stack);
-    return {
-      success: false,
-      message: error.message,
-    };
   }
-}
-
-
 
   // Bluedart label generation (stub)
   async generateBluedartLabel(order, data) {
@@ -1291,9 +1287,10 @@ async generateDelhiveryLabel(order) {
 
     // console.log("DTDC tracking reference number:", referenceNumber);
 
-
     // Step 1: Authenticate to get token
-    const authUrl = `https://blktracksvc.dtdc.com/dtdc-api/api/dtdc/authenticate?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+    const authUrl = `https://blktracksvc.dtdc.com/dtdc-api/api/dtdc/authenticate?username=${encodeURIComponent(
+      username
+    )}&password=${encodeURIComponent(password)}`;
     // console.log("DTDC auth URL:", authUrl);
     const authResp = await axios.get(authUrl);
     // console.log("DTDC auth response:", authResp.data);
@@ -1303,7 +1300,8 @@ async generateDelhiveryLabel(order) {
     }
 
     // Step 2: Get tracking details
-    const trackUrl = "https://blktracksvc.dtdc.com/dtdc-api/rest/JSONCnTrk/getTrackDetails";
+    const trackUrl =
+      "https://blktracksvc.dtdc.com/dtdc-api/rest/JSONCnTrk/getTrackDetails";
     const payload = {
       trkType: "cnno",
       strcnno: referenceNumber,
@@ -1424,7 +1422,7 @@ async generateDelhiveryLabel(order) {
       const apiUrl = `https://track.delhivery.com/api/v1/packages/json/?waybill=${referenceNumber}`;
 
       console.log("Fetching Delhivery tracking for waybill:", referenceNumber);
-      console.log("Delhivery tracking API URL:", apiUrl);
+console.log("Delhivery tracking API URL:", apiUrl);
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
@@ -1578,144 +1576,155 @@ async generateDelhiveryLabel(order) {
   }
 
   // ========== DELHIVERY SERVICE ========== //
-   // ✅ Create Delhivery Shipment (Single or Multi-Package)
-  
+  // ✅ Create Delhivery Shipment (Single or Multi-Package)
 
- // 📦 Create Delhivery Shipment (Supports MPS)
-async createDelhiveryShipment(order, shipping) {
-  try {
-    console.log("Creating Delhivery shipment for order:", order);
+  // 📦 Create Delhivery Shipment (Supports MPS)
+  async createDelhiveryShipment(order, shipping) {
+    try {
+      console.log("Creating Delhivery shipment for order:", order);
 
-    const isCOD = order.paymentMode === "COD";
-    const packageCount = order.items?.length > 1 ? order.items.length : 1;
+      const isCOD = order.paymentMode === "COD";
+      const packageCount = order.items?.length > 1 ? order.items.length : 1;
 
-    // --- 1️⃣ Get Waybills ---
-    const waybillsResp = await this.getDelhiveryWaybill(packageCount);
-    const waybills = Array.isArray(waybillsResp)
-      ? waybillsResp
-      : typeof waybillsResp === "string"
-      ? waybillsResp.split(",").map(w => w.trim())
-      : [];
+      // --- 1️⃣ Get Waybills ---
+      const waybillsResp = await this.getDelhiveryWaybill(packageCount);
+      const waybills = Array.isArray(waybillsResp)
+        ? waybillsResp
+        : typeof waybillsResp === "string"
+        ? waybillsResp.split(",").map((w) => w.trim())
+        : [];
 
-    if (!waybills.length) throw new Error("Failed to get Delhivery waybill numbers");
+      if (!waybills.length)
+        throw new Error("Failed to get Delhivery waybill numbers");
 
-    const masterWaybill = waybills[0];
-    const childrenWaybills = waybills.slice(1);
+      const masterWaybill = waybills[0];
+      const childrenWaybills = waybills.slice(1);
 
-    // --- 2️⃣ Verify Serviceability ---
-    const pin = order.shippingAddress.postalCode;
-    const serviceResp = await axios.get(
-      `https://track.delhivery.com/c/api/pin-codes/json/?token=${process.env.DELHIVERY_API_TOKEN}&filter_codes=${pin}`
-    );
+      // --- 2️⃣ Verify Serviceability ---
+      const pin = order.shippingAddress.postalCode;
+      const serviceResp = await axios.get(
+        `https://track.delhivery.com/c/api/pin-codes/json/?token=${process.env.DELHIVERY_API_TOKEN}&filter_codes=${pin}`
+      );
 
-    const serviceData = serviceResp.data.delivery_codes?.[0]?.postal_code;
-    console.log("📦 Checking Delhivery serviceability for PIN:", pin, serviceData);
+      const serviceData = serviceResp.data.delivery_codes?.[0]?.postal_code;
+      console.log(
+        "📦 Checking Delhivery serviceability for PIN:",
+        pin,
+        serviceData
+      );
 
-    if (!serviceData)
-      throw new Error(`Invalid response received for PIN ${pin}`);
+      if (!serviceData)
+        throw new Error(`Invalid response received for PIN ${pin}`);
 
-    const isServiceable =
-      serviceData.pre_paid === "Y" ||
-      serviceData.cod === "Y" ||
-      serviceData.pickup === "Y";
+      const isServiceable =
+        serviceData.pre_paid === "Y" ||
+        serviceData.cod === "Y" ||
+        serviceData.pickup === "Y";
 
-    if (!isServiceable || serviceData.is_oda === "Y")
-      throw new Error(`Destination PIN ${pin} is not serviceable by Delhivery`);
+      if (!isServiceable || serviceData.is_oda === "Y")
+        throw new Error(
+          `Destination PIN ${pin} is not serviceable by Delhivery`
+        );
 
-    // --- 3️⃣ Build Pickup Location ---
-    const pickup_location = {
-      name: "BHARATGRAM B2C",
-      add: "34 GOHANA VPO THASKA MAHARA, GOHANA VPO THASKA MAHARA, Sonipat, HARYANA, India 131301",
-      city: "SONEPAT",
-      pin: "131301",
-      country: "India",
-      phone: order.billingAddress.phoneNumber || "9999999999",
-    };
+      // --- 3️⃣ Build Pickup Location ---
+      const pickup_location = {
+        name: "BHARATGRAM B2C",
+        add: "34 GOHANA VPO THASKA MAHARA, GOHANA VPO THASKA MAHARA, Sonipat, HARYANA, India 131301",
+        city: "SONEPAT",
+        pin: "131301",
+        country: "India",
+        phone: order.billingAddress.phoneNumber || "9999999999",
+      };
 
-    // --- 4️⃣ Build Shipments Array ---
-    const shipments = [];
+      // --- 4️⃣ Build Shipments Array ---
+      const shipments = [];
 
-    // 🧱 Master Shipment
-    shipments.push({
-      waybill: masterWaybill,
-      order: `${order._id}-MASTER`,
-      weight: Math.max(100, Math.round(order.total / 10)),
-      shipment_height: shipping?.dimensions?.height || 10,
-      shipment_width: shipping?.dimensions?.width || 11,
-      shipment_length: shipping?.dimensions?.length || 12,
-      seller_inv: order.paymentId || order._id.toString(),
-      pin,
-      products_desc: await this.buildProductDescription(order),
-      add: `${order.shippingAddress.addressLine1}${
-        order.shippingAddress.addressLine2 ? ", " + order.shippingAddress.addressLine2 : ""
-      }`,
-      state: order.shippingAddress.state,
-      city: order.shippingAddress.city,
-      phone: order.shippingAddress.phoneNumber,
-      payment_mode: isCOD ? "COD" : "Prepaid",
-      cod_amount: isCOD ? order.total : 0,
-      order_date: new Date(order.createdAt || Date.now()).toISOString(),
-      name: order.shippingAddress.fullName,
-      total_amount: order.total,
-      country: order.shippingAddress.country || "India",
-      hsn_code: order.items[0]?.hsn || "",
-      quantity: order.items.reduce((sum, i) => sum + i.quantity, 0),
-      shipping_mode: shipping?.shippingMethod || "Surface",
-      address_type: "home",
-      mps_master: packageCount > 1 ? "Y" : undefined,
-    });
-
-    // 🧱 Child Shipments (if any)
-    if (childrenWaybills.length > 0) {
-      childrenWaybills.forEach((wb, idx) => {
-        shipments.push({
-          waybill: wb,
-          order: `${order._id}-CHILD${idx + 1}`,
-          weight: 100,
-          shipment_height: 10,
-          shipment_width: 11,
-          shipment_length: 12,
-          products_desc: `Part ${idx + 1} of ${packageCount}`,
-          add: shipments[0].add,
-          state: order.shippingAddress.state,
-          pin,
-          city: order.shippingAddress.city,
-          phone: order.shippingAddress.phoneNumber,
-          payment_mode: "Prepaid",   // ✅ Always Prepaid for child in COD orders
-          cod_amount: 0,              // ✅ COD only in master
-          name: order.shippingAddress.fullName,
-          total_amount: order.total,
-          country: "India",
-          mps_master: "N",
-          master_id: masterWaybill,
-        });
+      // 🧱 Master Shipment
+      shipments.push({
+        waybill: masterWaybill,
+        order: `${order._id}-MASTER`,
+        weight: Math.max(100, Math.round(order.total / 10)),
+        shipment_height: shipping?.dimensions?.height || 10,
+        shipment_width: shipping?.dimensions?.width || 11,
+        shipment_length: shipping?.dimensions?.length || 12,
+        seller_inv: order.paymentId || order._id.toString(),
+        pin,
+        products_desc: await this.buildProductDescription(order),
+        add: `${order.shippingAddress.addressLine1}${
+          order.shippingAddress.addressLine2
+            ? ", " + order.shippingAddress.addressLine2
+            : ""
+        }`,
+        state: order.shippingAddress.state,
+        city: order.shippingAddress.city,
+        phone: order.shippingAddress.phoneNumber,
+        payment_mode: isCOD ? "COD" : "Prepaid",
+        cod_amount: isCOD ? order.total : 0,
+        order_date: new Date(order.createdAt || Date.now()).toISOString(),
+        name: order.shippingAddress.fullName,
+        total_amount: order.total,
+        country: order.shippingAddress.country || "India",
+        hsn_code: order.items[0]?.hsn || "",
+        quantity: order.items.reduce((sum, i) => sum + i.quantity, 0),
+        shipping_mode: shipping?.shippingMethod || "Surface",
+        address_type: "home",
+        mps_master: packageCount > 1 ? "Y" : undefined,
       });
-    }
 
-    // --- 5️⃣ Final Payload ---
-    const payload = {
-      format: "json",
-      data: JSON.stringify({
-        pickup_location,
-        shipments,
-      }),
-    };
-
-    console.log("🚚 Delhivery shipment payload:", JSON.stringify(payload, null, 2));
-
-    // --- 6️⃣ Create Shipment ---
-    const res = await axios.post(
-      "https://track.delhivery.com/api/cmu/create.json",
-      payload,
-      {
-        headers: {
-          Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
+      // 🧱 Child Shipments (if any)
+      if (childrenWaybills.length > 0) {
+        childrenWaybills.forEach((wb, idx) => {
+          shipments.push({
+            waybill: wb,
+            order: `${order._id}-CHILD${idx + 1}`,
+            weight: 100,
+            shipment_height: 10,
+            shipment_width: 11,
+            shipment_length: 12,
+            products_desc: `Part ${idx + 1} of ${packageCount}`,
+            add: shipments[0].add,
+            state: order.shippingAddress.state,
+            pin,
+            city: order.shippingAddress.city,
+            phone: order.shippingAddress.phoneNumber,
+            payment_mode: "Prepaid", // ✅ Always Prepaid for child in COD orders
+            cod_amount: 0, // ✅ COD only in master
+            name: order.shippingAddress.fullName,
+            total_amount: order.total,
+            country: "India",
+            mps_master: "N",
+            master_id: masterWaybill,
+          });
+        });
       }
-    );
 
-    console.log("📦 Delhivery shipment response:", res.data);
+      // --- 5️⃣ Final Payload ---
+      const payload = {
+        format: "json",
+        data: JSON.stringify({
+          pickup_location,
+          shipments,
+        }),
+      };
+
+      console.log(
+        "🚚 Delhivery shipment payload:",
+        JSON.stringify(payload, null, 2)
+      );
+
+      // --- 6️⃣ Create Shipment ---
+      const res = await axios.post(
+        "https://track.delhivery.com/api/cmu/create.json",
+        payload,
+        {
+          headers: {
+            Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      console.log("📦 Delhivery shipment response:", res.data);
 
     // --- 7️⃣ Save Shipment Details ---
     if (res.data.success === true || res.data.package_count > 0) {
@@ -1727,50 +1736,50 @@ async createDelhiveryShipment(order, shipping) {
         created_at: new Date(),
       };
 
-      await this.orderRepository.updateOrder(order._id, {
-        shipping_details: shippingDetails,
-      });
+        await this.orderRepository.updateOrder(order._id, {
+          shipping_details: shippingDetails,
+        });
 
+        return {
+          success: true,
+          message: "Delhivery shipment created successfully",
+          trackingNumber: masterWaybill,
+          waybills,
+          data: res.data,
+        };
+      } else {
+        throw new Error(
+          `Delhivery API error: ${res.data.rmk || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      console.error("❌ Delhivery shipment creation failed:", error);
       return {
-        success: true,
-        message: "Delhivery shipment created successfully",
-        trackingNumber: masterWaybill,
-        waybills,
-        data: res.data,
+        success: false,
+        message: `Delhivery shipment creation failed: ${error.message}`,
+        error: error.message,
       };
-    } else {
-      throw new Error(`Delhivery API error: ${res.data.rmk || "Unknown error"}`);
     }
-  } catch (error) {
-    console.error("❌ Delhivery shipment creation failed:", error);
-    return {
-      success: false,
-      message: `Delhivery shipment creation failed: ${error.message}`,
-      error: error.message,
-    };
   }
-}
 
-
-// 🔢 Get Delhivery Waybill Numbers
-async getDelhiveryWaybill(count = 1) {
-  try {
-    const response = await axios.get(
-      `https://track.delhivery.com/waybill/api/bulk/json/?token=${process.env.DELHIVERY_API_TOKEN}&cl=BHARATGRAM%20B2C&count=${count}`
-    );
-    console.log("🧾 Delhivery waybill response:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("❌ Failed to get Delhivery waybill:", error.message);
-    throw new Error(`Failed to get Delhivery waybill: ${error.message}`);
+  // 🔢 Get Delhivery Waybill Numbers
+  async getDelhiveryWaybill(count = 1) {
+    try {
+      const response = await axios.get(
+        `https://track.delhivery.com/waybill/api/bulk/json/?token=${process.env.DELHIVERY_API_TOKEN}&cl=BHARATGRAM%20B2C&count=${count}`
+      );
+      console.log("🧾 Delhivery waybill response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("❌ Failed to get Delhivery waybill:", error.message);
+      throw new Error(`Failed to get Delhivery waybill: ${error.message}`);
+    }
   }
-}
 
-// 🛍️ Build Product Description
-async buildProductDescription(order) {
-  return order.items.map(i => `${i.quantity}x ${i.name}`).join(", ");
-}
-
+  // 🛍️ Build Product Description
+  async buildProductDescription(order) {
+    return order.items.map((i) => `${i.quantity}x ${i.name}`).join(", ");
+  }
 
   // ========== DTDC (Shipsy) SERVICE ========== //
   async createDtdcShipment(order, shipping) {
@@ -1780,10 +1789,10 @@ async buildProductDescription(order) {
 
     const isCOD = order.paymentMode === "COD";
     const origin = {
-      fullName: 'BHARATGRAM B2C',
+      fullName: "BHARATGRAM B2C",
       phoneNumber: order.billingAddress.phoneNumber,
       addressLine1: "34   GOHANA VPO THASKA MAHARA,",
-      addressLine2:  "GOHANA VPO THASKA MAHARA, Sonipat, HARYANA ,India 131301",
+      addressLine2: "GOHANA VPO THASKA MAHARA, Sonipat, HARYANA ,India 131301",
       postalCode: "131301",
       city: "SONEPAT",
       state: "HARYANA",
@@ -1814,7 +1823,8 @@ async buildProductDescription(order) {
           width: shipping?.dimensions?.width?.toString() || "10.0",
           height: shipping?.dimensions?.height?.toString() || "10.0",
           weight_unit: "kg",
-          weight: shipping?.weight?.toString() || (order.total / 1000).toFixed(2),
+          weight:
+            shipping?.weight?.toString() || (order.total / 1000).toFixed(2),
           declared_value: order.total.toString(),
           num_pieces: order.items.length.toString(),
           origin_details: {
@@ -1864,497 +1874,514 @@ async buildProductDescription(order) {
 
     console.log("DTDC shipment response:", res.data);
 
-    if (res.data.status == 'OK' && res.data?.data?.[0]?.reference_number) {
-    // Save shipping_details in order model
-    const shippingDetails = {
-      platform: "dtdc",
-      reference_number: res.data?.data?.[0]?.reference_number || null,
-      tracking_url: `https://www.dtdc.in/tracking?awb=${res.data?.data?.[0]?.reference_number}`,
-      raw_response: res.data,
-    };
-    // console.log("Shipping details to save:", shippingDetails);
+    if (res.data.status == "OK" && res.data?.data?.[0]?.reference_number) {
+      // Save shipping_details in order model
+      const shippingDetails = {
+        platform: "dtdc",
+        reference_number: res.data?.data?.[0]?.reference_number || null,
+        tracking_url: `https://www.dtdc.in/tracking?awb=${res.data?.data?.[0]?.reference_number}`,
+        raw_response: res.data,
+      };
+      // console.log("Shipping details to save:", shippingDetails);
 
-    //save to order
-    await this.orderRepository.updateOrder(order._id, {
-      shipping_details: shippingDetails,
-    });
-
-  }else{
-    throw new Error(`DTDC shipment creation failed: ${res.data.message || 'Unknown error'}`);
-  }
-
-
-
+      //save to order
+      await this.orderRepository.updateOrder(order._id, {
+        shipping_details: shippingDetails,
+      });
+    } else {
+      throw new Error(
+        `DTDC shipment creation failed: ${res.data.message || "Unknown error"}`
+      );
+    }
 
     // Update order with shipping_details
-   
+
     // console.log("DTDC shipment response:", res.data);
-
-
 
     // Return formatted response
     return {
       success: true,
       message: "DTDC shipment created successfully",
-      trackingNumber: res.data?.consignments?.[0]?.reference_number || res.data?.consignments?.[0]?.awb_number,
+      trackingNumber:
+        res.data?.consignments?.[0]?.reference_number ||
+        res.data?.consignments?.[0]?.awb_number,
       data: res.data,
     };
   }
 
-// ========== BLUEDART SERVICE ========== //
-// ========= BLUEDART CREATE SHIPMENT ========= //
-// async createBluedartShipment(order, shipping) {
-//   try {
+  // ========== BLUEDART SERVICE ========== //
+  // ========= BLUEDART CREATE SHIPMENT ========= //
+  // async createBluedartShipment(order, shipping) {
+  //   try {
 
-//     // console.log("Creating Bluedart shipment for order:",  process.env.BLUEDART_CLIENT_ID, process.env.BLUEDART_CLIENT_SECRET, order);
+  //     // console.log("Creating Bluedart shipment for order:",  process.env.BLUEDART_CLIENT_ID, process.env.BLUEDART_CLIENT_SECRET, order);
 
-//     // Step 1: Generate authentication token using ClientID and clientSecret headers
-//     const tokenResp = await axios.get(
-//       'https://apigateway.bluedart.com/in/transportation/token/v1/login',
-//       {
-//         headers: {
-//           'ClientID': process.env.BLUEDART_CLIENT_ID,
-//           'clientSecret': process.env.BLUEDART_CLIENT_SECRET,
-//           'Content-Type': 'application/json'
-//         }
-//       }
-//     );
+  //     // Step 1: Generate authentication token using ClientID and clientSecret headers
+  //     const tokenResp = await axios.get(
+  //       'https://apigateway.bluedart.com/in/transportation/token/v1/login',
+  //       {
+  //         headers: {
+  //           'ClientID': process.env.BLUEDART_CLIENT_ID,
+  //           'clientSecret': process.env.BLUEDART_CLIENT_SECRET,
+  //           'Content-Type': 'application/json'
+  //         }
+  //       }
+  //     );
 
-//     console.log('Bluedart token response status:', tokenResp.status);
-//     console.log('Bluedart token response data:', tokenResp.data);
+  //     console.log('Bluedart token response status:', tokenResp.status);
+  //     console.log('Bluedart token response data:', tokenResp.data);
 
-//     if (!tokenResp.data?.JWTToken) {
-//       console.error('Authentication failed - no JWT token in response');
-//       throw new Error(`Failed to get Bluedart authentication token: ${JSON.stringify(tokenResp.data)}`);
-//     }
+  //     if (!tokenResp.data?.JWTToken) {
+  //       console.error('Authentication failed - no JWT token in response');
+  //       throw new Error(`Failed to get Bluedart authentication token: ${JSON.stringify(tokenResp.data)}`);
+  //     }
 
-//     const jwtToken = tokenResp.data.JWTToken;
-//     console.log('Bluedart token generated successfully, length:', jwtToken.length);
+  //     const jwtToken = tokenResp.data.JWTToken;
+  //     console.log('Bluedart token generated successfully, length:', jwtToken.length);
 
-//     // Step 2: Build waybill generation payload
-//     const origin = {
-//       fullName: 'BHARATGRAM B2C',
-//       phoneNumber: order.billingAddress.phoneNumber,
-//       addressLine1: "34 GOHANA VPO THASKA MAHARA",
-//       addressLine2: "GOHANA VPO THASKA MAHARA, Sonipat, HARYANA, India 131301",
-//       postalCode: "131301",
-//       city: "SONEPAT",
-//       state: "HARYANA",
-//     };
+  //     // Step 2: Build waybill generation payload
+  //     const origin = {
+  //       fullName: 'BHARATGRAM B2C',
+  //       phoneNumber: order.billingAddress.phoneNumber,
+  //       addressLine1: "34 GOHANA VPO THASKA MAHARA",
+  //       addressLine2: "GOHANA VPO THASKA MAHARA, Sonipat, HARYANA, India 131301",
+  //       postalCode: "131301",
+  //       city: "SONEPAT",
+  //       state: "HARYANA",
+  //     };
 
-//     const destination = order.shippingAddress;
-//     const isCOD = order.paymentMode === "COD";
+  //     const destination = order.shippingAddress;
+  //     const isCOD = order.paymentMode === "COD";
 
-//     // Calculate total weight and pieces
-//     const totalWeight = order.items.reduce((sum, item) => {
-//       const itemWeight = parseFloat(item.weight) || 0.5; // Default 0.5kg per item
-//       return sum + (itemWeight * item.quantity);
-//     }, 0);
+  //     // Calculate total weight and pieces
+  //     const totalWeight = order.items.reduce((sum, item) => {
+  //       const itemWeight = parseFloat(item.weight) || 0.5; // Default 0.5kg per item
+  //       return sum + (itemWeight * item.quantity);
+  //     }, 0);
 
-//     const totalPieces = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  //     const totalPieces = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
-//     // Build waybill payload according to Bluedart API specification
-//     const waybillPayload = {
-//       Request: {
-//         Consignee: {
-//           ConsigneeName: destination.fullName,
-//           ConsigneeAddress1: destination.addressLine1,
-//           ConsigneeAddress2: destination.addressLine2 || "",
-//           ConsigneeAddress3: "",
-//           ConsigneePincode: destination.postalCode,
-//           ConsigneeCity: destination.city,
-//           ConsigneeState: destination.state,
-//           ConsigneeCountry: destination.country || "IND",
-//           ConsigneeMobile: destination.phoneNumber,
-//           ConsigneeEmailID: destination.email || "",
-//           ConsigneeTelephone: ""
-//         },
-//         Shipper: {
-//           CustomerName: origin.fullName,
-//           CustomerAddress1: origin.addressLine1,
-//           CustomerAddress2: origin.addressLine2,
-//           CustomerAddress3: "",
-//           CustomerPincode: origin.postalCode,
-//           CustomerCity: origin.city,
-//           CustomerState: origin.state,
-//           CustomerCountry: "IND",
-//           CustomerMobile: origin.phoneNumber,
-//           CustomerTelephone: "",
-//           CustomerEmailID: ""
-//         },
-//         Services: {
-//           ProductCode: shipping?.productCode || "A", // A = Express, E = Domestic Express
-//           SubProductCode: isCOD ? "C" : "", // C = COD, empty for prepaid
-//           PickupDate: new Date().toISOString().split("T")[0],
-//           PickupTime: "1500", // 3:00 PM in 24hr format
-//           PieceCount: totalPieces,
-//           Weight: totalWeight.toFixed(2),
-//           DeclaredValue: order.total,
-//           CollectableAmount: isCOD ? order.total : 0,
-//           Commodity: {
-//             CommodityDetail1: order.items.map(i => i.product?.name || "Product").join(", "),
-//             CommodityDetail2: "",
-//             CommodityDetail3: ""
-//           },
-//           SpecialInstruction: "",
-//           DeliveryTimeCode: shipping?.deliveryTimeCode || "",
-//           PackType: "",
-//           DimWeight: "",
-//           Length: shipping?.dimensions?.length || 10,
-//           Width: shipping?.dimensions?.width || 10,
-//           Height: shipping?.dimensions?.height || 10
-//         },
-//         ReferenceNumber: order._id.toString(),
-//         PickupLocationCode: process.env.BLUEDART_PICKUP_LOCATION || "131301",
-//         PickupMode: "P", // P = Pickup, S = Self Drop
-//         TotalCashPaytoCompany: 0,
-//         CreditReferenceNo: order.paymentId || order._id.toString(),
-//        Profile: {
-//     LoginID: "GOH92520",
-//     LicenseKey: "nmilgqfslqloplglu2spkqfhqohf5jim",
-//     Api_type: "S"
-//   }, 
+  //     // Build waybill payload according to Bluedart API specification
+  //     const waybillPayload = {
+  //       Request: {
+  //         Consignee: {
+  //           ConsigneeName: destination.fullName,
+  //           ConsigneeAddress1: destination.addressLine1,
+  //           ConsigneeAddress2: destination.addressLine2 || "",
+  //           ConsigneeAddress3: "",
+  //           ConsigneePincode: destination.postalCode,
+  //           ConsigneeCity: destination.city,
+  //           ConsigneeState: destination.state,
+  //           ConsigneeCountry: destination.country || "IND",
+  //           ConsigneeMobile: destination.phoneNumber,
+  //           ConsigneeEmailID: destination.email || "",
+  //           ConsigneeTelephone: ""
+  //         },
+  //         Shipper: {
+  //           CustomerName: origin.fullName,
+  //           CustomerAddress1: origin.addressLine1,
+  //           CustomerAddress2: origin.addressLine2,
+  //           CustomerAddress3: "",
+  //           CustomerPincode: origin.postalCode,
+  //           CustomerCity: origin.city,
+  //           CustomerState: origin.state,
+  //           CustomerCountry: "IND",
+  //           CustomerMobile: origin.phoneNumber,
+  //           CustomerTelephone: "",
+  //           CustomerEmailID: ""
+  //         },
+  //         Services: {
+  //           ProductCode: shipping?.productCode || "A", // A = Express, E = Domestic Express
+  //           SubProductCode: isCOD ? "C" : "", // C = COD, empty for prepaid
+  //           PickupDate: new Date().toISOString().split("T")[0],
+  //           PickupTime: "1500", // 3:00 PM in 24hr format
+  //           PieceCount: totalPieces,
+  //           Weight: totalWeight.toFixed(2),
+  //           DeclaredValue: order.total,
+  //           CollectableAmount: isCOD ? order.total : 0,
+  //           Commodity: {
+  //             CommodityDetail1: order.items.map(i => i.product?.name || "Product").join(", "),
+  //             CommodityDetail2: "",
+  //             CommodityDetail3: ""
+  //           },
+  //           SpecialInstruction: "",
+  //           DeliveryTimeCode: shipping?.deliveryTimeCode || "",
+  //           PackType: "",
+  //           DimWeight: "",
+  //           Length: shipping?.dimensions?.length || 10,
+  //           Width: shipping?.dimensions?.width || 10,
+  //           Height: shipping?.dimensions?.height || 10
+  //         },
+  //         ReferenceNumber: order._id.toString(),
+  //         PickupLocationCode: process.env.BLUEDART_PICKUP_LOCATION || "131301",
+  //         PickupMode: "P", // P = Pickup, S = Self Drop
+  //         TotalCashPaytoCompany: 0,
+  //         CreditReferenceNo: order.paymentId || order._id.toString(),
+  //        Profile: {
+  //     LoginID: "GOH92520",
+  //     LicenseKey: "nmilgqfslqloplglu2spkqfhqohf5jim",
+  //     Api_type: "S"
+  //   },
 
-//       }
-//     };
+  //       }
+  //     };
 
-//     console.log('Bluedart waybill payload:', JSON.stringify(waybillPayload, null, 2));
+  //     console.log('Bluedart waybill payload:', JSON.stringify(waybillPayload, null, 2));
 
-//     // Step 3: Generate waybill
-//     let waybillResp;
-//     try {
-//       waybillResp = await axios.post(
-//         'https://apigateway.bluedart.com/in/transportation/waybill/v1/GenerateWayBill',
-//         waybillPayload,
-//         {
-//           headers: {
-//             'JWTToken': jwtToken,
-//             'Content-Type': 'application/json'
-//           }
-//         }
-//       );
-//     } catch (err) {
-//       console.error('Bluedart waybill request failed:', err.message);
-//       console.error('Request URL:', 'https://apigateway.bluedart.com/in/transportation/waybill/v1/GenerateWayBill');
-//       console.error('Request payload:', JSON.stringify(waybillPayload, null, 2));
-//       console.error('Request headers:', {
-//         'JWTToken': jwtToken ? 'Token present' : 'Token missing',
-//         'Content-Type': 'application/json'
-//       });
-//       console.error('Response status:', err.response?.status);
-//       console.error('Response headers:', err.response?.headers);
-//       console.error('Response data:', JSON.stringify(err.response?.data, null, 2));
-      
-//       return {
-//         success: false,
-//         message: `Bluedart waybill request failed: ${err.response?.status} - ${err.response?.statusText || err.message}`,
-//         error: {
-//           status: err.response?.status,
-//           statusText: err.response?.statusText,
-//           data: err.response?.data,
-//           message: err.message
-//         },
-//         courier: 'BLUEDART',
-//         orderId: order._id?.toString?.() || null,
-//       };
-//     }
+  //     // Step 3: Generate waybill
+  //     let waybillResp;
+  //     try {
+  //       waybillResp = await axios.post(
+  //         'https://apigateway.bluedart.com/in/transportation/waybill/v1/GenerateWayBill',
+  //         waybillPayload,
+  //         {
+  //           headers: {
+  //             'JWTToken': jwtToken,
+  //             'Content-Type': 'application/json'
+  //           }
+  //         }
+  //       );
+  //     } catch (err) {
+  //       console.error('Bluedart waybill request failed:', err.message);
+  //       console.error('Request URL:', 'https://apigateway.bluedart.com/in/transportation/waybill/v1/GenerateWayBill');
+  //       console.error('Request payload:', JSON.stringify(waybillPayload, null, 2));
+  //       console.error('Request headers:', {
+  //         'JWTToken': jwtToken ? 'Token present' : 'Token missing',
+  //         'Content-Type': 'application/json'
+  //       });
+  //       console.error('Response status:', err.response?.status);
+  //       console.error('Response headers:', err.response?.headers);
+  //       console.error('Response data:', JSON.stringify(err.response?.data, null, 2));
 
-//     console.log('Bluedart waybill response:', waybillResp.data);
+  //       return {
+  //         success: false,
+  //         message: `Bluedart waybill request failed: ${err.response?.status} - ${err.response?.statusText || err.message}`,
+  //         error: {
+  //           status: err.response?.status,
+  //           statusText: err.response?.statusText,
+  //           data: err.response?.data,
+  //           message: err.message
+  //         },
+  //         courier: 'BLUEDART',
+  //         orderId: order._id?.toString?.() || null,
+  //       };
+  //     }
 
-//     // Step 4: Process response and handle errors
-//     if (!waybillResp.data?.GenerateWayBillResult) {
-//       throw new Error(`Bluedart waybill generation failed: ${waybillResp.data?.ErrorMessage || 'Unknown error'}`);
-//     }
+  //     console.log('Bluedart waybill response:', waybillResp.data);
 
-//     const result = waybillResp.data.GenerateWayBillResult;
-    
-//     if (!result.IsError && result.AWBNo) {
-//       // Step 5: Save shipping details to order (similar to DTDC implementation)
-//       const shippingDetails = {
-//         platform: "bluedart",
-//         awb_number: result.AWBNo,
-//         reference_number: order._id.toString(),
-//         tracking_url: `https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo=${result.AWBNo}`,
-//         token_number: result.TokenNumber,
-//         destination_location: result.DestinationLocation,
-//         destination_area: result.DestinationArea,
-//         raw_response: waybillResp.data,
-//         created_at: new Date()
-//       };
+  //     // Step 4: Process response and handle errors
+  //     if (!waybillResp.data?.GenerateWayBillResult) {
+  //       throw new Error(`Bluedart waybill generation failed: ${waybillResp.data?.ErrorMessage || 'Unknown error'}`);
+  //     }
 
-//       // Update order with shipping details
-//       await this.orderRepository.updateOrder(order._id, {
-//         shipping_details: shippingDetails,
-//       });
+  //     const result = waybillResp.data.GenerateWayBillResult;
 
-//       return {
-//         success: true,
-//         message: "Bluedart waybill generated successfully",
-//         trackingNumber: result.AWBNo,
-//         tokenNumber: result.TokenNumber,
-//         destinationLocation: result.DestinationLocation,
-//         destinationArea: result.DestinationArea,
-//         courier: "BLUEDART",
-//         orderId: order._id.toString(),
-//         data: result,
-//       };
-//     } else {
-//       throw new Error(`Bluedart waybill generation failed: ${result.Status?.[0]?.StatusInformation || 'Unknown error'}`);
-//     }
+  //     if (!result.IsError && result.AWBNo) {
+  //       // Step 5: Save shipping details to order (similar to DTDC implementation)
+  //       const shippingDetails = {
+  //         platform: "bluedart",
+  //         awb_number: result.AWBNo,
+  //         reference_number: order._id.toString(),
+  //         tracking_url: `https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo=${result.AWBNo}`,
+  //         token_number: result.TokenNumber,
+  //         destination_location: result.DestinationLocation,
+  //         destination_area: result.DestinationArea,
+  //         raw_response: waybillResp.data,
+  //         created_at: new Date()
+  //       };
 
-//   } catch (error) {
-//     console.error("Bluedart shipment creation failed:", error);
-    
-//     // Return structured error response
-//     return {
-//       success: false,
-//       message: `Bluedart shipment creation failed: ${error.message}`,
-//       error: {
-//         message: error.message,
-//         response: error.response?.data || null,
-//         status: error.response?.status || null
-//       },
-//       courier: "BLUEDART",
-//       orderId: order._id.toString(),
-//     };
-//   }
-// }
+  //       // Update order with shipping details
+  //       await this.orderRepository.updateOrder(order._id, {
+  //         shipping_details: shippingDetails,
+  //       });
 
+  //       return {
+  //         success: true,
+  //         message: "Bluedart waybill generated successfully",
+  //         trackingNumber: result.AWBNo,
+  //         tokenNumber: result.TokenNumber,
+  //         destinationLocation: result.DestinationLocation,
+  //         destinationArea: result.DestinationArea,
+  //         courier: "BLUEDART",
+  //         orderId: order._id.toString(),
+  //         data: result,
+  //       };
+  //     } else {
+  //       throw new Error(`Bluedart waybill generation failed: ${result.Status?.[0]?.StatusInformation || 'Unknown error'}`);
+  //     }
 
-async createBluedartShipment(order, shipping) {
-  try {
-    // Step 1: Generate authentication token
-    const tokenResp = await axios.get(
-      'https://apigateway.bluedart.com/in/transportation/token/v1/login',
-      {
-        headers: {
-          'ClientID': process.env.BLUEDART_CLIENT_ID,
-          'clientSecret': process.env.BLUEDART_CLIENT_SECRET,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+  //   } catch (error) {
+  //     console.error("Bluedart shipment creation failed:", error);
 
-    if (!tokenResp.data?.JWTToken) {
-      throw new Error(`Failed to get Bluedart authentication token`);
-    }
+  //     // Return structured error response
+  //     return {
+  //       success: false,
+  //       message: `Bluedart shipment creation failed: ${error.message}`,
+  //       error: {
+  //         message: error.message,
+  //         response: error.response?.data || null,
+  //         status: error.response?.status || null
+  //       },
+  //       courier: "BLUEDART",
+  //       orderId: order._id.toString(),
+  //     };
+  //   }
+  // }
 
-    const jwtToken = tokenResp.data.JWTToken;
-    console.log('Bluedart token generated successfully');
-
-    // Step 2: Build waybill generation payload
-    const origin = {
-      fullName: 'BHARATGRAM B2C',
-      phoneNumber: order.billingAddress.phoneNumber,
-      addressLine1: "34 GOHANA VPO THASKA MAHARA",
-      addressLine2: "GOHANA VPO THASKA MAHARA, Sonipat, HARYANA, India 131301",
-      postalCode: "131301",
-      city: "SONEPAT",
-      state: "HARYANA",
-    };
-
-    const destination = order.shippingAddress;
-    const isCOD = order.paymentMode === "COD";
-
-    // Calculate total weight and pieces
-    const totalWeight = order.items.reduce((sum, item) => {
-      const itemWeight = parseFloat(item.weight) || 0.5;
-      return sum + (itemWeight * item.quantity);
-    }, 0);
-
-    const totalPieces = order.items.reduce((sum, item) => sum + item.quantity, 0);
-
-    // Convert date to Bluedart format: /Date(epochMilliseconds)/
-    const pickupDate = new Date();
-    pickupDate.setHours(15, 0, 0, 0); // Set to 3 PM
-    const dateString = `/Date(${pickupDate.getTime()})/`;
-
-    // Build waybill payload according to Bluedart API specification
-    const waybillPayload = {
-      Request: {
-        Consignee: {
-          ConsigneeName: destination.fullName,
-          ConsigneeAddress1: destination.addressLine1,
-          ConsigneeAddress2: destination.addressLine2 || "",
-          ConsigneeAddress3: "",
-          ConsigneePincode: destination.postalCode,
-          ConsigneeMobile: destination.phoneNumber,
-          ConsigneeEmailID: destination.email || "",
-          ConsigneeTelephone: "",
-          ConsigneeAttention: "",
-          ConsigneeGSTNumber: "",
-          ConsigneeLatitude: "",
-          ConsigneeLongitude: "",
-          ConsigneeMaskedContactNumber: "",
-          ConsigneeAddressType: "R" // R = Residential, C = Commercial
-        },
-        Shipper: {
-          CustomerName: origin.fullName,
-          CustomerAddress1: origin.addressLine1,
-          CustomerAddress2: origin.addressLine2,
-          CustomerAddress3: "",
-          CustomerPincode: origin.postalCode,
-          CustomerMobile: origin.phoneNumber,
-          CustomerTelephone: "",
-          CustomerEmailID: "",
-          CustomerCode: process.env.BLUEDART_CUSTOMER_CODE || "951554",
-          CustomerGSTNumber: "",
-          CustomerLatitude: "",
-          CustomerLongitude: "",
-          CustomerMaskedContactNumber: "",
-          IsToPayCustomer: false,
-          Sender: origin.fullName,
-         OriginArea: process.env.BLUEDART_ORIGIN_AREA || "GOH",
-VendorCode: process.env.BLUEDART_VENDOR_CODE || "GOH951554",
-PickupLocationCode: process.env.BLUEDART_PICKUP_LOCATION_CODE || "GOH",
-
-        },
-        Returnadds: {
-          ManifestNumber: "",
-          ReturnAddress1: origin.addressLine1,
-          ReturnAddress2: origin.addressLine2,
-          ReturnAddress3: "",
-          ReturnContact: origin.fullName,
-          ReturnEmailID: "",
-          ReturnLatitude: "",
-          ReturnLongitude: "",
-          ReturnMaskedContactNumber: "",
-          ReturnMobile: origin.phoneNumber,
-          ReturnPincode: origin.postalCode,
-          ReturnTelephone: ""
-        },
-        Services: {
-          AWBNo: "",
-          ProductCode: shipping?.productCode || "D", // D = Domestic, A = Apex
-          SubProductCode: isCOD ? "C" : "", // C = COD
-          ProductType: 0,
-          PickupDate: dateString, // Use Bluedart date format
-          PickupTime: "1500", // 3:00 PM
-          PieceCount: totalPieces.toString(),
-          ActualWeight: totalWeight.toFixed(2), // Changed from Weight to ActualWeight
-          CreditReferenceNo: order.paymentId || order._id.toString(),
-          RegisterPickup: true, // Set to true if you want pickup registered
-          SpecialInstruction: "",
-          PackType: "",
-          Commodity: {
-            CommodityDetail1: order.items.map(i => i.product?.name || "Product").join(", ").substring(0, 100)
-          },
-Dimensions: Array.from({ length: totalPieces }, () => ({
-  Breadth: 10,
-  Count: 1,
-  Height: 10,
-  Length: 10
-})),
-          ECCN: "",
-          PDFOutputNotRequired: false, // Set to false if you need PDF
-          OTPBasedDelivery: 0, // 0 = No OTP, 1 = OTP required
-          OTPCode: "",
-          itemdtl: [],
-          noOfDCGiven: 0
-        }
-      },
-      Profile: {
-        LoginID: process.env.BLUEDART_LOGIN_ID || "GOH92520",
-        LicenceKey: process.env.BLUEDART_LICENSE_KEY || "nmilgqfslqloplglu2spkqfhqohf5jim",
-        Api_type: "S"
-      }
-    };
-
-    console.log('Bluedart waybill payload:', JSON.stringify(waybillPayload, null, 2));
-
-    // Step 3: Generate waybill
-    let waybillResp;
-    console?.log('Sending Bluedart waybill request...',jwtToken);
+  async createBluedartShipment(order, shipping) {
     try {
-      waybillResp = await axios.post(
-        'https://apigateway.bluedart.com/in/transportation/waybill/v1/GenerateWayBill',
-        waybillPayload,
+      // Step 1: Generate authentication token
+      const tokenResp = await axios.get(
+        "https://apigateway.bluedart.com/in/transportation/token/v1/login",
         {
           headers: {
-            'JWTToken': jwtToken,
-            'Content-Type': 'application/json'
-          }
+            ClientID: process.env.BLUEDART_CLIENT_ID,
+            clientSecret: process.env.BLUEDART_CLIENT_SECRET,
+            "Content-Type": "application/json",
+          },
         }
       );
-    } catch (err) {
-      console.error('Bluedart waybill request failed:', err.message);
-      console.error('Response status:', err.response?.status);
-      console.error('Response data:', JSON.stringify(err.response?.data, null, 2));
-      
+
+      if (!tokenResp.data?.JWTToken) {
+        throw new Error(`Failed to get Bluedart authentication token`);
+      }
+
+      const jwtToken = tokenResp.data.JWTToken;
+      console.log("Bluedart token generated successfully");
+
+      // Step 2: Build waybill generation payload
+      const origin = {
+        fullName: "BHARATGRAM B2C",
+        phoneNumber: order.billingAddress.phoneNumber,
+        addressLine1: "34 GOHANA VPO THASKA MAHARA",
+        addressLine2:
+          "GOHANA VPO THASKA MAHARA, Sonipat, HARYANA, India 131301",
+        postalCode: "131301",
+        city: "SONEPAT",
+        state: "HARYANA",
+      };
+
+      const destination = order.shippingAddress;
+      const isCOD = order.paymentMode === "COD";
+
+      // Calculate total weight and pieces
+      const totalWeight = order.items.reduce((sum, item) => {
+        const itemWeight = parseFloat(item.weight) || 0.5;
+        return sum + itemWeight * item.quantity;
+      }, 0);
+
+      const totalPieces = order.items.reduce(
+        (sum, item) => sum + item.quantity,
+        0
+      );
+
+      // Convert date to Bluedart format: /Date(epochMilliseconds)/
+      const pickupDate = new Date();
+      pickupDate.setHours(15, 0, 0, 0); // Set to 3 PM
+      const dateString = `/Date(${pickupDate.getTime()})/`;
+
+      // Build waybill payload according to Bluedart API specification
+      const waybillPayload = {
+        Request: {
+          Consignee: {
+            ConsigneeName: destination.fullName,
+            ConsigneeAddress1: destination.addressLine1,
+            ConsigneeAddress2: destination.addressLine2 || "",
+            ConsigneeAddress3: "",
+            ConsigneePincode: destination.postalCode,
+            ConsigneeMobile: destination.phoneNumber,
+            ConsigneeEmailID: destination.email || "",
+            ConsigneeTelephone: "",
+            ConsigneeAttention: "",
+            ConsigneeGSTNumber: "",
+            ConsigneeLatitude: "",
+            ConsigneeLongitude: "",
+            ConsigneeMaskedContactNumber: "",
+            ConsigneeAddressType: "R", // R = Residential, C = Commercial
+          },
+          Shipper: {
+            CustomerName: origin.fullName,
+            CustomerAddress1: origin.addressLine1,
+            CustomerAddress2: origin.addressLine2,
+            CustomerAddress3: "",
+            CustomerPincode: origin.postalCode,
+            CustomerMobile: origin.phoneNumber,
+            CustomerTelephone: "",
+            CustomerEmailID: "",
+            CustomerCode: process.env.BLUEDART_CUSTOMER_CODE || "951554",
+            CustomerGSTNumber: "",
+            CustomerLatitude: "",
+            CustomerLongitude: "",
+            CustomerMaskedContactNumber: "",
+            IsToPayCustomer: false,
+            Sender: origin.fullName,
+            OriginArea: process.env.BLUEDART_ORIGIN_AREA || "GOH",
+            VendorCode: process.env.BLUEDART_VENDOR_CODE || "GOH951554",
+            PickupLocationCode:
+              process.env.BLUEDART_PICKUP_LOCATION_CODE || "GOH",
+          },
+          Returnadds: {
+            ManifestNumber: "",
+            ReturnAddress1: origin.addressLine1,
+            ReturnAddress2: origin.addressLine2,
+            ReturnAddress3: "",
+            ReturnContact: origin.fullName,
+            ReturnEmailID: "",
+            ReturnLatitude: "",
+            ReturnLongitude: "",
+            ReturnMaskedContactNumber: "",
+            ReturnMobile: origin.phoneNumber,
+            ReturnPincode: origin.postalCode,
+            ReturnTelephone: "",
+          },
+          Services: {
+            AWBNo: "",
+            ProductCode: shipping?.productCode || "D", // D = Domestic, A = Apex
+            SubProductCode: isCOD ? "C" : "", // C = COD
+            ProductType: 0,
+            PickupDate: dateString, // Use Bluedart date format
+            PickupTime: "1500", // 3:00 PM
+            PieceCount: totalPieces.toString(),
+            ActualWeight: totalWeight.toFixed(2), // Changed from Weight to ActualWeight
+            CreditReferenceNo: order.paymentId || order._id.toString(),
+            RegisterPickup: true, // Set to true if you want pickup registered
+            SpecialInstruction: "",
+            PackType: "",
+            Commodity: {
+              CommodityDetail1: order.items
+                .map((i) => i.product?.name || "Product")
+                .join(", ")
+                .substring(0, 100),
+            },
+            Dimensions: Array.from({ length: totalPieces }, () => ({
+              Breadth: 10,
+              Count: 1,
+              Height: 10,
+              Length: 10,
+            })),
+            ECCN: "",
+            PDFOutputNotRequired: false, // Set to false if you need PDF
+            OTPBasedDelivery: 0, // 0 = No OTP, 1 = OTP required
+            OTPCode: "",
+            itemdtl: [],
+            noOfDCGiven: 0,
+          },
+        },
+        Profile: {
+          LoginID: process.env.BLUEDART_LOGIN_ID || "GOH92520",
+          LicenceKey:
+            process.env.BLUEDART_LICENSE_KEY ||
+            "nmilgqfslqloplglu2spkqfhqohf5jim",
+          Api_type: "S",
+        },
+      };
+
+      console.log(
+        "Bluedart waybill payload:",
+        JSON.stringify(waybillPayload, null, 2)
+      );
+
+      // Step 3: Generate waybill
+      let waybillResp;
+      console?.log("Sending Bluedart waybill request...", jwtToken);
+      try {
+        waybillResp = await axios.post(
+          "https://apigateway.bluedart.com/in/transportation/waybill/v1/GenerateWayBill",
+          waybillPayload,
+          {
+            headers: {
+              JWTToken: jwtToken,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (err) {
+        console.error("Bluedart waybill request failed:", err.message);
+        console.error("Response status:", err.response?.status);
+        console.error(
+          "Response data:",
+          JSON.stringify(err.response?.data, null, 2)
+        );
+
+        return {
+          success: false,
+          message: `Bluedart waybill request failed: ${
+            err.response?.data?.title || err.message
+          }`,
+          error: {
+            status: err.response?.status,
+            data: err.response?.data,
+            message: err.message,
+          },
+          courier: "BLUEDART",
+          orderId: order._id?.toString?.() || null,
+        };
+      }
+
+      console.log("Bluedart waybill response:", waybillResp.data);
+
+      // Step 4: Process response
+      if (!waybillResp.data?.GenerateWayBillResult) {
+        throw new Error(
+          `Bluedart waybill generation failed: ${
+            waybillResp.data?.ErrorMessage || "Unknown error"
+          }`
+        );
+      }
+
+      const result = waybillResp.data.GenerateWayBillResult;
+
+      if (!result.IsError && result.AWBNo) {
+        const shippingDetails = {
+          platform: "bluedart",
+          awb_number: result.AWBNo,
+          reference_number: order._id.toString(),
+          tracking_url: `https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo=${result.AWBNo}`,
+          token_number: result.TokenNumber,
+          destination_location: result.DestinationLocation,
+          destination_area: result.DestinationArea,
+          raw_response: waybillResp.data,
+          created_at: new Date(),
+        };
+
+        await this.orderRepository.updateOrder(order._id, {
+          shipping_details: shippingDetails,
+        });
+
+        return {
+          success: true,
+          message: "Bluedart waybill generated successfully",
+          trackingNumber: result.AWBNo,
+          tokenNumber: result.TokenNumber,
+          destinationLocation: result.DestinationLocation,
+          destinationArea: result.DestinationArea,
+          courier: "BLUEDART",
+          orderId: order._id.toString(),
+          data: result,
+        };
+      } else {
+        throw new Error(
+          `Bluedart waybill generation failed: ${
+            result.Status?.[0]?.StatusInformation || "Unknown error"
+          }`
+        );
+      }
+    } catch (error) {
+      console.error("Bluedart shipment creation failed:", error);
+
       return {
         success: false,
-        message: `Bluedart waybill request failed: ${err.response?.data?.title || err.message}`,
+        message: `Bluedart shipment creation failed: ${error.message}`,
         error: {
-          status: err.response?.status,
-          data: err.response?.data,
-          message: err.message
+          message: error.message,
+          response: error.response?.data || null,
+          status: error.response?.status || null,
         },
-        courier: 'BLUEDART',
-        orderId: order._id?.toString?.() || null,
-      };
-    }
-
-    console.log('Bluedart waybill response:', waybillResp.data);
-
-    // Step 4: Process response
-    if (!waybillResp.data?.GenerateWayBillResult) {
-      throw new Error(`Bluedart waybill generation failed: ${waybillResp.data?.ErrorMessage || 'Unknown error'}`);
-    }
-
-    const result = waybillResp.data.GenerateWayBillResult;
-    
-    if (!result.IsError && result.AWBNo) {
-      const shippingDetails = {
-        platform: "bluedart",
-        awb_number: result.AWBNo,
-        reference_number: order._id.toString(),
-        tracking_url: `https://www.bluedart.com/web/guest/trackdartresult?trackFor=0&trackNo=${result.AWBNo}`,
-        token_number: result.TokenNumber,
-        destination_location: result.DestinationLocation,
-        destination_area: result.DestinationArea,
-        raw_response: waybillResp.data,
-        created_at: new Date()
-      };
-
-      await this.orderRepository.updateOrder(order._id, {
-        shipping_details: shippingDetails,
-      });
-
-      return {
-        success: true,
-        message: "Bluedart waybill generated successfully",
-        trackingNumber: result.AWBNo,
-        tokenNumber: result.TokenNumber,
-        destinationLocation: result.DestinationLocation,
-        destinationArea: result.DestinationArea,
         courier: "BLUEDART",
         orderId: order._id.toString(),
-        data: result,
       };
-    } else {
-      throw new Error(`Bluedart waybill generation failed: ${result.Status?.[0]?.StatusInformation || 'Unknown error'}`);
     }
-
-  } catch (error) {
-    console.error("Bluedart shipment creation failed:", error);
-    
-    return {
-      success: false,
-      message: `Bluedart shipment creation failed: ${error.message}`,
-      error: {
-        message: error.message,
-        response: error.response?.data || null,
-        status: error.response?.status || null
-      },
-      courier: "BLUEDART",
-      orderId: order._id.toString(),
-    };
   }
 }
-
-}
-
-
-
 
 export default OrderService;
