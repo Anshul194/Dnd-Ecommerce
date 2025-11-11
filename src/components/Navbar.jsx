@@ -28,6 +28,8 @@ import CartSidebar from "./CartSidebar";
 import { selectWishlistItems } from "@/app/store/slices/wishlistSlice";
 import Image from "next/image";
 import { fetchProducts } from "@/app/store/slices/productSlice";
+import { fetchBlogs } from "@/app/store/slices/blogSclie";
+import axiosInstance from "@/axiosConfig/axiosInstance";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +38,10 @@ export default function Navbar() {
   const { categories } = useSelector((state) => state.category);
   const { cartItems } = useSelector((state) => state.cart);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const { products } = useSelector((state) => state.product);
+  const { items } = useSelector((state) => state.blogs);
+  const [filteredBlogs, setFilteredBlogs] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const LikedProducts = useSelector(selectWishlistItems);
   const dispatch = useDispatch();
@@ -54,6 +59,7 @@ export default function Navbar() {
       };
       dispatch(fetchProducts(payload));
     }
+    dispatch(fetchBlogs());
   }, []);
 
   const handelCartToggle = () => {
@@ -86,6 +92,41 @@ export default function Navbar() {
   ) {
     return null;
   }
+
+  const fetchProducts = async () => {
+    try {
+      const quaryParams = new URLSearchParams();
+
+      if (searchTerm) {
+        quaryParams.append("selectFields", { name: searchTerm });
+      }
+
+      const response = await axiosInstance.get("/product", {
+        params: quaryParams,
+      });
+      console.log("products are ==> ", response.data.products.data);
+      setProducts(response.data.products.data.products);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  const filterBlogs = (term) => {
+    const filtered = items.filter((blog) =>
+      blog.title.toLowerCase().includes(term.toLowerCase())
+    );
+    setFilteredBlogs(filtered);
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchProducts();
+      filterBlogs(searchTerm);
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  console.log("product ===>", products);
 
   return (
     <>
@@ -257,8 +298,8 @@ export default function Navbar() {
                               Featured Products
                             </h3>
                             <div className="grid grid-cols-4 gap-4 max-h-[50%]  overflow-y-scroll">
-                              {products?.products?.length > 0 &&
-                               products?.products?.map((product) => (
+                              {products?.length > 0 &&
+                                products?.map((product) => (
                                   <Link
                                     key={product._id}
                                     href={`/productDetail/${product.slug}`}
@@ -403,6 +444,8 @@ export default function Navbar() {
                 placeholder="Search for teas..."
                 className="pl-10 pr-10 w-full outline-none ring-0 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
                 autoFocus={showSearch}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button
                 onClick={() => setShowSearch(false)}
@@ -410,6 +453,98 @@ export default function Navbar() {
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+          </div>
+
+          <div className="container flex flex-col gap-2 mx-auto px-2 md:px-8 pb-4">
+            <div>
+              <h2 className="text-black">Blogs</h2>
+
+              <div className="mt-2">
+                {filteredBlogs.length === 0 ? (
+                  <p className="text-gray-500">No blogs found.</p>
+                ) : (
+                  <div className=" flex gap-4">
+                    {filteredBlogs.map((blog) => (
+                      <div
+                        key={blog._id}
+                        className="border-2 cursor-pointer  p-2 rounded-md flex gap-2 border-gray-200"
+                      >
+                        <Image
+                          src={blog?.thumbnail?.url || blog?.images?.[0]?.url}
+                          alt={blog?.thumbnail?.alt || blog?.images?.[0]?.alt}
+                          width={100}
+                          height={60}
+                          className="w-24 h-16 object-cover rounded-md"
+                        />
+
+                        <h3 className="text-gray-800 w-20 text-xs font-medium">
+                          {blog.title}
+                        </h3>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-black">Products</h2>
+
+              <div className="mt-2">
+                {products.length === 0 ? (
+                  <p className="text-gray-500">No products found.</p>
+                ) : (
+                  <div className=" flex gap-4">
+                    {products.map((product) => (
+                      <Link
+                        href={`/productDetail/${product.slug}`}
+                        key={product._id}
+                      >
+                        <div
+                          key={product._id}
+                          className="border-2 cursor-pointer  p-2 rounded-md flex gap-2 border-gray-200"
+                        >
+                          <Image
+                            src={
+                              product?.thumbnail?.url ||
+                              product?.images?.[0]?.url
+                            }
+                            alt={
+                              product?.thumbnail?.alt ||
+                              product?.images?.[0]?.alt
+                            }
+                            width={100}
+                            height={60}
+                            className="w-24 h-16 object-cover rounded-md"
+                          />
+
+                          <div>
+                            <h3 className="text-gray-800 w-20 text-xs font-medium">
+                              {product.name}
+                            </h3>
+                            {product?.variants?.[0]?.salePrice ? (
+                              <p className="text-gray-600 text-xs">
+                                RS{" "}
+                                <span className="font-semibold text-gray-800">
+                                  {product.variants[0].salePrice}
+                                </span>
+                              </p>
+                            ) : (
+                              <p className="text-gray-600 text-xs">
+                                RS{" "}
+                                <span className="font-semibold text-gray-800">
+                                  {product.variants[0].price}
+                                </span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

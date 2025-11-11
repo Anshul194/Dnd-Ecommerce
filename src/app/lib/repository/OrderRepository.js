@@ -160,17 +160,17 @@ class OrderRepository extends CrudRepository {
   //findById
   async findById(orderId) {
     try {
-      console.log('Finding order by ID:', orderId);
+      console.log("Finding order by ID:", orderId);
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
       }
       const order = await this.model.findById(orderId);
       if (!order) {
-        throw new Error('Order not found');
+        throw new Error("Order not found");
       }
       return order;
     } catch (error) {
-      console.error('OrderRepository findById Error:', error.message);
+      console.error("OrderRepository findById Error:", error.message);
       throw error;
     }
   }
@@ -182,12 +182,12 @@ class OrderRepository extends CrudRepository {
       }
 
       const queryFilters = { _id: orderId };
-      if (userId) {
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-          throw new Error(`Invalid userId: ${userId}`);
-        }
-        queryFilters.user = userId;
-      }
+      // if (userId) {
+      //   if (!mongoose.Types.ObjectId.isValid(userId)) {
+      //     throw new Error(`Invalid userId: ${userId}`);
+      //   }
+      //   queryFilters.user = userId;
+      // }
 
       let query = this.model.findOne(queryFilters).select(selectFields);
 
@@ -214,6 +214,8 @@ class OrderRepository extends CrudRepository {
           query = query.populate(field);
         });
       }
+
+      console.log("query ===>  ", query);
 
       const order = await query.exec();
       if (!order) {
@@ -266,13 +268,17 @@ class OrderRepository extends CrudRepository {
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
       }
-      const updatedOrder = await this.model.findByIdAndUpdate(orderId, updateData, { new: true });
+      const updatedOrder = await this.model.findByIdAndUpdate(
+        orderId,
+        updateData,
+        { new: true }
+      );
       if (!updatedOrder) {
-        throw new Error('Order not found');
+        throw new Error("Order not found");
       }
       return updatedOrder;
     } catch (error) {
-      console.error('OrderRepository updateOrder Error:', error.message);
+      console.error("OrderRepository updateOrder Error:", error.message);
       throw error;
     }
   }
