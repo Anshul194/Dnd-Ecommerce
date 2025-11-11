@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import CrudRepository from "./CrudRepository";
 import { ProductSchema } from "../models/Product";
 import { VariantSchema } from "../models/Variant";
+import { OrderSchema } from "../models/Order";
 
 class OrderRepository extends CrudRepository {
   constructor(model, connection) {
@@ -19,7 +20,51 @@ class OrderRepository extends CrudRepository {
   async create(data) {
     try {
       console.log("Creating order with data:", JSON.stringify(data, null, 2));
-      return await this.model.create(data);
+      // Runtime guard: ensure the model schema contains address fields; if not, re-register using canonical OrderSchema
+      try {
+        if (
+          !this.model.schema.path("shippingAddress") ||
+          !this.model.schema.path("billingAddress")
+        ) {
+          console.warn(
+            "Order model on connection is missing address fields. Re-registering Order model with canonical OrderSchema."
+          );
+          try {
+            if (
+              this.connection &&
+              this.connection.models &&
+              this.connection.models.Order
+            ) {
+              // remove existing model reference so we can re-register
+              delete this.connection.models.Order;
+            }
+            this.model = this.connection.model("Order", OrderSchema);
+            console.log(
+              "Re-registered Order model on connection:",
+              this.connection.name || "global mongoose"
+            );
+          } catch (regErr) {
+            console.error("Failed to re-register Order model:", regErr.message);
+          }
+        }
+      } catch (guardErr) {
+        console.warn("Order model guard check failed:", guardErr.message);
+      }
+
+      // Debug: log schema paths so we can confirm the model actually contains address fields
+      try {
+        const schemaPaths = Object.keys(this.model.schema.paths || {}).slice(
+          0,
+          200
+        );
+        console.log("Order model schema paths:", schemaPaths);
+      } catch (e) {
+        console.warn("Could not enumerate model.schema.paths:", e.message);
+      }
+
+      const res = await this.model.create(data);
+      console.log("order created successfully:", res);
+      return res;
     } catch (error) {
       console.error("OrderRepository Create Error:", error.message);
       throw error;
@@ -42,16 +87,16 @@ class OrderRepository extends CrudRepository {
       console.log("Using Product model:", Product.modelName);
       console.log("Database:", this.connection.name || "global mongoose");
 
-      if (!mongoose.Types.ObjectId.isValid(product)) {
-        throw new Error(`Invalid productId: ${product}`);
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        throw new Error(`Invalid productId: ${productId}`);
       }
 
-      const product = await Product.findById(product).select("price");
-      if (!product) {
-        throw new Error(`Product ${product} not found`);
+      const found = await Product.findById(productId).select("price");
+      if (!found) {
+        throw new Error(`Product ${productId} not found`);
       }
-      console.log("Found product:", product);
-      return product;
+      console.log("Found product:", found);
+      return found;
     } catch (error) {
       console.error("OrderRepository findProductById Error:", error.message);
       throw error;
@@ -215,7 +260,7 @@ class OrderRepository extends CrudRepository {
         });
       }
 
-      console.log("query ===>  ", query);
+      // console.log("query ===>  ", query);
 
       const order = await query.exec();
       if (!order) {
