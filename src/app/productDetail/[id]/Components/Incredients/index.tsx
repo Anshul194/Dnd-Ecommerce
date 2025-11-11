@@ -1,5 +1,7 @@
 import { BookOpen } from "lucide-react";
 import RenderScrollingVariant from "./Variant1";
+import ModernIngredientsUI from "./Variant2";
+import PremiumIngredientsUI from "./Variant3";
 
 export function Ingredients({
   component,
@@ -75,7 +77,11 @@ export function Ingredients({
     switch (ingredientSettings.variant) {
       case "scrolling":
         return <RenderScrollingVariant data={ingredients} />;
+      case "modern":
+        return <ModernIngredientsUI data={ingredients} />;
 
+      case "premium":
+        return <PremiumIngredientsUI data={ingredients} />;
       default:
         return <RenderScrollingVariant data={ingredients} />;
     }

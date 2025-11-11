@@ -1,6 +1,8 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 const DynamicWhyUs = ({ content }) => {
@@ -10,9 +12,9 @@ const DynamicWhyUs = ({ content }) => {
   return (
     <div className="min-h-screen bg-white py-10 lg:py-20 px-4">
       {/* Top Section - Why Us */}
-      <div className="flex items-start flex-col md:flex-row gap-8 mb-16">
+      <div className="flex items-start flex-col gap-8 mb-16">
         {/* Left gray rectangle */}
-        <div className="aspect-5/4 max-w-[400px] w-full lg:w-1/3 bg-gray-400 rounded-lg flex-shrink-0">
+        <div className="aspect-5/4 w-full  bg-gray-400 rounded-lg flex-shrink-0">
           <Image
             src={content.image || "/images/why-us-placeholder.jpg"} // Placeholder image path
             alt="Why Us"
@@ -34,7 +36,7 @@ const DynamicWhyUs = ({ content }) => {
 
           {/* Two column list */}
           {points && points.length > 0 && (
-            <div className="flex gap-16">
+            <div className="flex gap-16 mb-6">
               {points.map((point, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
@@ -43,6 +45,14 @@ const DynamicWhyUs = ({ content }) => {
               ))}
             </div>
           )}
+
+          <Link
+            className="w-fit text-sm underline font-medium hover:text-green-600 text-green-500"
+            href={content?.cta?.link || "/pages/68fb0ce58b4cf00083b826d2"}
+          >
+            {content?.cta?.title || "View More"}{" "}
+            <ArrowRight size={16} className="inline-block ml-1" />
+          </Link>
         </div>
       </div>
 

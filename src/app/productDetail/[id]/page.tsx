@@ -375,12 +375,12 @@ function ComponentLibrary({
   return (
     <div>
       <div className=" w-56 bg-gray-50 border-r border-gray-200 p-2 overflow-y-auto">
-        <Link href="/custom-temple/list">
-          <div className="flex items-center bg-blue-500/10 px-2 py-1 w-fit pr-4 rounded-md gap-2 mb-4 cursor-pointer">
+        {/* <Link href="/custom-temple/list">
+          <div className="flex items-center  bg-blue-500/10 px-2 py-1 w-fit pr-4 rounded-md gap-2 mb-4 cursor-pointer">
             <ArrowLeft className="h-5 w-5" />
             <h2>Back</h2>
           </div>
-        </Link>
+        </Link> */}
         <div className="mb-4">
           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
             Template Name <span className="text-red-500">*</span>

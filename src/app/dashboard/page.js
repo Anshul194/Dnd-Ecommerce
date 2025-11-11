@@ -74,6 +74,14 @@ export function SidebarDashboard() {
     }
   };
 
+  const handleLogOut = async () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+
+    window.location.href = "/login";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
@@ -130,7 +138,10 @@ export function SidebarDashboard() {
 
           {/* Logout Button */}
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <button className="flex items-center space-x-3 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200 w-full">
+            <button
+              onClick={handleLogOut}
+              className="flex items-center space-x-3 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200 w-full"
+            >
               <LogOut size={18} />
               <span className="font-medium">Logout</span>
             </button>

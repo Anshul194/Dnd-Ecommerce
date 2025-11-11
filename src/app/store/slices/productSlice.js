@@ -20,7 +20,7 @@ export const fetchProducts = createAsyncThunk(
       quaryParams.append("maxPrice", payload.maxPrice);
     }
     if (payload.searchTerm) {
-      quaryParams.append("searchTerm", payload.searchTerm);
+      quaryParams.append("selectFields", { name: payload.searchTerm });
     }
     if (payload.isAddon !== undefined) {
       quaryParams.append("isAddon", payload.isAddon);
@@ -89,7 +89,7 @@ export const fetchProductReviews = createAsyncThunk(
 export const fetchFrequentlyPurchasedProducts = createAsyncThunk(
   "product/fetchFrequentlyPurchasedProducts",
   async (payload) => {
-    console.log("frequently api is calling")
+    console.log("frequently api is calling");
     try {
       const quaryParams = new URLSearchParams();
       payload.page && quaryParams.append("page", payload.page);
