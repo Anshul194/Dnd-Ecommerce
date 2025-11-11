@@ -12,9 +12,9 @@ const DynamicWhyUs = ({ content }) => {
   return (
     <div className="min-h-screen bg-white py-10 lg:py-20 px-4">
       {/* Top Section - Why Us */}
-      <div className="flex items-start flex-col md:flex-row gap-8 mb-16">
+      <div className="flex items-start flex-col gap-8 mb-16">
         {/* Left gray rectangle */}
-        <div className="aspect-5/4 max-w-[400px] w-full lg:w-1/3 bg-gray-400 rounded-lg flex-shrink-0">
+        <div className="aspect-5/4 w-full  bg-gray-400 rounded-lg flex-shrink-0">
           <Image
             src={content.image || "/images/why-us-placeholder.jpg"} // Placeholder image path
             alt="Why Us"

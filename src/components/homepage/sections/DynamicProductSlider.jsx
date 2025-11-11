@@ -214,16 +214,16 @@ const DynamicProductSlider = ({ content }) => {
       </div>
 
       {/* Right Content - Product Slider */}
-      <div className="flex-1 relative z-20 overflow-x-scroll">
+      <div className="flex-1 relative z-20 ">
         <div className="relative">
           {/* Left Arrow */}
           <button
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
-            className={`absolute -left-2 md:left-0 top-1/2 border border-black/20 transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-200 ${
+            className={`absolute -left-4 md:-left-5 top-1/2 border border-black/20 transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-200 ${
               canScrollLeft
                 ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
-                : "text-gray-300 cursor-not-allowed opacity-50"
+                : "text-gray-300 cursor-not-allowed opacity-0"
             }`}
           >
             <svg
@@ -247,10 +247,10 @@ const DynamicProductSlider = ({ content }) => {
           <button
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
-            className={`absolute -right-2 md:right-0 top-1/2 border transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-200 ${
+            className={`absolute -right-2 md:-right-5 top-1/2 border transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-200 ${
               canScrollRight
                 ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
-                : "text-gray-300 cursor-not-allowed opacity-50"
+                : "text-gray-300 cursor-not-allowed opacity-0"
             }`}
           >
             <svg
@@ -274,7 +274,7 @@ const DynamicProductSlider = ({ content }) => {
           <div
             ref={sliderRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto scrollbar-hide space-x-4 md:px-12 py-4 scroll-smooth"
+            className="flex overflow-x-auto scrollbar-hide space-x-4  py-4 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {products?.products?.length > 0 &&
@@ -366,11 +366,11 @@ const DynamicProductSlider = ({ content }) => {
       `}</style>
 
       <div className="mt-20">
-        {/* <div>
+        <div>
           <h1 className="!font-bebas text-5xl w-full font-black text-gray-800 leading-tight mb-6">
             Story
           </h1>
-        </div> */}
+        </div>
         <div className="relative">
           {/* Left Arrow */}
           <button
@@ -403,7 +403,7 @@ const DynamicProductSlider = ({ content }) => {
                 return (
                   <div
                     key={index}
-                    className="w-1/4 relative min-w-[270px] flex-shrink-0 px-3 cursor-pointer"
+                    className="w-1/4 relative min-w-[270px] flex-shrink-0  cursor-pointer"
                     role="button"
                     tabIndex={0}
                     onClick={() => openOverlay(product)}

@@ -83,7 +83,7 @@ export default function TestimonialSlider({ content }) {
                 key={index}
                 className="w-1/4 min-w-[270px] flex-shrink-0 px-3"
               >
-                <div className="bg-white border border-gray-200 rounded-2xl p-4 h-96 flex flex-col">
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 h-94 flex flex-col">
                   {/* Name with green icon */}
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-md bebas font-bold text-black uppercase tracking-wide">
@@ -93,10 +93,10 @@ export default function TestimonialSlider({ content }) {
                   </div>
 
                   {/* Quote */}
-                  <div className="flex-1 mb-6">
-                    <blockquote className="text-gray-700 bebas text-2xl font-medium leading-tight uppercase">
-                      "{testimonial.comment.slice(0, 115)}{" "}
-                      {testimonial.comment.length > 120 ? "..." : ""}"
+                  <div className="flex-1 mb-4">
+                    <blockquote className="text-gray-700 bebas line-clamp-5 text-2xl font-medium leading-tight uppercase">
+                      "{testimonial.comment.slice(0, 130)}{" "}
+                      {testimonial.comment.length > 115 ? "..." : ""}"
                     </blockquote>
                   </div>
 
