@@ -1,11 +1,31 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCertificates } from "@/app/store/slices/certificateSlice";
 
 export default function ValidatedSection({ content }) {
   const scrollContainerRef = useRef(null);
+  const dispatch = useDispatch();
+  const { certificates = [], loading: certLoading } = useSelector(
+    (state) => state.certificate || {}
+  );
+
+  useEffect(() => {
+    // fetch all certificates for this section (use a large limit)
+    dispatch(fetchCertificates({ page: 1, limit: 10000 }));
+  }, [dispatch]);
+  // show all certificates if available; otherwise fallback to content.images or a few placeholders
+  let certificatesForUI = [];
+  if (Array.isArray(certificates) && certificates.length > 0) {
+    certificatesForUI = certificates;
+  } else if (Array.isArray(content?.images) && content.images.length > 0) {
+    certificatesForUI = content.images.map((url) => ({ file: url }));
+  } else {
+    certificatesForUI = Array.from({ length: 5 }).map(() => null);
+  }
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -19,6 +39,7 @@ export default function ValidatedSection({ content }) {
     }
   };
 
+  // console.log("====================> ", certificates);
   return (
     <div className="w-full py-10 lg:py-20 px-4">
       <div className="max-w-7xl mx-auto">
@@ -72,20 +93,22 @@ export default function ValidatedSection({ content }) {
               className="marquee__track flex gap-5 items-center"
               style={{ "--marquee-duration": "20s" }}
             >
-              {/* First set */}
+              {/* First set: certificates from redux (fallback to placeholder) */}
               <div className="marquee__group flex gap-5">
-                {[...Array(5)].map((_, index) => (
+                {certificatesForUI.map((item, index) => (
                   <div
                     key={`a-${index}`}
                     className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-4 border-green-500 bg-white"
                   >
                     <Image
                       src={
-                        content?.images && content.images[index]
+                        item && item.file
+                          ? item.file
+                          : content?.images && content.images[index]
                           ? content.images[index]
                           : "/logo-place-holder.png"
                       }
-                      alt={`Circle ${index + 1}`}
+                      alt={`Certificate ${index + 1}`}
                       width={160}
                       height={160}
                       className="w-full h-full scale-75 object-cover rounded-full"
@@ -96,18 +119,20 @@ export default function ValidatedSection({ content }) {
 
               {/* Duplicate set */}
               <div className="marquee__group flex gap-5">
-                {[...Array(5)].map((_, index) => (
+                {certificatesForUI.map((item, index) => (
                   <div
                     key={`b-${index}`}
                     className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-4 border-green-500 bg-white"
                   >
                     <Image
                       src={
-                        content?.images && content.images[index]
+                        item && item.file
+                          ? item.file
+                          : content?.images && content.images[index]
                           ? content.images[index]
                           : "/logo-place-holder.png"
                       }
-                      alt={`Circle duplicate ${index + 1}`}
+                      alt={`Certificate duplicate ${index + 1}`}
                       width={160}
                       height={160}
                       className="w-full h-full scale-75 object-cover rounded-full"

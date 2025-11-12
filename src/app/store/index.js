@@ -22,6 +22,7 @@ import faq from "./slices/faqSlice";
 import settingSlice from "./slices/settingSlice";
 import reviewsSlice from "./slices/Reviews";
 import pagesSlice from "./slices/pagesSlice";
+import certificateReducer from "./slices/certificateSlice";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -46,6 +47,7 @@ const store = configureStore({
     setting: settingSlice,
     reviews: reviewsSlice,
     pages: pagesSlice, // Import and add pagesSlice here
+    certificate: certificateReducer,
   },
 });
 

@@ -36,7 +36,7 @@ const RenderVariant3 = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="absolute top-6 right-6 flex flex-col gap-3">
+          {/* <div className="absolute top-6 right-6 flex flex-col gap-3">
             <button
               onClick={() => setIsWishlisted(!isWishlisted)}
               className={`p-3 rounded-full shadow-lg transition-all transform hover:scale-110 ${
@@ -53,7 +53,7 @@ const RenderVariant3 = () => {
             <button className="p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg text-gray-700 hover:text-gray-900 transition-all transform hover:scale-110">
               <Eye size={20} />
             </button>
-          </div>
+          </div> */}
 
           {/* Quick View Indicator */}
           <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm opacity-0 group-hover:opacity-100 transition-opacity">

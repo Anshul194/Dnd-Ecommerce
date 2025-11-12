@@ -90,9 +90,9 @@ const Dashboard = React.memo(({ user }) => {
             key={index}
             className="bg-white rounded-lg p-6 text-center shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer"
           >
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 hover:bg-red-200 transition-colors">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 hover:bg-green-200 transition-colors">
               {card.icon ? (
-                <card.icon size={24} className="text-red-600" />
+                <card.icon size={24} className="text-green-500" />
               ) : null}
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">{card.title}</h3>

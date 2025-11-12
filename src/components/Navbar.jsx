@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Search,
   Bell,
@@ -84,16 +86,9 @@ export default function Navbar() {
       setDisplayName("Guest");
     }
   }, [isAuthenticated, user?.name]);
-
-  if (
-    pathname.includes("/signup") ||
-    pathname.includes("/login") ||
-    pathname.includes("/builder")
-  ) {
-    return null;
-  }
-
-  const fetchProducts = async () => {
+  // Local helper to fetch products for the search/mega-menu preview.
+  // Named differently to avoid shadowing the imported `fetchProducts` action.
+  const fetchProductsFromApi = async () => {
     try {
       const quaryParams = new URLSearchParams();
 
@@ -104,8 +99,10 @@ export default function Navbar() {
       const response = await axiosInstance.get("/product", {
         params: quaryParams,
       });
-      console.log("products are ==> ", response.data.products.data);
-      setProducts(response.data.products.data.products);
+      // response.data.products.data structure may differ; adjust if needed
+      setProducts(
+        response.data.products.data.products || response.data.products.data
+      );
     } catch (error) {
       console.error("Error fetching products:", error);
     }
@@ -118,13 +115,22 @@ export default function Navbar() {
     setFilteredBlogs(filtered);
   };
 
+  // Debounced search effect (must run on every render path so hooks count stays stable)
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchProducts();
+      fetchProductsFromApi();
       filterBlogs(searchTerm);
     }, 300);
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
+
+  if (
+    pathname.includes("/signup") ||
+    pathname.includes("/login") ||
+    pathname.includes("/builder")
+  ) {
+    return null;
+  }
 
   console.log("product ===>", products);
 
