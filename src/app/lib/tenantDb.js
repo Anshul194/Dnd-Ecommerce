@@ -16,19 +16,22 @@ export async function getDbConnection(subdomain) {
   if (!subdomain || subdomain === 'localhost') {
     return await dbConnect();
   } else {
+    // Use static URI for all subdomains except localhost/null
+    const staticUri = 'mongodb+srv://anshul:anshul149@clusterdatabase.24furrx.mongodb.net/tenant_bharat?retryWrites=true&w=majority';
+    return await dbConnect(staticUri);
+
+    // If you want to keep the tenant lookup logic for future use, comment out below:
+    /*
     await dbConnect();
-    
-    // Define tenant schema properly
     const tenantSchema = new mongoose.Schema({
       name: String,
       dbUri: String,
       subdomain: String
     }, { collection: 'tenants' });
-    
     const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', tenantSchema);
     const tenant = await Tenant.findOne({ subdomain });
-    // console.log('Tenant found:', tenant);
     if (!tenant?.dbUri) return null;
     return await dbConnect(tenant.dbUri);
+    */
   }
 }

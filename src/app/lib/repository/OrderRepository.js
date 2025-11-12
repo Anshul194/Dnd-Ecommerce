@@ -103,6 +103,31 @@ class OrderRepository extends CrudRepository {
     }
   }
 
+  //getAllOrdersForTracking
+  async getAllOrdersForTracking(populateFields = []) {
+    try {
+      //order which status not delivered and which have set shipping_details.tracking_number
+      let query = this.model.find({
+        status: { $ne: "delivered" },
+        "shipping_details.reference_number": { $exists: true, $ne: null },
+      });
+
+      if (populateFields.length > 0) {
+        populateFields.forEach((field) => {
+          query = query.populate(field);
+        });
+      }
+
+      const orders = await query.exec();
+
+      // console.log("Orders for tracking:", orders);
+      return orders;
+    } catch (error) {
+      console.error("OrderRepository getAllOrdersForTracking Error:", error.message);
+      throw error;
+    }
+  }
+
   async findVariantById(variantId) {
     console.log("Finding variant by ID:", variantId);
     try {
@@ -309,10 +334,11 @@ class OrderRepository extends CrudRepository {
   //updateOrder
   async updateOrder(orderId, updateData) {
     try {
-      // console.log('Updating order:', orderId, 'with data:', updateData);
+        // console.log('Updating order:', orderId, 'with data:', updateData);
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
       }
+      
       const updatedOrder = await this.model.findByIdAndUpdate(
         orderId,
         updateData,
@@ -321,6 +347,7 @@ class OrderRepository extends CrudRepository {
       if (!updatedOrder) {
         throw new Error("Order not found");
       }
+      // console.log('Order updated successfully:', updatedOrder);
       return updatedOrder;
     } catch (error) {
       console.error("OrderRepository updateOrder Error:", error.message);
