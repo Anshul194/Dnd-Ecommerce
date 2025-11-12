@@ -391,7 +391,7 @@ const DynamicProductSlider = ({ content }) => {
           {/* Slider Container */}
           <div className="overflow-hidden">
             <div
-              className="flex transition-transform duration-500 ease-in-out"
+              className="flex transition-transform duration-500 ease-in-out gap-4"
               style={{
                 transform: `translateX(-${currentSlide * (100 / 4)}%)`,
               }}
