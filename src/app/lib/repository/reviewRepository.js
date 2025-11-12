@@ -75,7 +75,11 @@ export default class ReviewRepository {
         .sort({ createdAt: -1 })
         .exec();
 
+      // ensure we only aggregate reviews for the requested productId
+      const objectProductId = new mongoose.Types.ObjectId(productId);
+
       const result = await this.Review.aggregate([
+        { $match: { productId: objectProductId } },
         {
           $group: {
             _id: "$rating",
@@ -103,7 +107,7 @@ export default class ReviewRepository {
           },
         },
         {
-          $unwind: "$ratings",
+          $unwind: { path: "$ratings", preserveNullAndEmptyArrays: true },
         },
         {
           $addFields: {
@@ -119,7 +123,7 @@ export default class ReviewRepository {
                         matched: {
                           $first: {
                             $filter: {
-                              input: "$ratings.ratings",
+                              input: { $ifNull: ["$ratings.ratings", []] },
                               as: "item",
                               cond: { $eq: ["$$item.rating", "$$star"] },
                             },
@@ -137,7 +141,7 @@ export default class ReviewRepository {
                         matched: {
                           $first: {
                             $filter: {
-                              input: "$ratings.ratings",
+                              input: { $ifNull: ["$ratings.ratings", []] },
                               as: "item",
                               cond: { $eq: ["$$item.rating", "$$star"] },
                             },
@@ -146,7 +150,7 @@ export default class ReviewRepository {
                       },
                       in: {
                         $cond: {
-                          if: { $gt: ["$ratings.total", 0] },
+                          if: { $gt: [{ $ifNull: ["$ratings.total", 0] }, 0] },
                           then: {
                             $round: [
                               {
@@ -154,7 +158,7 @@ export default class ReviewRepository {
                                   {
                                     $divide: [
                                       { $ifNull: ["$$matched.count", 0] },
-                                      "$ratings.total",
+                                      { $ifNull: ["$ratings.total", 0] },
                                     ],
                                   },
                                   100,
@@ -171,7 +175,7 @@ export default class ReviewRepository {
                 },
               },
             },
-            totalReviews: "$ratings.total",
+            totalReviews: { $ifNull: ["$ratings.total", 0] },
           },
         },
         {
@@ -184,6 +188,7 @@ export default class ReviewRepository {
       ]);
 
       const avgResult = await this.Review.aggregate([
+        { $match: { productId: objectProductId } },
         {
           $group: {
             _id: null,
@@ -192,10 +197,22 @@ export default class ReviewRepository {
         },
       ]);
 
+      // Ensure we return a consistent ratingBreakdown even when no reviews exist
+      let ratingBreakdown = [];
+      if (result && result[0] && Array.isArray(result[0].ratingBreakdown)) {
+        ratingBreakdown = result[0].ratingBreakdown;
+      } else {
+        ratingBreakdown = [5, 4, 3, 2, 1].map((star) => ({
+          rating: star,
+          count: 0,
+          percentage: 0,
+        }));
+      }
+
       const response = {
-        ratingBreakdown: result[0].ratingBreakdown,
+        ratingBreakdown,
         Average: avgResult[0]?.avgRating || 0,
-        Reviews: data.map(review => ({
+        Reviews: data.map((review) => ({
           ...review.toObject(),
           likes: review.likes || [],
           likeCount: review.likes ? review.likes.length : 0,
@@ -259,12 +276,12 @@ export default class ReviewRepository {
 
       const userObjectId = new mongoose.Types.ObjectId(userId);
 
-      if (action === 'like') {
-        if (!review.likes.some(u => u.equals(userObjectId))) {
+      if (action === "like") {
+        if (!review.likes.some((u) => u.equals(userObjectId))) {
           review.likes.push(userObjectId);
         }
-      } else if (action === 'dislike') {
-        review.likes = review.likes.filter(u => !u.equals(userObjectId));
+      } else if (action === "dislike") {
+        review.likes = review.likes.filter((u) => !u.equals(userObjectId));
       } else {
         throw new Error(`Invalid action: ${action}`);
       }

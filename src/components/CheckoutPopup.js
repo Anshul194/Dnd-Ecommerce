@@ -78,7 +78,7 @@ export default function CheckoutPopup() {
     area: "",
     landmark: "",
     city: "",
-    state: "",
+    state: "",  
     email: "",
     addressType: "Home",
     phone: "",

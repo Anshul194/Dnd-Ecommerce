@@ -49,7 +49,7 @@ export default function PremiumIngredientsUI({ data }) {
       className="min-h-screen bg-white text-gray-900 py-16 px-4 md:px-8 overflow-hidden"
     >
       {/* Floating Background Elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className=" inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-20 left-10 w-72 h-72 bg-green-500/10 rounded-full blur-3xl animate-float"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-green-400/10 rounded-full blur-3xl animate-float-delayed"></div>
       </div>

@@ -20,7 +20,7 @@ export const fetchProducts = createAsyncThunk(
       quaryParams.append("maxPrice", payload.maxPrice);
     }
     if (payload.searchTerm) {
-      quaryParams.append("selectFields", { name: payload.searchTerm });
+      quaryParams.append("searchFields", { name: payload.searchTerm });
     }
     if (payload.isAddon !== undefined) {
       quaryParams.append("isAddon", payload.isAddon);
