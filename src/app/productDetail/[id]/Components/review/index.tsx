@@ -3,48 +3,8 @@ import renderCardsVariant from "./variant1";
 import RenderTestimonialVariant from "./variant2";
 import RenderListVariant from "./variant3";
 import RenderCardsVariant from "./variant1";
-
-const dummyReviews = [
-  {
-    name: "Pablo Kahastoria",
-    rating: 5,
-    comment:
-      "The goods landed safely, arrived quickly, use instant delivery, the quality of the goods is okay and works well, the packing is safe and the delivery is fast, great, thank you.",
-    likes: 10,
-    dislikes: 16,
-    comments: 14,
-    verified: true,
-    images: [
-      "https://in.teabox.com/cdn/shop/files/RoseGreenTea_Monocarton_CarouselImage_02.jpg?v=1755320724&width=400",
-    ],
-  },
-  {
-    name: "Thomas Chan",
-    rating: 5,
-    comment:
-      "The goods landed safely, arrived quickly, use instant delivery, the quality of the goods is okay and works well, the packing is safe and the delivery is fast, great, thank you.",
-    likes: 21,
-    dislikes: 23,
-    comments: 7,
-    verified: true,
-    images: [
-      "https://in.teabox.com/cdn/shop/files/RoseGreenTea_Monocarton_CarouselImage_02.jpg?v=1755320724&width=400",
-    ],
-  },
-  {
-    name: "Samuel Drya",
-    rating: 5,
-    comment:
-      "The laptop package has arrived complete with charger, 2 mics, 1 headset. The laptop is really cool, good performance and sturdy, hope it lasts long. Thank you. Good luck with the sale",
-    likes: 8,
-    dislikes: 12,
-    comments: 0,
-    verified: true,
-    images: [
-      "https://in.teabox.com/cdn/shop/files/RoseGreenTea_Monocarton_CarouselImage_02.jpg?v=1755320724&width=400",
-    ],
-  },
-];
+import { useSelector } from "react-redux";
+import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 
 export function CustomerReviews({
   component,
@@ -65,6 +25,8 @@ export function CustomerReviews({
   isPreviewMode?: boolean;
   COMPONENT_SPANS: any;
 }) {
+  const productData = useSelector(selectSelectedProduct);
+
   const reviewSettings = {
     ...{
       showRatingOverview: true,
@@ -90,6 +52,10 @@ export function CustomerReviews({
         return <RenderCardsVariant />;
     }
   };
+
+  if (productData?.reviews?.Reviews.length === 0) {
+    return null; // No reviews to display
+  }
 
   return (
     <div

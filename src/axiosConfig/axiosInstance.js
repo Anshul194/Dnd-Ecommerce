@@ -7,13 +7,13 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "/api",
-  timeout: 30000,
+  timeout: 100000, // 100 seconds
   headers: {
     "Content-Type": "application/json",
     "x-tenant": getTenantFromURL(),
   },
 });
-
+  
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {

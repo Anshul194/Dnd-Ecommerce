@@ -31,6 +31,7 @@ const LandingBanner = ({
           id: section._id,
         }));
 
+        console.log("Transformed Slides:", transformedSlides);
       setSlides(transformedSlides);
     } else {
       // Fallback to default slides if no hero sections provided

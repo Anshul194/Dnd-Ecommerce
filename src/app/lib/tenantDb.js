@@ -1,14 +1,14 @@
 // tenantDb.js
-import dbConnect from '../connection/dbConnect';
-import mongoose from 'mongoose';
+import dbConnect from "../connection/dbConnect";
+import mongoose from "mongoose";
 
 export function getSubdomain(request) {
-  const xTenant = request.headers.get('x-tenant');
+  const xTenant = request.headers.get("x-tenant");
   if (xTenant) return xTenant;
-  const host = request.headers.get('host') || '';
-  const parts = host.split('.');
+  const host = request.headers.get("host") || "";
+  const parts = host.split(".");
   if (parts.length > 2) return parts[0];
-  if (parts.length === 2 && parts[0] !== 'localhost') return parts[0];
+  if (parts.length === 2 && parts[0] !== "localhost") return parts[0];
   return null;
 }
 

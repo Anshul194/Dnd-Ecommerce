@@ -167,6 +167,7 @@ class OrderService {
 
       // Fetch settings
 
+      console.log("check tenant for setting ==> " , tenant)
       const Setting =
         conn.models.Setting || conn.model("Setting", SettingSchema);
       const settings = await Setting.findOne({ tenant }).lean();
@@ -252,6 +253,8 @@ class OrderService {
         }
       }
 
+      console.log("settings ===> " , settings)
+
       // --- Shipping Charges ---
       let shippingCharge = 0;
       if (order_total >= (settings.freeShippingThreshold ?? 500)) {
@@ -279,6 +282,7 @@ class OrderService {
         },
       };
     } catch (error) {
+      console.log("error in check api ", error);
       return {
         success: false,
         message: error.message,
