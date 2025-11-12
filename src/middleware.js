@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 const ALLOWED_ORIGINS = [
   "https://bharat.nexprism.in",
   "https://bharatadmin.nexprism.in",
+  "http://bharat.localhost:5173/",
+  "http://bharat.localhost:3001/search",
 ];
 
 export function middleware(request) {

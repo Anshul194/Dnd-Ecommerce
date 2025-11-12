@@ -1,23 +1,27 @@
 // tenantDb.js
-import dbConnect from '../connection/dbConnect';
-import mongoose from 'mongoose';
+import dbConnect from "../connection/dbConnect";
+import mongoose from "mongoose";
 
 export function getSubdomain(request) {
-  const xTenant = request.headers.get('x-tenant');
+  const xTenant = request.headers.get("x-tenant");
   if (xTenant) return xTenant;
-  const host = request.headers.get('host') || '';
-  const parts = host.split('.');
+  const host = request.headers.get("host") || "";
+  const parts = host.split(".");
   if (parts.length > 2) return parts[0];
-  if (parts.length === 2 && parts[0] !== 'localhost') return parts[0];
+  if (parts.length === 2 && parts[0] !== "localhost") return parts[0];
   return null;
 }
 
 export async function getDbConnection(subdomain) {
-  if (!subdomain || subdomain === 'localhost') {
+  if (!subdomain || subdomain === "localhost") {
+    console.log("connecting DB for local");
     return await dbConnect();
   } else {
     // Use static URI for all subdomains except localhost/null
-    const staticUri = 'mongodb+srv://anshul:anshul149@clusterdatabase.24furrx.mongodb.net/tenant_bharat?retryWrites=true&w=majority';
+    console.log("Connecting Db for Live ");
+    const staticUri =
+      "mongodb+srv://anshul:anshul149@clusterdatabase.24furrx.mongodb.net/tenant_bharat?retryWrites=true&w=majority";
+    console.log(staticUri);
     return await dbConnect(staticUri);
 
     // If you want to keep the tenant lookup logic for future use, comment out below:
