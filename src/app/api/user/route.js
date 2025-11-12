@@ -26,7 +26,12 @@ async function getDbConnection(subdomain) {
     // Use default DB (from env)
     return await dbConnect();
   } else {
-    // Connect to global DB to get tenant DB URI
+    // Use static URI for all subdomains except localhost/null
+    const staticUri = 'mongodb+srv://anshul:anshul149@clusterdatabase.24furrx.mongodb.net/tenant_bharat?retryWrites=true&w=majority';
+    return await dbConnect(staticUri);
+
+    // If you want to keep the tenant lookup logic for future use, comment out below:
+    /*
     await dbConnect();
     const Tenant = mongoose.models.Tenant || mongoose.model('Tenant', new mongoose.Schema({
       name: String,
@@ -37,6 +42,7 @@ async function getDbConnection(subdomain) {
     if (!tenant?.dbUri) return null;
     // Connect to tenant DB
     return await dbConnect(tenant.dbUri);
+    */
   }
 }
 
