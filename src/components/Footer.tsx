@@ -17,10 +17,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchPages } from "@/app/store/slices/pagesSlice";
 import { useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const { list } = useSelector((state: any) => state.pages);
   const dispatch = useDispatch();
+  const pathname = usePathname();
 
   console.log("footer page links =======>", list);
 
@@ -61,6 +63,15 @@ export default function Footer() {
         return aT.localeCompare(bT);
       })
     : [];
+
+  if (
+    pathname.includes("/signup") ||
+    pathname.includes("/login") ||
+    pathname.includes("/builder") ||
+    pathname.includes("/dashboard")
+  ) {
+    return null; // Don't render Navbar on product detail page
+  }
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
       {/* Decorative Elements */}

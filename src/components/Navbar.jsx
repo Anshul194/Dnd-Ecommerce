@@ -143,11 +143,13 @@ export default function Navbar() {
             <div className="flex items-center gap-2 md:gap-4 ">
               {/* Hamburger Menu - Mobile Only */}
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger asChild>
-                  <button className="md:hidden text-[#3C950D] hover:text-[#3C950D] transition-colors p-2">
-                    <Menu className="w-6 h-6" />
-                  </button>
-                </SheetTrigger>
+                {!pathname.includes("/dashboard") && (
+                  <SheetTrigger asChild>
+                    <button className="md:hidden text-[#3C950D] hover:text-[#3C950D] transition-colors p-2">
+                      <Menu className="w-6 h-6" />
+                    </button>
+                  </SheetTrigger>
+                )}
                 <SheetContent side="left" className="w-[280px] sm:w-[320px]">
                   <SheetHeader>
                     <SheetTitle className="text-[#3C950D]">Menu</SheetTitle>

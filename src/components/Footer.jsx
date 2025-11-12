@@ -129,11 +129,14 @@ export default function Footer() {
   useEffect(() => {
     getData();
   }, []);
+  
+  console.log("current path == > " , pathname)
 
   if (
     pathname.includes("/signup") ||
     pathname.includes("/login") ||
-    pathname.includes("/builder")
+    pathname.includes("/builder") ||
+    pathname.includes("/dashboard")
   ) {
     return null; // Don't render Navbar on product detail page
   }

@@ -1,6 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { User, ShoppingBag, MapPin, Heart, Settings, LogOut, ChevronRight } from "lucide-react";
+import {
+  User,
+  ShoppingBag,
+  MapPin,
+  Heart,
+  Settings,
+  LogOut,
+  ChevronRight,
+} from "lucide-react";
 import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/app/store/slices/authSlice";
@@ -13,7 +21,11 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target) && !anchorEl?.contains(event.target)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        !anchorEl?.contains(event.target)
+      ) {
         onClose();
       }
     };
@@ -40,7 +52,7 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
     <>
       {/* Backdrop */}
       <div className="fixed inset-0 z-40 bg-black/10" onClick={onClose} />
-      
+
       {/* Dashboard Dropdown */}
       <div
         ref={dropdownRef}
@@ -71,15 +83,18 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
           <h4 className="text-gray-500 text-xs uppercase tracking-wide font-semibold mb-3">
             From your account dashboard you can view your{" "}
             <span className="text-red-400">recent orders</span>, manage your{" "}
-            <span className="text-red-400">shipping and billing addresses</span>, and{" "}
-            <span className="text-red-400">edit your password and account details</span>
+            <span className="text-red-400">shipping and billing addresses</span>
+            , and{" "}
+            <span className="text-red-400">
+              edit your password and account details
+            </span>
           </h4>
 
           {/* Dashboard Grid */}
           <div className="grid grid-cols-2 gap-3 mt-4">
             {/* Orders */}
             <Link
-              href="/orders"
+              href="/dashboard?tab=orders"
               onClick={onClose}
               className="group p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-all duration-200 hover:shadow-md"
             >
@@ -88,8 +103,12 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
                   <ShoppingBag size={20} className="text-red-600" />
                 </div>
                 <div>
-                  <h5 className="font-semibold text-gray-900 text-sm">Orders</h5>
-                  <p className="text-xs text-gray-600">View and track your orders</p>
+                  <h5 className="font-semibold text-gray-900 text-sm">
+                    Orders
+                  </h5>
+                  <p className="text-xs text-gray-600">
+                    View and track your orders
+                  </p>
                   <span className="inline-block text-xs text-red-500 font-medium mt-1 hover:underline">
                     View Orders
                   </span>
@@ -99,7 +118,7 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
 
             {/* Addresses */}
             <Link
-              href="/addresses"
+              href="/dashboard?tab=addresses"
               onClick={onClose}
               className="group p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-all duration-200 hover:shadow-md"
             >
@@ -108,7 +127,9 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
                   <MapPin size={20} className="text-red-600" />
                 </div>
                 <div>
-                  <h5 className="font-semibold text-gray-900 text-sm">Addresses</h5>
+                  <h5 className="font-semibold text-gray-900 text-sm">
+                    Addresses
+                  </h5>
                   <p className="text-xs text-gray-600">Manage your addresses</p>
                   <span className="inline-block text-xs text-red-500 font-medium mt-1 hover:underline">
                     Manage Addresses
@@ -119,7 +140,7 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
 
             {/* Wishlist */}
             <Link
-              href="/wishlist"
+              href="/dashboard?tab=wishlist"
               onClick={onClose}
               className="group p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-all duration-200 hover:shadow-md"
             >
@@ -128,7 +149,9 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
                   <Heart size={20} className="text-red-600" />
                 </div>
                 <div>
-                  <h5 className="font-semibold text-gray-900 text-sm">Wishlist</h5>
+                  <h5 className="font-semibold text-gray-900 text-sm">
+                    Wishlist
+                  </h5>
                   <p className="text-xs text-gray-600">View saved items</p>
                   <span className="inline-block text-xs text-red-500 font-medium mt-1 hover:underline">
                     View Wishlist
@@ -139,7 +162,7 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
 
             {/* Account Details */}
             <Link
-              href="/account-details"
+              href="/dashboard?tab=account-details"
               onClick={onClose}
               className="group p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-all duration-200 hover:shadow-md"
             >
@@ -148,8 +171,12 @@ const UserDashboard = ({ isOpen, onClose, anchorEl }) => {
                   <Settings size={20} className="text-red-600" />
                 </div>
                 <div>
-                  <h5 className="font-semibold text-gray-900 text-sm">Account Details</h5>
-                  <p className="text-xs text-gray-600">View and track your details</p>
+                  <h5 className="font-semibold text-gray-900 text-sm">
+                    Account Details
+                  </h5>
+                  <p className="text-xs text-gray-600">
+                    View and track your details
+                  </p>
                   <span className="inline-block text-xs text-red-500 font-medium mt-1 hover:underline">
                     Edit Details
                   </span>

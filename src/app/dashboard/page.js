@@ -37,22 +37,11 @@ export function SidebarDashboard() {
     if (tabFromUrl) {
       setActiveComponent(tabFromUrl);
     }
-
-    return () => {
-      setActiveComponent("dashboard");
-      // searchParams is ReadonlyURLSearchParams in Next.js app router and
-      // doesn't provide mutation methods like `delete`. Create a mutable
-      // URL object from window.location, remove the param and replace the
-      // current route so the query stays in sync.
-      try {
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete("tab");
-        router.replace(newUrl.pathname + newUrl.search);
-      } catch (e) {
-        // fallback: do nothing if URL API isn't available for some reason
-        // (this should not normally occur in browser environments)
-      }
-    };
+    // Note: we intentionally don't remove the `tab` query param here.
+    // Removing it on cleanup caused the UI to immediately replace the URL
+    // and revert to the default dashboard view. Keeping the param lets
+    // users land on a specific dashboard tab (e.g. ?tab=orders) without
+    // it being removed automatically.
   }, [searchParams, router]);
 
   // Function to handle tab change and update URL

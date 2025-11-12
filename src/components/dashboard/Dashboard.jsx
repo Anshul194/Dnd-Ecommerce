@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { ShoppingBag, MapPin, Heart, Settings } from "lucide-react";
 
 const DASHBOARD_CARDS = [
@@ -7,28 +8,28 @@ const DASHBOARD_CARDS = [
     title: "Orders",
     description: "View and track your orders",
     action: "View Orders",
-    href: "/orders",
+    href: "/dashboard?tab=orders",
   },
   {
     icon: MapPin,
     title: "Addresses",
     description: "Manage your addresses",
     action: "Manage Addresses",
-    href: "/addresses",
+    href: "/dashboard?tab=addresses",
   },
   {
     icon: Heart,
     title: "Wishlist",
     description: "View saved items",
     action: "View Wishlist",
-    href: "/wishlist",
+    href: "/dashboard?tab=wishlist",
   },
   {
     icon: Settings,
     title: "Account Details",
     description: "View and track your details",
     action: "Edit Details",
-    href: "/account-details",
+    href: "/dashboard?tab=account-details",
   },
 ];
 
@@ -59,26 +60,26 @@ const Dashboard = React.memo(({ user }) => {
       <div className="mb-8 bg-white rounded-lg p-6 shadow-sm">
         <p className="text-gray-600 leading-relaxed">
           From your account dashboard you can view your{" "}
-          <a
-            href="/orders"
+          <Link
+            href="/dashboard?tab=orders"
             className="text-green-500 font-medium hover:underline"
           >
             recent orders
-          </a>
+          </Link>
           , manage your{" "}
-          <a
-            href="/addresses"
+          <Link
+            href="/dashboard?tab=addresses"
             className="text-green-500 font-medium hover:underline"
           >
             shipping and billing addresses
-          </a>
+          </Link>
           , and{" "}
-          <a
-            href="/account-details"
+          <Link
+            href="/dashboard?tab=account-details"
             className="text-green-500 font-medium hover:underline"
           >
             edit your password and account details
-          </a>
+          </Link>
           .
         </p>
       </div>
@@ -97,12 +98,12 @@ const Dashboard = React.memo(({ user }) => {
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">{card.title}</h3>
             <p className="text-sm text-gray-600 mb-4">{card.description}</p>
-            <a
+            <Link
               href={card.href}
               className="inline-block text-sm text-green-500 font-medium hover:underline"
             >
               {card.action}
-            </a>
+            </Link>
           </div>
         ))}
       </div>
