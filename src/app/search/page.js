@@ -13,6 +13,7 @@ const SearchPage = () => {
   const [filters, setFilters] = useState({
     searchTerm: "",
     category: "",
+    subcategory: "",
     priceRange: { min: "", max: "" },
     other: "",
   });
@@ -25,6 +26,7 @@ const SearchPage = () => {
   const dispatch = useDispatch();
 
   const paramCategories = searchParams.get("category");
+  const paramSubcategories = searchParams.get("subcategory");
   const minPrice = searchParams.get("min");
   const maxPrice = searchParams.get("max");
   const paramSearchTerm = searchParams.get("search");
@@ -37,6 +39,9 @@ const SearchPage = () => {
     const payload = {};
     if (paramCategories) {
       payload.category = paramCategories;
+    }
+    if (paramSubcategories) {
+      payload.subcategory = paramSubcategories;
     }
     if (minPrice) {
       payload.minPrice = minPrice;
@@ -54,6 +59,7 @@ const SearchPage = () => {
     dispatch(fetchProducts(payload));
   }, [
     paramCategories,
+    paramSubcategories,
     minPrice,
     maxPrice,
     paramSearchTerm,

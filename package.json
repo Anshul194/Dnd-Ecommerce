@@ -26,6 +26,8 @@
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
+    "dgram": "^1.0.1",
+    "dns": "^0.2.2",
     "dotenv": "^17.2.0",
     "formidable": "^3.5.4",
     "google": "^2.1.0",
@@ -41,6 +43,7 @@
     "mongoose": "^8.15.1",
     "motion": "^12.23.24",
     "multer": "^2.0.0",
+    "net": "^1.0.2",
     "next": "15.3.2",
     "next-multipart": "^0.5.1",
     "nodemailer": "^7.0.5",
@@ -54,6 +57,7 @@
     "stripe": "^18.2.1",
     "swiper": "^11.2.10",
     "tailwind-merge": "^3.3.1",
+    "tls": "^0.0.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

@@ -23,21 +23,20 @@ const nextConfig = {
         assert: false,
         constants: false,
         events: false,
+        dgram: false,
+        net: false,
+        tls: false,
+        child_process: false,
       };
 
       // Specifically handle the Tailwind CSS -> fast-glob -> @nodelib/fs chain
       config.plugins.push(
-        // Ignore the entire fast-glob module on client-side
         new webpack.IgnorePlugin({
           resourceRegExp: /^fast-glob$/,
         }),
-
-        // Ignore @nodelib/fs modules specifically
         new webpack.IgnorePlugin({
           resourceRegExp: /^@nodelib\/fs/,
         }),
-
-        // Ignore context-specific @nodelib imports
         new webpack.IgnorePlugin({
           resourceRegExp: /@nodelib\/fs/,
           contextRegExp: /node_modules/,
@@ -56,12 +55,15 @@ const nextConfig = {
 
     return config;
   },
+
   eslint: {
     ignoreDuringBuilds: true,
   },
+
   typescript: {
     ignoreBuildErrors: true,
   },
+
   images: {
     domains: [
       "www.sampuranswadeshi.com",

@@ -29,8 +29,8 @@ class AttributeService {
       typeof filters === "string" ? JSON.parse(filters) : filters;
     const parsedSearchFields =
       typeof searchFields === "string"
-        ? JSON.parse(selectFields)
-        : selectFields;
+        ? JSON.parse(searchFields)
+        : searchFields;
     const parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort;
 
     console.log("requestes ==> ", {

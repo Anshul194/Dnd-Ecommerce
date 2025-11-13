@@ -32,12 +32,12 @@ class ProductService {
       selectFields = {},
       status,
       category,
+      subcategory,
       isAddon,
       minPrice,
       maxPrice,
       name,
     } = query;
-
 
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
@@ -56,7 +56,27 @@ class ProductService {
     }
 
     if (category) {
-      filterConditions.category = category;
+      // store category as ObjectId when possible
+      try {
+        filterConditions.category = mongoose.Types.ObjectId.isValid(category)
+          ? new mongoose.Types.ObjectId(category)
+          : category;
+      } catch (e) {
+        filterConditions.category = category;
+      }
+    }
+
+    if (subcategory) {
+      // Product model uses `subcategory` (lowercase) field name. Normalize incoming query.
+      try {
+        filterConditions.subcategory = mongoose.Types.ObjectId.isValid(
+          subcategory
+        )
+          ? new mongoose.Types.ObjectId(subcategory)
+          : subcategory;
+      } catch (e) {
+        filterConditions.subcategory = subcategory;
+      }
     }
 
     if (isAddon) {
@@ -104,7 +124,6 @@ class ProductService {
     for (const [field, direction] of Object.entries(parsedSort)) {
       sortConditions[field] = direction === "asc" ? 1 : -1;
     }
-
 
     return await this.productRepository.getAll(
       filterConditions,

@@ -94,6 +94,9 @@ class ProductRepository extends CrudRepository {
       // Calculate skip value for pagination
       const skip = (pageNum - 1) * limitNum;
 
+
+      console.log("filter is ====> " , filter)
+
       // Find products with pagination and sorting
       const products = await this.model
         .find(filter)

@@ -1,4 +1,7 @@
-import { fetchCategories } from "../store/slices/categorySlice";
+import {
+  fetchCategories,
+  fetchCategoryWithSubcategories,
+} from "../store/slices/categorySlice";
 import { useDispatch, useSelector } from "react-redux";
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -8,6 +11,7 @@ import { LoadingSpinner } from "@/components/common/Loading";
 const Filter = ({ onFilterChange }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const [selectedOther, setSelectedOther] = useState("");
   const searchParams = useSearchParams();
@@ -16,11 +20,13 @@ const Filter = ({ onFilterChange }) => {
   const newParams = new URLSearchParams(searchParams.toString());
 
   const paramCategories = searchParams.get("category");
+  const paramSubcategories = searchParams.get("subcategory");
   const minPrice = searchParams.get("min");
   const maxPrice = searchParams.get("max");
   const paramSearchTerm = searchParams.get("search");
 
-  const { categories } = useSelector((state) => state.category); // Assuming you might use categories later
+  const [categories, setCategories] = useState([]);
+
   const dispatch = useDispatch();
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -48,11 +54,27 @@ const Filter = ({ onFilterChange }) => {
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
+    // clear any previously selected subcategory when category changes
+    setSelectedSubcategory("");
     newParams.set("category", category);
+    newParams.delete("subcategory");
     router.push(`/search?${newParams.toString()}`);
     onFilterChange({
       searchTerm,
       category,
+      subcategory: "",
+      priceRange,
+      other: selectedOther,
+    });
+  };
+
+  const handleSubcategoryChange = (subcategory) => {
+    setSelectedSubcategory(subcategory);
+    newParams.set("subcategory", subcategory);
+    router.push(`/search?${newParams.toString()}`);
+    onFilterChange({
+      searchTerm,
+      category: selectedCategory,
       priceRange,
       other: selectedOther,
     });
@@ -93,6 +115,7 @@ const Filter = ({ onFilterChange }) => {
     onFilterChange({
       searchTerm,
       category: selectedCategory,
+      subcategory: selectedSubcategory,
       priceRange,
       other: option,
     });
@@ -113,26 +136,31 @@ const Filter = ({ onFilterChange }) => {
 
   const clearCategory = () => {
     setSelectedCategory("");
+    setSelectedSubcategory("");
     newParams.delete("category");
+    newParams.delete("subcategory");
     router.push(`/search?${newParams.toString()}`);
     onFilterChange({
       searchTerm,
       category: "",
+      subcategory: "",
       priceRange,
       other: selectedOther,
     });
   };
 
-  useEffect(() => {
-    // Fetch categories or perform any necessary actions
-    if (!categories || categories.length === 0) {
-      dispatch(fetchCategories());
-    }
+  useEffect(async () => {
+    const res = await fetchCategoryWithSubcategories();
+    console.log("navCategorys  : :  ===> ", res);
+    setCategories(res || []);
   }, []);
 
   useEffect(() => {
     if (paramCategories) {
       setSelectedCategory(paramCategories);
+    }
+    if (paramSubcategories) {
+      setSelectedSubcategory(paramSubcategories);
     }
     if (minPrice) {
       setPriceRange((prev) => ({ ...prev, min: minPrice }));
@@ -191,23 +219,59 @@ const Filter = ({ onFilterChange }) => {
           </div>
         </div>
 
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <label
-              key={category._id}
-              className="flex items-center space-x-2 cursor-pointer"
-            >
-              <input
-                type="radio"
-                name="category"
-                value={category}
-                checked={selectedCategory === category._id}
-                onChange={() => handleCategoryChange(category._id)}
-                className="w-4 h-4 text-green-600 focus:ring-green-500"
-              />
-              <span className="text-sm text-gray-700">{category.name}</span>
-            </label>
-          ))}
+        <div className="space-y-3">
+          {categories.map((category) => {
+            if (category.status !== "Active") {
+              return null;
+            }
+            return (
+              <div>
+                <label
+                  key={category._id}
+                  className="flex items-center space-x-2 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name="category"
+                    value={category._id}
+                    checked={selectedCategory === category._id}
+                    onChange={() => handleCategoryChange(category._id)}
+                    className="w-4 h-4 text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm text-gray-700">{category.name}</span>
+                </label>
+
+                {category.subcategories &&
+                  category.subcategories.length > 0 && (
+                    <div className="pl-6 mt-2">
+                      {category.subcategories.map((sub) => {
+                        if (sub.status !== "Active") {
+                          return null;
+                        }
+                        return (
+                          <label
+                            key={sub._id}
+                            className="flex items-center mb-1 space-x-2 cursor-pointer"
+                          >
+                            <input
+                              type="radio"
+                              name="subcategory"
+                              value={sub._id}
+                              checked={selectedSubcategory === sub._id}
+                              onChange={() => handleSubcategoryChange(sub._id)}
+                              className="w-4 h-4 text-green-600 focus:ring-green-500"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {sub.name}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

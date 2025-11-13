@@ -13,6 +13,9 @@ export const fetchProducts = createAsyncThunk(
     if (payload.category) {
       quaryParams.append("category", payload.category);
     }
+    if (payload.subcategory) {
+      quaryParams.append("subcategory", payload.subcategory);
+    }
     if (payload.minPrice) {
       quaryParams.append("minPrice", payload.minPrice);
     }

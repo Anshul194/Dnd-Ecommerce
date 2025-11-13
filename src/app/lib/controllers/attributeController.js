@@ -1,5 +1,8 @@
-import AttributeService from '../services/attributeService.js';
-import { attributeCreateValidator, attributeUpdateValidator } from '../../validators/attributeValidator.js';
+import AttributeService from "../services/attributeService.js";
+import {
+  attributeCreateValidator,
+  attributeUpdateValidator,
+} from "../../validators/attributeValidator.js";
 
 export async function createAttribute(req, conn) {
   try {
@@ -9,9 +12,9 @@ export async function createAttribute(req, conn) {
         status: 400,
         body: {
           success: false,
-          message: 'Validation error',
-          data: error.details
-        }
+          message: "Validation error",
+          data: error.details,
+        },
       };
     }
 
@@ -22,46 +25,53 @@ export async function createAttribute(req, conn) {
       status: 201,
       body: {
         success: true,
-        message: 'Attribute created successfully',
-        data: attribute
-      }
+        message: "Attribute created successfully",
+        data: attribute,
+      },
     };
   } catch (err) {
-    console.error('Create Attribute Error:', err.message);
+    console.error("Create Attribute Error:", err.message);
     return {
       status: 500,
       body: {
         success: false,
-        message: 'Server error',
-        data: null
-      }
+        message: "Server error",
+        data: null,
+      },
     };
   }
 }
 
-export async function getAllAttributes(req, conn) {
+export async function getAllAttributes(queryOrReq, conn) {
   try {
     const attributeService = new AttributeService(conn);
-    const query = req.query || {};
-    const attributes = await attributeService.getAllAttributes(req);
+
+    // route handlers sometimes pass a plain query object, other times an object like { query }
+    const query =
+      queryOrReq && queryOrReq.query ? queryOrReq.query : queryOrReq || {};
+
+    const attributes = await attributeService.getAllAttributes(query);
 
     return {
       status: 200,
       body: {
         success: true,
-        message: 'Attributes fetched successfully',
-        data: attributes
-      }
+        message: "Attributes fetched successfully",
+        data: attributes,
+      },
     };
   } catch (err) {
-    console.error('Get All Attributes Error:', err.message);
+    console.error(
+      "Get All Attributes Error:",
+      err && err.message ? err.message : err
+    );
     return {
       status: 500,
       body: {
         success: false,
-        message: 'Server error',
-        data: null
-      }
+        message: "Server error",
+        data: null,
+      },
     };
   }
 }
@@ -70,16 +80,18 @@ export async function getAllAttributes(req, conn) {
 export async function getByProductId(productId, conn) {
   try {
     const attributeService = new AttributeService(conn);
-    const attributes = await attributeService.getAttributesByProductId(productId);
+    const attributes = await attributeService.getAttributesByProductId(
+      productId
+    );
 
     if (!attributes || attributes.length === 0) {
       return {
         status: 404,
         body: {
           success: false,
-          message: 'No attributes found for this product',
-          data: null
-        }
+          message: "No attributes found for this product",
+          data: null,
+        },
       };
     }
 
@@ -87,19 +99,19 @@ export async function getByProductId(productId, conn) {
       status: 200,
       body: {
         success: true,
-        message: 'Attributes found',
-        data: attributes
-      }
+        message: "Attributes found",
+        data: attributes,
+      },
     };
   } catch (err) {
-    console.error('Get Attributes by Product ID Error:', err.message);
+    console.error("Get Attributes by Product ID Error:", err.message);
     return {
       status: 500,
       body: {
         success: false,
-        message: 'Server error',
-        data: null
-      }
+        message: "Server error",
+        data: null,
+      },
     };
   }
 }
@@ -114,9 +126,9 @@ export async function getAttributeById(id, conn) {
         status: 404,
         body: {
           success: false,
-          message: 'Attribute not found',
-          data: null
-        }
+          message: "Attribute not found",
+          data: null,
+        },
       };
     }
 
@@ -124,19 +136,19 @@ export async function getAttributeById(id, conn) {
       status: 200,
       body: {
         success: true,
-        message: 'Attribute found',
-        data: attribute
-      }
+        message: "Attribute found",
+        data: attribute,
+      },
     };
   } catch (err) {
-    console.error('Get Attribute Error:', err.message);
+    console.error("Get Attribute Error:", err.message);
     return {
       status: 500,
       body: {
         success: false,
-        message: 'Server error',
-        data: null
-      }
+        message: "Server error",
+        data: null,
+      },
     };
   }
 }
@@ -149,9 +161,9 @@ export async function updateAttribute(id, data, conn) {
         status: 400,
         body: {
           success: false,
-          message: 'Validation error',
-          data: error.details
-        }
+          message: "Validation error",
+          data: error.details,
+        },
       };
     }
 
@@ -162,19 +174,19 @@ export async function updateAttribute(id, data, conn) {
       status: 200,
       body: {
         success: true,
-        message: 'Attribute updated successfully',
-        data: updated
-      }
+        message: "Attribute updated successfully",
+        data: updated,
+      },
     };
   } catch (err) {
-    console.error('Update Attribute Error:', err.message);
+    console.error("Update Attribute Error:", err.message);
     return {
       status: 500,
       body: {
         success: false,
-        message: 'Server error',
-        data: null
-      }
+        message: "Server error",
+        data: null,
+      },
     };
   }
 }
@@ -188,19 +200,19 @@ export async function deleteAttribute(id, conn) {
       status: 200,
       body: {
         success: true,
-        message: 'Attribute deleted successfully',
-        data: deleted
-      }
+        message: "Attribute deleted successfully",
+        data: deleted,
+      },
     };
   } catch (err) {
-    console.error('Delete Attribute Error:', err.message);
+    console.error("Delete Attribute Error:", err.message);
     return {
       status: 500,
       body: {
         success: false,
-        message: 'Server error',
-        data: null
-      }
+        message: "Server error",
+        data: null,
+      },
     };
   }
 }
@@ -213,9 +225,9 @@ export async function searchAttributesByName(req, conn) {
         status: 400,
         body: {
           success: false,
-          message: 'Name query parameter is required',
-          data: null
-        }
+          message: "Name query parameter is required",
+          data: null,
+        },
       };
     }
 
@@ -226,20 +238,19 @@ export async function searchAttributesByName(req, conn) {
       status: 200,
       body: {
         success: true,
-        message: 'Attributes found',
-        data: attributes
-      }
+        message: "Attributes found",
+        data: attributes,
+      },
     };
   } catch (err) {
-    console.error('Search Attributes Error:', err.message);
+    console.error("Search Attributes Error:", err.message);
     return {
       status: 500,
       body: {
         success: false,
-        message: 'Server error',
-        data: null
-      }
+        message: "Server error",
+        data: null,
+      },
     };
   }
 }
-
