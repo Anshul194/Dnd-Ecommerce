@@ -1,3 +1,5 @@
+"use client";
+
 import {
   fetchCategories,
   fetchCategoryWithSubcategories,
@@ -8,7 +10,7 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { LoadingSpinner } from "@/components/common/Loading";
 
-const Filter = ({ onFilterChange }) => {
+const Filter = ({ onFilterChange = () => {} }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
@@ -149,10 +151,14 @@ const Filter = ({ onFilterChange }) => {
     });
   };
 
-  useEffect(async () => {
-    const res = await fetchCategoryWithSubcategories();
-    console.log("navCategorys  : :  ===> ", res);
-    setCategories(res || []);
+  useEffect(() => {
+    // fetch categories without making the effect callback async (avoid returning a Promise)
+    const load = async () => {
+      const res = await fetchCategoryWithSubcategories();
+      console.log("navCategorys  : :  ===> ", res);
+      setCategories(res || []);
+    };
+    load();
   }, []);
 
   useEffect(() => {
@@ -225,11 +231,8 @@ const Filter = ({ onFilterChange }) => {
               return null;
             }
             return (
-              <div>
-                <label
-                  key={category._id}
-                  className="flex items-center space-x-2 cursor-pointer"
-                >
+              <div key={category._id}>
+                <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
                     name="category"

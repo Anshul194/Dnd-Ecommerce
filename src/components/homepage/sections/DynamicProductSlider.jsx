@@ -396,60 +396,121 @@ const DynamicProductSlider = ({ content }) => {
                 transform: `translateX(-${currentSlide * (100 / 4)}%)`,
               }}
             >
-              {products.products.map((product, index) => {
-                if (!product.storyVideoUrl || product.storyVideoUrl === "") {
-                  return null;
-                }
-                return (
-                  <div
-                    key={index}
-                    className="w-1/4 relative min-w-[270px] flex-shrink-0  cursor-pointer"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => openOverlay(product)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ")
-                        openOverlay(product);
-                    }}
-                  >
-                    <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col">
-                      {/* Name with green icon */}
-                      <div className="absolute top-4 right-6 flex items-center justify-between mb-6">
-                        <h3 className="text-md bebas font-bold text-black uppercase tracking-wide">
-                          {product?.userId?.name}
-                        </h3>
-                        <Image
-                          className="h-6 w-6"
-                          src={"/images/heart.png"}
-                          width={40}
-                          height={40}
-                          alt="heart-icon"
-                        />
-                      </div>
+              {products?.products
+                ? products?.products.map((product, index) => {
+                    if (
+                      !product.storyVideoUrl ||
+                      product.storyVideoUrl === ""
+                    ) {
+                      return null;
+                    }
+                    return (
+                      <div
+                        key={index}
+                        className="w-1/4 relative min-w-[270px] flex-shrink-0  cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => openOverlay(product)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ")
+                            openOverlay(product);
+                        }}
+                      >
+                        <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col">
+                          {/* Name with green icon */}
+                          <div className="absolute top-4 right-6 flex items-center justify-between mb-6">
+                            <h3 className="text-md bebas font-bold text-black uppercase tracking-wide">
+                              {product?.userId?.name}
+                            </h3>
+                            <Image
+                              className="h-6 w-6"
+                              src={"/images/heart.png"}
+                              width={40}
+                              height={40}
+                              alt="heart-icon"
+                            />
+                          </div>
 
-                      {/* Gray placeholder box */}
-                      <div className="w-full h-full bg-gray-300 rounded-lg">
-                        {/* Placeholder for image or additional content */}
-                        {product?.storyVideoUrl.includes(".mp4") ? (
-                          <video
-                            src={product?.storyVideoUrl}
-                            className="w-full h-full object-cover rounded-lg"
-                            // controls
-                            autoPlay
-                            muted
-                          />
-                        ) : (
-                          <img
-                            src={product?.storyVideoUrl}
-                            alt="Story Visual"
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        )}
+                          {/* Gray placeholder box */}
+                          <div className="w-full h-full bg-gray-300 rounded-lg">
+                            {/* Placeholder for image or additional content */}
+                            {product?.storyVideoUrl.includes(".mp4") ? (
+                              <video
+                                src={product?.storyVideoUrl}
+                                className="w-full h-full object-cover rounded-lg"
+                                // controls
+                                autoPlay
+                                muted
+                              />
+                            ) : (
+                              <img
+                                src={product?.storyVideoUrl}
+                                alt="Story Visual"
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })
+                : products.map((product, index) => {
+                    if (
+                      !product.storyVideoUrl ||
+                      product.storyVideoUrl === ""
+                    ) {
+                      return null;
+                    }
+                    return (
+                      <div
+                        key={index}
+                        className="w-1/4 relative min-w-[270px] flex-shrink-0  cursor-pointer"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => openOverlay(product)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ")
+                            openOverlay(product);
+                        }}
+                      >
+                        <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col">
+                          {/* Name with green icon */}
+                          <div className="absolute top-4 right-6 flex items-center justify-between mb-6">
+                            <h3 className="text-md bebas font-bold text-black uppercase tracking-wide">
+                              {product?.userId?.name}
+                            </h3>
+                            <Image
+                              className="h-6 w-6"
+                              src={"/images/heart.png"}
+                              width={40}
+                              height={40}
+                              alt="heart-icon"
+                            />
+                          </div>
+
+                          {/* Gray placeholder box */}
+                          <div className="w-full h-full bg-gray-300 rounded-lg">
+                            {/* Placeholder for image or additional content */}
+                            {product?.storyVideoUrl.includes(".mp4") ? (
+                              <video
+                                src={product?.storyVideoUrl}
+                                className="w-full h-full object-cover rounded-lg"
+                                // controls
+                                autoPlay
+                                muted
+                              />
+                            ) : (
+                              <img
+                                src={product?.storyVideoUrl}
+                                alt="Story Visual"
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
             </div>
           </div>
         </div>
