@@ -92,15 +92,7 @@ export default function TestimonialSlider({ content }) {
                     <Image className="h-4 w-4" src={heart} alt="heart-icon" />
                   </div>
 
-                  {/* Quote */}
-                  <div className="flex-1 mb-4">
-                    <blockquote className="text-gray-700 bebas line-clamp-5 text-2xl font-medium leading-tight uppercase">
-                      "{testimonial.comment.slice(0, 130)}{" "}
-                      {testimonial.comment.length > 115 ? "..." : ""}"
-                    </blockquote>
-                  </div>
-
-                  {/* Gray placeholder box */}
+                     {/* Gray placeholder box */}
                   <div className="w-full h-32 bg-gray-300 rounded-lg">
                     {/* Placeholder for image or additional content */}
                     <Image
@@ -115,6 +107,16 @@ export default function TestimonialSlider({ content }) {
                       className="w-full h-full object-cover rounded-lg"
                     />
                   </div>
+
+                  {/* Quote */}
+                  <div className="flex-1 mb-4">
+                    <blockquote className="text-gray-700 bebas line-clamp-5 text-2xl font-medium leading-tight uppercase">
+                      "{testimonial.comment.slice(0, 130)}{" "}
+                      {testimonial.comment.length > 115 ? "..." : ""}"
+                    </blockquote>
+                  </div>
+
+               
                 </div>
               </div>
             ))}
