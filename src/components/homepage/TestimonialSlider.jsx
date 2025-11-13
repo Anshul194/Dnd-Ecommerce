@@ -33,7 +33,7 @@ export default function TestimonialSlider({ content }) {
       {/* Header Section */}
       <div className="flex justify-between flex-wrap items-start mb-16">
         <div className="flex-1">
-          <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
+          <h1 className="text-[50px] leading-[7vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
             {content?.title || "GENUINE HEARTS. TRUE STORIES."}
           </h1>
         </div>

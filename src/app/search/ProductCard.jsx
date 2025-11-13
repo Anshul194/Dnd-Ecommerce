@@ -72,9 +72,9 @@ const ProductCard = ({ product }) => {
         className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all"
         prefetch
       >
-        <div className="bg-white flex flex-col justify-between border h-96 border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-[320px]">
+        <div className="bg-white flex flex-col justify-between border h-96 max-sm:h-75 border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-[320px]">
           {/* Product Header */}
-          <div className="relative bg-gradient-to-br from-orange-100 to-orange-200 rounded-t-2xl">
+          <div className="relative bg-white rounded-t-2xl">
             {/* Heart Icon */}
             <div className="absolute top-2 right-2 z-10">
               <button
@@ -118,7 +118,7 @@ const ProductCard = ({ product }) => {
               </button>
             </div>
             {/* Product Image */}
-            <div className="flex h-40  justify-center items-center">
+            <div className="flex h-40 max-sm:h-24 max-sm:w-fit max-sm:mx-auto justify-center items-center">
               <Image
                 src={product?.thumbnail?.url || product.images?.[0]?.url}
                 alt={product?.thumbnail?.alt || product.images?.[0]?.alt}
@@ -139,7 +139,7 @@ const ProductCard = ({ product }) => {
 
             {/* Description */}
             <div
-              className="text-sm h-10 text-black poppins-medium mb-3"
+              className="text-sm h-10 text-black poppins-medium mb-3 max-sm:hidden"
               dangerouslySetInnerHTML={{
                 __html: product?.description?.slice(0, 50),
               }}
@@ -150,27 +150,27 @@ const ProductCard = ({ product }) => {
           <div className="p-2">
             <div>
               {/* Price and Rating */}
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex max-sm:flex-col justify-between items-start mb-4">
                 <div className="flex flex-col">
                   {product?.variants?.[0]?.price ? (
                     <>
                       {product?.variants[0]?.salePrice && (
-                        <span className="text-lg font-bold text-gray-800">
+                        <span className="text-lg  max-sm:text-md font-bold text-gray-800">
                           Rs {product?.variants[0]?.salePrice}
                         </span>
                       )}
-                      <span className="text-xs text-gray-400 h-5  line-through">
+                      <span className="text-xs  max-sm:text-md text-gray-400 h-5  line-through">
                         Rs {product?.variants[0]?.price}
                       </span>
                     </>
                   ) : (
                     <>
                       {product?.salePrice && (
-                        <span className="text-lg font-bold text-gray-800">
+                        <span className="text-lg max-sm:text-md font-bold text-gray-800">
                           Rs {product?.salePrice}
                         </span>
                       )}
-                      <span className="text-xs text-gray-400 h-5  line-through">
+                      <span className="text-xs  max-sm:text-md text-gray-400 h-5  line-through">
                         Rs {product?.price}
                       </span>
                     </>
