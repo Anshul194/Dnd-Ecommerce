@@ -71,7 +71,7 @@ function Variant1() {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const price = productData.variants.find(
+    const priceObj = productData.variants.find(
       (variant) => variant._id === selectedVariant
     );
     try {
@@ -85,7 +85,7 @@ function Variant1() {
             slug: productData.slug,
           },
           quantity,
-          price: price.salePrice || price.price,
+          price: priceObj.salePrice || priceObj.price,
           variant: selectedVariant,
         })
       );

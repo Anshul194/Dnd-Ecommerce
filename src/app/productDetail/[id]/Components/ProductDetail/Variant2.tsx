@@ -64,6 +64,42 @@ function Variant2() {
       toast.error(error?.message || "Failed to add to cart");
     }
   };
+
+  // If you add a Buy Now button, use this logic:
+  const handleBuyNow = async () => {
+    const priceObj = productData.variants.find(
+      (variant) => variant._id === selectedVariant
+    );
+    try {
+      const resultAction = await dispatch(
+        setBuyNowProduct({
+          product: {
+            id: productData._id,
+            name: productData.name,
+            image: productData.thumbnail || productData.images[0],
+            variant: selectedVariant,
+            slug: productData.slug,
+          },
+          quantity,
+          price: priceObj.salePrice || priceObj.price,
+          variant: selectedVariant,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to proceed with Buy Now"
+        );
+        return;
+      }
+      // Navigate to checkout or perform any other action
+    } catch (error) {
+      toast.error(error?.message || "Failed to proceed with Buy Now");
+    }
+  };
+
   return (
     <div className="w-full">
       {/* Product Title and Rating */}
