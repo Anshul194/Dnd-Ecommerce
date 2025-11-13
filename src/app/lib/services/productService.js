@@ -1,9 +1,8 @@
 // lib/services/productService.js
-import { VariantSchema } from "../../lib/models/Variant.js"; // Adjust path as needed
 import mongoose from "mongoose";
+import { VariantSchema, variantSchema } from "../models/Variant.js";
 import { attributeSchema } from "../models/Attribute.js";
 import { wishlistSchema } from "../models/Wishlist";
-import { variantSchema } from "../models/Variant";
 
 class ProductService {
   constructor(productRepository) {
@@ -34,6 +33,7 @@ class ProductService {
       category,
       subcategory,
       isAddon,
+      // keep legacy names but we'll also accept `min`/`max` below
       minPrice,
       maxPrice,
       name,
@@ -87,21 +87,42 @@ class ProductService {
       filterConditions.name = { $regex: name, $options: "i" };
     }
 
-    if (minPrice || maxPrice) {
+    // Accept multiple query param names for backwards-compatibility
+    const minQuery =
+      minPrice || query.min || query.min_price || query.minprice || null;
+    const maxQuery =
+      maxPrice || query.max || query.max_price || query.maxprice || null;
+
+    if (minQuery || maxQuery) {
+      const minVal = minQuery ? parseFloat(minQuery) : null;
+      const maxVal = maxQuery ? parseFloat(maxQuery) : null;
+
+      // Build variant filters so we find variants where either price OR salePrice lies within the requested range.
+      // If both min and max are provided, we require the field (price or salePrice) to be between min and max.
       const variantFilters = { deletedAt: null };
-      if (minPrice) {
+
+      if (minVal != null && maxVal != null) {
+        // Match variants where price is between min and max OR salePrice is between min and max
         variantFilters.$or = [
-          { price: { $gte: parseFloat(minPrice) } },
-          { salePrice: { $gte: parseFloat(minPrice) } },
+          { price: { $gte: minVal, $lte: maxVal } },
+          { salePrice: { $gte: minVal, $lte: maxVal } },
+        ];
+      } else if (minVal != null) {
+        variantFilters.$or = [
+          { price: { $gte: minVal } },
+          { salePrice: { $gte: minVal } },
+        ];
+      } else if (maxVal != null) {
+        variantFilters.$or = [
+          { price: { $lte: maxVal } },
+          { salePrice: { $lte: maxVal } },
         ];
       }
-      if (maxPrice) {
-        variantFilters.$or = variantFilters.$or || [];
-        variantFilters.$or.push(
-          { price: { $lte: parseFloat(maxPrice) } },
-          { salePrice: { $lte: parseFloat(maxPrice) } }
-        );
-      }
+
+      // Debug logging to help diagnose why price filters might not match
+      console.log("Price filter - minQuery:", minQuery, "maxQuery:", maxQuery);
+      console.log("Computed minVal:", minVal, "maxVal:", maxVal);
+      console.log("Variant filters:", JSON.stringify(variantFilters));
 
       // Register Variant model for the tenant-specific connection
       const Variant =
@@ -109,7 +130,18 @@ class ProductService {
       const matchingVariants = await Variant.find(variantFilters).distinct(
         "productId"
       );
-      filterConditions._id = { $in: matchingVariants };
+      console.log(
+        "Matching variant productIds count:",
+        matchingVariants.length
+      );
+
+      // If there are no matching variants, enforce a clause that yields no products
+      if (Array.isArray(matchingVariants) && matchingVariants.length > 0) {
+        filterConditions._id = { $in: matchingVariants };
+      } else {
+        // No matching variants -> no products should be returned. Use a false condition.
+        filterConditions._id = { $in: [] };
+      }
     }
 
     const searchConditions = [];

@@ -316,7 +316,7 @@ const Filter = ({ onFilterChange = () => {} }) => {
       </div>
 
       {/* Other Options */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <h3 className="text-sm font-medium text-gray-800 mb-3">Other</h3>
         <div className="space-y-2">
           {["Ready Stock", "Pre Order", "Normal", "Combos"].map((option) => (
@@ -335,7 +335,7 @@ const Filter = ({ onFilterChange = () => {} }) => {
             </button>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

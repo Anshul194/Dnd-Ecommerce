@@ -9,6 +9,7 @@ import { fetchReviews } from "@/app/store/slices/Reviews";
 
 export default function TestimonialSlider({ content }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [slidesToShow, setSlidesToShow] = useState(4);
   const { reviews, loading, error } = useSelector((state) => state.reviews);
   const dispatch = useDispatch();
 
@@ -16,17 +17,43 @@ export default function TestimonialSlider({ content }) {
     dispatch(fetchReviews());
   }, []);
 
+  const getTotalPages = (count, show) => Math.max(1, count - show + 1);
+
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % Math.max(1, reviews.length - 3));
+    const total = getTotalPages(reviews.length, slidesToShow);
+    setCurrentSlide((prev) => (prev + 1) % total);
   };
 
   const prevSlide = () => {
-    setCurrentSlide(
-      (prev) =>
-        (prev - 1 + Math.max(1, reviews.length - 3)) %
-        Math.max(1, reviews.length - 3)
-    );
+    const total = getTotalPages(reviews.length, slidesToShow);
+    setCurrentSlide((prev) => (prev - 1 + total) % total);
   };
+
+  // adjust slidesToShow based on window width
+  useEffect(() => {
+    const compute = () => {
+      if (typeof window === "undefined") return;
+      const w = window.innerWidth;
+      // breakpoints: mobile=1, md>=768 ->2, lg>=1024 ->3, xl>=1280 ->4
+      if (w >= 1280) setSlidesToShow(4);
+      else if (w >= 1024) setSlidesToShow(3);
+      else if (w >= 768) setSlidesToShow(2);
+      else setSlidesToShow(1);
+    };
+
+    compute();
+    window.addEventListener("resize", compute);
+    return () => window.removeEventListener("resize", compute);
+  }, []);
+
+  // ensure currentSlide remains within bounds when reviews or slidesToShow change
+  useEffect(() => {
+    const total = getTotalPages(reviews.length, slidesToShow);
+    if (currentSlide > total - 1) setCurrentSlide(Math.max(0, total - 1));
+  }, [reviews.length, slidesToShow]);
+
+  const slideWidth = 100 / slidesToShow;
+  const totalPages = getTotalPages(reviews.length, slidesToShow);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-16 bg-white">
@@ -75,13 +102,14 @@ export default function TestimonialSlider({ content }) {
           <div
             className="flex transition-transform duration-500 ease-in-out"
             style={{
-              transform: `translateX(-${currentSlide * (100 / 4)}%)`,
+              transform: `translateX(-${currentSlide * slideWidth}%)`,
             }}
           >
             {reviews.map((testimonial, index) => (
               <div
                 key={index}
-                className="w-1/4 min-w-[270px] flex-shrink-0 px-3"
+                className="px-3"
+                style={{ flex: `0 0 ${slideWidth}%` }}
               >
                 <div className="bg-white border border-gray-200 rounded-2xl p-4 h-94 flex flex-col">
                   {/* Name with green icon */}
@@ -126,17 +154,15 @@ export default function TestimonialSlider({ content }) {
 
       {/* Slider Dots Indicator */}
       <div className="flex justify-center mt-8 space-x-2">
-        {Array.from({ length: Math.max(1, reviews.length - 3) }).map(
-          (_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                currentSlide === index ? "bg-green-500" : "bg-gray-300"
-              }`}
-            />
-          )
-        )}
+        {Array.from({ length: totalPages }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+              currentSlide === index ? "bg-green-500" : "bg-gray-300"
+            }`}
+          />
+        ))}
       </div>
     </div>
   );
