@@ -100,7 +100,7 @@ const LandingBanner = ({
       onMouseLeave={() => setIsAutoPlaying(autoPlay)}
     >
       {/* Fixed Left Leaf Image */}
-      <div className="absolute -left-30 md:-left-50 top-1/2 transform -translate-y-1/2 z-50">
+      <div className="absolute -left-30 md:-left-50 top-1/2 transform -translate-y-1/2 z-0">
         <Image
           className="w-[40vh] md:w-[60vh] rotate-[210deg] max-h-[600px]"
           src={leaf}
@@ -111,7 +111,7 @@ const LandingBanner = ({
       </div>
 
       {/* Fixed Right Leaf Image */}
-      <div className="absolute -right-50 top-1/2 transform -translate-y-1/2 z-50">
+      <div className="absolute -right-50 top-1/2 transform -translate-y-1/2 z-0">
         <Image
           className="w-[60vh] -rotate-[40deg] max-h-[600px]"
           src={leaf}

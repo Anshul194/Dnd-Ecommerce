@@ -58,7 +58,7 @@ const Categories = ({ dynamicContent = null }) => {
         }
       `}</style>
       <div className="flex relative flex-col gap-8 justify-between w-full h-fit py-20 px-4 lg:px-0">
-        <div className="absolute -left-30 md:-left-1/4 top-3/4 transform -translate-y-1/2 z-50">
+        <div className="absolute -left-30 md:-left-1/4 top-3/4 transform -translate-y-1/2 -z-0">
           <Image
             className="w-[40vh] md:w-[50vh] rotate-[140deg] max-h-[600px]"
             src={leaf}
@@ -119,7 +119,7 @@ const Categories = ({ dynamicContent = null }) => {
                 breakpoints={{
                   640: {
                     slidesPerView: 2,
-                    spaceBetween: 16,
+                    spaceBetween: 2,
                   },
                   768: {
                     slidesPerView: 4,
@@ -161,17 +161,17 @@ const Categories = ({ dynamicContent = null }) => {
                 {categories.length > 0 &&
                   categories.map((item, index) => (
                     <Link href={`/search?category=${item.slug}`} key={index}>
-                      <div className="border-2 border-gray-200 shadow-sm w-[45%] md:w-36 min-h-48 rounded-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="border-2 border-gray-200 shadow-sm w-[45%] max-sm:w-[160px] md:w-36 min-h-48 rounded-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow">
                         <div className="bg text-white text-sm py-2 flex items-center justify-center w-full font-medium">
                           {item?.name}
                         </div>
-                        <div className="flex-1 flex items-center justify-center p-2">
+                        <div className="flex-1 flex items-center h-full justify-center p-2">
                           <Image
                             width={100}
                             height={100}
                             src={item?.thumbnail}
                             alt="Tea product"
-                            className="w-full h-full object-contain"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                       </div>
