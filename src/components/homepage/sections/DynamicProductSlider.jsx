@@ -20,6 +20,7 @@ const DynamicProductSlider = ({ content }) => {
   const { title, description, image } = content;
   const { products } = useSelector((state) => state.product);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(4);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [overlayProduct, setOverlayProduct] = useState(null);
 
@@ -29,24 +30,15 @@ const DynamicProductSlider = ({ content }) => {
   const dispatch = useDispatch();
 
   const nextSlide = () => {
-    setCurrentSlide(
-      (prev) =>
-        (prev + 1) %
-        Math.max(1, products.products.filter((P) => P.storyVideoUrl).length - 3)
-    );
+    const stories = products?.products?.filter((P) => P.storyVideoUrl) || [];
+    const pages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
+    setCurrentSlide((prev) => (prev + 1) % pages);
   };
 
   const prevSlide = () => {
-    setCurrentSlide(
-      (prev) =>
-        (prev -
-          1 +
-          Math.max(
-            1,
-            products.products.filter((P) => P.storyVideoUrl).length - 3
-          )) %
-        Math.max(1, products.products.filter((P) => P.storyVideoUrl).length - 3)
-    );
+    const stories = products?.products?.filter((P) => P.storyVideoUrl) || [];
+    const pages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
+    setCurrentSlide((prev) => (prev - 1 + pages) % pages);
   };
 
   // Static products for now - you'll replace this with API data later
@@ -200,6 +192,30 @@ const DynamicProductSlider = ({ content }) => {
     );
   }, []);
 
+  // Responsively determine how many items to show per page for the story slider
+  useEffect(() => {
+    const calc = () => {
+      if (typeof window === "undefined") return;
+      const w = window.innerWidth;
+      // breakpoints: mobile=1, sm>=640:2, md>=768:3, lg>=1024:4
+      if (w >= 1024) setItemsPerPage(4);
+      else if (w >= 768) setItemsPerPage(3);
+      else if (w >= 640) setItemsPerPage(2);
+      else setItemsPerPage(1);
+    };
+
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
+
+  // If itemsPerPage changes, ensure currentSlide is within range
+  useEffect(() => {
+    const stories = products?.products?.filter((P) => P.storyVideoUrl) || [];
+    const pages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
+    if (currentSlide > pages - 1) setCurrentSlide(pages - 1);
+  }, [itemsPerPage, products?.products]);
+
   return (
     <div className="flex relative flex-col gap-4 justify-between w-full h-fit py-20 px-4 lg:px-0">
       {/* Left Content - Dynamic from API */}
@@ -279,81 +295,80 @@ const DynamicProductSlider = ({ content }) => {
           >
             {products?.products?.length > 0 &&
               products?.products?.map((product, index) => (
-                <div
-                  key={index}
-                  className="min-w-[200px] bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200"
-                >
-                  {/* Product Header */}
-                  <div className="rounded-xl relative">
-                    <div className="flex h-40  justify-center">
-                      {/* <img
+                <Link href={`/productDetail/${product.slug}`} key={index}>
+                  <div className="min-w-[200px] bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200">
+                    {/* Product Header */}
+                    <div className="rounded-xl relative">
+                      <div className="flex h-40  justify-center">
+                        {/* <img
                         src={product?.thumbnail?.url || product?.images[0]?.url}
                         alt={product?.thumbnail?.alt || product?.images[0]?.alt}
                         className="w-full h-full object-cover"
                       /> */}
-                      <img
-                        src={
-                          product?.thumbnail?.url ||
-                          product?.images?.[0]?.url ||
-                          "/images/placeholder.png" // fallback image in public/images
-                        }
-                        alt={
-                          product?.thumbnail?.alt ||
-                          product?.images?.[0]?.alt ||
-                          product?.name ||
-                          "Product image"
-                        }
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="p-3 h-1/2 flex flex-col justify-between">
-                    {/* Product Info */}
-                    <div>
-                      <div className="text-xs h-8 font-medium text-gray-600 mb-1">
-                        {product.name}
+                        <img
+                          src={
+                            product?.thumbnail?.url ||
+                            product?.images?.[0]?.url ||
+                            "/images/placeholder.png" // fallback image in public/images
+                          }
+                          alt={
+                            product?.thumbnail?.alt ||
+                            product?.images?.[0]?.alt ||
+                            product?.name ||
+                            "Product image"
+                          }
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      {/* <p className="text-sm text-black font-semibold mb-2">
+                    </div>
+
+                    <div className="p-3 h-1/2 flex flex-col justify-between">
+                      {/* Product Info */}
+                      <div>
+                        <div className="text-xs h-8 font-medium text-gray-600 mb-1">
+                          {product.name}
+                        </div>
+                        {/* <p className="text-sm text-black font-semibold mb-2">
                         {product.description}
                       </p> */}
 
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-lg font-bold text-gray-800">
-                          ₹
-                          {product.variants[0]?.salePrice ||
-                            product.variants[0]?.price ||
-                            200}
-                        </span>
-                        {product.rating > 0 && (
-                          <div className="flex items-center space-x-1">
-                            <span className="text-yellow-500">⭐</span>
-                            <span className="text-sm font-medium text-gray-700">
-                              {product.rating}
-                            </span>
-                          </div>
-                        )}
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-lg font-bold text-gray-800">
+                            ₹
+                            {product.variants[0]?.salePrice ||
+                              product.variants[0]?.price ||
+                              200}
+                          </span>
+                          {product.rating > 0 && (
+                            <div className="flex items-center space-x-1">
+                              <span className="text-yellow-500">⭐</span>
+                              <span className="text-sm font-medium text-gray-700">
+                                {product.rating}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Add to Cart Button */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => handleBuyNow(e, product)}
+                          className="w-4/3 h-10 mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                        >
+                          Buy Now
+                        </button>
+
+                        <button
+                          onClick={(e) => handleAddToCart(e, product)}
+                          className="h-10 w-3/5 flex justify-center group items-center border hover:bg-[#3C950D]  rounded-lg"
+                        >
+                          <ShoppingCart className="w-4 h-4 text-[#3C950D] group-hover:text-white" />
+                        </button>
                       </div>
                     </div>
-
-                    {/* Add to Cart Button */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={(e) => handleBuyNow(e, product)}
-                        className="w-4/3 h-10 mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
-                      >
-                        Buy Now
-                      </button>
-
-                      <button
-                        onClick={(e) => handleAddToCart(e, product)}
-                        className="h-10 w-3/5 flex justify-center group items-center border hover:bg-[#3C950D]  rounded-lg"
-                      >
-                        <ShoppingCart className="w-4 h-4 text-[#3C950D] group-hover:text-white" />
-                      </button>
-                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
           </div>
         </div>
@@ -393,7 +408,7 @@ const DynamicProductSlider = ({ content }) => {
             <div
               className="flex transition-transform duration-500 ease-in-out gap-4"
               style={{
-                transform: `translateX(-${currentSlide * (100 / 4)}%)`,
+                transform: `translateX(-${currentSlide * 100}%)`,
               }}
             >
               {products?.products
@@ -407,13 +422,17 @@ const DynamicProductSlider = ({ content }) => {
                     return (
                       <div
                         key={index}
-                        className="w-1/4 relative min-w-[270px] flex-shrink-0  cursor-pointer"
                         role="button"
                         tabIndex={0}
                         onClick={() => openOverlay(product)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ")
                             openOverlay(product);
+                        }}
+                        className="relative cursor-pointer"
+                        style={{
+                          flex: `0 0 ${100 / itemsPerPage}%`,
+                          minWidth: 0,
                         }}
                       >
                         <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col">
@@ -464,13 +483,17 @@ const DynamicProductSlider = ({ content }) => {
                     return (
                       <div
                         key={index}
-                        className="w-1/4 relative min-w-[270px] flex-shrink-0  cursor-pointer"
                         role="button"
                         tabIndex={0}
                         onClick={() => openOverlay(product)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ")
                             openOverlay(product);
+                        }}
+                        className="relative cursor-pointer"
+                        style={{
+                          flex: `0 0 ${100 / itemsPerPage}%`,
+                          minWidth: 0,
                         }}
                       >
                         <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col">
@@ -517,20 +540,20 @@ const DynamicProductSlider = ({ content }) => {
 
         {/* Slider Dots Indicator */}
         <div className="flex justify-center mt-8 space-x-2">
-          {Array.from({
-            length: Math.max(
-              1,
-              products.products.filter((P) => P.storyVideoUrl).length - 3
-            ),
-          }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                currentSlide === index ? "bg-green-500" : "bg-gray-300"
-              }`}
-            />
-          ))}
+          {(() => {
+            const stories =
+              products?.products?.filter((P) => P.storyVideoUrl) || [];
+            const pages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
+            return Array.from({ length: pages }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                  currentSlide === index ? "bg-green-500" : "bg-gray-300"
+                }`}
+              />
+            ));
+          })()}
         </div>
         {/* Overlay for full-page media preview */}
         {overlayOpen && overlayProduct && (
@@ -569,7 +592,7 @@ const DynamicProductSlider = ({ content }) => {
                 )}
               </div>
 
-              <div className=" absolute bottom-4 left-1/2 transform -translate-x-1/2 w-full md:w-auto rounded-lg ">
+              <div className="  absolute bottom-4 left-1/2 max-sm:left-2/3 transform -translate-x-1/2 w-full md:w-auto rounded-lg ">
                 {/* Add to Cart Button */}
                 <div className="flex gap-2">
                   <button
