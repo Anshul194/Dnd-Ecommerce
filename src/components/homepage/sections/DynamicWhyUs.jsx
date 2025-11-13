@@ -22,7 +22,7 @@ const DynamicWhyUs = ({ content }) => {
           </h1>
 
           <div className="mt-10 flex flex-col lg:flex-row gap-10 lg:gap-20">
-            <div className=" w-1/2  bg-gray-400 rounded-lg flex-shrink-0">
+            <div className=" w-1/2 max-sm:w-full  bg-gray-400 rounded-lg flex-shrink-0">
               <Image
                 src={content.image || "/images/why-us-placeholder.jpg"} // Placeholder image path
                 alt="Why Us"
@@ -40,7 +40,7 @@ const DynamicWhyUs = ({ content }) => {
               {points && points.length > 0 && (
                 <div className="flex gap-16 mb-6">
                   {points.map((point, index) => (
-                    <div key={index} className="flex items-center gap-2">
+                    <div key={index} className="flex items-center gap-2 ">
                       <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                       <span className="text-gray-600 text-sm">{point}</span>
                     </div>

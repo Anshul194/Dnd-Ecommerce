@@ -1577,9 +1577,7 @@ export default function ProductPageBuilder() {
 
   return (
     <div
-      className={`min-h-screen my-20  ${
-        isPreviewMode ? "bg-white" : "bg-gray-100"
-      } flex`}
+      className={`min-h-screen my-20 ${isPreviewMode ? "bg-white" : "bg-gray-100"} flex flex-col md:flex-row`}
     >
       {loading ? (
         <div className="flex w-full justify-center items-center h-[60vh]">
@@ -1692,7 +1690,7 @@ export default function ProductPageBuilder() {
                             </div>
                           )}
                           <div
-                            className={`flex ${
+                            className={`flex flex-col md:flex-row ${
                               GAP_CLASSES[columnGap] || "gap-2"
                             } ${isPreviewMode ? "" : "mb-6"}`}
                           >

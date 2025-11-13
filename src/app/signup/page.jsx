@@ -17,6 +17,7 @@ export function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -49,42 +50,42 @@ export function SignupPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl flex bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-6xl flex flex-col lg:flex-row bg-white rounded-2xl shadow-2xl overflow-hidden">
         {/* Left Side - Welcome Section */}
-        <div className="flex-1 bg-gradient-to-br from-green-500 to-green-600 p-12 text-white flex flex-col justify-center">
-          <div className="mb-8">
-            <div className="flex items-center mb-6">
-              <div className="text-3xl font-bold">🍃 TEABOX</div>
+        <div className="flex-1 bg-gradient-to-br from-green-500 to-green-600 p-6 sm:p-8 lg:p-12 text-white flex flex-col justify-center">
+          <div className="mb-6 lg:mb-8">
+            <div className="flex items-center mb-4 lg:mb-6">
+              <div className="text-2xl sm:text-3xl font-bold">🍃 TEABOX</div>
             </div>
-            <h1 className="text-4xl font-bold mb-4 leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 leading-tight">
               Welcome to the World of Fresh Indian Tea's!
             </h1>
           </div>
 
           {/* Feature Cards */}
-          <div className="grid grid-cols-1 gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-              <div className="flex items-center mb-3">
-                <Star className="w-6 h-6 text-yellow-300 mr-2" />
-                <h3 className="font-semibold text-lg">
+          <div className="grid grid-cols-1 gap-3 lg:gap-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-5 lg:p-6 border border-white/20">
+              <div className="flex items-center">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 mr-2 flex-shrink-0" />
+                <h3 className="font-semibold text-base sm:text-lg">
                   Fresh Teas Direct from Source
                 </h3>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-              <div className="flex items-center mb-3">
-                <Star className="w-6 h-6 text-yellow-300 mr-2" />
-                <h3 className="font-semibold text-lg">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-5 lg:p-6 border border-white/20">
+              <div className="flex items-center">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 mr-2 flex-shrink-0" />
+                <h3 className="font-semibold text-base sm:text-lg">
                   Shipped to over 125+ countries
                 </h3>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-              <div className="flex items-center mb-3">
-                <Star className="w-6 h-6 text-yellow-300 mr-2" />
-                <h3 className="font-semibold text-lg">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-5 lg:p-6 border border-white/20">
+              <div className="flex items-center">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 mr-2 flex-shrink-0" />
+                <h3 className="font-semibold text-base sm:text-lg">
                   Approved by 10k+ tea lovers
                 </h3>
               </div>
@@ -93,16 +94,16 @@ export function SignupPage() {
         </div>
 
         {/* Right Side - Signup Form */}
-        <div className="flex-1 p-12 flex flex-col justify-center bg-gray-50">
+        <div className="flex-1 p-6 sm:p-8 lg:p-12 flex flex-col justify-center bg-gray-50">
           <div className="max-w-md mx-auto w-full">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
               Sign Up Now
             </h2>
-            <p className="text-gray-600 mb-8">
+            <p className="text-sm sm:text-base text-gray-600 mb-6 lg:mb-8">
               Create your account to get started
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5 lg:space-y-6">
               {/* Name Field */}
               <div>
                 <label
@@ -118,7 +119,7 @@ export function SignupPage() {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Enter your full name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
                   required
                 />
               </div>
@@ -138,7 +139,7 @@ export function SignupPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email address"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
                   required
                 />
               </div>
@@ -159,7 +160,7 @@ export function SignupPage() {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Enter your password"
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400"
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
                     required
                   />
                   <button
@@ -179,9 +180,12 @@ export function SignupPage() {
                   id="terms"
                   checked={acceptTerms}
                   onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 flex-shrink-0"
                 />
-                <label htmlFor="terms" className="ml-3 text-sm text-gray-600">
+                <label
+                  htmlFor="terms"
+                  className="ml-3 text-xs sm:text-sm text-gray-600"
+                >
                   I accept that I have read & understood TeaBox's{" "}
                   <a
                     href="#"
@@ -203,15 +207,15 @@ export function SignupPage() {
               <button
                 type="submit"
                 disabled={!acceptTerms}
-                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 Create Account
               </button>
             </form>
 
             {/* Login Link */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+            <div className="mt-5 lg:mt-6 text-center">
+              <p className="text-xs sm:text-sm text-gray-600">
                 Already have an account?{" "}
                 <a
                   href="/login"
@@ -228,11 +232,12 @@ export function SignupPage() {
   );
 }
 
- const Signup = () => {
+const Signup = () => {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <SignupPage />
     </Suspense>
   );
 };
+
 export default Signup;

@@ -162,7 +162,7 @@ const Categories = ({ dynamicContent = null }) => {
                   categories.map((item, index) => (
                     <Link href={`/search?category=${item.slug}`} key={index}>
                       <div className="border-2 border-gray-200 shadow-sm w-[45%] max-sm:w-[160px] md:w-36 min-h-48 rounded-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="bg text-white text-sm py-2 flex items-center justify-center w-full font-medium">
+                        <div className="bg text-white text-sm py-2 px-2 text-center flex items-center justify-center w-full font-medium">
                           {item?.name}
                         </div>
                         <div className="flex-1 flex items-center h-full justify-center p-2">
