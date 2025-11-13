@@ -43,7 +43,7 @@ export async function getAllAttributes(req, conn) {
   try {
     const attributeService = new AttributeService(conn);
     const query = req.query || {};
-    const attributes = await attributeService.getAllAttributes(query);
+    const attributes = await attributeService.getAllAttributes(req);
 
     return {
       status: 200,

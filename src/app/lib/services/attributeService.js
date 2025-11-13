@@ -1,4 +1,4 @@
-import AttributeRepository from '../repository/attributeRepository.js';
+import AttributeRepository from "../repository/attributeRepository.js";
 
 class AttributeService {
   constructor(conn) {
@@ -11,28 +11,50 @@ class AttributeService {
 
   async getAllAttributes(query = {}) {
     // Support pagination, filtering, search, and sorting
+    console.log("Query Parameters attribute: ==>", query);
     const {
       page = 1,
       limit = 10,
-      filters = '{}',
-      searchFields = '{}',
-      sort = '{}',
+      filters = "{}",
+      searchFields = "{}",
+      sort = "{}",
       populateFields = [],
-      selectFields = {}
+      selectFields = {},
     } = query;
 
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
-    const parsedFilters = typeof filters === 'string' ? JSON.parse(filters) : filters;
-    const parsedSearchFields = typeof searchFields === 'string' ? JSON.parse(searchFields) : searchFields;
-    const parsedSort = typeof sort === 'string' ? JSON.parse(sort) : sort;
 
+    const parsedFilters =
+      typeof filters === "string" ? JSON.parse(filters) : filters;
+    const parsedSearchFields =
+      typeof searchFields === "string"
+        ? JSON.parse(selectFields)
+        : selectFields;
+    const parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort;
+
+    console.log("requestes ==> ", {
+      page,
+      limit,
+      filters,
+      searchFields,
+      sort,
+      populateFields,
+      selectFields,
+    });
     // Build filter conditions
-    const filterConditions = { deletedAt: null, ...parsedFilters };
+    const filterConditions = { deletedAt: null };
+
+    for (const [key, value] of Object.entries(parsedFilters)) {
+      filterConditions[key] = value;
+    }
+
     // Build search conditions
     const searchConditions = [];
+
+    console.log("parsedSearchFields ", parsedSearchFields);
     for (const [field, term] of Object.entries(parsedSearchFields)) {
-      searchConditions.push({ [field]: { $regex: term, $options: 'i' } });
+      searchConditions.push({ [field]: { $regex: term, $options: "i" } });
     }
     if (searchConditions.length > 0) {
       filterConditions.$or = searchConditions;
@@ -40,7 +62,7 @@ class AttributeService {
     // Build sort conditions
     const sortConditions = {};
     for (const [field, direction] of Object.entries(parsedSort)) {
-      sortConditions[field] = direction === 'asc' ? 1 : -1;
+      sortConditions[field] = direction === "asc" ? 1 : -1;
     }
 
     // Call repository getAll for paginated, filtered, sorted results
@@ -49,8 +71,7 @@ class AttributeService {
       sortConditions,
       pageNum,
       limitNum,
-      populateFields,
-      selectFields
+      populateFields
     );
   }
 
