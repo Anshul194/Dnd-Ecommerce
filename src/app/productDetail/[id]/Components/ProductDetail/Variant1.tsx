@@ -139,7 +139,7 @@ function Variant1() {
       </div>
 
       {/* Delivery Options */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h3 className="font-semibold text-black mb-2">Delivery Options</h3>
         <div className="flex gap-2">
           <input
@@ -154,7 +154,7 @@ function Variant1() {
         <div className="text-sm text-gray-600 mt-2">
           Product Delivers on your doorstep within 7-8 days
         </div>
-      </div>
+      </div> */}
 
       {/* Pack Selection */}
       <div className="mb-6 relative">
