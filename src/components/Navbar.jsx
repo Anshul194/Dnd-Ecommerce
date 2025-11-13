@@ -763,20 +763,20 @@ export default function Navbar() {
 
                           <div>
                             <h3 className="text-gray-800 w-20 text-xs font-medium">
-                              {product.name}
+                              {product?.name}
                             </h3>
                             {product?.variants?.[0]?.salePrice ? (
                               <p className="text-gray-600 text-xs">
                                 RS{" "}
                                 <span className="font-semibold text-gray-800">
-                                  {product.variants[0].salePrice}
+                                  {product?.variants?.[0]?.salePrice}
                                 </span>
                               </p>
                             ) : (
                               <p className="text-gray-600 text-xs">
                                 RS{" "}
                                 <span className="font-semibold text-gray-800">
-                                  {product.variants[0].price}
+                                  {product?.variants?.[0]?.price}
                                 </span>
                               </p>
                             )}
