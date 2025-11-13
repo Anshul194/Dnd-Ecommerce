@@ -397,7 +397,7 @@ const DynamicProductSlider = ({ content }) => {
               }}
             >
               {products?.products
-                ? products?.products.map((product, index) => {
+                ? products?.products?.map((product, index) => {
                     if (
                       !product.storyVideoUrl ||
                       product.storyVideoUrl === ""
@@ -454,7 +454,7 @@ const DynamicProductSlider = ({ content }) => {
                       </div>
                     );
                   })
-                : products.map((product, index) => {
+                : products?.map((product, index) => {
                     if (
                       !product.storyVideoUrl ||
                       product.storyVideoUrl === ""
