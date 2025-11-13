@@ -85,7 +85,7 @@ function Variant5({ detailSettings }) {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const price = productData.variants[selectedVariant];
+    const priceObj = productData.variants[selectedVariant];
     try {
       const resultAction = await dispatch(
         setBuyNowProduct({
@@ -97,7 +97,7 @@ function Variant5({ detailSettings }) {
             slug: productData.slug,
           },
           quantity,
-          price: price.salePrice || price.price,
+          price: priceObj.salePrice || priceObj.price,
           variant: productData.variants[selectedVariant],
         })
       );

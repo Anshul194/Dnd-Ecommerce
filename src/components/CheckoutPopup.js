@@ -58,7 +58,6 @@ export default function CheckoutPopup() {
   );
   const {
     cartItems,
-    total = 0,
     buyNowProduct,
   } = useSelector((state) => state.cart);
   const { selectedCoupon } = useSelector((state) => state.coupon);
@@ -727,6 +726,16 @@ export default function CheckoutPopup() {
     );
     dispatch(fetchSettings());
   }, []);
+
+  // Calculate bill values
+  const itemsTotal = buyNowProduct
+    ? buyNowProduct.price * buyNowProduct.quantity
+    : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  const shipping = calculateShipping();
+  const couponDiscount = selectedCoupon?.discount || 0;
+  const subtotal = itemsTotal + shipping - couponDiscount;
+  const total = subtotal;
 
   if (!checkoutOpen) return null;
 
@@ -1616,22 +1625,15 @@ export default function CheckoutPopup() {
               <h3 className="font-semibold mb-3">Order Summary</h3>
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between text-sm">
-                  <h2>Items ({cartItems.length})</h2>
-                  <h2>
-                    {" "}
-                    ₹
-                    {cartItems.reduce(
-                      (acc, item) => acc + item.price * item.quantity,
-                      0
-                    )}
-                  </h2>
+                  <h2>Items ({buyNowProduct ? 1 : cartItems.length})</h2>
+                  <h2>₹{itemsTotal}</h2>
                 </div>
                 <div className="flex justify-between text-sm">
                   <h2>Shipping</h2>
-                  {calculateShipping() === 0 ? (
+                  {shipping === 0 ? (
                     <h2 className="text-green-600 font-medium">Free</h2>
                   ) : (
-                    "₹ " + calculateShipping()
+                    "₹ " + shipping
                   )}
                 </div>
                 {selectedCoupon && (
@@ -1641,162 +1643,18 @@ export default function CheckoutPopup() {
                       {selectedCoupon?.code ? `(${selectedCoupon.code})` : ""}
                     </h2>
                     <h2 className="font-semibold">
-                      -₹{selectedCoupon?.discount || 0}
+                      -₹{couponDiscount}
                     </h2>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
                   <h2>Subtotal</h2>
-                  <h2>
-                    {" "}
-                    ₹
-                    {cartItems.reduce(
-                      (acc, item) => acc + item.price * item.quantity,
-                      0
-                    ) +
-                      calculateShipping() -
-                      (selectedCoupon?.discount || 0)}
-                  </h2>
+                  <h2>₹{subtotal}</h2>
                 </div>
-
                 <div className="flex justify-between font-semibold border-t-[1.5px] border-black pt-1">
                   <h2>Total</h2>
-                  <h2>
-                    {" "}
-                    ₹
-                    {cartItems.reduce(
-                      (acc, item) => acc + item.price * item.quantity,
-                      0
-                    ) +
-                      calculateShipping() -
-                      (selectedCoupon?.discount || 0)}
-                  </h2>
+                  <h2>₹{total}</h2>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {isAuthenticated && (
-            <div className="space-y-4 rounded-xl bg-white py-3 px-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold mb-3">More Products</h3>
-              </div>
-              <div className="text-sm flex gap-2 overflow-auto">
-                {products?.products?.length > 0 &&
-                  products.products.map((item, index) => (
-                    <div
-                      onClick={() => {
-                        dispatch(setCheckoutClose());
-                        router.push(`/product-detail/${item._id}`);
-                      }}
-                      key={index}
-                    >
-                      {" "}
-                      <div className="relative w-60 flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
-                        <div className="w-full aspect-square  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                          <Image
-                            src={item?.thumbnail?.url || item.images?.[0]?.url}
-                            alt={item?.thumbnail?.alt || "Product"}
-                            width={56}
-                            height={64}
-                            className="object-cover h-full w-full"
-                          />
-                          
-                        </div>
-                        <div className="w-fit h-fit">
-                          <div className="text-xs w-40  min-h-7 text-gray-600 mb-1">
-                            {item?.name}
-                          </div>
-                          {item?.variants?.[0]?.salePrice ? (
-                            <>
-                              <span className="font-extrabold text-sm text-black">
-                                ₹{item?.variants?.[0]?.salePrice}
-                              </span>
-                              <span className="font-extrabold line-through ml-1 opacity-75 text-sm text-black">
-                                ₹{item?.variants?.[0]?.price}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="font-extrabold text-sm ">
-                              ₹{item?.variants?.[0]?.price || "500"}
-                            </span>
-                          )}
-                        </div>
-
-                        {SelectedProduct?._id === item._id && (
-                          <div className="absolute flex justify-between flex-col transition-all duration-300 bottom-0 h-1/2 left-0 right-0 rounded-t-md bg-green-100 backdrop-blur-sm p-4 z-[999]">
-                            <div>
-                              <h2 className="mb-1">Select Variant</h2>
-                              <div className="flex flex-col gap-1 h-16  overflow-y-auto">
-                                {item?.variants?.map((variant, index) => (
-                                  <div
-                                    key={index}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      handleSelectVariant(
-                                        {
-                                          id: item._id,
-                                          image: {
-                                            url:
-                                              item.thumbnail.url ||
-                                              item.image?.[0].url,
-                                            alt:
-                                              item.thumbnail.alt ||
-                                              item.image?.[0].alt,
-                                          },
-                                          name: item.name,
-                                          slug: item.slug,
-                                          variant: variant._id,
-                                        },
-                                        variant._id,
-                                        1,
-                                        variant.salePrice || variant.price
-                                      );
-                                    }}
-                                    className="cursor-pointer hover:font-semibold "
-                                  >
-                                    <h2 className="text-xs capitalize">
-                                      {variant.title} -{" "}
-                                      {"₹" + variant.salePrice}{" "}
-                                      <span
-                                        className={
-                                          variant.salePrice
-                                            ? "line-through opacity-75  text-gray-500"
-                                            : ""
-                                        }
-                                      >
-                                        ₹{variant.price}
-                                      </span>
-                                    </h2>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setSelectedProduct(null);
-                              }}
-                              className="flex mt-1 w-full items-center h-7 rounded-md justify-center border text-green-800 gap-1 text-sm "
-                            >
-                              Close
-                            </button>
-                          </div>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setSelectedProduct(item);
-                          }}
-                          className="flex items-center h-7 rounded-md justify-center bg-blue-500 gap-1 text-sm text-white"
-                        >
-                          <Plus className="h-4 w-4 text-white " />
-                          Add Now
-                        </button>
-                      </div>
-                    </div>
-                  ))}
               </div>
             </div>
           )}
@@ -1813,16 +1671,7 @@ export default function CheckoutPopup() {
               {pincodeChecking
                 ? "Checking..."
                 : pinCodeVerified?.success
-                ? `  Place Order (₹
-            ${
-              cartItems.reduce(
-                (acc, item) => acc + item.price * item.quantity,
-                0
-              ) +
-              calculateShipping() -
-              (selectedCoupon?.discount || 0)
-            }
-              )`
+                ? `  Place Order (₹${total})`
                 : "Check Pincode"}
             </button>
           )}
