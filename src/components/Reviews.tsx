@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { fetchReviews } from "@/app/store/slices/Reviews";
 import Image from "next/image";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -193,15 +194,19 @@ export function Reviews({ content }) {
                 transition={{ duration: 0.6, delay: 0.5 }}
                 className="flex flex-wrap gap-4"
               >
-                <Button className="bg-white text-[#3C950D] hover:bg-gray-100 px-8 py-6 text-lg shadow-2xl hover:scale-105 transition-all">
-                  Explore Collection
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-2 border-white text-[#3C950D] hover:text-white hover:bg-white/10 backdrop-blur-sm px-8 py-6 text-lg shadow-2xl hover:scale-105 transition-all"
-                >
-                  Learn More
-                </Button>
+                <Link href={"/search"}>
+                  <Button className="bg-white text-[#3C950D] hover:bg-gray-100 px-8 py-6 text-lg shadow-2xl hover:scale-105 transition-all">
+                    Explore Collection
+                  </Button>
+                </Link>
+                <Link href={`/pages/68fb0ce58b4cf00083b826d2`}>
+                  <Button
+                    variant="outline"
+                    className="border-2 border-white text-[#3C950D] hover:text-white hover:bg-white/10 backdrop-blur-sm px-8 py-6 text-lg shadow-2xl hover:scale-105 transition-all"
+                  >
+                    Learn More
+                  </Button>
+                </Link>
               </motion.div>
             </motion.div>
           </div>

@@ -60,6 +60,15 @@ const AccountDetails = () => {
 
   const handleDetailsChange = (e) => {
     const { name, value, type, checked } = e.target;
+    if (name === "phone") {
+      // allow only digits and limit to 10 characters
+      const digits = value.replace(/\D/g, "").slice(0, 10);
+      setEditForm((prev) => ({
+        ...prev,
+        phone: digits,
+      }));
+      return;
+    }
     setEditForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -76,7 +85,16 @@ const AccountDetails = () => {
 
   const handleSaveDetails = async (e) => {
     e.preventDefault();
+    // if editing, validate phone number length
+    if (isEditing) {
+      const phoneVal = String(editForm?.phone || "").replace(/\D/g, "");
+      if (phoneVal && phoneVal.length !== 10) {
+        toast.error("Phone number must be 10 digits.");
+        return;
+      }
+    }
     try {
+      // use unwrap() so a rejected async thunk throws and is caught below
       await dispatch(
         updateUserProfile({
           id: user._id,
@@ -86,12 +104,16 @@ const AccountDetails = () => {
             phone: editForm.phone,
           },
         })
-      );
+      ).unwrap();
       setIsEditing(false);
       toast.success("Account details updated successfully!");
     } catch (error) {
       console.log("Error updating account details:", error);
-      toast.error("Failed to update account details.");
+      const message =
+        error?.payload?.message ||
+        error?.message ||
+        "Failed to update account details.";
+      toast.error(message);
     }
   };
 
@@ -246,6 +268,9 @@ const AccountDetails = () => {
                   value={isEditing ? editForm?.phone : user?.phone}
                   onChange={handleDetailsChange}
                   disabled={!isEditing}
+                  maxLength={10}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 ${
                     !isEditing ? "bg-gray-50 text-gray-600" : ""
                   }`}

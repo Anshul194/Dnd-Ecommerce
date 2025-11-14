@@ -106,7 +106,7 @@ export function TimerBanner({ content }) {
               "Get 50% off on our premium tea collection"}
           </p>
 
-          <div className="flex justify-center gap-4 mb-10">
+          <div className="flex justify-center max-sm:flex-wrap gap-4 mb-10">
             {Object.entries(timeLeft).map(([unit, value], index) => (
               <motion.div
                 key={unit}
@@ -114,12 +114,12 @@ export function TimerBanner({ content }) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                className="bg-white/10 backdrop-blur-md rounded-2xl p-6 min-w-[100px] border border-white/20 shadow-2xl"
+                className="bg-white/10 backdrop-blur-md rounded-2xl p-6 max-sm:p-2 max-sm:py-4 min-w-[100px] max-sm:min-w-[75px] border border-white/20 shadow-2xl"
               >
-                <div className="text-4xl md:text-5xl mb-2 bg-gradient-to-br from-white to-white/80 bg-clip-text text-transparent">
+                <div className="text-4xl max-sm:text-2xl md:text-5xl mb-2 bg-gradient-to-br from-white to-white/80 bg-clip-text text-transparent">
                   {String(value).padStart(2, "0")}
                 </div>
-                <div className="text-xs md:text-sm uppercase tracking-wider text-white/70">
+                <div className="text-xs max-sm:text-[0.65rem] md:text-sm uppercase tracking-wider text-white/70">
                   {unit}
                 </div>
               </motion.div>

@@ -10,7 +10,14 @@ class SettingService {
   }
 
   async updateSetting(tenant, data) {
-    return await this.settingRepository.updateSetting(tenant, data);
+    // Use the provided tenant. If it ends with 'admin', strip that suffix.
+    let checkTenant = typeof tenant === "string" ? tenant : "";
+    let newTenant = checkTenant;
+    if (checkTenant && checkTenant.endsWith("admin")) {
+      newTenant = checkTenant.replace(/admin$/, "");
+    } // Persist using the cleaned tenant value when available.
+    const tenantToUse = newTenant || tenant;
+    return await this.settingRepository.updateSetting(tenantToUse, data);
   }
 }
 

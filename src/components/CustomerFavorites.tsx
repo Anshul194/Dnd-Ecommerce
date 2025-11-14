@@ -34,7 +34,6 @@ const itemVariants = {
 
 export function CustomerFavorites({ content }) {
   const { products } = useSelector((state) => state.product);
-  console.log("products is =========>", products);
   const dispatch = useDispatch();
 
   const handleAddToCart = (product) => {
@@ -130,8 +129,8 @@ export function CustomerFavorites({ content }) {
                         )}
                       </div>
                       <div className="p-5">
-                        <h3 className="mb-3 h-12 group-hover:text-[#3C950D] transition-colors">
-                          {product.name}
+                        <h3 className="h-12 group-hover:text-[#3C950D] line-clamp-1 mb-2  transition-colors">
+                          {product.name}  
                         </h3>
                         <div
                           onClick={(e) => {
@@ -141,7 +140,22 @@ export function CustomerFavorites({ content }) {
                           className="flex items-center justify-between"
                         >
                           <span className="text-[#3C950D]">
-                            {product.price}
+                            <div className="text-lg font-bold text-gray-800">
+                              {product.variants[0]?.salePrice ? (
+                                <div>
+                                  ₹
+                                  {product.variants[0]?.salePrice ||
+                                    product.variants[0]?.price ||
+                                    "N/A"}
+                                  <span className="ml-2 line-through opacity-50">
+                                    {" "}
+                                    ₹{product.variants[0]?.price}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div></div>
+                              )}
+                            </div>
                           </span>
                           <Button
                             size="sm"

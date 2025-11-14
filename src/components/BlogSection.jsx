@@ -94,7 +94,7 @@ export default function BlogSection({ content }) {
   }, []);
 
   return (
-    <div className="p-8 bg-white">
+    <div className="p-8 max-sm:px-4 bg-white">
       {/* Header Section */}
       <div className="mb-8">
         <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0">
@@ -111,7 +111,7 @@ export default function BlogSection({ content }) {
         {/* Left Arrow */}
         <button
           onClick={scrollLeft}
-          className="absolute -left-14 top-[26%] z-10 w-10 h-10 bg-[#00c950] rounded-full shadow-lg flex items-center justify-center hover:bg-[#00c950] transition-colors"
+          className="absolute -left-14 max-sm:-left-6 top-[26%] z-10 w-10 h-10 bg-[#00c950] rounded-full shadow-lg flex items-center justify-center hover:bg-[#00c950] transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-white" />
         </button>
@@ -119,7 +119,7 @@ export default function BlogSection({ content }) {
         {/* Right Arrow */}
         <button
           onClick={scrollRight}
-          className="absolute -right-14 top-[26%]   z-10 w-10 h-10 bg-[#00c950] rounded-full shadow-lg flex items-center justify-center hover:bg-[#00c950] transition-colors"
+          className="absolute -right-14 max-sm:-right-6 top-[26%]  z-10 w-10 h-10 bg-[#00c950] rounded-full shadow-lg flex items-center justify-center hover:bg-[#00c950] transition-colors"
         >
           <ChevronRight className="w-5 h-5 text-white" />
         </button>

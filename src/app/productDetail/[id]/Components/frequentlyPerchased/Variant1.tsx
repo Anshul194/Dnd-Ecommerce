@@ -13,12 +13,14 @@ export default function RenderSliderVariant() {
   const dispatch = useDispatch();
   const scrollLeft = () => {
     const container = document.getElementById("products-slider");
-    container.scrollBy({ left: -300, behavior: "smooth" });
+    if (!container) return;
+    container.scrollBy({ left: -container.clientWidth, behavior: "smooth" });
   };
 
   const scrollRight = () => {
     const container = document.getElementById("products-slider");
-    container.scrollBy({ left: 300, behavior: "smooth" });
+    if (!container) return;
+    container.scrollBy({ left: container.clientWidth, behavior: "smooth" });
   };
 
   // const products = [
@@ -70,6 +72,8 @@ export default function RenderSliderVariant() {
       console.error("Failed to fetch products");
     }
   };
+
+  console.log("products is ====> ", products);
 
   useEffect(() => {
     fetchProducts();
@@ -124,8 +128,12 @@ export default function RenderSliderVariant() {
           <ChevronRight className="w-5 h-5 text-gray-600" />
         </button>
 
-        <div id="products-slider" className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-3 justify-between pb-4 w-full">
+        <div
+          id="products-slider"
+          className="overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory"
+          aria-label="Frequently purchased products"
+        >
+          <div className="flex gap-3 pb-4 w-full">
             {products?.length > 0 &&
               products?.map((product) => {
                 if (product._id === selectedProducts?._id) return null;
@@ -136,7 +144,7 @@ export default function RenderSliderVariant() {
                     key={product._id}
                     href={`/product-detail/${product.slug}`}
                   >
-                    <div className="bg-white flex-shrink-0 min-w-64 max-w-[300px] w-1/4">
+                    <div className="bg-white flex-shrink-0 snap-start w-full md:w-1/3 lg:w-1/4 px-1">
                       {/* Product Image */}
                       <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">
                         {imgSrc ? (

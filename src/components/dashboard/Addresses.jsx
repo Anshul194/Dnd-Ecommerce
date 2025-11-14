@@ -209,7 +209,7 @@ const Addresses = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex max-sm:flex-col max-sm:gap-4 max-sm:items-start justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             My Addresses
@@ -220,7 +220,7 @@ const Addresses = () => {
         </div>
         <button
           onClick={() => setIsAddingAddress(true)}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
+          className="px-4 py-2 max-sm:w-full justify-center bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
         >
           <Plus size={16} />
           <span>Add New Address</span>

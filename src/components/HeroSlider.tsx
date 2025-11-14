@@ -52,7 +52,7 @@ export function HeroSlider({ content }) {
                   {content[currentSlide].content.title}
                 </motion.h1>
                 <motion.p
-                  initial={{ opacity: 0, y: 30 }}  
+                  initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
                   className="text-lg md:text-xl lg:text-2xl mb-10 text-white/90 drop-shadow-lg"
@@ -66,7 +66,11 @@ export function HeroSlider({ content }) {
                 >
                   <Link
                     href={
-                      content?.[currentSlide]?.content?.cta?.link || "/search"
+                      content?.[currentSlide]?.content?.cta?.link?.includes(
+                        "about"
+                      )
+                        ? "/pages/68fb0ce58b4cf00083b826d2"
+                        : "/search"
                     }
                   >
                     <Button className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] px-8 py-6 text-lg shadow-2xl hover:shadow-[#3C950D]/50 hover:scale-105 transition-all">

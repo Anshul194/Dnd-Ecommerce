@@ -31,6 +31,8 @@ export default function HomePage() {
       </div>
     );
   }
+
+  console.log("home page ui ===> ", settings.activeHomepageLayout);
   return (
     <main>
       {settings?.activeHomepageLayout == "Minimal & Organic UI" ? (

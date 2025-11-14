@@ -123,9 +123,11 @@ const Wishlist = () => {
           <p className="text-gray-600 mb-4">
             Start adding items you love to your wishlist
           </p>
-          <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
-            Continue Shopping
-          </button>
+          <Link href="/search">
+            <button className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+              Continue Shopping
+            </button>
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -270,9 +272,9 @@ const Wishlist = () => {
               </p>
             </div>
             <div className="flex space-x-3">
-              <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+              {/* <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
                 Share Wishlist
-              </button>
+              </button> */}
               <button
                 onClick={() => addAllToCart()}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
