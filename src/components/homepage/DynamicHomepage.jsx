@@ -32,7 +32,14 @@ const DynamicHomepage = () => {
   );
 
   useEffect(() => {
-    dispatch(fetchGroupedContent());
+    // Only fetch if we don't already have grouped content
+    if (
+      !groupedContent ||
+      !groupedContent.sections ||
+      Object.keys(groupedContent.sections).length === 0
+    ) {
+      dispatch(fetchGroupedContent());
+    }
   }, [dispatch]);
 
   if (loading) {

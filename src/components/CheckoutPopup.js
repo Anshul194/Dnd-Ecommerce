@@ -56,10 +56,7 @@ export default function CheckoutPopup() {
   const { isAuthenticated, otpSended, loading, user } = useSelector(
     (state) => state.auth
   );
-  const {
-    cartItems,
-    buyNowProduct,
-  } = useSelector((state) => state.cart);
+  const { cartItems, buyNowProduct } = useSelector((state) => state.cart);
   const { selectedCoupon } = useSelector((state) => state.coupon);
   const { settings } = useSelector((state) => state.setting);
   console.log("Settings:", settings);
@@ -77,7 +74,7 @@ export default function CheckoutPopup() {
     area: "",
     landmark: "",
     city: "",
-    state: "",  
+    state: "",
     email: "",
     addressType: "Home",
     phone: "",
@@ -664,8 +661,8 @@ export default function CheckoutPopup() {
   };
 
   const calculateShipping = () => {
-    const totalValue = buyNowProduct 
-      ? buyNowProduct.price * buyNowProduct.quantity 
+    const totalValue = buyNowProduct
+      ? buyNowProduct.price * buyNowProduct.quantity
       : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     console?.log("totalValue", totalValue);
     if (totalValue > 500) return 0;
@@ -724,7 +721,10 @@ export default function CheckoutPopup() {
         isAddon: true,
       })
     );
-    dispatch(fetchSettings());
+    // Load settings only if not already present to avoid duplicate calls
+    if (!settings || !settings.activeHomepageLayout) {
+      dispatch(fetchSettings());
+    }
   }, []);
 
   // Calculate bill values
@@ -1116,7 +1116,7 @@ export default function CheckoutPopup() {
                         ))}
                     </select>
                   </div>
-                 
+
                   <div
                     className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
                       activeField === "firstName"
@@ -1474,41 +1474,41 @@ export default function CheckoutPopup() {
                         className="outline-none text-md   w-full border-0 h-full "
                       />
                     </div>
-                     <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "pincode"
-                        ? "border-blue-600"
-                        : "border-gray-300"
-                    } rounded-md`}
-                  >
-                    <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "pincode" || formData.pincode !== ""
-                          ? "-translate-y-6"
-                          : "translate-y-0"
-                      }`}
+                    <div
+                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
+                        activeField === "pincode"
+                          ? "border-blue-600"
+                          : "border-gray-300"
+                      } rounded-md`}
                     >
-                      Pincode{" "}
-                      <span
-                        className={
-                          activeField === "pincode"
-                            ? "text-red-500"
-                            : "text-black"
-                        }
+                      <h2
+                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
+                          activeField === "pincode" || formData.pincode !== ""
+                            ? "-translate-y-6"
+                            : "translate-y-0"
+                        }`}
                       >
-                        *
-                      </span>
-                    </h2>
-                    <input
-                      type="text"
-                      name="pincode"
-                      value={formData.pincode}
-                      onChange={handleInputChange}
-                      onFocus={() => setActiveField("pincode")}
-                      onBlur={() => setActiveField(null)}
-                      className="outline-none text-md   w-full border-0 h-full "
-                    />
-                  </div>
+                        Pincode{" "}
+                        <span
+                          className={
+                            activeField === "pincode"
+                              ? "text-red-500"
+                              : "text-black"
+                          }
+                        >
+                          *
+                        </span>
+                      </h2>
+                      <input
+                        type="text"
+                        name="pincode"
+                        value={formData.pincode}
+                        onChange={handleInputChange}
+                        onFocus={() => setActiveField("pincode")}
+                        onBlur={() => setActiveField(null)}
+                        className="outline-none text-md   w-full border-0 h-full "
+                      />
+                    </div>
                   </div>
 
                   <div
@@ -1642,9 +1642,7 @@ export default function CheckoutPopup() {
                       Coupon{" "}
                       {selectedCoupon?.code ? `(${selectedCoupon.code})` : ""}
                     </h2>
-                    <h2 className="font-semibold">
-                      -₹{couponDiscount}
-                    </h2>
+                    <h2 className="font-semibold">-₹{couponDiscount}</h2>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">

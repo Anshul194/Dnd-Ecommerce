@@ -22,12 +22,19 @@ const Wishlist = () => {
     dispatch(fetchWishlist());
   }, [dispatch]);
 
-  const handleRemoveItemFromWishlist = async (itemId) => {
-    console.log("Removing item from wishlist:", itemId);
+  const handleRemoveItemFromWishlist = async (itemOrId) => {
+    // Accept either the whole wishlist item object or just a productId string
+    const productId =
+      typeof itemOrId === "string" ? itemOrId : itemOrId?.product?._id;
+    const variantId =
+      typeof itemOrId === "object" ? itemOrId?.variant?._id : undefined;
+
+    if (!productId) return;
+
     await dispatch(
       removeFromWishlist({
-        productId: itemId.product?._id,
-        variantId: itemId?.variant?._id,
+        productId,
+        variantId,
       })
     );
 
@@ -167,9 +174,7 @@ const Wishlist = () => {
                 )} */}
                 {/* Remove from Wishlist */}
                 <button
-                  onClick={() =>
-                    handleRemoveItemFromWishlist(item?.product?._id)
-                  }
+                  onClick={() => handleRemoveItemFromWishlist(item)}
                   className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow group"
                 >
                   <Heart

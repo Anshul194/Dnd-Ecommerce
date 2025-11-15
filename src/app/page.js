@@ -12,17 +12,7 @@ export default function HomePage() {
   const settingsFetchedRef = useRef(false);
 
   console.log("Current Settings:", settings);
-  useEffect(() => {
-    // Guard so we only fetch settings once on mount (prevents repeated fetch loops
-    // when the settings object changes reference but doesn't include the active layout)
-    if (
-      !settingsFetchedRef.current &&
-      (!settings || !settings.activeHomepageLayout)
-    ) {
-      settingsFetchedRef.current = true;
-      dispatch(fetchSettings());
-    }
-  }, [dispatch, settings]);
+  // Settings are fetched in the client layout to avoid duplicate client fetches.
 
   if (loading) {
     return (

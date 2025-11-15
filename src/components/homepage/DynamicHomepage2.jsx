@@ -21,7 +21,13 @@ function DynamicHomepage2() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchGroupedContent());
+    if (
+      !groupedContent ||
+      !groupedContent.sections ||
+      Object.keys(groupedContent.sections).length === 0
+    ) {
+      dispatch(fetchGroupedContent());
+    }
   }, [dispatch]);
 
   if (loading) {

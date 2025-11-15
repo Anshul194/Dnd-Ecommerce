@@ -77,14 +77,25 @@ export default function Navbar() {
     initialData();
   }, []);
 
+  // Ensure mobile menu subcategory is collapsed when sheet opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setExpandedCategory(null);
+    }
+  }, [isOpen]);
+
   const handelCartToggle = () => {
     dispatch(toggleCart());
   };
 
   const handleUserDashboardClick = () => {
+    console.log("Navigating to user dashboard");
     if (isAuthenticated) {
+      console.log("Navigating to user dashboard 2");
       router.push("/dashboard");
+      console.log("Navigating to user dashboard 3");
     } else {
+      console.log("Navigating to user dashboard 4a");
       router.push("/login");
     }
   };
@@ -160,7 +171,7 @@ export default function Navbar() {
         <div className="container mx-auto px-2 md:px-8 py-3 md:py-4">
           <div className="flex items-center justify-between gap-2 md:gap-6">
             {/* Mobile Menu & Logo */}
-            <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center w-2/3 justify-between   gap-2 md:gap-4">
               {/* Hamburger Menu - Mobile Only */}
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 {!pathname.includes("/dashboard") && (
@@ -178,10 +189,18 @@ export default function Navbar() {
                     <SheetTitle className="text-[#3C950D]">Menu</SheetTitle>
                   </SheetHeader>
                   <div className="mt-6 flex flex-col gap-2">
+                    <Link href={`/`}>
+                      <button
+                        onClick={() => setIsOpen(false)}
+                        className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
+                      >
+                        Home
+                      </button>
+                    </Link>
                     <Link href={`/search`}>
                       <button
                         onClick={() => setIsOpen(false)}
-                        className="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
+                        className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
                       >
                         All Products
                       </button>
@@ -288,8 +307,14 @@ export default function Navbar() {
               </div>
 
               {/* Desktop Navigation Links */}
-              <div className="hidden md:flex items-center gap-6 ml-8">
+              <div className="hidden md:flex items-center  gap-6 ml-1/2">
                 {/* Categories with Mega Menu - LEFT/RIGHT LAYOUT */}
+
+                <Link href={`/`}>
+                  <button className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium">
+                    Home
+                  </button>
+                </Link>
                 <div
                   className="relative"
                   onMouseEnter={() => setShowCategoryMenu(true)}
@@ -534,65 +559,116 @@ export default function Navbar() {
 
                   {/* Products Mega Menu Dropdown */}
                   {showProductMenu && (
-                    <div className="absolute left-0 top-full pt-2 w-screen max-w-6xl -ml-4">
+                    <div className="absolute -left-[32vw] top-full pt-2 w-screen  max-w-6xl -ml-4">
                       <div className="bg-white rounded-lg shadow-2xl border border-gray-100 p-8">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                           <span className="w-1 h-6 bg-[#3C950D] rounded-full"></span>
                           Featured Products
                         </h3>
                         <div className="grid grid-cols-5 gap-4 max-h-[400px] overflow-y-auto">
-                          {products?.length > 0 &&
-                            products?.map((product) => (
-                              <Link
-                                key={product._id}
-                                href={`/productDetail/${product.slug}`}
-                                onClick={() => setShowProductMenu(false)}
-                              >
-                                <div className="group cursor-pointer">
-                                  <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
-                                    <Image
-                                      src={
-                                        product?.thumbnail?.url ||
-                                        product.images?.[0]?.url
-                                      }
-                                      alt={
-                                        product?.thumbnail?.alt ||
-                                        product.images?.[0]?.alt
-                                      }
-                                      fill
-                                      className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                    />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                          {products?.products.length > 0
+                            ? products?.products.map((product) => (
+                                <Link
+                                  key={product._id}
+                                  href={`/productDetail/${product.slug}`}
+                                  onClick={() => setShowProductMenu(false)}
+                                >
+                                  <div className="group cursor-pointer">
+                                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
+                                      <Image
+                                        src={
+                                          product?.thumbnail?.url ||
+                                          product.images?.[0]?.url
+                                        }
+                                        alt={
+                                          product?.thumbnail?.alt ||
+                                          product.images?.[0]?.alt
+                                        }
+                                        fill
+                                        className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                      />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                    </div>
+                                    <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
+                                      {product.name}
+                                    </h4>
+                                    {product?.variants?.[0]?.price ? (
+                                      <div className="flex items-center gap-2">
+                                        {product?.variants[0]?.salePrice && (
+                                          <span className="text-[#3C950D] font-semibold text-sm">
+                                            Rs {product?.variants[0]?.salePrice}
+                                          </span>
+                                        )}
+                                        <span className="text-black/50 font-semibold text-xs line-through">
+                                          Rs {product?.variants[0]?.price}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-2">
+                                        {product?.salePrice && (
+                                          <span className="text-[#3C950D] font-semibold text-sm">
+                                            Rs {product?.salePrice}
+                                          </span>
+                                        )}
+                                        <span className="text-black/50 font-semibold text-xs line-through">
+                                          Rs {product?.price}
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
-                                  <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
-                                    {product.name}
-                                  </h4>
-                                  {product?.variants?.[0]?.price ? (
-                                    <div className="flex items-center gap-2">
-                                      {product?.variants[0]?.salePrice && (
-                                        <span className="text-[#3C950D] font-semibold text-sm">
-                                          Rs {product?.variants[0]?.salePrice}
-                                        </span>
-                                      )}
-                                      <span className="text-black/50 font-semibold text-xs line-through">
-                                        Rs {product?.variants[0]?.price}
-                                      </span>
+                                </Link>
+                              ))
+                            : products?.map((product) => (
+                                <Link
+                                  key={product._id}
+                                  href={`/productDetail/${product.slug}`}
+                                  onClick={() => setShowProductMenu(false)}
+                                >
+                                  <div className="group cursor-pointer">
+                                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
+                                      <Image
+                                        src={
+                                          product?.thumbnail?.url ||
+                                          product.images?.[0]?.url
+                                        }
+                                        alt={
+                                          product?.thumbnail?.alt ||
+                                          product.images?.[0]?.alt
+                                        }
+                                        fill
+                                        className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                      />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
                                     </div>
-                                  ) : (
-                                    <div className="flex items-center gap-2">
-                                      {product?.salePrice && (
-                                        <span className="text-[#3C950D] font-semibold text-sm">
-                                          Rs {product?.salePrice}
+                                    <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
+                                      {product.name}
+                                    </h4>
+                                    {product?.variants?.[0]?.price ? (
+                                      <div className="flex items-center gap-2">
+                                        {product?.variants[0]?.salePrice && (
+                                          <span className="text-[#3C950D] font-semibold text-sm">
+                                            Rs {product?.variants[0]?.salePrice}
+                                          </span>
+                                        )}
+                                        <span className="text-black/50 font-semibold text-xs line-through">
+                                          Rs {product?.variants[0]?.price}
                                         </span>
-                                      )}
-                                      <span className="text-black/50 font-semibold text-xs line-through">
-                                        Rs {product?.price}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </Link>
-                            ))}
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-2">
+                                        {product?.salePrice && (
+                                          <span className="text-[#3C950D] font-semibold text-sm">
+                                            Rs {product?.salePrice}
+                                          </span>
+                                        )}
+                                        <span className="text-black/50 font-semibold text-xs line-through">
+                                          Rs {product?.price}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </Link>
+                              ))}
                         </div>
 
                         <Link
@@ -632,7 +708,7 @@ export default function Navbar() {
                 onClick={() => setShowSearch(!showSearch)}
                 className="hover:text-[#3C950D] text-black outline-none transition-all hover:scale-110"
               >
-                <Search className="w-5 h-5 md:w-6 md:h-6" />
+                <Search className="w-5 h-5 mb-1/2  md:w-6 md:h-6" />
               </button>
 
               {/* Wishlist */}
@@ -641,7 +717,7 @@ export default function Navbar() {
               >
                 <button className="relative flex hover:text-[#3C950D] text-black transition-all hover:scale-110">
                   <Heart className="w-5 h-5 md:w-6 md:h-6" />
-                  <Badge className="absolute text-white -top-1 -right-1 md:-top-2 md:-right-2 bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] w-4 h-4 md:w-5 md:h-5 rounded-full p-0 flex items-center justify-center text-[10px] md:text-xs shadow-lg">
+                  <Badge className="absolute text-white -top-1 -right-1 md:-top-1 md:-right-2  bg-[#3C950D]  w-4 h-4  rounded-full p-0 flex items-center justify-center text-[10px]  shadow-lg">
                     {LikedProducts?.length || 0}
                   </Badge>
                 </button>
@@ -653,7 +729,7 @@ export default function Navbar() {
                 className="relative flex hover:text-[#3C950D] text-black transition-all hover:scale-110"
               >
                 <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
-                <Badge className="absolute text-white -top-1 -right-1 md:-top-2 md:-right-2 bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] w-4 h-4 md:w-5 md:h-5 rounded-full p-0 flex items-center justify-center text-[10px] md:text-xs shadow-lg">
+                <Badge className="absolute text-white -top-1 -right-1 md:-top-1 md:-right-2  bg-[#3C950D]  w-4 h-4  rounded-full p-0 flex items-center justify-center text-[10px]  shadow-lg">
                   {cartItems.length || 0}
                 </Badge>
               </button>
@@ -663,8 +739,8 @@ export default function Navbar() {
                 onClick={handleUserDashboardClick}
                 className="flex items-center gap-2 cursor-pointer hover:text-[#3C950D] transition-all hover:scale-105"
               >
-                <div className="w-7 h-7 md:w-8 md:h-8 bg-gradient-to-br from-[#3C950D] to-[#2d7009] rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                <div className="w-7 h-7 md:w-8 md:h-8 bg-[#3C950D]  rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4  text-white" />
                 </div>
                 <span className="hidden lg:block text-sm text-[#3C950D]">
                   {displayName ?? "User"}

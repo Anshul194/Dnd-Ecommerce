@@ -82,10 +82,13 @@ const wishlistSlice = createSlice({
       })
       .addCase(removeFromWishlist.fulfilled, (state, action) => {
         state.loading = false;
-        // Remove the item from the items array
-        state.items = state.items.filter(
-          (item) => item.product._id !== action.meta.arg
-        );
+        // Remove the item from the items array using the productId passed as arg
+        const productId = action?.meta?.arg?.productId;
+        if (productId) {
+          state.items = state.items.filter(
+            (item) => item.product?._id !== productId
+          );
+        }
       })
       .addCase(removeFromWishlist.rejected, (state, action) => {
         state.loading = false;

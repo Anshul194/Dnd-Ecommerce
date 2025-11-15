@@ -8,7 +8,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import AuthRequiredModal from "@/components/AuthRequiredModal";
 import useAuthRedirect from "@/hooks/useAuthRedirect";
-import { addToWishlist } from "../store/slices/wishlistSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../store/slices/wishlistSlice";
 
 const ProductCard = ({ product }) => {
   const router = useRouter();
@@ -87,13 +90,28 @@ const ProductCard = ({ product }) => {
                     return;
                   }
                   setHeartAnimating(true);
-                  setLocalWishlisted(true); // Optimistically show heart as red
-                  await dispatch(
-                    addToWishlist({
-                      product: product._id,
-                      variant: product?.variants[0]?._id,
-                    })
-                  );
+
+                  // currently based on server wishlist and local optimistic state
+                  const currentlyWishlisted = localWishlisted;
+
+                  if (!currentlyWishlisted) {
+                    setLocalWishlisted(true);
+                    await dispatch(
+                      addToWishlist({
+                        product: product._id,
+                        variant: product?.variants[0]?._id,
+                      })
+                    );
+                  } else {
+                    setLocalWishlisted(false);
+                    await dispatch(
+                      removeFromWishlist({
+                        productId: product._id,
+                        variantId: product?.variants[0]?._id,
+                      })
+                    );
+                  }
+
                   setTimeout(() => setHeartAnimating(false), 400);
                 }}
                 aria-label="Add to wishlist"

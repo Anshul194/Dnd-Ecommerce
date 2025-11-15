@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
-import smile from '../../../public/images/smile.png';
-import Image from 'next/image';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchFaqs } from '../../app/store/slices/faqSlice';
+import React, { useState, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
+import smile from "../../../public/images/smile.png";
+import Image from "next/image";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchFaqs } from "../../app/store/slices/faqSlice";
 
 export default function FAQAccordion({ content }) {
   const [openIndex, setOpenIndex] = useState(null);
@@ -13,8 +13,10 @@ export default function FAQAccordion({ content }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchFaqs());
-  }, [dispatch]);
+    if (!faqs || faqs.length === 0) {
+      dispatch(fetchFaqs());
+    }
+  }, [dispatch, faqs]);
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -57,34 +59,39 @@ export default function FAQAccordion({ content }) {
             {!loading && !error && faqs.length === 0 && (
               <div className="text-gray-500">No FAQs found.</div>
             )}
-            {!loading && !error && faqs.map((faq, index) => (
-              <div key={faq._id || index} className="border-b border-gray-200">
-                <button
-                  onClick={() => toggleFAQ(index)}
-                  className="w-full py-4 px-0 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
-                >
-                  <span className="text-black poppins font-medium text-base">
-                    {faq.question}
-                  </span>
-                  <ChevronDown
-                    className={`w-5 h-5 text transition-transform duration-200 flex-shrink-0 ml-4 ${
-                      openIndex === index ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {/* Accordion Content */}
+            {!loading &&
+              !error &&
+              faqs.map((faq, index) => (
                 <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    openIndex === index ? "max-h-96 pb-4" : "max-h-0"
-                  }`}
+                  key={faq._id || index}
+                  className="border-b border-gray-200"
                 >
-                  <div className="text-black poppins text-sm leading-relaxed">
-                    {faq.answer}
+                  <button
+                    onClick={() => toggleFAQ(index)}
+                    className="w-full py-4 px-0 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="text-black poppins font-medium text-base">
+                      {faq.question}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 text transition-transform duration-200 flex-shrink-0 ml-4 ${
+                        openIndex === index ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Accordion Content */}
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      openIndex === index ? "max-h-96 pb-4" : "max-h-0"
+                    }`}
+                  >
+                    <div className="text-black poppins text-sm leading-relaxed">
+                      {faq.answer}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>

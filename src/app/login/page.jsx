@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { login, signUp } from "../store/slices/authSlice";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoadingSpinner } from "@/components/common/Loading";
+import { toast } from "react-toastify";
 
 export function SignupPage() {
   const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ export function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!acceptTerms) {
-      alert("Please accept the terms and conditions");
+      toast.error("Please accept the terms and conditions");
       return;
     }
     try {
@@ -41,7 +42,7 @@ export function SignupPage() {
       }
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Login failed. Please try again.");
+      toast.error(error.message || "Login failed. Please try again.");
     }
   };
 

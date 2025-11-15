@@ -14,10 +14,11 @@ import { fetchFaqs } from "@/app/store/slices/faqSlice";
 export function FAQ({ content }) {
   const { faqs, loading, error } = useSelector((state) => state.faq);
   const dispatch = useDispatch();
-
   useEffect(() => {
-    dispatch(fetchFaqs());
-  }, [dispatch]);
+    if (!faqs || faqs.length === 0) {
+      dispatch(fetchFaqs());
+    }
+  }, [dispatch, faqs]);
   return (
     <section className="py-20 relative">
       <div className="container mx-auto px-4">

@@ -36,10 +36,11 @@ export function Reviews({ content }) {
   console.log("reviews content ====>", content);
   const { reviews, loading, error } = useSelector((state) => state.reviews);
   const dispatch = useDispatch();
-
   useEffect(() => {
-    dispatch(fetchReviews());
-  }, []);
+    if (!reviews || reviews.length === 0) {
+      dispatch(fetchReviews());
+    }
+  }, [dispatch, reviews]);
   return (
     <>
       <section className="max-w-7xl mx-auto py-20  px-4 ">

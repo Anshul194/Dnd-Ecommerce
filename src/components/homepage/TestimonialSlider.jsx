@@ -14,8 +14,10 @@ export default function TestimonialSlider({ content }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchReviews());
-  }, []);
+    if (!reviews || reviews.length === 0) {
+      dispatch(fetchReviews());
+    }
+  }, [dispatch, reviews]);
 
   const getTotalPages = (count, show) => Math.max(1, count - show + 1);
 
@@ -120,7 +122,7 @@ export default function TestimonialSlider({ content }) {
                     <Image className="h-4 w-4" src={heart} alt="heart-icon" />
                   </div>
 
-                     {/* Gray placeholder box */}
+                  {/* Gray placeholder box */}
                   <div className="w-full h-32 bg-gray-300 rounded-lg">
                     {/* Placeholder for image or additional content */}
                     <Image
@@ -143,8 +145,6 @@ export default function TestimonialSlider({ content }) {
                       {testimonial.comment.length > 115 ? "..." : ""}"
                     </blockquote>
                   </div>
-
-               
                 </div>
               </div>
             ))}

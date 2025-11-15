@@ -88,10 +88,10 @@ export default function BlogSection({ content }) {
   );
 
   useEffect(() => {
-    if (!items.length > 0) {
+    if (!items || items.length === 0) {
       dispatch(fetchBlogs());
     }
-  }, []);
+  }, [dispatch, items]);
 
   return (
     <div className="p-8 max-sm:px-4 bg-white">

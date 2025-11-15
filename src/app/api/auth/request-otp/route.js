@@ -18,7 +18,7 @@ export async function POST(request) {
 
     const userService = new UserService(conn);
     const body = await request.json();
-    const { phone } = body;
+    const { phone } = body; 
 
     if (!phone) {
       return NextResponse.json(
