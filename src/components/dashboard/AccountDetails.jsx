@@ -190,7 +190,7 @@ const AccountDetails = () => {
       {/* Personal Information */}
       {isAuthenticated && (
         <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
+          <div className={`sm:!flex justify-between items-center mb-6 ${isEditing ? "block" : "flex"}`}>
             <h2 className="text-xl font-semibold text-gray-900">
               Personal Information
             </h2>
@@ -203,16 +203,16 @@ const AccountDetails = () => {
                 <span>Edit</span>
               </button>
             ) : (
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 sm:mt-0 mt-3">
                 <button
                   onClick={cancelEdit}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                  className="w-1/2 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveDetails}
-                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                  className="w-1/2 flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                 >
                   <Save size={16} />
                   <span>Save</span>

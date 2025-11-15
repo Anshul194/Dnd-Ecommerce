@@ -19,11 +19,11 @@ function Variant3() {
         </h1>
 
         {/* Top Section - Video and Description Side by Side */}
-        <div className="grid lg:grid-cols-5 gap-8 mb-16">
+        <div className={`${productData?.descriptionVideo ? "grid" : ""} lg:grid-cols-5 gap-8 mb-16`}>
           {/* Video - Takes 3 columns */}
           <div className="lg:col-span-3">
-            <div className="aspect-video sticky top-10 rounded-lg overflow-hidden bg-black">
-              {productData?.descriptionVideo && (
+            {productData?.descriptionVideo && (
+              <div className="aspect-video sticky top-10 rounded-lg overflow-hidden bg-black">
                 <iframe
                   src={`https://www.youtube.com/embed/${extractVideoId(
                     productData.descriptionVideo
@@ -34,8 +34,8 @@ function Variant3() {
                   title="Description Video"
                   onError={(e) => console.error("Iframe error:", e)}
                 />
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Description - Takes 2 columns */}
@@ -52,16 +52,18 @@ function Variant3() {
         {/* Images Section */}
         <div className="space-y-8">
           {/* Large Featured Image */}
-          <div className="w-full">
-            <div
-              className="aspect-[2/1] rounded-lg bg-gray-200"
-              style={{
-                backgroundImage: `url(${productData?.descriptionImages?.[0]?.url})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            ></div>
-          </div>
+          {productData?.descriptionImages?.[0] && (
+            <div className="w-full">
+              <div
+                className="aspect-[2/1] rounded-lg bg-gray-200"
+                style={{
+                  backgroundImage: `url(${productData?.descriptionImages?.[0]?.url})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              ></div>
+            </div>
+          )}
 
           {/* Four Images Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
