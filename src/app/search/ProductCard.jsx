@@ -3,7 +3,12 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { addToCart, toggleCart } from "../store/slices/cartSlice";
+import {
+  addToCart,
+  getCartItems,
+  setBuyNowProduct,
+  toggleCart,
+} from "../store/slices/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import AuthRequiredModal from "@/components/AuthRequiredModal";
@@ -12,8 +17,11 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "../store/slices/wishlistSlice";
+import { ShoppingCart } from "lucide-react";
+import { toast } from "react-toastify";
+import { setCheckoutOpen } from "../store/slices/checkOutSlice";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, showDes, buyNow }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { redirectToLogin, redirectToSignup } = useAuthRedirect();
@@ -22,6 +30,7 @@ const ProductCard = ({ product }) => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [heartAnimating, setHeartAnimating] = useState(false);
   const [localWishlisted, setLocalWishlisted] = useState(false);
+  const [overlayProduct, setOverlayProduct] = useState(null);
 
   // Fast check: is userId in product.wishlist array?
   const isWishlisted =
@@ -30,7 +39,47 @@ const ProductCard = ({ product }) => {
     Array.isArray(product.wishlist) &&
     product.wishlist.includes(userId);
 
-  // Sync localWishlisted with actual wishlist
+  const handleBuyNow = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = product.variants[0];
+    try {
+      const resultAction = await dispatch(
+        setBuyNowProduct({
+          product: {
+            id: product._id,
+            name: product.name,
+            image: product.thumbnail || product.images[0],
+            variant: product.variants[0]._id,
+            slug: product.slug,
+          },
+          quantity: 1,
+          price: price.salePrice || price.price,
+          variant: product.variants[0]._id,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
+        );
+        return;
+      }
+      await dispatch(getCartItems());
+      setOverlayProduct(null);
+      dispatch(setCheckoutOpen(true));
+      // dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
+  };
+
   useEffect(() => {
     setLocalWishlisted(isWishlisted);
   }, [isWishlisted, product._id, userId]);
@@ -68,6 +117,10 @@ const ProductCard = ({ product }) => {
     }
   }, [isAuthenticated]);
 
+  if (!product.variants || product.variants.length === 0) {
+    return null; // Don't render if no variants
+  }
+
   return (
     <>
       <Link
@@ -75,7 +128,11 @@ const ProductCard = ({ product }) => {
         className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all"
         prefetch
       >
-        <div className="bg-white flex flex-col justify-between border h-96 max-sm:h-75 border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-[320px]">
+        <div
+          className={`${
+            showDes ? "h-96  max-sm:h-75" : "h-fit "
+          } bg-white flex flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-[320px]`}
+        >
           {/* Product Header */}
           <div className="relative bg-white rounded-t-2xl">
             {/* Heart Icon */}
@@ -156,12 +213,14 @@ const ProductCard = ({ product }) => {
             </h3>
 
             {/* Description */}
-            <div
-              className="text-sm h-10 text-black poppins-medium mb-3 max-sm:hidden"
-              dangerouslySetInnerHTML={{
-                __html: product?.description?.slice(0, 50),
-              }}
-            ></div>
+            {showDes && (
+              <div
+                className="text-sm h-10 text-black poppins-medium mb-3 max-sm:hidden"
+                dangerouslySetInnerHTML={{
+                  __html: product?.description?.slice(0, 50),
+                }}
+              ></div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -202,12 +261,30 @@ const ProductCard = ({ product }) => {
                   </span>
                 </div>
               </div>
-              <button
-                onClick={handleAddToCart}
-                className="w-full bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
-              >
-                Add to cart
-              </button>
+              {buyNow ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => handleBuyNow(e)}
+                    className="w-4/3 h-10 mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                  >
+                    Buy Now
+                  </button>
+
+                  <button
+                    onClick={handleAddToCart}
+                    className="h-10 w-3/5 flex justify-center group/group2 items-center border hover:bg-[#3C950D]  rounded-lg"
+                  >
+                    <ShoppingCart className="w-4 h-4 text-[#3C950D] group-hover/group2:text-white" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                >
+                  Add to cart
+                </button>
+              )}
             </div>
           </div>
         </div>

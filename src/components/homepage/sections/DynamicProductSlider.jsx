@@ -15,6 +15,7 @@ import {
 } from "@/app/store/slices/cartSlice";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { toast } from "react-toastify";
+import ProductCard from "@/app/search/ProductCard";
 
 const DynamicProductSlider = ({ content }) => {
   const { title, description, image } = content;
@@ -293,83 +294,25 @@ const DynamicProductSlider = ({ content }) => {
             className="flex overflow-x-auto scrollbar-hide space-x-4  py-4 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {products?.products?.length > 0 &&
-              products?.products?.map((product, index) => (
-                <Link href={`/productDetail/${product.slug}`} key={index}>
-                  <div className="min-w-[200px] bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200">
-                    {/* Product Header */}
-                    <div className="rounded-xl relative">
-                      <div className="flex h-40  justify-center">
-                        {/* <img
-                        src={product?.thumbnail?.url || product?.images[0]?.url}
-                        alt={product?.thumbnail?.alt || product?.images[0]?.alt}
-                        className="w-full h-full object-cover"
-                      /> */}
-                        <img
-                          src={
-                            product?.thumbnail?.url ||
-                            product?.images?.[0]?.url ||
-                            "/images/placeholder.png" // fallback image in public/images
-                          }
-                          alt={
-                            product?.thumbnail?.alt ||
-                            product?.images?.[0]?.alt ||
-                            product?.name ||
-                            "Product image"
-                          }
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-3 h-1/2 flex flex-col justify-between">
-                      {/* Product Info */}
-                      <div>
-                        <div className="text-xs h-8 font-medium text-gray-600 mb-1">
-                          {product.name}
-                        </div>
-                        {/* <p className="text-sm text-black font-semibold mb-2">
-                        {product.description}
-                      </p> */}
-
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-lg font-bold text-gray-800">
-                            ₹
-                            {product.variants[0]?.salePrice ||
-                              product.variants[0]?.price ||
-                              200}
-                          </span>
-                          {product.rating > 0 && (
-                            <div className="flex items-center space-x-1">
-                              <span className="text-yellow-500">⭐</span>
-                              <span className="text-sm font-medium text-gray-700">
-                                {product.rating}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Add to Cart Button */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => handleBuyNow(e, product)}
-                          className="w-4/3 h-10 mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
-                        >
-                          Buy Now
-                        </button>
-
-                        <button
-                          onClick={(e) => handleAddToCart(e, product)}
-                          className="h-10 w-3/5 flex justify-center group items-center border hover:bg-[#3C950D]  rounded-lg"
-                        >
-                          <ShoppingCart className="w-4 h-4 text-[#3C950D] group-hover:text-white" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+            {products?.products?.length > 0
+              ? products?.products?.map((product, index) => (
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    showDes={false}
+                    buyNow={true}
+                  />
+                ))
+              : products?.length > 0
+              ? products?.map((product, index) => (
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    showDes={false}
+                    buyNow={true}
+                  />
+                ))
+              : null}
           </div>
         </div>
       </div>
