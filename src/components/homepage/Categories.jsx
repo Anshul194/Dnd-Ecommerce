@@ -13,10 +13,12 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const Categories = ({ dynamicContent = null }) => {
   const { categories } = useSelector((state) => state.category);
   const dispatch = useDispatch();
+  const router = useRouter();
 
   useEffect(() => {
     // Fetch categories or perform any necessary actions
@@ -129,15 +131,14 @@ const Categories = ({ dynamicContent = null }) => {
                     slidesPerView: 4,
                     spaceBetween: 16,
                   },
-                  
                 }}
                 className="categories-swiper"
               >
                 {categories.map((item, index) => (
                   <SwiperSlide key={index}>
-                    <Link
-                      href={`/search?category=${item._id}`}
-                      className="block"
+                    <div
+                      className="block cursor-pointer"
+                      onClick={() => router.push(`/search?category=${item._id}`)}
                     >
                       <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-lg flex flex-col overflow-hidden hover:shadow-md transition-shadow  h-72">
                         <Image
@@ -151,7 +152,7 @@ const Categories = ({ dynamicContent = null }) => {
                           {item?.name}
                         </div> */}
                       </div>
-                    </Link>
+                    </div>
                   </SwiperSlide>
                 ))}
               </Swiper>
@@ -160,7 +161,11 @@ const Categories = ({ dynamicContent = null }) => {
               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                 {categories.length > 0 &&
                   categories.map((item, index) => (
-                    <Link href={`/search?category=${item.slug}`} key={index}>
+                    <div
+                      key={index}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/search?category=${item.slug}`)}
+                    >
                       <div className="border-2 border-gray-200 shadow-sm w-[45%] max-sm:w-[160px] md:w-36 min-h-48 rounded-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow">
                         <div className="bg text-white text-sm py-2 px-2 text-center flex items-center justify-center w-full font-medium">
                           {item?.name}
@@ -175,7 +180,7 @@ const Categories = ({ dynamicContent = null }) => {
                           />
                         </div>
                       </div>
-                    </Link>
+                    </div>
                   ))}
               </div>
             )}

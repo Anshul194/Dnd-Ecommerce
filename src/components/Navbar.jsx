@@ -193,22 +193,24 @@ export default function Navbar() {
                     <SheetTitle className="text-[#3C950D]">Menu</SheetTitle>
                   </SheetHeader>
                   <div className="mt-6 flex flex-col gap-2">
-                    <Link href={`/`}>
-                      <button
-                        onClick={() => setIsOpen(false)}
-                        className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
-                      >
-                        Home
-                      </button>
-                    </Link>
-                    <Link href={`/search`}>
-                      <button
-                        onClick={() => setIsOpen(false)}
-                        className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
-                      >
-                        All Products
-                      </button>
-                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push("/");
+                      }}
+                      className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
+                    >
+                      Home
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push("/search");
+                      }}
+                      className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
+                    >
+                      All Products
+                    </button>
 
                     <div className="border-t border-gray-200 my-2"></div>
 
@@ -218,17 +220,15 @@ export default function Navbar() {
                     {categories.map((category, index) => (
                       <div key={index}>
                         <div className="flex items-center justify-between">
-                          <Link
-                            href={`/search?category=${category._id}`}
-                            className="flex-1"
+                          <button
+                            onClick={() => {
+                              setIsOpen(false);
+                              router.push(`/search?category=${category._id}`);
+                            }}
+                            className="w-full text-left px-4 py-2 text-gray-500 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
                           >
-                            <button
-                              onClick={() => setIsOpen(false)}
-                              className="w-full text-left px-4 py-2 text-gray-500 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
-                            >
-                              {category?.name}
-                            </button>
-                          </Link>
+                            {category?.name}
+                          </button>
 
                           {/* Toggle button for subcategories */}
                           {category.subcategories?.length > 0 && (
@@ -257,17 +257,16 @@ export default function Navbar() {
                             }`}
                           >
                             {category.subcategories.map((sub) => (
-                              <Link
+                              <button
                                 key={sub._id}
-                                href={`/search?subcategory=${sub._id}`}
+                                onClick={() => {
+                                  setIsOpen(false);
+                                  router.push(`/search?subcategory=${sub._id}`);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-[#3C950D]/5 rounded-lg transition-colors"
                               >
-                                <button
-                                  onClick={() => setIsOpen(false)}
-                                  className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-[#3C950D]/5 rounded-lg transition-colors"
-                                >
-                                  • {sub.name}
-                                </button>
-                              </Link>
+                                • {sub.name}
+                              </button>
                             ))}
                           </div>
                         )}
@@ -276,23 +275,25 @@ export default function Navbar() {
 
                     <div className="border-t border-gray-200 my-2"></div>
 
-                    <Link href={`/pages/68fb0ce58b4cf00083b826d2`}>
-                      <button
-                        onClick={() => setIsOpen(false)}
-                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
-                      >
-                        About Us
-                      </button>
-                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push("/pages/68fb0ce58b4cf00083b826d2");
+                      }}
+                      className="w-full text-left px-4 py-2 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
+                    >
+                      About Us
+                    </button>
 
-                    <Link href={`/contact`}>
-                      <button
-                        onClick={() => setIsOpen(false)}
-                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
-                      >
-                        Contact Us
-                      </button>
-                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push("/contact");
+                      }}
+                      className="w-full text-left px-4 py-2 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
+                    >
+                      Contact Us
+                    </button>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -314,11 +315,12 @@ export default function Navbar() {
               <div className="hidden md:flex items-center  gap-6 ml-1/2">
                 {/* Categories with Mega Menu - LEFT/RIGHT LAYOUT */}
 
-                <Link href={`/`}>
-                  <button className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium">
-                    Home
-                  </button>
-                </Link>
+                <button
+                  onClick={() => router.push("/")}
+                  className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium"
+                >
+                  Home
+                </button>
                 <div
                   className="relative"
                   onMouseEnter={() => setShowCategoryMenu(true)}
@@ -363,61 +365,61 @@ export default function Navbar() {
                                           : "hover:bg-white/50"
                                       }`}
                                     >
-                                      <Link
-                                        href={`/search?category=${category._id}`}
+                                      <div
                                         onClick={() => {
                                           setShowCategoryMenu(false);
                                           setHoveredCategory(null);
+                                          router.push(`/search?category=${category._id}`);
                                         }}
+                                        className="flex items-center gap-3 p-3"
+                                        style={{ cursor: "pointer" }}
                                       >
-                                        <div className="flex items-center gap-3 p-3">
-                                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-white flex-shrink-0">
-                                            {category.image ? (
-                                              <Image
-                                                src={category.image}
-                                                alt={category.name}
-                                                width={40}
-                                                height={40}
-                                                className="w-full h-full object-cover"
-                                              />
-                                            ) : (
-                                              <div className="w-full h-full bg-gradient-to-br from-[#3C950D]/20 to-[#2d7009]/20 flex items-center justify-center">
-                                                <span className="text-[#3C950D] font-bold">
-                                                  {category.name.charAt(0)}
-                                                </span>
-                                              </div>
-                                            )}
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                            <h4
-                                              className={`font-medium text-sm transition-colors truncate ${
-                                                hoveredCategory === category._id
-                                                  ? "text-[#3C950D]"
-                                                  : "text-gray-700"
-                                              }`}
-                                            >
-                                              {category.name}
-                                            </h4>
-                                            {category.subcategories?.length >
-                                              0 && (
-                                              <p className="text-xs text-gray-500">
-                                                {category.subcategories.length}{" "}
-                                                items
-                                              </p>
-                                            )}
-                                          </div>
-                                          {category.subcategories?.length >
-                                            0 && (
-                                            <ChevronRight
-                                              className={`w-4 h-4 transition-colors ${
-                                                hoveredCategory === category._id
-                                                  ? "text-[#3C950D]"
-                                                  : "text-gray-400"
-                                              }`}
+                                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-white flex-shrink-0">
+                                          {category.image ? (
+                                            <Image
+                                              src={category.image}
+                                              alt={category.name}
+                                              width={40}
+                                              height={40}
+                                              className="w-full h-full object-cover"
                                             />
+                                          ) : (
+                                            <div className="w-full h-full bg-gradient-to-br from-[#3C950D]/20 to-[#2d7009]/20 flex items-center justify-center">
+                                              <span className="text-[#3C950D] font-bold">
+                                                {category.name.charAt(0)}
+                                              </span>
+                                            </div>
                                           )}
                                         </div>
-                                      </Link>
+                                        <div className="flex-1 min-w-0">
+                                          <h4
+                                            className={`font-medium text-sm transition-colors truncate ${
+                                              hoveredCategory === category._id
+                                                ? "text-[#3C950D]"
+                                                : "text-gray-700"
+                                            }`}
+                                          >
+                                            {category.name}
+                                          </h4>
+                                          {category.subcategories?.length >
+                                            0 && (
+                                            <p className="text-xs text-gray-500">
+                                              {category.subcategories.length}{" "}
+                                              items
+                                            </p>
+                                          )}
+                                        </div>
+                                        {category.subcategories?.length >
+                                          0 && (
+                                          <ChevronRight
+                                            className={`w-4 h-4 transition-colors ${
+                                              hoveredCategory === category._id
+                                                ? "text-[#3C950D]"
+                                                : "text-gray-400"
+                                            }`}
+                                          />
+                                        )}
+                                      </div>
                                     </div>
                                   );
                                 })}
@@ -688,17 +690,19 @@ export default function Navbar() {
                   )}
                 </div>
 
-                <Link href={`/pages/68fb0ce58b4cf00083b826d2`}>
-                  <button className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium">
-                    About Us
-                  </button>
-                </Link>
+                <button
+                  onClick={() => router.push("/pages/68fb0ce58b4cf00083b826d2")}
+                  className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium"
+                >
+                  About Us
+                </button>
 
-                <Link href={`/contact`}>
-                  <button className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium">
-                    Contact Us
-                  </button>
-                </Link>
+                <button
+                  onClick={() => router.push("/contact")}
+                  className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium"
+                >
+                  Contact Us
+                </button>
               </div>
             </div>
 

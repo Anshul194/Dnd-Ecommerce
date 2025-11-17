@@ -13,7 +13,7 @@ const OrderPopup = () => {
   console.log("Order Status:", orderStatus);
 
   const closePopup = () => {
-    router.push(pathname);
+    router.push('/');
   };
 
   const handleTryAgain = () => {
