@@ -46,7 +46,7 @@ export default function ValidatedSection({ content }) {
         {/* Header Section */}
         <div className="flex justify-between flex-col max-w-4xl mx-auto text-center items-start mb-16">
           <div className="flex-1">
-            <h1 className="text-[50px] leading-[7vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
+            <h1 className="text-[48px] font-black text-black mb-4 md:mb-0 ">
               {content?.title}
             </h1>
           </div>

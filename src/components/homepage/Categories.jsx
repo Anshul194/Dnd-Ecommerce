@@ -69,11 +69,11 @@ const Categories = ({ dynamicContent = null }) => {
             height="auto"
           />
         </div>
-        <div className="flex-1 flex  flex-col relative lg:max-w-xl mb-8 lg:mb-0 ">
-          <h1 className="!font-bebas text-4xl  md:text-5xl font-black text-gray-800 leading-tight mb-6">
+        <div className="flex-1 flex  flex-col relative mb-8 lg:mb-0 ">
+          <h1 className="text-4xl  md:text-5xl font-black text-gray-800 leading-tight mb-6 text-center">
             {dynamicContent?.title || "WHAT'S YOUR PICK?"}
           </h1>
-          <p className="text-black font-medium  text-lg mt-2">
+          <p className="text-black font-medium max-w-xl text-lg mt-2 m-auto text-center">
             {dynamicContent?.description ? (
               <span
                 dangerouslySetInnerHTML={{ __html: dynamicContent.description }}
@@ -97,15 +97,11 @@ const Categories = ({ dynamicContent = null }) => {
               </>
             )}
           </p>
-          <Link className="w-fit " href={dynamicContent?.cta?.link || "/shop"}>
-            <button className="mt-4   z-50 bg text-white px-6 py-2 rounded hover:bg-green-700 transition-colors">
-              {dynamicContent?.cta?.title || "Explore"}
-            </button>
-          </Link>
+
         </div>
 
         <div>
-          <div className="w-full ">
+          <div className="w-full">
             {categories.length > 6 ? (
               // Render as slider when more than 6 categories
               <Swiper
@@ -158,34 +154,35 @@ const Categories = ({ dynamicContent = null }) => {
               </Swiper>
             ) : (
               // Render as grid when 6 or fewer categories
-              <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+              <div className="flex flex-wrap gap-4 justify-center md:justify-center">
                 {categories.length > 0 &&
                   categories.map((item, index) => (
-                    <div
-                      key={index}
-                      className="cursor-pointer"
-                      onClick={() => router.push(`/search?category=${item.slug}`)}
-                    >
-                      <div className="border-2 border-gray-200 shadow-sm w-[45%] max-sm:w-[160px] md:w-36 min-h-48 rounded-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="bg text-white text-sm py-2 px-2 text-center flex items-center justify-center w-full font-medium">
-                          {item?.name}
-                        </div>
+                    <Link href={`/search?category=${item.slug}`} key={index}>
+                      <div className="border-2 border-gray-200 shadow-sm w-[45%] max-sm:w-[160px] md:w-56 min-h-48 rounded-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow">
                         <div className="flex-1 flex items-center h-full justify-center p-2">
                           <Image
                             width={100}
                             height={100}
                             src={item?.thumbnail}
                             alt="Tea product"
-                            className="w-full h-full object-cover"
+                            className="w-full h-44 object-cover"
                           />
                         </div>
+                        <div className="bg text-white text-sm py-2 px-2 text-center flex items-center justify-center w-full font-medium">
+                          {item?.name}
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
               </div>
             )}
           </div>
         </div>
+        <Link className="w-fit m-auto " href={dynamicContent?.cta?.link || "/shop"}>
+          <button className="mt-4   z-50 bg text-white px-6 py-2 rounded hover:bg-green-700 transition-colors">
+            {dynamicContent?.cta?.title || "Explore"}
+          </button>
+        </Link>
       </div>
     </>
   );

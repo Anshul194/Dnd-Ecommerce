@@ -38,7 +38,7 @@ const DynamicHeroSection = ({ content }) => {
         <div className="flex items-center justify-between w-full flex-col md:flex-row py-12">
           {/* Left Content */}
           <div className="relative md:w-1/2 max-w-xl z-50">
-            <h1 className="!font-bebas relative z-50 text-4xl md:text-5xl font-black text-gray-800 leading-tight mb-6">
+            <h1 className="relative z-50 text-4xl md:text-5xl font-black text-gray-800 leading-tight mb-6">
               {title}
             </h1>
             <p className="text-black relative z-50 text-lg leading-relaxed mb-8">

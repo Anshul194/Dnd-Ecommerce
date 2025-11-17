@@ -9,7 +9,7 @@ const DynamicCategoryPick = ({ content }) => {
 
   return (
     <div className="py-12 text-center">
-      <h2 className="!font-bebas text-3xl md:text-4xl font-black text-gray-800 mb-4">
+      <h2 className="text-3xl md:text-4xl font-black text-gray-800 mb-4">
         {title}
       </h2>
       <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-8">
