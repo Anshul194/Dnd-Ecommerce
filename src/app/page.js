@@ -25,7 +25,7 @@ export default function HomePage() {
   console.log("home page ui ===> ", settings.activeHomepageLayout);
   return (
     <main>
-      {settings?.activeHomepageLayout == "Minimal & Organic UI" ? (
+      {settings?.activeHomepageLayout !== "Minimal & Organic UI" ? (
         <DynamicHomepage2 />
       ) : (
         <DynamicHomepage />

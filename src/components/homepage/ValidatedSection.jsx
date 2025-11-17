@@ -42,18 +42,18 @@ export default function ValidatedSection({ content }) {
   // console.log("====================> ", certificates);
   return (
     <div className="w-full py-10 lg:py-20 px-4">
-      <div className="max-w-7xl mx-auto">
+      <div className=" mx-auto">
         {/* Header Section */}
-        <div className="flex justify-between flex-col md:flex-row items-start mb-16">
+        <div className="flex justify-between flex-col max-w-4xl mx-auto text-center items-start mb-16">
           <div className="flex-1">
             <h1 className="text-[50px] leading-[7vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
               {content?.title}
             </h1>
           </div>
 
-          <div className="flex-1 flex justify-end items-start">
-            <div className="max-w-md text-start">
-              <p className="text-black relative poppins-medium leading-tight max-w-lg text-lg ml-auto">
+          <div className="flex-1 flex justify-center w-full   items-center">
+            <div className="max-w-md text-center">
+              <p className="text-black relative  poppins-medium leading-tight max-w-lg text-lg ml-auto">
                 {content?.description}
                 <span className="relative">
                   <img
@@ -69,22 +69,6 @@ export default function ValidatedSection({ content }) {
 
         {/* Green Circles Section with Arrows */}
         <div className="relative">
-          {/* Left Arrow */}
-          {/* <button
-            onClick={scrollLeft}
-            className="absolute left-8 top-1/2 transform -translate-y-1/2 -translate-x-12 z-10 w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button> */}
-
-          {/* Right Arrow */}
-          {/* <button
-            onClick={scrollRight}
-            className="absolute right-8 top-1/2 transform -translate-y-1/2 translate-x-12 z-10 w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-          </button> */}
-
           {/* Marquee wrapper */}
           <div className="overflow-hidden">
             {/* marquee content: duplicated items for seamless loop */}

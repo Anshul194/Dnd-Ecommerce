@@ -86,11 +86,11 @@ const SearchPage = () => {
                 <p className="text-gray-600 text-sm">
                   Results for
                   <span className="font-semibold ml-2 text-black">
-                    {products?.length}
+                    ({products?.products?.length || products?.length}) products
                   </span>
                 </p>
               </div>
-
+              {/* 
               <div className="flex items-center space-x-2">
                 <select
                   value={sortBy}
@@ -101,7 +101,7 @@ const SearchPage = () => {
                   <option value="Low Price">Low Price</option>
                   <option value="Rating">Rating</option>
                 </select>
-              </div>
+              </div> */}
             </div>
 
             {/* Products Grid */}

@@ -139,8 +139,8 @@ export default function TestimonialSlider({ content }) {
                   </div>
 
                   {/* Quote */}
-                  <div className="flex-1 mb-4">
-                    <blockquote className="text-gray-700 bebas line-clamp-5 text-2xl font-medium leading-tight uppercase">
+                  <div className="flex-1 mb-4 mt-2">
+                    <blockquote className="text-gray-700 bebas line-clamp-5 text-2xl font-medium leading-tight ">
                       "{testimonial.comment.slice(0, 130)}{" "}
                       {testimonial.comment.length > 115 ? "..." : ""}"
                     </blockquote>

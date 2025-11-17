@@ -1,7 +1,13 @@
 "use client";
 
 import { fetchBlogs } from "@/app/store/slices/blogSclie";
-import { Heart, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Heart,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpRight,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -96,11 +102,11 @@ export default function BlogSection({ content }) {
   return (
     <div className="p-8 max-sm:px-4 bg-white">
       {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0">
+      <div className="mb-10">
+        <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-center  text-black bebas mb-4 md:mb-0">
           {content?.title || "Blogs"}
         </h1>
-        <p className="text-black max-w-xl relative poppins-medium leading-tight text-lg mb-8">
+        <p className="text-black max-w-xl mx-auto  relative poppins-medium leading-tight text-center text-lg mb-8">
           {content?.description ||
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
         </p>
@@ -156,16 +162,18 @@ export default function BlogSection({ content }) {
                   </div>
 
                   {/* Product Info */}
-                  <div className="px-3 py-1 pb-4">
-                    <h3 className="font-medium poppins text-black mb-1 ">
+                  <div className="px-3 py-2 pt-4 pb-4 group w-full ">
+                    <h3 className="font-medium poppins line-clamp-2 min-h-12  text-black mb-1 ">
                       {product.title}
                     </h3>
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: product.content.slice(0, 90),
-                      }}
-                      className="text-sm poppins text-black"
-                    ></div>
+                    <div className="flex mt-2  items-center gap-4  justify-between">
+                      <h2 className="text-black text-sm font-semibold">
+                        View More
+                      </h2>
+                      <div className="h-6 px-3 flex justify-center items-center border-2 group-hover:bg-gray-100  transition-colors duration-300 border-green-500 bg-green-500 rounded-full">
+                        <ArrowUpRight className="w-4 h-4 text-white group-hover:text-green-500 transition-colors duration-300" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Link>

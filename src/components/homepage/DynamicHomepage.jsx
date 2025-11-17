@@ -7,7 +7,6 @@ import { fetchGroupedContent } from "@/app/store/slices/contentSlice";
 // Import all existing components
 import Categories from "./Categories";
 import FAQAccordion from "./FAQAccordion";
-import LandingBanner from "./LandingBanner";
 import SeasonSaleBanner from "./SeasonSaleBanner";
 import TeaPartyBanner from "./TeaPartyBanner";
 import TestimonialSlider from "./TestimonialSlider";
@@ -15,6 +14,7 @@ import TryItYourselfSlider from "./TryItYourselfSliderj";
 import ValidatedSection from "./ValidatedSection";
 import WhyUs from "./WhyUs";
 import BlogSection from "../BlogSection";
+import LandingBanner from "./LandingBanner";
 
 // Import new dynamic components
 import DynamicHeroSection from "./sections/DynamicHeroSection";
@@ -173,7 +173,7 @@ const DynamicHomepage = () => {
       {/* Hero Carousel - Render all hero sections as one carousel */}
       {heroSections.length > 0 && (
         <LandingBanner
-          heroSections={heroSections}
+          content={heroSections}
           autoPlay={true}
           autoPlayInterval={5000}
         />
