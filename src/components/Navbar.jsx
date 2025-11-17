@@ -54,6 +54,7 @@ export default function Navbar() {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState([]);
+  const [isClient, setIsClient] = useState(false);
 
   const LikedProducts = useSelector(selectWishlistItems);
   const dispatch = useDispatch();
@@ -79,6 +80,10 @@ export default function Navbar() {
 
   useEffect(() => {
     initialData();
+  }, []);
+
+  useEffect(() => {
+    setIsClient(true);
   }, []);
 
   // Ensure mobile menu subcategory is collapsed when sheet opens/closes
@@ -720,16 +725,18 @@ export default function Navbar() {
               </button>
 
               {/* Wishlist */}
-              <Link
-                href={isAuthenticated ? "/dashboard?tab=wishlist" : "/login"}
-              >
-                <button className="relative flex hover:text-[#3C950D] text-black transition-all hover:scale-110">
-                  <Heart className="w-5 h-5 md:w-6 md:h-6" />
-                  <Badge className="absolute text-white -top-1 -right-1 md:-top-1 md:-right-2  bg-[#3C950D]  w-4 h-4  rounded-full p-0 flex items-center justify-center text-[10px]  shadow-lg">
-                    {LikedProducts?.length || 0}
-                  </Badge>
-                </button>
-              </Link>
+              {isClient && (
+                <Link
+                  href={isAuthenticated ? "/dashboard?tab=wishlist" : "/login"}
+                >
+                  <button className="relative flex hover:text-[#3C950D] text-black transition-all hover:scale-110">
+                    <Heart className="w-5 h-5 md:w-6 md:h-6" />
+                    <Badge className="absolute text-white -top-1 -right-1 md:-top-1 md:-right-2  bg-[#3C950D]  w-4 h-4  rounded-full p-0 flex items-center justify-center text-[10px]  shadow-lg">
+                      {LikedProducts?.length || 0}
+                    </Badge>
+                  </button>
+                </Link>
+              )}
 
               {/* Cart */}
               <button
