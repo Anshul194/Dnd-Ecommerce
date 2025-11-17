@@ -11,24 +11,28 @@ export default function HomePage() {
   const dispatch = useDispatch();
   const settingsFetchedRef = useRef(false);
 
-  console.log("Current Settings:", settings);
-  // Settings are fetched in the client layout to avoid duplicate client fetches.
+  // Fetch settings only once on mount
+  useEffect(() => {
+    if (!settingsFetchedRef.current) {
+      dispatch(fetchSettings());
+      settingsFetchedRef.current = true;
+    }
+  }, [dispatch]);
 
   if (loading) {
     return (
-      <div className="h-[90Vh] flex justify-center items-center">
+      <div className="h-[90vh] flex justify-center items-center">
         <LoadingSpinner />
       </div>
     );
   }
 
-  console.log("home page ui ===> ", settings.activeHomepageLayout);
   return (
     <main>
-      {settings?.activeHomepageLayout == "Minimal & Organic UI" ? (
-        <DynamicHomepage2 />
-      ) : (
+      {settings?.activeHomepageLayout === "Minimal & Organic UI" ? (
         <DynamicHomepage />
+      ) : (
+        <DynamicHomepage2 />
       )}
     </main>
   );
