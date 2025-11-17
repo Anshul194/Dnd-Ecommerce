@@ -71,7 +71,7 @@ export function Reviews({ content }) {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           >
             {reviews.slice(0, 4).map((review) => (
-              <motion.div key={review.id} variants={itemVariants}>
+              <motion.div key={review._id || review.id} variants={itemVariants}>
                 <Card className="hover:shadow-2xl transition-all duration-300 border-0 shadow-lg h-full group bg-white/80 backdrop-blur-sm">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4 mb-4">
