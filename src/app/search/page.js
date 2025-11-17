@@ -108,7 +108,7 @@ const SearchPage = () => {
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 mb-8">
               {products?.products?.length > 0 &&
                 products.products.map((product) => (
-                  <ProductCard key={product._id} product={product} />
+                  <ProductCard key={product._id} product={product} showDes/>
                 ))}
             </div>
 

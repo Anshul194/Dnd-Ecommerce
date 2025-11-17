@@ -33,6 +33,21 @@ class AttributeService {
         : searchFields;
     const parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort;
 
+    // Parse selectFields for projection or fallback search
+    let parsedSelectFields = {};
+    try {
+      parsedSelectFields =
+        typeof selectFields === "string"
+          ? JSON.parse(selectFields)
+          : selectFields || {};
+    } catch (err) {
+      console.warn(
+        "Invalid selectFields JSON provided to getAllAttributes:",
+        err.message
+      );
+      parsedSelectFields = {};
+    }
+
     console.log("requestes ==> ", {
       page,
       limit,
@@ -52,9 +67,20 @@ class AttributeService {
     // Build search conditions
     const searchConditions = [];
 
+    // If no explicit searchFields provided, allow selectFields to be used as a fallback for searching
+    const effectiveSearchFields =
+      Object.keys(parsedSearchFields || {}).length === 0
+        ? parsedSelectFields
+        : parsedSearchFields;
+
     console.log("parsedSearchFields ", parsedSearchFields);
-    for (const [field, term] of Object.entries(parsedSearchFields)) {
-      searchConditions.push({ [field]: { $regex: term, $options: "i" } });
+    for (const [field, term] of Object.entries(effectiveSearchFields || {})) {
+      if (term !== undefined && term !== null && term !== "") {
+        // Only treat string/primitive values as search terms
+        searchConditions.push({
+          [field]: { $regex: String(term), $options: "i" },
+        });
+      }
     }
     if (searchConditions.length > 0) {
       filterConditions.$or = searchConditions;
@@ -65,13 +91,22 @@ class AttributeService {
       sortConditions[field] = direction === "asc" ? 1 : -1;
     }
 
-    // Call repository getAll for paginated, filtered, sorted results
+    // Build projection object for mongoose .select()
+    const projection = {};
+    for (const [field, val] of Object.entries(parsedSelectFields || {})) {
+      if (val === 1 || val === "1" || val === 0 || val === "0") {
+        projection[field] = Number(val);
+      }
+    }
+
+    // Call repository getAll for paginated, filtered, sorted results (pass projection)
     return await this.attributeRepo.getAll(
       filterConditions,
       sortConditions,
       pageNum,
       limitNum,
-      populateFields
+      populateFields,
+      projection
     );
   }
 
