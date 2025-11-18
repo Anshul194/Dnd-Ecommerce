@@ -21,8 +21,8 @@ const DynamicWhyUs = ({ content }) => {
             {title || "WHY US?"}
           </h1>
 
-          <div className="mt-10 flex flex-col lg:flex-row gap-10 lg:gap-20">
-            <div className=" w-1/2 max-sm:w-full  bg-gray-400 rounded-lg flex-shrink-0">
+          <div className="mt-10 flex flex-col lg:flex-row gap-6 lg:gap-20">
+            <div className=" w-[45%] max-sm:w-full  bg-gray-400 rounded-lg flex-shrink-0">
               <Image
                 src={content.image || "/images/why-us-placeholder.jpg"} // Placeholder image path
                 alt="Why Us"
@@ -31,8 +31,8 @@ const DynamicWhyUs = ({ content }) => {
                 className="w-full h-full object-cover rounded-lg"
               />
             </div>
-            <div>
-              <p className="text-black text-sm leading-relaxed mb-8 max-w-full">
+            <div className="w-1/2 max-sm:w-full">
+              <p className="text-black text-[16px] leading-relaxed mb-8 max-w-full">
                 {description || "Loading description..."}
               </p>
 
@@ -42,14 +42,14 @@ const DynamicWhyUs = ({ content }) => {
                   {points.map((point, index) => (
                     <div key={index} className="flex items-center gap-2 ">
                       <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                      <span className="text-gray-600 text-sm">{point}</span>
+                      <span className="text-gray-600 text-[16px]">{point}</span>
                     </div>
                   ))}
                 </div>
               )}
 
               <Link
-                className="w-fit text-sm underline font-medium hover:text-green-600 text-green-500"
+                className="w-fit text-[16px] underline font-medium hover:text-green-600 text-green-500"
                 href={content?.cta?.link || "/pages/68fb0ce58b4cf00083b826d2"}
               >
                 {content?.cta?.title || "View More"}{" "}

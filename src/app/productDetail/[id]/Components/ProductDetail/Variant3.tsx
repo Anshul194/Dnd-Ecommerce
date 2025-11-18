@@ -27,9 +27,25 @@ function Variant3() {
   const [selectedVariant, setSelectedVariant] = React.useState<number>(
     productData?.variants[0]?._id || 0
   );
+  const [showFixedBar, setShowFixedBar] = React.useState<boolean>(false);
+  const actionButtonsRef = React.useRef<HTMLDivElement>(null);
+
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
   };
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (actionButtonsRef.current) {
+        const rect = actionButtonsRef.current.getBoundingClientRect();
+        const isPastButtons = rect.bottom < 0;
+        setShowFixedBar(isPastButtons);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleQuantityChange = (delta: number) => {
     setQuantity(Math.max(1, quantity + delta));
@@ -40,37 +56,28 @@ function Variant3() {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const price = productData.variants.find(
+    const price = productData?.variants?.find(
       (variant) => variant._id === selectedVariant
     );
     try {
-      const resultAction = await dispatch(
+      await dispatch(
         addToCart({
           product: {
             id: productData._id,
             name: productData.name,
-            image: productData.thumbnail || productData.images[0],
+            image: productData.thumbnail || productData.images?.[0],
             variant: selectedVariant,
             slug: productData.slug,
           },
           quantity,
-          price: price.salePrice || price.price,
+          price: price?.salePrice || price?.price,
           variant: selectedVariant,
         })
       );
-      if (resultAction.error) {
-        // Show backend error (payload) if present, else generic
-        toast.error(
-          resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
-        );
-        return;
-      }
       await dispatch(getCartItems());
       dispatch(toggleCart());
     } catch (error) {
-      toast.error(error?.message || "Failed to add to cart");
+      toast.error("Failed to add to cart");
     }
   };
 
@@ -79,42 +86,85 @@ function Variant3() {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const price = productData.variants.find(
+    const price = productData?.variants?.find(
       (variant) => variant._id === selectedVariant
     );
     try {
-      const resultAction = await dispatch(
+      await dispatch(
         setBuyNowProduct({
           product: {
             id: productData._id,
             name: productData.name,
-            image: productData.thumbnail || productData.images[0],
+            image: productData.thumbnail || productData.images?.[0],
             variant: selectedVariant,
             slug: productData.slug,
           },
           quantity,
-          price: price.salePrice || price.price,
+          price: price?.salePrice || price?.price,
           variant: selectedVariant,
         })
       );
-      if (resultAction.error) {
-        // Show backend error (payload) if present, else generic
-        toast.error(
-          resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
-        );
-        return;
-      }
       await dispatch(getCartItems());
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {
-      toast.error(error?.message || "Failed to add to cart");
+      toast.error("Failed to add to cart");
     }
   };
   return (
     <div className="lg:col-span-6">
+      {/* Fixed Buy Now and Add to Cart Section */}
+      {productData && showFixedBar && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 p-4">
+          <div className="flex items-center gap-4 max-w-4xl mx-auto">
+            {/* Product Image */}
+            <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+              <img
+                src={productData.thumbnail || productData.images?.[0]}
+                alt={productData.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Product Info */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-gray-900 truncate">
+                {productData.name}
+              </h3>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-lg font-bold text-gray-900">
+                  ₹{productData.variants?.find(
+                    (variant) => variant._id === selectedVariant
+                  )?.salePrice || productData.variants?.[0]?.salePrice}
+                </span>
+                <span className="text-sm text-gray-500 line-through">
+                  ₹{productData.variants?.find(
+                    (variant) => variant._id === selectedVariant
+                  )?.price || productData.variants?.[0]?.price}
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleAddToCart}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-1 text-sm"
+              >
+                <ShoppingCart size={16} />
+                Add to Cart
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors text-sm"
+              >
+                Buy Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
         {/* Title & Rating */}
         <h1 className="text-3xl font-bold text-gray-900 mb-3">
@@ -234,7 +284,7 @@ function Variant3() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3 mb-6">
+        <div ref={actionButtonsRef} className="flex gap-3 mb-6">
           <button
             onClick={handleAddToCart}
             className="flex-1 bg-green-600 text-white py-4 px-6 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
@@ -274,7 +324,7 @@ function Variant3() {
       </div>
 
       {/* Product Details Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm">
+      <div className="bg-white rounded-2xl shadow-sm pb-24 lg:pb-6">
         <div className="border-b border-gray-200">
           <div className="flex">
             {[

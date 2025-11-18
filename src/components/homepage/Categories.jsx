@@ -102,7 +102,7 @@ const Categories = ({ dynamicContent = null }) => {
 
         <div>
           <div className="w-full">
-            {categories.length > 6 ? (
+            {categories.length >= 6 ? (
               // Render as slider when more than 6 categories
               <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
@@ -144,6 +144,9 @@ const Categories = ({ dynamicContent = null }) => {
                           alt="Tea product"
                           className="w-full h-full object-cover"
                         />
+                        <div className="bg text-white text-sm py-2 px-2 text-center flex items-center justify-center w-full font-medium">
+                          {item?.name}
+                        </div>
                         {/* <div className="bg h-20 px-2 text-white text-sm py-2 flex  justify-center w-full font-medium">
                           {item?.name}
                         </div> */}

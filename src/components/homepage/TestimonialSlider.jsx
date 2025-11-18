@@ -113,7 +113,7 @@ export default function TestimonialSlider({ content }) {
                 className="px-3"
                 style={{ flex: `0 0 ${slideWidth}%` }}
               >
-                <div className="bg-white border border-gray-200 rounded-2xl p-4 h-[350px] flex flex-col">
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 h-fit flex flex-col">
                   {/* Name with green icon */}
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-md font-bold text-black uppercase tracking-wide">
@@ -139,8 +139,8 @@ export default function TestimonialSlider({ content }) {
                   </div>
 
                   {/* Quote */}
-                  <div className="flex-1 mb-4 mt-2">
-                    <blockquote className="text-gray-700 line-clamp-5 text-xl font-medium leading-tight ">
+                  <div className="flex-1 mt-4">
+                    <blockquote className="text-gray-700 line-clamp-5 text-lg font-medium leading-tight ">
                       "{testimonial.comment.slice(0, 130)}{" "}
                       {testimonial.comment.length > 115 ? "..." : ""}"
                     </blockquote>
