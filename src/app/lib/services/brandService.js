@@ -9,8 +9,8 @@ export default class BrandService {
     return await this.brandRepository.create(data);
   }
 
-  async getAllBrands({ search, page, limit }) {
-    return await this.brandRepository.findAll({ search, page, limit });
+  async getAllBrands({ search, page, limit, filters } = {}) {
+    return await this.brandRepository.findAll({ search, page, limit, filters });
   }
 
   async getBrandById(id) {
@@ -26,6 +26,10 @@ export default class BrandService {
   }
 
   async searchBrandsByName(searchQuery, page, limit) {
-    return await this.brandRepository.findAll({ search: searchQuery, page, limit });
+    return await this.brandRepository.findAll({
+      search: searchQuery,
+      page,
+      limit,
+    });
   }
 }

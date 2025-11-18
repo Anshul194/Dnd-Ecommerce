@@ -36,6 +36,7 @@ async function getDbConnection(subdomain) {
 
     console.log("Connecting to tenant DB for subdomain:", subDomain);
     await dbConnect(url);
+    console.log("Connected to global DB to fetch tenant info");
     const Tenant =
       mongoose.models.Tenant ||
       mongoose.model(
@@ -49,9 +50,12 @@ async function getDbConnection(subdomain) {
           { collection: "tenants" }
         )
       );
-    const tenant = await Tenant.findOne({ subdomain });
+    const tenant = await Tenant.findOne({ subdomain: subDomain });
+    console.log("tenant db is ==> ", tenant);
     if (!tenant?.dbUri) return null;
     // Connect to tenant DB
+
+    console.log("tenant DB : ", tenant.dbUri);
     return await dbConnect(tenant.dbUri);
   }
 }

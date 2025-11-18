@@ -47,11 +47,27 @@ export async function GET(req) {
     const page = parseInt(searchParams.get("page")) || 1;
     const limit = parseInt(searchParams.get("limit")) || 10;
 
+    // Parse optional filters param (expected as JSON string)
+    const filtersParam = searchParams.get("filters");
+    let filtersObj = undefined;
+    if (filtersParam) {
+      try {
+        filtersObj = JSON.parse(filtersParam);
+      } catch (err) {
+        console.warn("Invalid JSON in filters param, ignoring:", err.message);
+        filtersObj = undefined;
+      }
+    }
+
     let result;
     if (searchQuery) {
       result = await brandService.searchBrandsByName(searchQuery, page, limit);
     } else {
-      result = await brandService.getAllBrands({ page, limit });
+      result = await brandService.getAllBrands({
+        page,
+        limit,
+        filters: filtersObj,
+      });
     }
 
     return NextResponse.json({

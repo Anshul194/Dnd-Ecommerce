@@ -75,23 +75,90 @@ class UserService {
   // Read all
   async getAllUsers(query = {}) {
     try {
-      const pageNum = query.page ? parseInt(query.page, 10) : 1;
-      const limitNum = query.limit ? parseInt(query.limit, 10) : 10;
-      const filter = { ...query };
+      const {
+        page = 1,
+        limit = 10,
+        filters = "{}",
+        searchFields = "{}",
+        sort = "{}",
+        populateFields = [],
+        selectFields = {},
+        includeDeleted,
+      } = query;
+
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+
+      const parsedFilters =
+        typeof filters === "string" ? JSON.parse(filters) : filters;
+      const parsedSearchFields =
+        typeof searchFields === "string" ? JSON.parse(searchFields) : searchFields;
+      const parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort;
+
+      const filterConditions = { ...parsedFilters };
 
       // Only add deleted filter if not explicitly requesting all users
-      if (!query.includeDeleted) {
-        // Try different approaches for deleted filter
-        filter.deleted = { $in: [false, null, undefined] }; // Match false, null, or undefined
-        // Alternative approach: filter.deleted = { $ne: true }; // Not equal to true
+      if (!includeDeleted) {
+        filterConditions.deleted = { $in: [false, null, undefined] };
       }
 
-      delete filter.page;
-      delete filter.limit;
-      delete filter.includeDeleted;
+      // Accept simple query params like name/email/phone and convert to regex search
+      const controlKeys = new Set([
+        "page",
+        "limit",
+        "filters",
+        "searchFields",
+        "sort",
+        "populateFields",
+        "selectFields",
+        "includeDeleted",
+      ]);
+
+      for (const [k, v] of Object.entries(query)) {
+        if (controlKeys.has(k)) continue;
+        if (v === undefined || v === null || v === "") continue;
+        if (["name", "email", "phone"].includes(k)) {
+          filterConditions[k] = { $regex: v, $options: "i" };
+        } else {
+          filterConditions[k] = v;
+        }
+      }
+
+      // Build searchFields $or conditions
+      const searchConditions = [];
+      if (parsedSearchFields && typeof parsedSearchFields === "object") {
+        for (const [field, term] of Object.entries(parsedSearchFields)) {
+          if (term === undefined || term === null || term === "") continue;
+          searchConditions.push({ [field]: { $regex: term, $options: "i" } });
+        }
+      }
+
+      if (searchConditions.length > 0) {
+        // If filterConditions already has $or, merge with it; otherwise assign
+        if (filterConditions.$or) {
+          filterConditions.$or = filterConditions.$or.concat(searchConditions);
+        } else {
+          filterConditions.$or = searchConditions;
+        }
+      }
+
+      // Build sort conditions
+      const sortConditions = {};
+      if (parsedSort && typeof parsedSort === "object") {
+        for (const [field, direction] of Object.entries(parsedSort)) {
+          sortConditions[field] = direction === "asc" ? 1 : -1;
+        }
+      }
 
       // Use CrudRepository's getAll method
-      const result = await this.userRepo.getAll(filter, {}, pageNum, limitNum);
+      const result = await this.userRepo.getAll(
+        filterConditions,
+        sortConditions,
+        pageNum,
+        limitNum,
+        populateFields,
+        selectFields
+      );
 
       // Transform the response to match expected format
       return {
@@ -99,7 +166,7 @@ class UserService {
         total: result.totalDocuments,
         page: result.currentPage,
         totalPages: result.totalPages,
-        limit: limitNum
+        limit: limitNum,
       };
     } catch (error) {
       throw error; // Rethrow the original error

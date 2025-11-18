@@ -1,24 +1,27 @@
-import slugify from 'slugify';
+import slugify from "slugify";
 import CrudRepository from "./CrudRepository.js";
-import userSchema from '../models/User.js'; // <-- updated import
+import userSchema from "../models/User.js"; // <-- updated import
 
 class IVRRepository extends CrudRepository {
   constructor(conn) {
-
-    console.log('Initializing IVRRepository', conn);
+    console.log("Initializing IVRRepository", conn);
     // Use the provided connection for tenant DB, or global mongoose if not provided
-    const connection = conn || require('mongoose');
-    const UserModel = connection.models.User || connection.model('User', userSchema);
+    const connection = conn || require("mongoose");
+    const UserModel =
+      connection.models.User || connection.model("User", userSchema);
     super(UserModel);
     this.UserModel = UserModel; // <-- ensure consistent reference
   }
 
-
   async upsert(apiUser) {
     // Use ivrUuid for existence check
     let userDoc = await this.UserModel.findOne({ ivrUuid: apiUser.uuid });
+    console.log("userDoc : ", userDoc);
     //get staff role by name == Staff
-    const staffRole = await this.UserModel.db.models.Role.findOne({ name: 'Staff' }); // <-- get Role from connection
+    const staffRole = await this.UserModel.db.models.Role.findOne({
+      name: "Staff",
+    });
+    console.log("staff is ====> ", staffRole); // <-- get Role from connection
     const userData = {
       name: apiUser.name,
       email: apiUser.email,
@@ -29,9 +32,9 @@ class IVRRepository extends CrudRepository {
       isActive: apiUser.is_active === "1",
       // ...map other fields as needed...
     };
-    console.log('staff role:', staffRole);
-    console.log('Upserting user:', userData);
-    console.log('Existing user document:', userDoc);
+    console.log("staff role:", staffRole);
+    console.log("Upserting user:", userData);
+    console.log("Existing user document:", userDoc);
     if (userDoc) {
       Object.assign(userDoc, userData);
       await userDoc.save();
@@ -51,7 +54,9 @@ class IVRRepository extends CrudRepository {
   }
 
   async update(id, data) {
-    return await this.UserModel.findByIdAndUpdate(id, data, { new: true }).lean();
+    return await this.UserModel.findByIdAndUpdate(id, data, {
+      new: true,
+    }).lean();
   }
 
   async delete(id) {

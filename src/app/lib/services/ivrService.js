@@ -1,6 +1,6 @@
-import IVRRepository from '../repository/ivrRepository';
-import LeadSchema from '../models/Lead.js';
-import CallLogSchema from '../models/CallLog.js'; // Now imports only the schema
+import IVRRepository from "../repository/ivrRepository";
+import LeadSchema from "../models/Lead.js";
+import CallLogSchema from "../models/CallLog.js"; // Now imports only the schema
 
 class IVRService {
   constructor(conn) {
@@ -23,12 +23,14 @@ class IVRService {
   async syncUsersFromAPI() {
     try {
       const apiResult = await this.fetchUsersFromAPI();
-      if (apiResult.status !== 'success' || !Array.isArray(apiResult.data)) {
-        throw new Error('Invalid API response');
+      if (apiResult.status !== "success" || !Array.isArray(apiResult.data)) {
+        throw new Error("Invalid API response");
       }
+      console.log("check api ======>")
       const users = [];
       for (const apiUser of apiResult.data) {
         const userDoc = await this.repo.upsert(apiUser);
+        console.log(" ==== > ", userDoc);
         users.push(userDoc);
       }
       return users;
@@ -37,21 +39,21 @@ class IVRService {
     }
   }
 
-
   //processAfterCallData
   async processAfterCallData(body, conn) {
     try {
       // Process the after call data
       // This is a placeholder for actual processing logic
-      console.log('Processing after call data:', body);
+      console.log("Processing after call data:", body);
 
       // --- Setup repositories ---
       const userRepo = this.repo;
       // Use schema from existing model if available, fallback to imported schema
       const LeadSchemaFinal = conn.models.Lead?.schema || LeadSchema;
       const CallLogSchemaFinal = conn.models.CallLog?.schema || CallLogSchema;
-      const LeadModel = conn.models.Lead || conn.model('Lead', LeadSchemaFinal);
-      const CallLogModel = conn.models.CallLog || conn.model('CallLog', CallLogSchemaFinal);
+      const LeadModel = conn.models.Lead || conn.model("Lead", LeadSchemaFinal);
+      const CallLogModel =
+        conn.models.CallLog || conn.model("CallLog", CallLogSchemaFinal);
 
       // Helper functions for lead operations
       const findLead = async (query) => LeadModel.findOne(query);
@@ -117,9 +119,9 @@ class IVRService {
       //   existingCallLog.agentNumber = agentNumber;
       //   await existingCallLog.save();
       // } else {
-        await CallLogModel.create({
-          leadId: lead._id,
-          callId,
+      await CallLogModel.create({
+        leadId: lead._id,
+        callId,
         caller,
         duration: callDuration,
         durationMs,
@@ -129,11 +131,11 @@ class IVRService {
         agent: agent ? agent._id : null,
         agentName,
         agentNumber,
-        webhookResponse: body // Store entire webhook payload
+        webhookResponse: body, // Store entire webhook payload
       });
-    // }
+      // }
       // You can add your business logic here
-      console.log('After call data processed successfully');
+      console.log("After call data processed successfully");
       return { success: true };
     } catch (error) {
       throw new Error(`Failed to process after call data: ${error.message}`);

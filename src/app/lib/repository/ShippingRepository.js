@@ -65,10 +65,8 @@ class ShippingRepository {
       query.status = filters.status;
     }
 
-    // Default behaviour: if no status specified, keep behavior compatible with previous code
-    if (!query.status) {
-      query.status = "active";
-    }
+    // If no status is specified, do not filter by status and return all shippings
+    // (previous behavior forced `status: "active"` here; removed per requirement)
 
     // Handle searchFields JSON param (e.g. searchFields={"name":"del"})
     if (filters.searchFields) {
