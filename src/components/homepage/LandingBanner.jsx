@@ -38,7 +38,7 @@ function LandingBanner({ content }) {
           <div
             className="w-full h-full bg-cover bg-center"
             style={{
-              backgroundImage: `url(${content[currentSlide].content.image})`,
+              backgroundImage: `url(${content?.[currentSlide]?.content?.image})`,
             }}
           >
             <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">

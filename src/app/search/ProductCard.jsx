@@ -253,13 +253,13 @@ const ProductCard = ({ product, showDes, buyNow }) => {
                     </>
                   )}
                 </div>
-                <div className="flex items-center space-x-1 pt-1">
+                {/* <div className="flex items-center space-x-1 pt-1">
                   <span className="text-orange-400 text-sm">⭐</span>
                   <span className="text-sm font-medium text-gray-700">
                     {product?.rating?.Average || 4.5} (
                     {product?.reviewCount || 1} reviews)
                   </span>
-                </div>
+                </div> */}
               </div>
               {buyNow ? (
                 <div className="flex gap-2">

@@ -16,7 +16,7 @@ export default function ClientLayout({ children }) {
   const [categories, setCategories] = useState([]);
 
   // Always call hooks at top level
-  useTokenRefresh();
+  // useTokenRefresh();
 
   useEffect(() => {
     // Fetch settings once on client side if not present
