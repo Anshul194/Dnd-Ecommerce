@@ -103,7 +103,7 @@ export default function BlogSection({ content }) {
     <div className="p-8 max-sm:px-4 bg-white">
       {/* Header Section */}
       <div className="mb-10">
-        <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-center  text-black bebas mb-4 md:mb-0">
+        <h1 className="text-[48px] text-center font-black text-black mb-4 md:mb-0">
           {content?.title || "Blogs"}
         </h1>
         <p className="text-black max-w-xl mx-auto  relative poppins-medium leading-tight text-center text-lg mb-8">

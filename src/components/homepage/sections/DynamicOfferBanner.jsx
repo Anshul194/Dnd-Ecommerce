@@ -64,7 +64,7 @@ const DynamicOfferBanner = ({ content }) => {
           </p>
         )}
 
-        <h2 className="!font-bebas text-3xl md:text-5xl font-black mb-4">
+        <h2 className="text-3xl md:text-5xl font-black mb-4">
           {title}
         </h2>
 
@@ -103,7 +103,7 @@ const DynamicOfferBanner = ({ content }) => {
         )}
 
         {cta && (
-          <Link href={cta.link || "/shop"}>
+          <Link href={cta.link || "/search"}>
             <button className="bg-white text-red-500 px-8 py-3 rounded-full font-bold uppercase hover:bg-gray-100 transition-all duration-300 flex items-center gap-2 mx-auto">
               {cta.title}
               <ChevronRight className="w-4 h-4" />

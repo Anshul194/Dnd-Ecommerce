@@ -96,11 +96,11 @@ const TryItYourselfSlider = () => {
     <div className="flex relative flex-col lg:flex-row justify-between w-full h-fit py-20 px-4 lg:px-0">
 
       {/* Left Content */}
-      <div className="flex-1 relative lg:max-w-md mb-8 lg:mb-0 lg:mr-8 z-20">
-        <h1 className="!font-bebas text-5xl md:text-6xl font-black text-gray-800 leading-tight mb-6">
+      <div className="flex-1 relative mb-8 lg:mb-0 lg:mr-8 z-20">
+        <h1 className="text-5xl md:text-6xl font-black text-gray-800 leading-tight mb-6 text-center">
           TRY IT YOURSELF.
         </h1>
-        <p className="text-gray-800 font-medium text-lg mt-2">
+        <p className="text-gray-800 font-medium text-lg mt-2 lg:max-w-xl">
           Lorem ipsum dolor sit amet, {' '}
           <span className='text-green-600 font-semibold'>consectetur</span> adipiscing elit
         </p>

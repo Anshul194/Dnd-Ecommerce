@@ -62,8 +62,8 @@ export default function TestimonialSlider({ content }) {
       {/* Header Section */}
       <div className="flex justify-between flex-wrap items-start mb-16">
         <div className="flex-1">
-          <h1 className="text-[50px] leading-[7vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
-            {content?.title || "GENUINE HEARTS. TRUE STORIES."}
+          <h1 className="text-[48px] text-black mb-4 md:mb-0 font-black">
+            {content?.title || "GENUI NE HEARTS. TRUE STORIES."}
           </h1>
         </div>
         <div className="text-start w-fit">
@@ -113,10 +113,10 @@ export default function TestimonialSlider({ content }) {
                 className="px-3"
                 style={{ flex: `0 0 ${slideWidth}%` }}
               >
-                <div className="bg-white border border-gray-200 rounded-2xl p-4 h-94 flex flex-col">
+                <div className="bg-white border border-gray-200 rounded-2xl p-4 h-[350px] flex flex-col">
                   {/* Name with green icon */}
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-md bebas font-bold text-black uppercase tracking-wide">
+                    <h3 className="text-md font-bold text-black uppercase tracking-wide">
                       {testimonial?.userId?.name}
                     </h3>
                     <Image className="h-4 w-4" src={heart} alt="heart-icon" />
@@ -140,7 +140,7 @@ export default function TestimonialSlider({ content }) {
 
                   {/* Quote */}
                   <div className="flex-1 mb-4 mt-2">
-                    <blockquote className="text-gray-700 bebas line-clamp-5 text-2xl font-medium leading-tight ">
+                    <blockquote className="text-gray-700 line-clamp-5 text-xl font-medium leading-tight ">
                       "{testimonial.comment.slice(0, 130)}{" "}
                       {testimonial.comment.length > 115 ? "..." : ""}"
                     </blockquote>

@@ -15,10 +15,10 @@ const DynamicUniqueSellingPoints = ({ content }) => {
       <div className="flex items-start flex-col-reverse md:flex-row gap-8">
         {/* Left content */}
         <div className="flex-1 w-full lg:w-1/2 sm:sticky top-24">
-          <h2 className="text-[50px] leading-[7vh] lg:leading-[18vh] lg:text-[130px] text-black !font-bebas mb-4 md:mb-0">
+          <h2 className="text-[48px] leading-none text-black mb-4 font-black">
             {title || "UNIQUE SELLING POINTS"}
           </h2>
-          <p className="text-black relative poppins-medium leading-tight text-lg ml-auto mb-8 max-w-xl">
+          <p className="text-black relative poppins-medium leading-tight text-lg mb-8 max-w-xl">
             {description || "gchj"}
           </p>
           {cta ? (
@@ -66,7 +66,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
             cards.map((card, idx) => (
               <div
                 key={idx}
-                className={`aspect-5/4 max-sm:aspect-auto w-full rounded-lg mb-4  overflow-hidden ${
+                className={` max-sm:aspect-auto w-full rounded-lg mb-4  overflow-hidden ${
                   idx % 2 === 0
                     ? "bg-gray-400 p-8 flex flex-col text-gray-800"
                     : "bg-gray-800 p-8 flex flex-col text-gray-400"
@@ -93,7 +93,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
               </div>
             ))
           ) : (
-            <div className="aspect-5/4 w-full h-full bg-gray-400 rounded-lg mb-4 overflow-hidden">
+            <div className="w-full h-full bg-gray-400 rounded-lg mb-4 overflow-hidden">
               {/* fallback card */}
               <div className="text-gray-400 text-xs font-medium mb-2 tracking-wider">
                 LOREM IPSUM

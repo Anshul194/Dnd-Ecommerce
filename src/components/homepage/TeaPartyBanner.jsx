@@ -19,7 +19,7 @@ export default function TeaPartyBanner() {
         
         {/* New Launch Badge */}
         <div className="absolute -top-6 -left-10 rotate-[-20deg] bg-[#F1FAEE] rounded-lg px-4 py-2 z-10" style={{ boxShadow: '0 4px 6px #F1FAEE' }}>
-          <span className="text bebas font-medium text-lg md:text-3xl transform !rotate-[60deg]">New launch</span>
+          <span className="text font-medium text-lg md:text-3xl transform !rotate-[60deg]">New launch</span>
         </div>
       </div>
     </div>

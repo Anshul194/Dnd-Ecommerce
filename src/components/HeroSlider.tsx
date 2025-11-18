@@ -38,7 +38,7 @@ export function HeroSlider({ content }) {
           <div
             className="w-full h-full bg-cover bg-center"
             style={{
-              backgroundImage: `url(${content[currentSlide].content.image})`,
+              backgroundImage: `url(${content[currentSlide]?.content?.image})`,
             }}
           >
             <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">
@@ -49,7 +49,7 @@ export function HeroSlider({ content }) {
                   transition={{ duration: 0.8, delay: 0.2 }}
                   className="text-4xl md:text-6xl lg:text-7xl mb-6 drop-shadow-2xl"
                 >
-                  {content[currentSlide].content.title}
+                  {content[currentSlide]?.content?.title}
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 30 }}
@@ -57,7 +57,7 @@ export function HeroSlider({ content }) {
                   transition={{ duration: 0.8, delay: 0.4 }}
                   className="text-lg md:text-xl lg:text-2xl mb-10 text-white/90 drop-shadow-lg"
                 >
-                  {content[currentSlide].content.description}
+                  {content[currentSlide]?.content?.description}
                 </motion.p>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}

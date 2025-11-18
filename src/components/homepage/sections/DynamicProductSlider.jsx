@@ -220,12 +220,12 @@ const DynamicProductSlider = ({ content }) => {
   return (
     <div className="flex relative flex-col gap-4 justify-between w-full h-fit py-20 px-4 lg:px-0">
       {/* Left Content - Dynamic from API */}
-      <div className="flex-1 relative lg:max-w-md mb-8 lg:mb-0 lg:mr-8 z-20">
-        <h1 className="!font-bebas text-5xl w-full font-black text-gray-800 leading-tight mb-6">
+      <div className="flex-1 relative mb-8 lg:mb-0 lg:mr-8 z-20 text-center">
+        <h1 className="text-5xl w-full font-black text-gray-800 leading-tight mb-6">
           {title}
         </h1>
         <div
-          className="text-gray-800 font-medium text-lg mt-2"
+          className="text-gray-800 font-medium text-lg mt-2 lg:max-w-md mx-auto"
           dangerouslySetInnerHTML={{ __html: description }}
         />
       </div>
@@ -325,7 +325,7 @@ const DynamicProductSlider = ({ content }) => {
 
       <div className="mt-20">
         <div>
-          <h1 className="!font-bebas text-5xl w-full font-black text-gray-800 leading-tight mb-6">
+          <h1 className="text-5xl w-full font-black text-gray-800 leading-tight mb-6 text-center">
             Story
           </h1>
         </div>
@@ -378,10 +378,10 @@ const DynamicProductSlider = ({ content }) => {
                           minWidth: 0,
                         }}
                       >
-                        <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col">
+                        <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col group">
                           {/* Name with green icon */}
-                          <div className="absolute top-4 right-6 flex items-center justify-between mb-6">
-                            <h3 className="text-md bebas font-bold text-black uppercase tracking-wide">
+                          <div className="absolute top-4 right-6 flex items-center justify-between mb-6 z-50">
+                            <h3 className="text-md font-bold text-black uppercase tracking-wide">
                               {product?.userId?.name}
                             </h3>
                             <Image
@@ -394,7 +394,7 @@ const DynamicProductSlider = ({ content }) => {
                           </div>
 
                           {/* Gray placeholder box */}
-                          <div className="w-full h-full bg-gray-300 rounded-lg">
+                          <div className="relative w-full h-full bg-gray-300 rounded-lg">
                             {/* Placeholder for image or additional content */}
                             {product?.storyVideoUrl.includes(".mp4") ? (
                               <video
@@ -411,6 +411,29 @@ const DynamicProductSlider = ({ content }) => {
                                 className="w-full h-full object-cover rounded-lg"
                               />
                             )}
+                            {/* Hover Overlay */}
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 rounded-b-lg">
+                              <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleBuyNow(e, product);
+                                  }}
+                                  className="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                                >
+                                  Buy Now
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToCart(e, product);
+                                  }}
+                                  className="border border-white text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-white hover:text-black transition-colors duration-200"
+                                >
+                                  Add to Cart
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -439,10 +462,10 @@ const DynamicProductSlider = ({ content }) => {
                           minWidth: 0,
                         }}
                       >
-                        <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col">
+                        <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col group">
                           {/* Name with green icon */}
-                          <div className="absolute top-4 right-6 flex items-center justify-between mb-6">
-                            <h3 className="text-md bebas font-bold text-black uppercase tracking-wide">
+                          <div className="absolute top-4 right-6 flex items-center justify-between mb-6 z-50">
+                            <h3 className="text-md font-bold text-black uppercase tracking-wide">
                               {product?.userId?.name}
                             </h3>
                             <Image
@@ -455,7 +478,7 @@ const DynamicProductSlider = ({ content }) => {
                           </div>
 
                           {/* Gray placeholder box */}
-                          <div className="w-full h-full bg-gray-300 rounded-lg">
+                          <div className="relative w-full h-full bg-gray-300 rounded-lg">
                             {/* Placeholder for image or additional content */}
                             {product?.storyVideoUrl.includes(".mp4") ? (
                               <video
@@ -472,6 +495,29 @@ const DynamicProductSlider = ({ content }) => {
                                 className="w-full h-full object-cover rounded-lg"
                               />
                             )}
+                            {/* Hover Overlay */}
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 rounded-b-lg">
+                              <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleBuyNow(e, product);
+                                  }}
+                                  className="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                                >
+                                  Buy Now
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToCart(e, product);
+                                  }}
+                                  className="border border-white text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-white hover:text-black transition-colors duration-200"
+                                >
+                                  Add to Cart
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

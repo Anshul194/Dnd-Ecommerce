@@ -27,7 +27,7 @@ export default function FAQAccordion({ content }) {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16">
         {/* Left Section */}
         <div className="flex-1 w-full lg:w-[60%]">
-          <h1 className="text-[50px] leading-[7vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
+          <h1 className="text-[56px] leading-none font-black text-black mb-4 md:mb-0 ">
             {content?.title || "NO CONFUSION. JUST CLARITY."}
             <span className="relative">
               <Image

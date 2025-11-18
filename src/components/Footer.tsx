@@ -47,21 +47,21 @@ export default function Footer() {
 
   const sortedList = Array.isArray(list)
     ? [...list].sort((a: any, b: any) => {
-        const aT = normalizeTitle(a);
-        const bT = normalizeTitle(b);
-        const ai = orderedTitles.indexOf(aT);
-        const bi = orderedTitles.indexOf(bT);
+      const aT = normalizeTitle(a);
+      const bT = normalizeTitle(b);
+      const ai = orderedTitles.indexOf(aT);
+      const bi = orderedTitles.indexOf(bT);
 
-        // If either is in the preferred order, use that ordering
-        if (ai !== -1 || bi !== -1) {
-          if (ai === -1) return 1;
-          if (bi === -1) return -1;
-          return ai - bi;
-        }
+      // If either is in the preferred order, use that ordering
+      if (ai !== -1 || bi !== -1) {
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      }
 
-        // Fallback: alphabetical by normalized title
-        return aT.localeCompare(bT);
-      })
+      // Fallback: alphabetical by normalized title
+      return aT.localeCompare(bT);
+    })
     : [];
 
   if (
@@ -251,39 +251,39 @@ export default function Footer() {
               ))}
             </div> */}
           </motion.div>
+
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400 col-span-3"
+          >
+            <h2>We Accept</h2>
+
+            <div>
+              {[
+                { src: "/payments/gpay.png", alt: "Google Pay" },
+                { src: "/payments/netbanking.png", alt: "Net Banking" },
+                { src: "/payments/paypal.png", alt: "PayPal" },
+                { src: "/payments/PhonePe.png", alt: "PhonePe" },
+                { src: "/payments/Rupay.png", alt: "Rupa" },
+                { src: "/payments/UPI.png", alt: "UPI" },
+                { src: "/payments/visa.png", alt: "Visa" },
+              ].map((payment, index) => (
+                <Image
+                  key={index}
+                  src={payment.src}
+                  alt={payment.alt}
+                  width={50}
+                  height={30}
+                  className="h-10 min-w-20 w-fit rounded-md  inline-block mx-2"
+                />
+              ))}
+            </div>
+          </motion.div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400"
-        >
-          <h2>We Accept</h2>
-
-          <div>
-            {[
-              { src: "/payments/gpay.png", alt: "Google Pay" },
-              { src: "/payments/netbanking.png", alt: "Net Banking" },
-              { src: "/payments/paypal.png", alt: "PayPal" },
-              { src: "/payments/PhonePe.png", alt: "PhonePe" },
-              { src: "/payments/Rupay.png", alt: "Rupa" },
-              { src: "/payments/UPI.png", alt: "UPI" },
-              { src: "/payments/visa.png", alt: "Visa" },
-            ].map((payment, index) => (
-              <Image
-                key={index}
-                src={payment.src}
-                alt={payment.alt}
-                width={50}
-                height={30}
-                className="h-10 min-w-20 w-fit rounded-md  inline-block mx-2"
-              />
-            ))}
-          </div>
-        </motion.div>
-
         {/* Bottom Bar */}
         <motion.div
           initial={{ opacity: 0 }}

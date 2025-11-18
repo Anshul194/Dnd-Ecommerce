@@ -17,7 +17,7 @@ const DynamicWhyUs = ({ content }) => {
 
         {/* Right content */}
         <div className="">
-          <h1 className="text-[50px] md:text-[100px] lg:text-[130px] text-black !font-bebas -mt-[2vh] md:-mt-[4vh] lg:-mt-10">
+          <h1 className="text-[48px]  text-black -mt-[2vh] md:-mt-[4vh] lg:-mt-10 text-center font-black">
             {title || "WHY US?"}
           </h1>
 
