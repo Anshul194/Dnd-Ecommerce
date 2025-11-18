@@ -24,10 +24,10 @@ export default function FAQAccordion({ content }) {
 
   return (
     <div className="w-full py-10 lg:py-20 px-4">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-7">
         {/* Left Section */}
-        <div className="flex-1 w-full lg:w-[60%]">
-          <h1 className="text-[56px] leading-none font-black text-black mb-4 md:mb-0 ">
+        <div className="flex-1 w-full lg:w-1/2">
+          <h1 className="text-[56px] leading-none font-black text-black mb-5">
             {content?.title || "NO CONFUSION. JUST CLARITY."}
             <span className="relative">
               <Image
@@ -52,7 +52,7 @@ export default function FAQAccordion({ content }) {
         </div>
 
         {/* Right Section - FAQ Accordion */}
-        <div className=" w-full lg:w-[40%] ">
+        <div className=" w-full lg:w-1/2 ">
           <div className="space-y-1">
             {loading && <div className="text-gray-500">Loading FAQs...</div>}
             {error && <div className="text-red-500">{error}</div>}

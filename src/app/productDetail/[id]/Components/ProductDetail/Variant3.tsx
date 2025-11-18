@@ -115,6 +115,56 @@ function Variant3() {
   };
   return (
     <div className="lg:col-span-6">
+      {/* Fixed Buy Now and Add to Cart Section */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 p-4 lg:hidden">
+        <div className="flex items-center gap-4 max-w-4xl mx-auto">
+          {/* Product Image */}
+          <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+            <img
+              src={productData.thumbnail || productData.images[0]}
+              alt={productData.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Product Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-gray-900 truncate">
+              {productData.name}
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-lg font-bold text-gray-900">
+                ₹{productData.variants.filter(
+                  (variant) => variant._id === selectedVariant
+                )[0]?.salePrice}
+              </span>
+              <span className="text-sm text-gray-500 line-through">
+                ₹{productData.variants.filter(
+                  (variant) => variant._id === selectedVariant
+                )[0]?.price}
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleAddToCart}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-1 text-sm"
+            >
+              <ShoppingCart size={16} />
+              Add to Cart
+            </button>
+            <button
+              onClick={handleBuyNow}
+              className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors text-sm"
+            >
+              Buy Now
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
         {/* Title & Rating */}
         <h1 className="text-3xl font-bold text-gray-900 mb-3">
@@ -274,7 +324,7 @@ function Variant3() {
       </div>
 
       {/* Product Details Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm">
+      <div className="bg-white rounded-2xl shadow-sm pb-24 lg:pb-6">
         <div className="border-b border-gray-200">
           <div className="flex">
             {[

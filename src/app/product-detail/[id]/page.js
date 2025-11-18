@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useRef } from "react";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import AuthRequiredModal from "@/components/AuthRequiredModal";
@@ -45,6 +45,8 @@ function ProductPage({ params }) {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [showStickyButtons, setShowStickyButtons] = useState(false);
+  const buttonRef = useRef(null);
   const router = require("next/navigation").useRouter();
 
   const toggleSection = (section) => {
@@ -159,6 +161,22 @@ function ProductPage({ params }) {
     getProductData();
     // Only run on mount or slug change
   }, [getProductData]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (buttonRef.current) {
+        const buttonRect = buttonRef.current.getBoundingClientRect();
+        const buttonTop = buttonRect.top + window.scrollY;
+        const isScrolledPast = window.scrollY > buttonTop - 100; // Show when scrolled past button position minus 100px
+        setShowStickyButtons(isScrolledPast);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial state
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <>
@@ -383,7 +401,7 @@ function ProductPage({ params }) {
               </div>
 
               {/* Add to Cart Button */}
-              <div className="flex gap-2 mb-6">
+              <div ref={buttonRef} className="flex gap-2 mb-6">
                 <button
                   onClick={handleAddToCart}
                   className="px-4 w-1/2 py-3 border border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
@@ -733,6 +751,27 @@ function ProductPage({ params }) {
           <FrequentlyPurchased />
         </div>
       </div>
+
+      {/* Sticky Buttons */}
+      {showStickyButtons && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
+          <div className="flex gap-2 max-w-[90%] mx-auto">
+            <button
+              onClick={handleAddToCart}
+              className="px-4 w-1/2 py-3 border border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            >
+              <ShoppingCart size={16} />
+              Add to Cart
+            </button>
+            <button
+              onClick={handleBuyNow}
+              className="flex-1 w-1/2 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
+            >
+              Buy Now
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
