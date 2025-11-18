@@ -110,14 +110,14 @@ const DynamicUniqueSellingPoints = ({ content }) => {
               <SwiperSlide key={idx}>
                 <div
                   className={` min-h-[480px] w-full rounded-lg overflow-hidden ${idx % 2 === 0
-                    ? "bg-gray-400 p-8 flex flex-col text-gray-800"
-                    : "bg-gray-800 p-8 flex flex-col text-gray-400"
+                    ? "bg-green-500 p-8 flex flex-col text-black"
+                    : "bg-green-800 p-8 flex flex-col text-white"
                     }`}
                 >
                   <div className="text-xs font-medium mb-2 tracking-wider">
                     {card.tag || "LOREM IPSUM"}
                   </div>
-                  <div className="text-green-400 text-2xl font-bold mb-4 leading-tight">
+                  <div className="text-2xl font-bold mb-4 leading-tight">
                     {card.title ? card.title.toUpperCase() : "LOREM IPSUM"}
                     {card.subtitle && (
                       <>

@@ -17,10 +17,6 @@ const DynamicWhyUs = ({ content }) => {
 
         {/* Right content */}
         <div className="">
-          <h1 className="text-[48px]  text-black -mt-[2vh] md:-mt-[4vh] lg:-mt-10 text-center font-black">
-            {title || "WHY US?"}
-          </h1>
-
           <div className="mt-10 flex flex-col lg:flex-row gap-6 lg:gap-20">
             <div className=" w-[45%] max-sm:w-full  bg-gray-400 rounded-lg flex-shrink-0">
               <Image
@@ -32,6 +28,9 @@ const DynamicWhyUs = ({ content }) => {
               />
             </div>
             <div className="w-1/2 max-sm:w-full">
+              <h1 className="text-[48px] leading-none  text-black -mt-[2vh] md:-mt-[4vh] lg:-mt-10 font-black">
+                {title || "WHY US?"}
+              </h1>
               <p className="text-black text-[16px] leading-relaxed mb-8 max-w-full">
                 {description || "Loading description..."}
               </p>

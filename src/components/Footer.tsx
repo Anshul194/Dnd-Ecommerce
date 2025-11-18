@@ -78,8 +78,8 @@ export default function Footer() {
       <div className="absolute top-0 left-0 w-64 h-64 bg-[#3C950D]/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#3C950D]/10 rounded-full blur-3xl" />
 
-      <div className="container mx-auto px-4 py-16 relative">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+      <div className="container mx-auto px-4 py-10 relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
           {/* About Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -258,9 +258,9 @@ export default function Footer() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400 col-span-3"
+            className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400 lg:col-span-5"
           >
-            <h2>We Accept</h2>
+            <h2 className="mb-4">We Accept</h2>
 
             <div>
               {[
@@ -278,7 +278,7 @@ export default function Footer() {
                   alt={payment.alt}
                   width={50}
                   height={30}
-                  className="h-10 min-w-20 w-fit rounded-md  inline-block mx-2"
+                  className="h-5 sm:h-8 w-fit rounded-md object-cover inline-block mx-2 mb-2"
                 />
               ))}
             </div>

@@ -49,7 +49,7 @@ const DynamicOfferBanner = ({ content }) => {
   }, [effectiveEndDate]);
 
   return (
-    <div className="relative bg-gradient-to-r from-red-500 to-orange-500 text-white py-16 overflow-hidden">
+    <div className="relative bg-gradient-to-r from-green-600 to-green-800 text-white py-16 overflow-hidden">
       {/* Background Image */}
       {image && (
         <div className="absolute inset-0 opacity-20">
@@ -104,7 +104,7 @@ const DynamicOfferBanner = ({ content }) => {
 
         {cta && (
           <Link href={cta.link || "/search"}>
-            <button className="bg-white text-red-500 px-8 py-3 rounded-full font-bold uppercase hover:bg-gray-100 transition-all duration-300 flex items-center gap-2 mx-auto">
+            <button className="bg-white text-green-600 px-8 py-3 rounded-full font-bold uppercase hover:bg-gray-100 transition-all duration-300 flex items-center gap-2 mx-auto">
               {cta.title}
               <ChevronRight className="w-4 h-4" />
             </button>

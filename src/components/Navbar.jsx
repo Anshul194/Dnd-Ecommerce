@@ -311,7 +311,7 @@ export default function Navbar() {
                     alt="TeaHaven Logo"
                     width={100}
                     height={100}
-                    className="rounded-full h-16 w-fit "
+                    className="rounded-full h-[90px] w-fit "
                   />
                 </Link>
               </div>
