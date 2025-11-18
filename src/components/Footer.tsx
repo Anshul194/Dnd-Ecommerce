@@ -258,9 +258,9 @@ export default function Footer() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400 col-span-3"
+            className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400 lg:col-span-5"
           >
-            <h2>We Accept</h2>
+            <h2 className="mb-4">We Accept</h2>
 
             <div>
               {[

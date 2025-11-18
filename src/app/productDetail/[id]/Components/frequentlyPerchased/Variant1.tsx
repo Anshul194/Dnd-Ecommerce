@@ -133,7 +133,7 @@ export default function RenderSliderVariant() {
           className="overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory"
           aria-label="Frequently purchased products"
         >
-          <div className="flex gap-3 pb-4 w-full">
+          <div className="flex gap-3 pb-4 max-w-full">
             {products?.length > 0 &&
               products?.map((product) => {
                 if (product._id === selectedProducts?._id) return null;
@@ -144,7 +144,7 @@ export default function RenderSliderVariant() {
                     key={product._id}
                     href={`/product-detail/${product.slug}`}
                   >
-                    <div className="bg-white flex-shrink-0 snap-start w-full md:w-1/3 lg:w-1/4 px-1">
+                    <div className="bg-white flex-shrink-0 snap-start w-52 h-64 px-1">
                       {/* Product Image */}
                       <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">
                         {imgSrc ? (

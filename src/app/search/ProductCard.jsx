@@ -125,7 +125,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     <>
       <Link
         href={`/productDetail/${product.slug}`}
-        className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all w-full"
+        className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all w-full h-fit"
         prefetch
       >
         <div

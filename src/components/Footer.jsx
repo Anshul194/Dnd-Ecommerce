@@ -146,7 +146,7 @@ export default function Footer() {
       {/* Top Features Section */}
       <div className="border-b border-emerald-800 py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-2 font-gintoNord lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 font-gintoNord lg:grid-cols-5 gap-8">
             <div className="text-center flex flex-col  items-center">
               <ShippingIcon />
               <h3 className="font-bold text-sm mb-1">WORLDWIDE</h3>
