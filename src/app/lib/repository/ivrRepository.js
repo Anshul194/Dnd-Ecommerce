@@ -53,7 +53,7 @@ class IVRRepository extends CrudRepository {
     return await this.UserModel.findById(id).lean();
   }
 
-  async update(id, data) {
+  async update(id,  data) {
     return await this.UserModel.findByIdAndUpdate(id, data, {
       new: true,
     }).lean();
