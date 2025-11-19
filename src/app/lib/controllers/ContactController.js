@@ -7,7 +7,7 @@ export default class ContactController {
     try {
       return await this.contactService.getAll(query, conn);
     } catch (error) {
-      console.error("ContactController getAll error:", error.message);
+      //consolle.error("ContactController getAll error:", error.message);
       throw error;
     }
   }
@@ -16,7 +16,7 @@ export default class ContactController {
     try {
       return await this.contactService.create(data, conn);
     } catch (error) {
-      console.error("ContactController create error:", error.message);
+      //consolle.error("ContactController create error:", error.message);
       throw error;
     }
   }
@@ -25,7 +25,7 @@ export default class ContactController {
     try {
       return await this.contactService.getById(id, conn);
     } catch (error) {
-      console.error("ContactController getById error:", error.message);
+      //consolle.error("ContactController getById error:", error.message);
       throw error;
     }
   }
@@ -34,7 +34,7 @@ export default class ContactController {
     try {
       return await this.contactService.updateById(id, data, conn);
     } catch (error) {
-      console.error("ContactController updateById error:", error.message);
+      //consolle.error("ContactController updateById error:", error.message);
       throw error;
     }
   }

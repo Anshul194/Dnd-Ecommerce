@@ -7,18 +7,18 @@ import { withUserAuth } from "../../../middleware/commonAuth.js";
 export const POST = withUserAuth(async function (req) {
   try {
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //consolle.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //consolle.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //consolle.log("Connection name in route:", conn.name);
     const Review = conn.models.Review || conn.model("Review", ReviewSchema);
-    console.log("Models registered:", { Review: Review.modelName });
+    //consolle.log("Models registered:", { Review: Review.modelName });
     const reviewService = new ReviewService(conn);
 
     const userId = req.user._id; // Extract userId from authenticated user
@@ -48,7 +48,7 @@ export const POST = withUserAuth(async function (req) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Route POST review vote error:", error.message);
+    //consolle.error("Route POST review vote error:", error.message);
     return NextResponse.json(
       {
         success: false,

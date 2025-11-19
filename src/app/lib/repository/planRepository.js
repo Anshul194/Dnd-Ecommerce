@@ -12,7 +12,7 @@ class PlanRepository extends CrudRepository {
         try {
             return await Plan.findOne({ name, deletedAt: null });
         } catch (error) {
-            console.error('PlanRepo findByName error:', error);
+            //consolle.error('PlanRepo findByName error:', error);
             throw error;
         }
     }
@@ -22,7 +22,7 @@ class PlanRepository extends CrudRepository {
             const plan = new Plan(data);
             return plan.save();
         } catch (error) {
-            console.error('PlanRepo create error:', error);
+            //consolle.error('PlanRepo create error:', error);
             throw error;
         }
     }
@@ -31,7 +31,7 @@ class PlanRepository extends CrudRepository {
         try {
             return await Plan.findOne({ _id: id, deletedAt: null });
         } catch (error) {
-            console.error('PlanRepo findById error:', error);
+            //consolle.error('PlanRepo findById error:', error);
             throw error;
         }
     }
@@ -47,7 +47,7 @@ class PlanRepository extends CrudRepository {
             plan.set(data);
             return await plan.save();
         } catch (error) {
-            console.error('PlanRepo update error:', error);
+            //consolle.error('PlanRepo update error:', error);
             throw error;
         }
     }
@@ -60,7 +60,7 @@ class PlanRepository extends CrudRepository {
                 { new: true }
             );
         } catch (error) {
-            console.error('PlanRepo softDelete error:', error);
+            //consolle.error('PlanRepo softDelete error:', error);
             throw error;
         }
     }
@@ -69,7 +69,7 @@ class PlanRepository extends CrudRepository {
         try {
             return await Plan.findOne({ name, deletedAt: null });
         } catch (error) {
-            console.error('PlanRepo findByName error:', error);
+            //consolle.error('PlanRepo findByName error:', error);
             throw error;
         }
     }

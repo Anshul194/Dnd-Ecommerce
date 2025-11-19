@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 class CallLogController {
   async getAllCallLogs(req, _res, conn) {
     try {
-      console.log('[CallLogController.getAllCallLogs] Fetching all call logs', 'Connection:', conn.name || 'global mongoose');
+      //consolle.log('[CallLogController.getAllCallLogs] Fetching all call logs', 'Connection:', conn.name || 'global mongoose');
       const { searchParams } = new URL(req.url);
       const page = parseInt(searchParams.get('page')) || 1;
       const limit = parseInt(searchParams.get('limit')) || 10;
@@ -29,14 +29,14 @@ class CallLogController {
         }
       }, { status: 200 });
     } catch (err) {
-      console.error('[CallLogController.getAllCallLogs] Error:', err.message, err.stack);
+      //consolle.error('[CallLogController.getAllCallLogs] Error:', err.message, err.stack);
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
   }
 
   async getCallLogsByLeadId(req, _res, leadId, conn) {
     try {
-      console.log('[CallLogController.getCallLogsByLeadId] Fetching call logs for leadId:', leadId, 'Connection:', conn.name || 'global mongoose');
+      //consolle.log('[CallLogController.getCallLogsByLeadId] Fetching call logs for leadId:', leadId, 'Connection:', conn.name || 'global mongoose');
       const { searchParams } = new URL(req.url);
       const page = parseInt(searchParams.get('page')) || 1;
       const limit = parseInt(searchParams.get('limit')) || 10;
@@ -61,14 +61,14 @@ class CallLogController {
         }
       }, { status: 200 });
     } catch (err) {
-      console.error('[CallLogController.getCallLogsByLeadId] Error:', err.message, err.stack);
+      //consolle.error('[CallLogController.getCallLogsByLeadId] Error:', err.message, err.stack);
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
   }
 
   async getCallLogsByAgentId(req, _res, agentId, conn) {
     try {
-      console.log('[CallLogController.getCallLogsByAgentId] Fetching call logs for agentId:', agentId, 'Connection:', conn.name || 'global mongoose');
+      //consolle.log('[CallLogController.getCallLogsByAgentId] Fetching call logs for agentId:', agentId, 'Connection:', conn.name || 'global mongoose');
       const { searchParams } = new URL(req.url);
       const page = parseInt(searchParams.get('page')) || 1;
       const limit = parseInt(searchParams.get('limit')) || 10;
@@ -93,7 +93,7 @@ class CallLogController {
         }
       }, { status: 200 });
     } catch (err) {
-      console.error('[CallLogController.getCallLogsByAgentId] Error:', err.message, err.stack);
+      //consolle.error('[CallLogController.getCallLogsByAgentId] Error:', err.message, err.stack);
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
   }

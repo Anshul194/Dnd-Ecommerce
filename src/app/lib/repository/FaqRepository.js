@@ -5,7 +5,7 @@ export default class FaqRepository {
 
   async getAll(query, conn) {
     try {
-      console.log('Repository getAll called with query:', query);
+      //consolle.log('Repository getAll called with query:', query);
       
       let filter = {};
       const options = {};
@@ -59,7 +59,7 @@ export default class FaqRepository {
           faqs = await this.Faq.find(filter, null, options);
         }
       } catch (populateError) {
-        console.warn('Product population failed, returning FAQs without product details:', populateError.message);
+        //consolle.warn('Product population failed, returning FAQs without product details:', populateError.message);
         faqs = await this.Faq.find(filter, null, options);
       }
       
@@ -73,14 +73,14 @@ export default class FaqRepository {
         limit: query.limit ? parseInt(query.limit) : total
       };
     } catch (error) {
-      console.error('Repository getAll error:', error.message);
+      //consolle.error('Repository getAll error:', error.message);
       throw error;
     }
   }
 
   async getById(id, conn) {
     try {
-      console.log('Repository getById called with id:', id);
+      //consolle.log('Repository getById called with id:', id);
       
       // Check if Product model is available before populating
       let faq;
@@ -92,20 +92,20 @@ export default class FaqRepository {
           faq = await this.Faq.findById(id);
         }
       } catch (populateError) {
-        console.warn('Product population failed, returning FAQ without product details:', populateError.message);
+        //consolle.warn('Product population failed, returning FAQ without product details:', populateError.message);
         faq = await this.Faq.findById(id);
       }
       
       return faq;
     } catch (error) {
-      console.error('Repository getById error:', error.message);
+      //consolle.error('Repository getById error:', error.message);
       throw error;
     }
   }
 
   async create(data, conn) {
     try {
-      console.log('Repository create called with data:', data);
+      //consolle.log('Repository create called with data:', data);
       const faq = new this.Faq(data);
       const savedFaq = await faq.save();
       
@@ -119,7 +119,7 @@ export default class FaqRepository {
           populatedFaq = savedFaq;
         }
       } catch (populateError) {
-        console.warn('Product population failed, returning FAQ without product details:', populateError.message);
+        //consolle.warn('Product population failed, returning FAQ without product details:', populateError.message);
         populatedFaq = savedFaq;
       }
       
@@ -128,7 +128,7 @@ export default class FaqRepository {
         data: populatedFaq
       };
     } catch (error) {
-      console.error('Repository create error:', error.message);
+      //consolle.error('Repository create error:', error.message);
       if (error.code === 11000) {
         return {
           success: false,
@@ -148,7 +148,7 @@ export default class FaqRepository {
 
   async update(id, data, conn) {
     try {
-      console.log('Repository update called with id:', id, 'and data:', data);
+      //consolle.log('Repository update called with id:', id, 'and data:', data);
       
       // Check if Product model is available before populating
       let faq;
@@ -168,7 +168,7 @@ export default class FaqRepository {
           );
         }
       } catch (populateError) {
-        console.warn('Product population failed, returning FAQ without product details:', populateError.message);
+        //consolle.warn('Product population failed, returning FAQ without product details:', populateError.message);
         faq = await this.Faq.findByIdAndUpdate(
           id,
           { $set: data },
@@ -188,7 +188,7 @@ export default class FaqRepository {
         data: faq
       };
     } catch (error) {
-      console.error('Repository update error:', error.message);
+      //consolle.error('Repository update error:', error.message);
       if (error.code === 11000) {
         return {
           success: false,
@@ -208,7 +208,7 @@ export default class FaqRepository {
 
   async delete(id, conn) {
     try {
-      console.log('Repository delete called with id:', id);
+      //consolle.log('Repository delete called with id:', id);
       const faq = await this.Faq.findByIdAndDelete(id);
       
       if (!faq) {
@@ -223,7 +223,7 @@ export default class FaqRepository {
         data: faq
       };
     } catch (error) {
-      console.error('Repository delete error:', error.message);
+      //consolle.error('Repository delete error:', error.message);
       throw error;
     }
   }

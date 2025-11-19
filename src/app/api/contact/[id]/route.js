@@ -44,7 +44,7 @@ export async function GET(req, { params }) {
 
     return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
-    console.error("Contact by id GET error:", error.message);
+    //consolle.error("Contact by id GET error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
@@ -94,7 +94,7 @@ export async function PUT(req, { params }) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Contact by id UPDATE error:", error.message);
+    //consolle.error("Contact by id UPDATE error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }

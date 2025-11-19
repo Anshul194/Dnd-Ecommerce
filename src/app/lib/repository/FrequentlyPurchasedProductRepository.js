@@ -8,18 +8,18 @@ export default class FrequentlyPurchasedProductRepository {
     this.FrequentlyPurchasedProduct =
       this.connection.models.FrequentlyPurchasedProduct ||
       this.connection.model("FrequentlyPurchasedProduct", FrequentlyPurchasedProductSchema);
-    console.log(
-      "FrequentlyPurchasedProductRepository initialized with connection:",
-      this.connection ? this.connection.name || "global mongoose" : "no connection"
-    );
+    //consolle.log(
+    //   "FrequentlyPurchasedProductRepository initialized with connection:",
+    //   this.connection ? this.connection.name || "global mongoose" : "no connection"
+    // );
   }
 
   async create(data) {
     try {
-      console.log("Creating frequently purchased product with data:", JSON.stringify(data, null, 2));
+      //consolle.log("Creating frequently purchased product with data:", JSON.stringify(data, null, 2));
       return await this.FrequentlyPurchasedProduct.create(data);
     } catch (error) {
-      console.error("FrequentlyPurchasedProductRepository Create Error:", error.message);
+      //consolle.error("FrequentlyPurchasedProductRepository Create Error:", error.message);
       throw error;
     }
   }
@@ -31,7 +31,7 @@ export default class FrequentlyPurchasedProductRepository {
         .sort({ priority: -1 }) // Sort by priority descending
         .exec();
     } catch (error) {
-      console.error("FrequentlyPurchasedProductRepository getAll Error:", error.message);
+      //consolle.error("FrequentlyPurchasedProductRepository getAll Error:", error.message);
       throw error;
     }
   }
@@ -69,7 +69,7 @@ export default class FrequentlyPurchasedProductRepository {
       ]);
       return productCounts;
     } catch (error) {
-      console.error("FrequentlyPurchasedProductRepository getFrequentlyPurchasedFromOrders Error:", error.message);
+      //consolle.error("FrequentlyPurchasedProductRepository getFrequentlyPurchasedFromOrders Error:", error.message);
       throw error;
     }
   }

@@ -101,7 +101,7 @@ export async function POST(req) {
           ordered: false, // allow partial success
         });
       } catch (insertErr) {
-        console.error("Batch insert error:", insertErr);
+        //consolle.error("Batch insert error:", insertErr);
         return NextResponse.json(
           { success: false, error: "Batch insert failed: " + insertErr.message },
           { status: 500 }
@@ -126,7 +126,7 @@ export async function POST(req) {
     try {
       await eventsColl.insertOne(eventData, { writeConcern: { w: 1 }, maxTimeMS: 8000 });
     } catch (singleInsertErr) {
-      console.error("Single insert error:", singleInsertErr);
+      //consolle.error("Single insert error:", singleInsertErr);
       return NextResponse.json(
         { success: false, error: "Event insert failed: " + singleInsertErr.message },
         { status: 500 }

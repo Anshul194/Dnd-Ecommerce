@@ -63,7 +63,7 @@ export const Token = {
       // You may want to fetch user from DB here if needed
       return decoded;
     } catch (err) {
-      console.error("Token verification failed:", err.message);
+      //consolle.error("Token verification failed:", err.message);
       return null;
     }
   },
@@ -80,7 +80,7 @@ export const Token = {
       );
       return decoded;
     } catch (err) {
-      console.error("Refresh token verification failed:", err.message);
+      //consolle.error("Refresh token verification failed:", err.message);
       return null;
     }
   },

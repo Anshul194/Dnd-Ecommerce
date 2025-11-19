@@ -4,10 +4,10 @@ import mongoose from "mongoose";
 
 class TemplateService {
   constructor(conn) {
-    console.log(
-      "TemplateService initialized with connection:",
-      conn ? "Connected" : "No connection"
-    );
+    //consolle.log(
+    //   "TemplateService initialized with connection:",
+    //   conn ? "Connected" : "No connection"
+    // );
     this.templateRepo = new TemplateRepository(conn);
     this.conn = conn;
   }
@@ -47,7 +47,7 @@ class TemplateService {
       const template = await this.templateRepo.create(data);
       return successResponse(template, "Template created successfully", 201);
     } catch (error) {
-      console.error("TemplateService createTemplate error:", error);
+      //consolle.error("TemplateService createTemplate error:", error);
       return errorResponse("Error creating template", 500, error.message);
     }
   }
@@ -115,7 +115,7 @@ class TemplateService {
 
       return successResponse(template, "Template fetched successfully", 200);
     } catch (error) {
-      console.error("TemplateService getTemplateById error:", error);
+      //consolle.error("TemplateService getTemplateById error:", error);
       return errorResponse("Error fetching template", 500, error.message);
     }
   }
@@ -135,7 +135,7 @@ class TemplateService {
 
       return successResponse(template, "Template fetched successfully", 200);
     } catch (error) {
-      console.error("TemplateService getTemplateByProductId error:", error);
+      //consolle.error("TemplateService getTemplateByProductId error:", error);
       return errorResponse(
         "Error fetching template by product ID",
         500,
@@ -175,7 +175,7 @@ class TemplateService {
         200
       );
     } catch (error) {
-      console.error("TemplateService updateTemplate error:", error);
+      //consolle.error("TemplateService updateTemplate error:", error);
       return errorResponse("Error updating template", 500, error.message);
     }
   }
@@ -194,7 +194,7 @@ class TemplateService {
       await this.templateRepo.delete(id);
       return successResponse(null, "Template deleted successfully", 200);
     } catch (error) {
-      console.error("TemplateService deleteTemplate error:", error);
+      //consolle.error("TemplateService deleteTemplate error:", error);
       return errorResponse("Error deleting template", 500, error.message);
     }
   }

@@ -40,7 +40,7 @@ export async function GET(req) {
     const result = await contactController.getAll(validatedQuery, conn);
     return NextResponse.json({ success: true, ...result });
   } catch (error) {
-    console.error("Contact route GET error:", error.message);
+    //consolle.error("Contact route GET error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
@@ -74,7 +74,7 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Contact route POST error:", error.message);
+    //consolle.error("Contact route POST error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }

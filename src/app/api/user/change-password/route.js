@@ -28,7 +28,7 @@ export async function POST(request) {
     await userService.updateUserById(userId, { passwordHash: newHash });
     return NextResponse.json({ success: true, message: 'Password changed successfully.' }, { status: 200 });
   } catch (err) {
-    console.error('POST /user/change-password error:', err?.message);
+    //consolle.error('POST /user/change-password error:', err?.message);
     return NextResponse.json({ success: false, message: err?.message || 'Something went wrong' }, { status: 400 });
   }
 }

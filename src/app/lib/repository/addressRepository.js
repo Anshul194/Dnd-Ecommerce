@@ -8,11 +8,11 @@ export class AddressRepository extends CrudRepository {
   }
 
   async get(id) {
-    console.log("getting address by user id", id);
+    //consolle.log("getting address by user id", id);
     const doc = await super.getAll({ user: id, deletedAt: null }, {}, 0, 0, [
       "user",
     ]);
-    console.log("Address found:", doc);
+    //consolle.log("Address found:", doc);
     if (!doc || !doc.result || doc.result.length === 0) return null;
 
     return doc.result;
@@ -20,7 +20,7 @@ export class AddressRepository extends CrudRepository {
 
   // Get addresses by user ID
   async getByUserId(userId) {
-    console.log("getting addresses by user id", userId);
+    //consolle.log("getting addresses by user id", userId);
     const doc = await super.getAll(
       { user: userId, deletedAt: null },
       {},
@@ -28,7 +28,7 @@ export class AddressRepository extends CrudRepository {
       0,
       ["user"]
     );
-    console.log("Addresses found:", doc);
+    //consolle.log("Addresses found:", doc);
     return doc.result || [];
   }
 

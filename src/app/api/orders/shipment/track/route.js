@@ -16,25 +16,25 @@ export async function GET(req) {
     try {
         const tenant = req.headers.get("x-tenant");
 
-        // console.log('Route received create order body:', JSON.stringify(body, null, 2));
+        // //consolle.log('Route received create order body:', JSON.stringify(body, null, 2));
         const subdomain = getSubdomain(req);
-        // console.log('Subdomain:', subdomain);
+        // //consolle.log('Subdomain:', subdomain);
         const conn = await getDbConnection(subdomain);
         if (!conn) {
-            console.error("No database connection established");
+            //consolle.error("No database connection established");
             return NextResponse.json({ success: false, message: "DB not found" }, { status: 404 });
         }
-        console.log("Connection name in route:", conn.name);
+        //consolle.log("Connection name in route:", conn.name);
         const Order = conn.models.Order || conn.model("Order", OrderSchema);
         const Coupon = conn.models.Coupon || conn.model("Coupon", CouponSchema);
         const Product = conn.models.Product || conn.model("Product", ProductSchema);
         const Variant = conn.models.Variant || conn.model("Variant", VariantSchema);
-        console.log("Models registered:", {
-            Order: Order.modelName,
-            Coupon: Coupon.modelName,
-            Product: Product.modelName,
-            Variant: Variant.modelName,
-        });
+        //consolle.log("Models registered:", {
+        //     Order: Order.modelName,
+        //     Coupon: Coupon.modelName,
+        //     Product: Product.modelName,
+        //     Variant: Variant.modelName,
+        // });
         const orderRepo = new OrderRepository(Order, conn);
         const couponRepo = new CouponRepository(Coupon);
         const couponService = new CouponService(couponRepo);
@@ -51,7 +51,7 @@ export async function GET(req) {
         }
         return NextResponse.json(result, { status: 201 });
     } catch (error) {
-        console.error("Route POST order error:", error.message);
+        //consolle.error("Route POST order error:", error.message);
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
 }

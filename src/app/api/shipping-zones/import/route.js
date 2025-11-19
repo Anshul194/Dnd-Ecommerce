@@ -9,16 +9,16 @@ import mongoose from "mongoose";
 export const POST = withUserAuth(async function (request) {
   try {
     const subdomain = getSubdomain(request);
-    console.log("Subdomain:", subdomain);
+    //consolle.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //consolle.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //consolle.log("Connection name in route:", conn.name);
 
     const formData = await request.formData();
     const shippingId = formData.get("shippingId");
@@ -93,7 +93,7 @@ export const POST = withUserAuth(async function (request) {
       conn
     );
   } catch (err) {
-    console.error("ShippingZone Import error:", err.message, err.stack);
+    //consolle.error("ShippingZone Import error:", err.message, err.stack);
     return NextResponse.json(
       { success: false, message: err.message },
       { status: 400 }

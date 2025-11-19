@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
 async function dbConnect(dbUri) {
-  // console.log("Connecting to MongoDB...", dbUri);
+  // //consolle.log("Connecting to MongoDB...", dbUri);
   const defaultUri = process.env.MONGODB_URI;
   const uri = dbUri || defaultUri;
-  // console.log("Using URI:", uri);
+  // //consolle.log("Using URI:", uri);
   if (!uri) {
     const err = new Error("DB not found");
     err.status = 404;
@@ -48,11 +48,11 @@ async function dbConnect(dbUri) {
   try {
     cached.conn = await cached.promise;
     if (process.env.NODE_ENV !== "production") {
-      console.log("MongoDB connected:", uri);
+      //consolle.log("MongoDB connected:", uri);
     }
     return cached.conn;
   } catch (err) {
-    console.error("MongoDB connection error:", err);
+    //consolle.error("MongoDB connection error:", err);
     throw err;
   }
 }

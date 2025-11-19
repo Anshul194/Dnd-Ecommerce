@@ -167,7 +167,7 @@ class OrderService {
 
       // Fetch settings
 
-      console.log("check tenant for setting ==> " , tenant)
+      //consolle.log("check tenant for setting ==> " , tenant)
       const Setting =
         conn.models.Setting || conn.model("Setting", SettingSchema);
       const settings = await Setting.findOne({ tenant }).lean();
@@ -253,7 +253,7 @@ class OrderService {
         }
       }
 
-      console.log("settings ===> " , settings)
+      //consolle.log("settings ===> " , settings)
 
       // --- Shipping Charges ---
       let shippingCharge = 0;
@@ -282,7 +282,7 @@ class OrderService {
         },
       };
     } catch (error) {
-      console.log("error in check api ", error);
+      //consolle.log("error in check api ", error);
       return {
         success: false,
         message: error.message,
@@ -305,8 +305,8 @@ class OrderService {
       } = data;
 
       // Validate required fields
-      console.log("Checking order data: ===>");
-      console.log(
+      //consolle.log("Checking order data: ===>");
+      //consolle.log(
         userId,
         items,
         items.length,
@@ -564,7 +564,7 @@ class OrderService {
         shippingName: selectedShipping.name,
         shippingPriority: selectedShipping.priority,
       };
-      console.log("data before repo ===> ", orderData);
+      //consolle.log("data before repo ===> ", orderData);
       const order = await this.orderRepository.create(orderData);
 
       // Send email notifications
@@ -585,10 +585,10 @@ class OrderService {
         conn,
       });
       if (!customerEmailResult.success) {
-        console.error(
-          "Failed to send customer email:",
-          customerEmailResult.message
-        );
+        //consolle.error(
+        //   "Failed to send customer email:",
+        //   customerEmailResult.message
+        // );
       }
 
       // Send email to admin
@@ -599,11 +599,11 @@ class OrderService {
         conn,
       });
       if (!adminEmailResult.success) {
-        console.error("Failed to send admin email:", adminEmailResult.message);
+        //consolle.error("Failed to send admin email:", adminEmailResult.message);
       }
       try {
         // Only trigger auto-call for COD orders if enabled in settings
-        console.log("Triggering auto-call for COD order", settings);
+        //consolle.log("Triggering auto-call for COD order", settings);
         if (settings.orderConfirmEnabled) {
           const apiUrl = "https://obd-api.myoperator.co/obd-api-v1";
           const payload = {
@@ -615,9 +615,9 @@ class OrderService {
             number: "+91" + shippingAddress.phoneNumber, // fallback to shipping phone if user phone not present
             public_ivr_id: settings.myOperatorIvrId || "68b0383927f53564",
           };
-          console.log("User phone number:", user);
-          console.log("Shipping address phone number:", shippingAddress);
-          console.log("Auto-call payload:", payload);
+          //consolle.log("User phone number:", user);
+          //consolle.log("Shipping address phone number:", shippingAddress);
+          //consolle.log("Auto-call payload:", payload);
           // Use fetch or axios for HTTP request
           const res = await fetch(apiUrl, {
             method: "POST",
@@ -631,13 +631,13 @@ class OrderService {
           });
 
           const result = await res.json();
-          console.log("Auto-call API response:", result);
+          //consolle.log("Auto-call API response:", result);
           if (!result.success) {
-            console.error("Auto-call API failed:", result);
+            //consolle.error("Auto-call API failed:", result);
           }
         }
       } catch (err) {
-        console.error("Auto-call order confirm error:", err.message);
+        //consolle.error("Auto-call order confirm error:", err.message);
       }
 
       return {
@@ -656,9 +656,9 @@ class OrderService {
 
   async getUserOrders(request, conn) {
     try {
-      console.log("request user", request.user);
+      //consolle.log("request user", request.user);
       const userId = request.user?._id;
-      console.log("User ID:", userId);
+      //consolle.log("User ID:", userId);
       if (!userId) {
         throw new Error("User authentication required");
       }
@@ -804,14 +804,14 @@ class OrderService {
 
   // Fetch DTDC services
   async getDtdcServices(order) {
-    console.log("order in dtdc ====>", order);
+    //consolle.log("order in dtdc ====>", order);
     if (!order?.data?.shippingAddress?.postalCode) {
       throw new Error("Shipping address or postal code is missing");
     }
-    console.log(
-      "Fetching DTDC services for order:",
-      order.data.shippingAddress.postalCode
-    );
+    //consolle.log(
+    //   "Fetching DTDC services for order:",
+    //   order.data.shippingAddress.postalCode
+    // );
     const originPincode = "110001";
     const destinationPincode = order?.data?.shippingAddress?.postalCode; // replace if needed
 
@@ -819,10 +819,10 @@ class OrderService {
       "http://smarttrack.ctbsplus.dtdc.com/ratecalapi/PincodeApiCall",
       { orgPincode: originPincode, desPincode: destinationPincode }
     );
-    // console.log('DTDC response:', resp.data);
+    // //consolle.log('DTDC response:', resp.data);
 
     const services = resp.data.SERV_LIST_DTLS || [];
-    // console.log('Services:', services);
+    // //consolle.log('Services:', services);
     return services.map((s) => ({
       code: s.CODE,
       name: s.NAME,
@@ -833,10 +833,10 @@ class OrderService {
 
   // Fetch Delhivery services
   async getDtdcServices(order) {
-    console.log(
-      "Fetching DTDC services for order:",
-      order?.data?.shippingAddress?.postalCode
-    );
+    //consolle.log(
+    //   "Fetching DTDC services for order:",
+    //   order?.data?.shippingAddress?.postalCode
+    // );
     const originPincode = "110001";
     const destinationPincode = order?.data?.shippingAddress.postalCode; // replace if needed
 
@@ -844,10 +844,10 @@ class OrderService {
       "http://smarttrack.ctbsplus.dtdc.com/ratecalapi/PincodeApiCall",
       { orgPincode: originPincode, desPincode: destinationPincode }
     );
-    // console.log('DTDC response:', resp.data);
+    // //consolle.log('DTDC response:', resp.data);
 
     const services = resp.data.SERV_LIST_DTLS || [];
-    // console.log('Services:', services);
+    // //consolle.log('Services:', services);
     return services.map((s) => ({
       code: s.CODE,
       name: s.NAME,
@@ -900,7 +900,7 @@ class OrderService {
         priority: 0,
       }));
     } catch (error) {
-      console.error("Bluedart service fetch error:", error.message);
+      //consolle.error("Bluedart service fetch error:", error.message);
       return [];
     }
   }
@@ -941,8 +941,8 @@ class OrderService {
       ),
     ]);
 
-    console.log("Delhivery origin response:", originResp);
-    console.log("Delhivery destination response:", destResp);
+    //consolle.log("Delhivery origin response:", originResp);
+    //consolle.log("Delhivery destination response:", destResp);
 
     const serviceable =
       originResp.data.success &&
@@ -989,7 +989,7 @@ class OrderService {
         "items.variant",
         "user",
       ]);
-      console.log("Orders for tracking fetched:", orders.length);
+      //consolle.log("Orders for tracking fetched:", orders.length);
       return {
         success: true,
         message: "All orders for tracking fetched successfully",
@@ -1112,7 +1112,7 @@ class OrderService {
       responseType: "arraybuffer", // PDF stream
     });
 
-    // console.log("DTDC label response status:", res.data);
+    // //consolle.log("DTDC label response status:", res.data);
 
     const labelDir = path.join(process.cwd(), "public/labels");
     if (!fs.existsSync(labelDir)) fs.mkdirSync(labelDir, { recursive: true });
@@ -1149,7 +1149,7 @@ class OrderService {
 
   async generateDelhiveryLabel(order) {
     try {
-      console.log("=== DELHIVERY LABEL GENERATION DEBUG ===");
+      //consolle.log("=== DELHIVERY LABEL GENERATION DEBUG ===");
 
       // --- 1️⃣ Collect all waybills dynamically from order ---
       let waybills = [];
@@ -1163,7 +1163,7 @@ class OrderService {
         waybills.push(...packageWaybills);
       }
       waybills = [...new Set(waybills)];
-      console.log("Found waybills:", waybills);
+      //consolle.log("Found waybills:", waybills);
 
       if (!waybills.length) throw new Error("No waybill numbers found");
 
@@ -1172,20 +1172,20 @@ class OrderService {
 
       // --- 2️⃣ Fetch packing slip metadata (NOT PDF) ---
       const slipApi = `https://track.delhivery.com/api/p/packing_slip?wbns=${joined}&pdf=true&pdf_size=A6`;
-      console.log("Fetching packing slip metadata:", slipApi);
+      //consolle.log("Fetching packing slip metadata:", slipApi);
 
       const res = await axios.get(slipApi, {
         headers: { Authorization: `Token ${token}` },
       });
 
-      console.log("Packing slip API response status:", res);
+      //consolle.log("Packing slip API response status:", res);
 
       if (res.status !== 200 || !res.data) {
         throw new Error("Failed to fetch packing slip data");
       }
 
       // --- 3️⃣ Log full response to see structure ---
-      console.log("Full API response:", JSON.stringify(res.data, null, 2));
+      //consolle.log("Full API response:", JSON.stringify(res.data, null, 2));
 
       // --- 4️⃣ Extract packages ---
       const packages = res.data.packages || [];
@@ -1193,7 +1193,7 @@ class OrderService {
         throw new Error("No packages found in response");
       }
 
-      console.log("Packages data:", JSON.stringify(packages, null, 2));
+      //consolle.log("Packages data:", JSON.stringify(packages, null, 2));
 
       // --- 5️⃣ Collect all PDF links ---
       const pdfLinks = packages
@@ -1204,7 +1204,7 @@ class OrderService {
         throw new Error("No PDF download links found in packages");
       }
 
-      console.log("✅ PDF download links obtained:", pdfLinks);
+      //consolle.log("✅ PDF download links obtained:", pdfLinks);
 
       // --- 6️⃣ Update order with label URL ---
       const primaryLabelUrl = pdfLinks[0]; // Use first PDF link as primary
@@ -1218,7 +1218,7 @@ class OrderService {
         shipping_details: shippingDetails,
       });
 
-      console.log("✅ Order updated with label URL:", primaryLabelUrl);
+      //consolle.log("✅ Order updated with label URL:", primaryLabelUrl);
 
       // --- 7️⃣ Return the download link(s) ---
       return {
@@ -1234,8 +1234,8 @@ class OrderService {
         })),
       };
     } catch (error) {
-      console.error("❌ Delhivery label generation failed:", error.message);
-      console.error("Stack trace:", error.stack);
+      //consolle.error("❌ Delhivery label generation failed:", error.message);
+      //consolle.error("Stack trace:", error.stack);
       return {
         success: false,
         message: error.message,
@@ -1256,7 +1256,7 @@ class OrderService {
   //trackShipment
   async trackShipment(order, trackingNumber) {
     const courier = order?.shipping_details?.platform;
-    // console.log("Tracking shipment for courier:", courier);
+    // //consolle.log("Tracking shipment for courier:", courier);
     if (!courier) {
       throw new Error("Courier information missing in order");
     }
@@ -1277,7 +1277,7 @@ class OrderService {
 
   // DTDC tracking
   async trackDtdcShipment(order) {
-    // console.log("Tracking DTDC shipment for order:", order);
+    // //consolle.log("Tracking DTDC shipment for order:", order);
     // You should store DTDC tracking username/password in env
     const username = process.env.DTDC_TRACK_USERNAME;
     const password = process.env.DTDC_TRACK_PASSWORD;
@@ -1289,15 +1289,15 @@ class OrderService {
       throw new Error("Order missing DTDC reference number");
     }
 
-    // console.log("DTDC tracking reference number:", referenceNumber);
+    // //consolle.log("DTDC tracking reference number:", referenceNumber);
 
     // Step 1: Authenticate to get token
     const authUrl = `https://blktracksvc.dtdc.com/dtdc-api/api/dtdc/authenticate?username=${encodeURIComponent(
       username
     )}&password=${encodeURIComponent(password)}`;
-    // console.log("DTDC auth URL:", authUrl);
+    // //consolle.log("DTDC auth URL:", authUrl);
     const authResp = await axios.get(authUrl);
-    // console.log("DTDC auth response:", authResp.data);
+    // //consolle.log("DTDC auth response:", authResp.data);
     const token = process.env.DTDC_TRACK_TOKEN || authResp.data;
     if (!token) {
       throw new Error("Failed to get DTDC tracking token");
@@ -1403,7 +1403,7 @@ class OrderService {
       raw_response: trackResp.data,
     };
 
-    // console.log("DTDC tracking details to be saved:", shippingDetails);
+    // //consolle.log("DTDC tracking details to be saved:", shippingDetails);
 
     await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
     
@@ -1425,8 +1425,8 @@ class OrderService {
 
       const apiUrl = `https://track.delhivery.com/api/v1/packages/json/?waybill=${referenceNumber}`;
 
-      console.log("Fetching Delhivery tracking for waybill:", referenceNumber);
-console.log("Delhivery tracking API URL:", apiUrl);
+      //consolle.log("Fetching Delhivery tracking for waybill:", referenceNumber);
+//consolle.log("Delhivery tracking API URL:", apiUrl);
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
@@ -1526,7 +1526,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
         data: response.data,
       };
     } catch (error) {
-      console.error("Delhivery tracking failed:", error);
+      //consolle.error("Delhivery tracking failed:", error);
       return {
         success: false,
         message: `Delhivery tracking failed: ${error.message}`,
@@ -1550,7 +1550,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
 
   // ========== Build Common Helpers ========== //
   async buildProductDescription(order) {
-    console.log("Building product description for order:", order);
+    //consolle.log("Building product description for order:", order);
 
     return order?.items
       ?.map((i) => `${i.quantity}x ${i.product?.name || "Item"}`)
@@ -1558,7 +1558,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
   }
 
   async buildPiecesDetail(order) {
-    console.log(
+    //consolle.log(
       "Building pieces detail for order:",
       order.items.map((i) => ({
         description: i.product?.name || "Product",
@@ -1585,7 +1585,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
   // 📦 Create Delhivery Shipment (Supports MPS)
   async createDelhiveryShipment(order, shipping) {
     try {
-      console.log("Creating Delhivery shipment for order:", order);
+      //consolle.log("Creating Delhivery shipment for order:", order);
 
       const isCOD = order.paymentMode === "COD";
       const packageCount = order.items?.length > 1 ? order.items.length : 1;
@@ -1611,11 +1611,11 @@ console.log("Delhivery tracking API URL:", apiUrl);
       );
 
       const serviceData = serviceResp.data.delivery_codes?.[0]?.postal_code;
-      console.log(
-        "📦 Checking Delhivery serviceability for PIN:",
-        pin,
-        serviceData
-      );
+      //consolle.log(
+      //   "📦 Checking Delhivery serviceability for PIN:",
+      //   pin,
+      //   serviceData
+      // );
 
       if (!serviceData)
         throw new Error(`Invalid response received for PIN ${pin}`);
@@ -1711,10 +1711,10 @@ console.log("Delhivery tracking API URL:", apiUrl);
         }),
       };
 
-      console.log(
-        "🚚 Delhivery shipment payload:",
-        JSON.stringify(payload, null, 2)
-      );
+      //consolle.log(
+      //   "🚚 Delhivery shipment payload:",
+      //   JSON.stringify(payload, null, 2)
+      // );
 
       // --- 6️⃣ Create Shipment ---
       const res = await axios.post(
@@ -1728,7 +1728,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
         }
       );
 
-      console.log("📦 Delhivery shipment response:", res.data);
+      //consolle.log("📦 Delhivery shipment response:", res.data);
 
     // --- 7️⃣ Save Shipment Details ---
     if (res.data.success === true || res.data.package_count > 0) {
@@ -1757,7 +1757,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
         );
       }
     } catch (error) {
-      console.error("❌ Delhivery shipment creation failed:", error);
+      //consolle.error("❌ Delhivery shipment creation failed:", error);
       return {
         success: false,
         message: `Delhivery shipment creation failed: ${error.message}`,
@@ -1772,10 +1772,10 @@ console.log("Delhivery tracking API URL:", apiUrl);
       const response = await axios.get(
         `https://track.delhivery.com/waybill/api/bulk/json/?token=${process.env.DELHIVERY_API_TOKEN}&cl=BHARATGRAM%20B2C&count=${count}`
       );
-      console.log("🧾 Delhivery waybill response:", response.data);
+      //consolle.log("🧾 Delhivery waybill response:", response.data);
       return response.data;
     } catch (error) {
-      console.error("❌ Failed to get Delhivery waybill:", error.message);
+      //consolle.error("❌ Failed to get Delhivery waybill:", error.message);
       throw new Error(`Failed to get Delhivery waybill: ${error.message}`);
     }
   }
@@ -1789,7 +1789,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
   async createDtdcShipment(order, shipping) {
     // Build payload dynamically from order object
 
-    console.log("Creating DTDC shipment for order:", order);
+    //consolle.log("Creating DTDC shipment for order:", order);
 
     const isCOD = order.paymentMode === "COD";
     const origin = {
@@ -1861,8 +1861,8 @@ console.log("Delhivery tracking API URL:", apiUrl);
       ],
     };
 
-    // console.log("DTDC shipment payload:", payload);
-    // console.log("Using DTDC API Key:", process.env.DTDC_API_KEY);
+    // //consolle.log("DTDC shipment payload:", payload);
+    // //consolle.log("Using DTDC API Key:", process.env.DTDC_API_KEY);
 
     // Make API call
     const res = await axios.post(
@@ -1876,7 +1876,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
       }
     );
 
-    console.log("DTDC shipment response:", res.data);
+    //consolle.log("DTDC shipment response:", res.data);
 
     if (res.data.status == "OK" && res.data?.data?.[0]?.reference_number) {
       // Save shipping_details in order model
@@ -1886,7 +1886,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
         tracking_url: `https://www.dtdc.in/tracking?awb=${res.data?.data?.[0]?.reference_number}`,
         raw_response: res.data,
       };
-      // console.log("Shipping details to save:", shippingDetails);
+      // //consolle.log("Shipping details to save:", shippingDetails);
 
       //save to order
       await this.orderRepository.updateOrder(order._id, {
@@ -1900,7 +1900,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
 
     // Update order with shipping_details
 
-    // console.log("DTDC shipment response:", res.data);
+    // //consolle.log("DTDC shipment response:", res.data);
 
     // Return formatted response
     return {
@@ -1918,7 +1918,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
   // async createBluedartShipment(order, shipping) {
   //   try {
 
-  //     // console.log("Creating Bluedart shipment for order:",  process.env.BLUEDART_CLIENT_ID, process.env.BLUEDART_CLIENT_SECRET, order);
+  //     // //consolle.log("Creating Bluedart shipment for order:",  process.env.BLUEDART_CLIENT_ID, process.env.BLUEDART_CLIENT_SECRET, order);
 
   //     // Step 1: Generate authentication token using ClientID and clientSecret headers
   //     const tokenResp = await axios.get(
@@ -1932,16 +1932,16 @@ console.log("Delhivery tracking API URL:", apiUrl);
   //       }
   //     );
 
-  //     console.log('Bluedart token response status:', tokenResp.status);
-  //     console.log('Bluedart token response data:', tokenResp.data);
+  //     //consolle.log('Bluedart token response status:', tokenResp.status);
+  //     //consolle.log('Bluedart token response data:', tokenResp.data);
 
   //     if (!tokenResp.data?.JWTToken) {
-  //       console.error('Authentication failed - no JWT token in response');
+  //       //consolle.error('Authentication failed - no JWT token in response');
   //       throw new Error(`Failed to get Bluedart authentication token: ${JSON.stringify(tokenResp.data)}`);
   //     }
 
   //     const jwtToken = tokenResp.data.JWTToken;
-  //     console.log('Bluedart token generated successfully, length:', jwtToken.length);
+  //     //consolle.log('Bluedart token generated successfully, length:', jwtToken.length);
 
   //     // Step 2: Build waybill generation payload
   //     const origin = {
@@ -2030,7 +2030,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
   //       }
   //     };
 
-  //     console.log('Bluedart waybill payload:', JSON.stringify(waybillPayload, null, 2));
+  //     //consolle.log('Bluedart waybill payload:', JSON.stringify(waybillPayload, null, 2));
 
   //     // Step 3: Generate waybill
   //     let waybillResp;
@@ -2046,16 +2046,16 @@ console.log("Delhivery tracking API URL:", apiUrl);
   //         }
   //       );
   //     } catch (err) {
-  //       console.error('Bluedart waybill request failed:', err.message);
-  //       console.error('Request URL:', 'https://apigateway.bluedart.com/in/transportation/waybill/v1/GenerateWayBill');
-  //       console.error('Request payload:', JSON.stringify(waybillPayload, null, 2));
-  //       console.error('Request headers:', {
+  //       //consolle.error('Bluedart waybill request failed:', err.message);
+  //       //consolle.error('Request URL:', 'https://apigateway.bluedart.com/in/transportation/waybill/v1/GenerateWayBill');
+  //       //consolle.error('Request payload:', JSON.stringify(waybillPayload, null, 2));
+  //       //consolle.error('Request headers:', {
   //         'JWTToken': jwtToken ? 'Token present' : 'Token missing',
   //         'Content-Type': 'application/json'
   //       });
-  //       console.error('Response status:', err.response?.status);
-  //       console.error('Response headers:', err.response?.headers);
-  //       console.error('Response data:', JSON.stringify(err.response?.data, null, 2));
+  //       //consolle.error('Response status:', err.response?.status);
+  //       //consolle.error('Response headers:', err.response?.headers);
+  //       //consolle.error('Response data:', JSON.stringify(err.response?.data, null, 2));
 
   //       return {
   //         success: false,
@@ -2071,7 +2071,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
   //       };
   //     }
 
-  //     console.log('Bluedart waybill response:', waybillResp.data);
+  //     //consolle.log('Bluedart waybill response:', waybillResp.data);
 
   //     // Step 4: Process response and handle errors
   //     if (!waybillResp.data?.GenerateWayBillResult) {
@@ -2115,7 +2115,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
   //     }
 
   //   } catch (error) {
-  //     console.error("Bluedart shipment creation failed:", error);
+  //     //consolle.error("Bluedart shipment creation failed:", error);
 
   //     // Return structured error response
   //     return {
@@ -2151,7 +2151,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
       }
 
       const jwtToken = tokenResp.data.JWTToken;
-      console.log("Bluedart token generated successfully");
+      //consolle.log("Bluedart token generated successfully");
 
       // Step 2: Build waybill generation payload
       const origin = {
@@ -2280,14 +2280,14 @@ console.log("Delhivery tracking API URL:", apiUrl);
         },
       };
 
-      console.log(
-        "Bluedart waybill payload:",
-        JSON.stringify(waybillPayload, null, 2)
-      );
+      //consolle.log(
+      //   "Bluedart waybill payload:",
+      //   JSON.stringify(waybillPayload, null, 2)
+      // );
 
       // Step 3: Generate waybill
       let waybillResp;
-      console?.log("Sending Bluedart waybill request...", jwtToken);
+      //consolle?.log("Sending Bluedart waybill request...", jwtToken);
       try {
         waybillResp = await axios.post(
           "https://apigateway.bluedart.com/in/transportation/waybill/v1/GenerateWayBill",
@@ -2300,12 +2300,12 @@ console.log("Delhivery tracking API URL:", apiUrl);
           }
         );
       } catch (err) {
-        console.error("Bluedart waybill request failed:", err.message);
-        console.error("Response status:", err.response?.status);
-        console.error(
-          "Response data:",
-          JSON.stringify(err.response?.data, null, 2)
-        );
+        //consolle.error("Bluedart waybill request failed:", err.message);
+        //consolle.error("Response status:", err.response?.status);
+        //consolle.error(
+        //   "Response data:",
+        //   JSON.stringify(err.response?.data, null, 2)
+        // );
 
         return {
           success: false,
@@ -2322,7 +2322,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
         };
       }
 
-      console.log("Bluedart waybill response:", waybillResp.data);
+      //consolle.log("Bluedart waybill response:", waybillResp.data);
 
       // Step 4: Process response
       if (!waybillResp.data?.GenerateWayBillResult) {
@@ -2371,7 +2371,7 @@ console.log("Delhivery tracking API URL:", apiUrl);
         );
       }
     } catch (error) {
-      console.error("Bluedart shipment creation failed:", error);
+      //consolle.error("Bluedart shipment creation failed:", error);
 
       return {
         success: false,

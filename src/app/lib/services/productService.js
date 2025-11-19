@@ -120,9 +120,9 @@ class ProductService {
       }
 
       // Debug logging to help diagnose why price filters might not match
-      console.log("Price filter - minQuery:", minQuery, "maxQuery:", maxQuery);
-      console.log("Computed minVal:", minVal, "maxVal:", maxVal);
-      console.log("Variant filters:", JSON.stringify(variantFilters));
+      //consolle.log("Price filter - minQuery:", minQuery, "maxQuery:", maxQuery);
+      //consolle.log("Computed minVal:", minVal, "maxVal:", maxVal);
+      //consolle.log("Variant filters:", JSON.stringify(variantFilters));
 
       // Register Variant model for the tenant-specific connection
       const Variant =
@@ -130,10 +130,10 @@ class ProductService {
       const matchingVariants = await Variant.find(variantFilters).distinct(
         "productId"
       );
-      console.log(
-        "Matching variant productIds count:",
-        matchingVariants.length
-      );
+      //consolle.log(
+      //   "Matching variant productIds count:",
+      //   matchingVariants.length
+      // );
 
       // If there are no matching variants, enforce a clause that yields no products
       if (Array.isArray(matchingVariants) && matchingVariants.length > 0) {
@@ -169,7 +169,7 @@ class ProductService {
   }
 
   async getProductById(id, conn) {
-    console.log("Fetching product with ID:", id);
+    //consolle.log("Fetching product with ID:", id);
 
     if (!conn) throw new Error("Database connection is required");
     if (!conn.models || !conn.models.Product) {

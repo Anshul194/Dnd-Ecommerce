@@ -120,6 +120,6 @@ export default redisWrapper;
 
 // Legacy support - maintain compatibility with existing initRedis function
 export function initRedis() {
-  console.warn('⚠️ initRedis() is deprecated. Use redisWrapper directly for better control.');
+  //consolle.warn('⚠️ initRedis() is deprecated. Use redisWrapper directly for better control.');
   return redisWrapper.getClient();
 }

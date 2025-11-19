@@ -20,7 +20,7 @@ export async function POST(request) {
     }
     return NextResponse.json({ success: true, message: 'Subcategory created', data: result }, { status: 201 });
   } catch (err) {
-    console.error('POST /subcategory error:', err);
+    //consolle.error('POST /subcategory error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
   }
 }
@@ -42,7 +42,7 @@ export async function GET(request) {
     }
     return NextResponse.json({ success: true, message: 'Subcategories fetched', data: result }, { status: 200 });
   } catch (err) {
-    console.error('GET /subcategory error:', err);
+    //consolle.error('GET /subcategory error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }

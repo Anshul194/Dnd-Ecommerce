@@ -5,7 +5,7 @@ class WishlistController {
   async getWishlist(req, _res, _body, conn) {
     try {
       const userId = req.user._id;
-      console.log('Fetching wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
+      //consolle.log('Fetching wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
       const wishlist = await wishlistService.getWishlist(userId, conn);
       if (!wishlist) {
         return NextResponse.json({ user: userId, items: [] }, { status: 200 });
@@ -20,7 +20,7 @@ class WishlistController {
     try {
       const userId = req.user._id;
       const { product, variant } = body;
-      console.log('Adding item for user:', userId, 'Item:', { product, variant }, 'Connection:', conn.name || 'global mongoose');
+      //consolle.log('Adding item for user:', userId, 'Item:', { product, variant }, 'Connection:', conn.name || 'global mongoose');
       const wishlist = await wishlistService.addItem(userId, { product, variant }, conn);
       return NextResponse.json({ status : 'true', message: 'Item added to wishlist successfully', wishlist });
     } catch (err) {
@@ -32,7 +32,7 @@ class WishlistController {
     try {
       const userId = req.user._id;
       const { productId, variantId } = body;
-      console.log('Removing item for user:', userId, 'Product:', productId, 'Variant:', variantId, 'Connection:', conn.name || 'global mongoose');
+      //consolle.log('Removing item for user:', userId, 'Product:', productId, 'Variant:', variantId, 'Connection:', conn.name || 'global mongoose');
       const wishlist = await wishlistService.removeItem(userId, productId, variantId, conn);
       return NextResponse.json({ message: 'Item removed from wishlist successfully', wishlist });
     } catch (err) {
@@ -44,7 +44,7 @@ class WishlistController {
     try {
       const userId = req.user._id;
       const { items } = body;
-      console.log('Updating wishlist:', wishlistId, 'for user:', userId, 'Items:', JSON.stringify(items, null, 2), 'Connection:', conn.name || 'global mongoose');
+      //consolle.log('Updating wishlist:', wishlistId, 'for user:', userId, 'Items:', JSON.stringify(items, null, 2), 'Connection:', conn.name || 'global mongoose');
       const wishlist = await wishlistService.updateWishlistById(wishlistId, userId, items, conn);
       return NextResponse.json({ message: 'Wishlist updated successfully', wishlist });
     } catch (err) {
@@ -55,7 +55,7 @@ class WishlistController {
   async clearWishlist(req, _res, _body, conn) {
     try {
       const userId = req.user._id;
-      console.log('Clearing wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
+      //consolle.log('Clearing wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
       const wishlist = await wishlistService.clearWishlist(userId, conn);
       return NextResponse.json({ message: 'Wishlist cleared successfully', wishlist });
     } catch (err) {

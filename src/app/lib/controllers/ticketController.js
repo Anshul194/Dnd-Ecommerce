@@ -4,12 +4,12 @@ import { saveFile, validateImageFile } from '../../config/fileUpload.js';
 
 export async function createTicket(form, conn) {
   try {
-    console.log("Creating ticket with form data:", form);
+    //consolle.log("Creating ticket with form data:", form);
 
     let imageUrl = '';
     let thumbnailUrl = '';
     
-    console.log('Create Ticket form:', form);
+    //consolle.log('Create Ticket form:', form);
 
     const subject = form.get('subject');
     const description = form.get('description');
@@ -61,7 +61,7 @@ export async function createTicket(form, conn) {
     const ticket = await service.createTicket(value);
     return { status: 201, body: { success: true, message: 'Ticket created successfully', data: ticket } };
   } catch (err) {
-    console.error('Create Ticket Error:', err.message);
+    //consolle.error('Create Ticket Error:', err.message);
     return { status: 500, body: { success: false, message: 'Server error', data: null } };
   }
 }
@@ -79,7 +79,7 @@ export async function getAllTickets(req, conn) {
       },
     };
   } catch (err) {
-    console.error('Get All Tickets Error:', err.message);
+    //consolle.error('Get All Tickets Error:', err.message);
     return {
       status: 500,
       body: {
@@ -94,13 +94,13 @@ export async function getAllTickets(req, conn) {
 export async function getTicketById(id, conn) {
   try {
     const service = new TicketService(conn);
-    console.log(`Fetching ticket with ID: ${id}`);
+    //consolle.log(`Fetching ticket with ID: ${id}`);
     
     const ticket = await service.getTicketById(id);
     if (!ticket) return { status: 404, body: { success: false, message: 'Ticket not found', data: null } };
     return { status: 200, body: { success: true, message: 'Ticket found', data: ticket } };
   } catch (err) {
-    console.error('Get Ticket Error:', err.message);
+    //consolle.error('Get Ticket Error:', err.message);
     return { status: 500, body: { success: false, message: 'Server error', data: null } };
   }
 }
@@ -148,7 +148,7 @@ export async function updateTicket(id, data, conn) {
     };
   } catch (err) {
     // Catch and log any unexpected server error
-    console.error('Update Ticket Error:', err.message);
+    //consolle.error('Update Ticket Error:', err.message);
     return {
       status: 500,
       body: {
@@ -163,7 +163,7 @@ export async function updateTicket(id, data, conn) {
 // 🆕 Updated replyToTicket function with image support
 export async function replyToTicket(id, data, conn) {
   try {
-    console.log('Reply data received:', data);
+    //consolle.log('Reply data received:', data);
 
     // Process attachments if they exist
     const processedAttachments = [];
@@ -179,9 +179,9 @@ export async function replyToTicket(id, data, conn) {
             const fileUrl = await saveFile(attachment, 'reply-attachments');
             processedAttachments.push(fileUrl);
             
-            console.log('Reply attachment saved:', fileUrl);
+            //consolle.log('Reply attachment saved:', fileUrl);
           } catch (fileError) {
-            console.error('Reply attachment upload error:', fileError.message);
+            //consolle.error('Reply attachment upload error:', fileError.message);
             return {
               status: 400,
               body: { 
@@ -207,7 +207,7 @@ export async function replyToTicket(id, data, conn) {
       repliedAt: new Date()
     };
 
-    console.log('Final reply data:', replyData);
+    //consolle.log('Final reply data:', replyData);
 
     // Validate the reply data
     const { error } = ticketReplyValidator.validate(replyData);
@@ -230,7 +230,7 @@ export async function replyToTicket(id, data, conn) {
       },
     };
   } catch (err) {
-    console.error('Reply to Ticket Error:', err.message);
+    //consolle.error('Reply to Ticket Error:', err.message);
     return {
       status: 500,
       body: { success: false, message: 'Server error', data: null },
@@ -245,7 +245,7 @@ export async function deleteTicket(id, conn) {
     if (!deleted) return { status: 404, body: { success: false, message: 'Ticket not found', data: null } };
     return { status: 200, body: { success: true, message: 'Ticket deleted successfully', data: deleted } };
   } catch (err) {
-    console.error('Delete Ticket Error:', err.message);
+    //consolle.error('Delete Ticket Error:', err.message);
     return { status: 500, body: { success: false, message: 'Server error', data: null } };
   }
 }
@@ -266,7 +266,7 @@ export async function getTicketsByCustomer(customerId, conn, query = {}) {
       },
     };
   } catch (err) {
-    console.error('Get Tickets by Customer Error:', err.message);
+    //consolle.error('Get Tickets by Customer Error:', err.message);
     return {
       status: 500,
       body: { success: false, message: 'Server error', data: null },

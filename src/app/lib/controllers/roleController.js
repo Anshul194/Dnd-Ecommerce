@@ -42,7 +42,7 @@ export async function createRole(form, currentUser, conn) {
             body: successResponse("Role created", newRole),
         };
     } catch (err) {
-        console.error('Create Role error:', err.message);
+        //consolle.error('Create Role error:', err.message);
         return {
             status: 500,
             body: errorResponse('Server error', 500),
@@ -61,7 +61,7 @@ export async function getRoles(query, conn) {
             body: successResponse("Roles fetched successfully", data),
         };
     } catch (err) {
-        console.error('Get Roles error:', err);
+        //consolle.error('Get Roles error:', err);
         return {
             status: 500,
             body: errorResponse('Server error', 500),
@@ -86,7 +86,7 @@ export async function getRoleById(id, conn) {
             body: successResponse("Role fetched", role),
         };
     } catch (err) {
-        console.error('Get Role error:', err.message);
+        //consolle.error('Get Role error:', err.message);
         return {
             status: 500,
             body: errorResponse('Server error', 500),
@@ -112,7 +112,7 @@ export async function updateRole(id, data, currentUser = null, conn) {
             body: successResponse("Role updated", updated),
         };
     } catch (err) {
-        console.error('Update Role error:', err.message);
+        //consolle.error('Update Role error:', err.message);
         return {
             status: 500,
             body: errorResponse('Server error', 500),
@@ -137,7 +137,7 @@ export async function deleteRole(id, conn) {
             body: successResponse("Role deleted", deleted),
         };
     } catch (err) {
-        console.error('Delete Role error:', err.message);
+        //consolle.error('Delete Role error:', err.message);
         return {
             status: 500,
             body: errorResponse('Server error', 500),

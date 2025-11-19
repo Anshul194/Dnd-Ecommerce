@@ -11,7 +11,7 @@ class AttributeService {
 
   async getAllAttributes(query = {}) {
     // Support pagination, filtering, search, and sorting
-    console.log("Query Parameters attribute: ==>", query);
+    //consolle.log("Query Parameters attribute: ==>", query);
     const {
       page = 1,
       limit = 10,
@@ -41,22 +41,22 @@ class AttributeService {
           ? JSON.parse(selectFields)
           : selectFields || {};
     } catch (err) {
-      console.warn(
-        "Invalid selectFields JSON provided to getAllAttributes:",
-        err.message
-      );
+      //consolle.warn(
+      //   "Invalid selectFields JSON provided to getAllAttributes:",
+      //   err.message
+      // );
       parsedSelectFields = {};
     }
 
-    console.log("requestes ==> ", {
-      page,
-      limit,
-      filters,
-      searchFields,
-      sort,
-      populateFields,
-      selectFields,
-    });
+    //consolle.log("requestes ==> ", {
+    //   page,
+    //   limit,
+    //   filters,
+    //   searchFields,
+    //   sort,
+    //   populateFields,
+    //   selectFields,
+    // });
     // Build filter conditions
     const filterConditions = { deletedAt: null };
 
@@ -73,7 +73,7 @@ class AttributeService {
         ? parsedSelectFields
         : parsedSearchFields;
 
-    console.log("parsedSearchFields ", parsedSearchFields);
+    //consolle.log("parsedSearchFields ", parsedSearchFields);
     for (const [field, term] of Object.entries(effectiveSearchFields || {})) {
       if (term !== undefined && term !== null && term !== "") {
         // Only treat string/primitive values as search terms

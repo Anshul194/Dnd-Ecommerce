@@ -21,7 +21,7 @@ export const POST = withSuperAdminOrRoleAdminAuth(async function(request) {
         const result = await createRole(body, request.user, conn);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
-        console.error('POST /role error:', err);
+        //consolle.error('POST /role error:', err);
         return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
     }
 });
@@ -44,7 +44,7 @@ export async function GET(request) {
             return NextResponse.json(result.body, { status: result.status });
         }
     } catch (err) {
-        console.error('GET /role error:', err);
+        //consolle.error('GET /role error:', err);
         return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
     }
 }
@@ -63,7 +63,7 @@ export const PUT = withSuperAdminOrRoleAdminAuth(async function(request) {
         const result = await updateRole(id, body, request.user, conn);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
-        console.error('PUT /role error:', err);
+        //consolle.error('PUT /role error:', err);
         return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
     }
 });
@@ -80,7 +80,7 @@ export async function DELETE(request) {
         const result = await deleteRole(id, conn);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
-        console.error('DELETE /role error:', err);
+        //consolle.error('DELETE /role error:', err);
         return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
     }
 }

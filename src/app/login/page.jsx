@@ -41,7 +41,7 @@ export function SignupPage() {
         router.push("/");
       }
     } catch (error) {
-      console.error("Login failed:", error);
+      //consolle.error("Login failed:", error);
       toast.error(error.message || "Login failed. Please try again.");
     }
   };

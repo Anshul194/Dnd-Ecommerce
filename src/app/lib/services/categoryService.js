@@ -12,25 +12,25 @@ class CategoryService {
 
   async getSubCategoriesByCategoryId(categoryId) {
     try {
-      console.log('Fetching subcategories for categoryId:', categoryId);
+      //consolle.log('Fetching subcategories for categoryId:', categoryId);
 
       if (!mongoose.Types.ObjectId.isValid(categoryId)) {
-        console.warn('Invalid categoryId:', categoryId);
+        //consolle.warn('Invalid categoryId:', categoryId);
         return errorResponse('Invalid categoryId', StatusCodes.BAD_REQUEST);
       }
 
       //   const subCategories = await SubCategory.find({ category: categoryId, deletedAt: null });
-      //   console.log('Subcategories found:', subCategories);
+      //   //consolle.log('Subcategories found:', subCategories);
       //   return successResponse(subCategories, 'Subcategories fetched', StatusCodes.OK);
     } catch (error) {
-      console.log('Error in getSubCategoriesByCategoryId:', error.message);
+      //consolle.log('Error in getSubCategoriesByCategoryId:', error.message);
       return errorResponse('Cannot fetch subcategories', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
 
   async getAllCategories(query) {
     try {
-      console.log("Query Parameters category:", query);
+      //consolle.log("Query Parameters category:", query);
       const { page = 1, limit = 10, filters = "{}", searchFields = "{}", sort = "{}" } = query;
 
       const pageNum = parseInt(page);
@@ -68,7 +68,7 @@ class CategoryService {
       const courseCategories = await this.categoryRepo.getAll(filterConditions, sortConditions, pageNum, limitNum);
       return successResponse(courseCategories, 'Categories fetched', StatusCodes.OK);
     } catch (error) {
-      console.log("error category", error.message);
+      //consolle.log("error category", error.message);
       return errorResponse("Cannot fetch data of all the courseCategories", StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
@@ -81,7 +81,7 @@ class CategoryService {
       }
       return successResponse(category, 'Category fetched', StatusCodes.OK);
     } catch (error) {
-      console.error('Error in getCategoryById:', error);
+      //consolle.error('Error in getCategoryById:', error);
       return errorResponse('Error fetching category', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
@@ -91,7 +91,7 @@ class CategoryService {
       const created = await this.categoryRepo.create(data);
       return successResponse(created, 'Category created', StatusCodes.CREATED);
     } catch (error) {
-      console.log('Error in createCategory:', error.message);
+      //consolle.log('Error in createCategory:', error.message);
       return errorResponse('Error creating category', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
@@ -104,35 +104,35 @@ class CategoryService {
       }
       return successResponse(found, 'Category found', StatusCodes.OK);
     } catch (error) {
-      console.error('Error in findByName:', error);
+      //consolle.error('Error in findByName:', error);
       return errorResponse('Error finding category', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
 
   async updateCategory(id, data) {
     try {
-      console.log('Service updateCategory called with:', id, data);
+      //consolle.log('Service updateCategory called with:', id, data);
       const updated = await this.categoryRepo.update(id, data);
       if (!updated) {
         return errorResponse('Category not found', StatusCodes.NOT_FOUND);
       }
       return successResponse(updated, 'Category updated', StatusCodes.OK);
     } catch (error) {
-      console.error('Error in updateCategory:', error);
+      //consolle.error('Error in updateCategory:', error);
       return errorResponse('Error updating category', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
 
   async deleteCategory(id) {
     try {
-      console.log('Service deleteCategory called with:', id);
+      //consolle.log('Service deleteCategory called with:', id);
       const deleted = await this.categoryRepo.softDelete(id);
       if (!deleted) {
         return errorResponse('Category not found', StatusCodes.NOT_FOUND);
       }
       return successResponse(deleted, 'Category deleted', StatusCodes.OK);
     } catch (error) {
-      console.error('Error in deleteCategory:', error);
+      //consolle.error('Error in deleteCategory:', error);
       return errorResponse('Error deleting category', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }

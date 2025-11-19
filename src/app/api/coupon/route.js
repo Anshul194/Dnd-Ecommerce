@@ -11,7 +11,7 @@ import dbConnect from '../../connection/dbConnect';
 export async function GET(req) {
   const searchParams = req.nextUrl.searchParams;
   const query = Object.fromEntries(searchParams.entries());
-  console.log('Route received query:', query);
+  //consolle.log('Route received query:', query);
 
   try {
     const subdomain = getSubdomain(req);
@@ -26,7 +26,7 @@ export async function GET(req) {
     const coupons = await couponController.getAll(query, conn);
     return NextResponse.json({ success: true, coupons });
   } catch (error) {
-    console.error('Route GET error:', error.message);
+    //consolle.error('Route GET error:', error.message);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
@@ -34,7 +34,7 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    console.log('Route received body:', body);
+    //consolle.log('Route received body:', body);
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
@@ -50,7 +50,7 @@ export async function POST(req) {
     }
     return NextResponse.json({ success: true, coupon: result.data }, { status: 201 });
   } catch (error) {
-    console.error('Route POST error:', error.message);
+    //consolle.error('Route POST error:', error.message);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }

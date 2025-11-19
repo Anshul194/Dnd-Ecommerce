@@ -8,20 +8,20 @@ export default class ReviewRepository {
     this.Review =
       this.connection.models.Review ||
       this.connection.model("Review", ReviewSchema);
-    console.log(
-      "ReviewRepository initialized with connection:",
-      this.connection
-        ? this.connection.name || "global mongoose"
-        : "no connection"
-    );
+    //consolle.log(
+    //   "ReviewRepository initialized with connection:",
+    //   this.connection
+    //     ? this.connection.name || "global mongoose"
+    //     : "no connection"
+    // );
   }
 
   async create(data) {
     try {
-      console.log("Creating review with data:", JSON.stringify(data, null, 2));
+      //consolle.log("Creating review with data:", JSON.stringify(data, null, 2));
       return await this.Review.create(data);
     } catch (error) {
-      console.error("ReviewRepository Create Error:", error.message);
+      //consolle.error("ReviewRepository Create Error:", error.message);
       throw error;
     }
   }
@@ -41,7 +41,7 @@ export default class ReviewRepository {
       }
       return review;
     } catch (error) {
-      console.error("ReviewRepository findById Error:", error.message);
+      //consolle.error("ReviewRepository findById Error:", error.message);
       throw error;
     }
   }
@@ -56,19 +56,19 @@ export default class ReviewRepository {
 
       const hasProductModel =
         conn.models.User || conn.model("User", UserSchema);
-      console.log("hasProductModel:", hasProductModel);
+      //consolle.log("hasProductModel:", hasProductModel);
       if (hasProductModel) {
-        console.log("if -->");
+        //consolle.log("if -->");
         populatedFaq = await this.Review.find({ productId }).populate("userId");
       } else {
-        console.log("else -->");
+        //consolle.log("else -->");
         populatedFaq = await this.Review.find({ productId });
       }
 
-      console.log(
-        "ReviewRepository findByProductId - populatedFaq:",
-        populatedFaq
-      );
+      //consolle.log(
+      //   "ReviewRepository findByProductId - populatedFaq:",
+      //   populatedFaq
+      // );
 
       const data = await this.Review.find({ productId })
         .populate("userId")
@@ -218,10 +218,10 @@ export default class ReviewRepository {
           likeCount: review.likes ? review.likes.length : 0,
         })),
       };
-      console.log("ReviewRepository findByProductId Response:", response);
+      //consolle.log("ReviewRepository findByProductId Response:", response);
       return response;
     } catch (error) {
-      console.error("ReviewRepository findByProductId Error:", error.message);
+      //consolle.error("ReviewRepository findByProductId Error:", error.message);
       throw error;
     }
   }
@@ -239,7 +239,7 @@ export default class ReviewRepository {
       }
       return review;
     } catch (error) {
-      console.error("ReviewRepository update Error:", error.message);
+      //consolle.error("ReviewRepository update Error:", error.message);
       throw error;
     }
   }
@@ -255,7 +255,7 @@ export default class ReviewRepository {
       }
       return true;
     } catch (error) {
-      console.error("ReviewRepository delete Error:", error.message);
+      //consolle.error("ReviewRepository delete Error:", error.message);
       throw error;
     }
   }
@@ -293,7 +293,7 @@ export default class ReviewRepository {
         likeCount: review.likes.length,
       };
     } catch (error) {
-      console.error("ReviewRepository voteReview Error:", error.message);
+      //consolle.error("ReviewRepository voteReview Error:", error.message);
       throw error;
     }
   }

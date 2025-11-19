@@ -91,7 +91,7 @@ export async function handleGetBlogs(query, conn) {
     }
 
     var result = await repo.getAll(filterConditions, sortCon, pageNum, limitNum);
-    console.log('result', result);
+    //consolle.log('result', result);
   
     return result;
   } catch (err) {

@@ -20,15 +20,15 @@ export async function DELETE(req, { params }) {
     const type = url.searchParams.get("type"); // should be 'images' only
     const variantId = url.searchParams.get("variantId");
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
-    console.log(
-      "Attempting to delete variant image at index:",
-      index,
-      "from:",
-      type,
-      "variantId:",
-      variantId
-    );
+    // console.log("Subdomain:", subdomain);
+    // console.log(
+    //   "Attempting to delete variant image at index:",
+    //   index,
+    //   "from:",
+    //   type,
+    //   "variantId:",
+    //   variantId
+    // );
 
     if (isNaN(index) || index < 0) {
       return NextResponse.json(
@@ -117,7 +117,7 @@ export async function DELETE(req, { params }) {
       }
     );
   } catch (error) {
-    console.error("DELETE variant image error:", error);
+    // console.error("DELETE variant image error:", error);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }

@@ -70,7 +70,7 @@ export async function createSubCategory(form, conn) {
     });
 
     if (error) {
-      console.error("🚫 Validation failed:", error.details);
+      //consolle.error("🚫 Validation failed:", error.details);
       return {
         status: 400,
         body: errorResponse('Validation error', 400, error.details),
@@ -80,7 +80,7 @@ export async function createSubCategory(form, conn) {
     const newSubCategory = await subCategoryService.createSubCategory(value);
     return newSubCategory;
   } catch (err) {
-    console.log('Create Subcategory error:', err.message);
+    //consolle.log('Create Subcategory error:', err.message);
     return {
       status: 500,
       body: errorResponse('Server error', 500),
@@ -95,7 +95,7 @@ export async function getSubCategories(query, conn) {
     const result = await subCategoryService.getAllSubCategories(query);
     return result;
   } catch (err) {
-    console.error('Get Subcategories error:', err.message);
+    //consolle.error('Get Subcategories error:', err.message);
     return {
       status: 500,
       body: errorResponse('Server error', 500),
@@ -110,7 +110,7 @@ export async function getSubCategoryById(id, conn) {
     const subCategory = await subCategoryService.getSubCategoryById(id);
     return subCategory;
   } catch (err) {
-    console.error('Get Subcategory error:', err.message);
+    //consolle.error('Get Subcategory error:', err.message);
     return {
       status: 500,
       body: { success: false, message: 'Server error' },
@@ -147,7 +147,7 @@ export async function updateSubCategory(id, data, conn) {
     const updated = await subCategoryService.updateSubCategory(id, value);
     return updated;
   } catch (err) {
-    console.error('Update Subcategory error:', err.message);
+    //consolle.error('Update Subcategory error:', err.message);
     return {
       status: 500,
       body: { success: false, message: 'Server error' },
@@ -162,7 +162,7 @@ export async function deleteSubCategory(id, conn) {
     const deleted = await subCategoryService.deleteSubCategory(id);
     return deleted;
   } catch (err) {
-    console.error('Delete Subcategory error:', err.message);
+    //consolle.error('Delete Subcategory error:', err.message);
     return {
       status: 500,
       body: { success: false, message: 'Server error' },

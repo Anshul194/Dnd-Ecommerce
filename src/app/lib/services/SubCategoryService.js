@@ -18,7 +18,7 @@ class SubCategoryService {
       const subCategories = await this.subCategoryRepo.findByParentCategory(categoryId);
       return successResponse(subCategories, 'Subcategories fetched', StatusCodes.OK);
     } catch (error) {
-      console.error('Error in getSubCategoriesByParentCategoryId:', error.message);
+      //consolle.error('Error in getSubCategoriesByParentCategoryId:', error.message);
       return errorResponse('Cannot fetch subcategories', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
@@ -55,7 +55,7 @@ class SubCategoryService {
       const subCategories = await this.subCategoryRepo.getAll(filterConditions, sortConditions, pageNum, limitNum);
       return successResponse(subCategories, 'Subcategories fetched', StatusCodes.OK);
     } catch (error) {
-      console.error("Error fetching all subcategories:", error.message);
+      //consolle.error("Error fetching all subcategories:", error.message);
       return errorResponse("Cannot fetch subcategory data", StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
@@ -68,7 +68,7 @@ class SubCategoryService {
       }
       return successResponse(subCategory, 'Subcategory fetched', StatusCodes.OK);
     } catch (error) {
-      console.error('Error in getSubCategoryById:', error);
+      //consolle.error('Error in getSubCategoryById:', error);
       return errorResponse('Error fetching subcategory', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
@@ -78,7 +78,7 @@ class SubCategoryService {
       const created = await this.subCategoryRepo.create(data);
       return successResponse(created, 'Subcategory created', StatusCodes.CREATED);
     } catch (error) {
-      console.error('Error in createSubCategory:', error.message);
+      //consolle.error('Error in createSubCategory:', error.message);
       return errorResponse('Error creating subcategory', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
@@ -91,7 +91,7 @@ class SubCategoryService {
       }
       return successResponse(found, 'Subcategory found', StatusCodes.OK);
     } catch (error) {
-      console.error('Error in findByName:', error);
+      //consolle.error('Error in findByName:', error);
       return errorResponse('Error finding subcategory', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
@@ -104,7 +104,7 @@ class SubCategoryService {
       }
       return successResponse(updated, 'Subcategory updated', StatusCodes.OK);
     } catch (error) {
-      console.error('Error in updateSubCategory:', error);
+      //consolle.error('Error in updateSubCategory:', error);
       return errorResponse('Error updating subcategory', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }
@@ -117,7 +117,7 @@ class SubCategoryService {
       }
       return successResponse(deleted, 'Subcategory deleted', StatusCodes.OK);
     } catch (error) {
-      console.error('Error in deleteSubCategory:', error);
+      //consolle.error('Error in deleteSubCategory:', error);
       return errorResponse('Error deleting subcategory', StatusCodes.INTERNAL_SERVER_ERROR, error.message);
     }
   }

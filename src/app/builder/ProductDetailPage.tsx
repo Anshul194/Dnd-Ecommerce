@@ -48,23 +48,23 @@ export default function ProductDetailPage() {
       const response = await dispatch(
         fetchProductById("vedicroots-ginger-green-tea")
       );
-      console.log("Fetched Product Data:", response.payload);
+      //consolle.log("Fetched Product Data:", response.payload);
       setProduct(response.payload);
     } catch (error) {
-      console.error("Error fetching product data:", error);
+      //consolle.error("Error fetching product data:", error);
     }
   }, [dispatch]);
 
   // Function to transform template data to sections format
   const transformTemplateToSections = useCallback((template) => {
-    console.log("transformTemplateToSections called with:", template);
+    //consolle.log("transformTemplateToSections called with:", template);
 
     if (!template || !template.columns) {
-      console.error("Invalid template data:", template);
+      //consolle.error("Invalid template data:", template);
       return;
     }
 
-    console.log("Template has", template.columns.length, "columns");
+    //consolle.log("Template has", template.columns.length, "columns");
 
     // Helper function to map template component types to existing component types
     const mapTemplateComponentType = (templateType) => {
@@ -148,7 +148,7 @@ export default function ProductDetailPage() {
       })),
     };
 
-    console.log("New section created:", newSection);
+    //consolle.log("New section created:", newSection);
     setSections([newSection]);
 
     // Set component settings based on template
@@ -162,7 +162,7 @@ export default function ProductDetailPage() {
         };
       });
     });
-    console.log("New component settings:", newComponentSettings);
+    //consolle.log("New component settings:", newComponentSettings);
     setComponentSettings(newComponentSettings);
   }, []);
 
@@ -249,7 +249,7 @@ export default function ProductDetailPage() {
       ],
     };
 
-    console.log("Loading mock template data:", mockTemplateData);
+    //consolle.log("Loading mock template data:", mockTemplateData);
     setTemplateData(mockTemplateData);
     transformTemplateToSections(mockTemplateData);
   }, [transformTemplateToSections]);
@@ -264,7 +264,7 @@ export default function ProductDetailPage() {
           throw new Error(`Failed to fetch template: ${response.statusText}`);
         }
         const templateData = await response.json();
-        console.log("Fetched Template Data:", templateData);
+        //consolle.log("Fetched Template Data:", templateData);
         setTemplateData(templateData);
 
         // Check if templateData has the expected structure
@@ -273,10 +273,10 @@ export default function ProductDetailPage() {
         } else if (templateData) {
           transformTemplateToSections(templateData);
         } else {
-          console.error("Template data is null or undefined");
+          //consolle.error("Template data is null or undefined");
         }
       } catch (error) {
-        console.error("Error fetching template data:", error);
+        //consolle.error("Error fetching template data:", error);
         // Load mock template if API fails
         loadMockTemplate();
       } finally {

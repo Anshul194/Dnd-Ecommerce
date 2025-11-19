@@ -20,7 +20,7 @@ export async function GET(req, { params }) {
     }
     return NextResponse.json({ success: true, message: 'Subcategories fetched', data: result }, { status: 200 });
   } catch (err) {
-    console.error('GET /subcategory/category/[categoryId] error:', err);
+    //consolle.error('GET /subcategory/category/[categoryId] error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }

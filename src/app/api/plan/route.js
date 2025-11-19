@@ -15,7 +15,7 @@ try {
     const result = await createPlan(body);
     return NextResponse.json(result.body, { status: result.status });
 } catch (err) {
-    console.error('POST /plan error:', err);
+    //consolle.error('POST /plan error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
 }
 }
@@ -34,7 +34,7 @@ try {
         return NextResponse.json(result.body, { status: result.status });
     }
 } catch (err) {
-    console.error('GET /plan error:', err);
+    //consolle.error('GET /plan error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
 }
 }
@@ -48,7 +48,7 @@ try {
     const result = await updatePlan(id, body);
     return NextResponse.json(result.body, { status: result.status });
 } catch (err) {
-    console.error('PUT /plan error:', err);
+    //consolle.error('PUT /plan error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
 }
 }
@@ -61,7 +61,7 @@ try {
     const result = await deletePlan(id);
     return NextResponse.json(result.body, { status: result.status });
 } catch (err) {
-    console.error('DELETE /plan error:', err);
+    //consolle.error('DELETE /plan error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
 }
 }

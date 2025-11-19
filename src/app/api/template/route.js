@@ -27,7 +27,7 @@ export async function POST(request) {
     const result = await createTemplate(body, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error("POST /template error:", err);
+    //consolle.error("POST /template error:", err);
     return NextResponse.json(
       { success: false, message: "Invalid request" },
       { status: 400 }
@@ -51,7 +51,7 @@ export async function GET(request) {
     const id = searchParams.get("id");
     const productId = searchParams.get("productId");
 
-    console.log("GET /template id:", id, "productId:", productId);
+    //consolle.log("GET /template id:", id, "productId:", productId);
 
     if (id) {
       const result = await getTemplateById(id, conn);
@@ -63,7 +63,7 @@ export async function GET(request) {
       const query = Object.fromEntries(searchParams.entries());
       const templateService = new TemplateService(conn);
       const result = await templateService.getAllTemplates(query);
-      console.log("GET /template result:", result);
+      //consolle.log("GET /template result:", result);
       return NextResponse.json({
         success: true,
         message: 'Templates fetched successfully',
@@ -71,8 +71,8 @@ export async function GET(request) {
       }, { status: 200 });
     }
   } catch (err) {
-    console.error("GET /template error:", err);
-    console.log("Error details:", err.message);
+    //consolle.error("GET /template error:", err);
+    //consolle.log("Error details:", err.message);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }
@@ -103,7 +103,7 @@ export async function PUT(request) {
     const result = await updateTemplate(id, body, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error("PUT /template error:", err);
+    //consolle.error("PUT /template error:", err);
     return NextResponse.json(
       { success: false, message: "Invalid request" },
       { status: 400 }
@@ -136,7 +136,7 @@ export async function DELETE(request) {
     const result = await deleteTemplate(id, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error("DELETE /template error:", err);
+    //consolle.error("DELETE /template error:", err);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
