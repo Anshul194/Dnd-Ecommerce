@@ -81,7 +81,7 @@ export default function FrequentlyPurchased() {
     <div className="py-10 lg:py-20 px-4">
       {/* Header Section */}
       <div className="mb-8">
-        <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0">
+        <h1 className="text-4xl md:text-5xl text-black bebas mb-4 md:mb-0">
           FREQUENTLY PURCHASED
         </h1>
         <p className="text-black max-w-xl relative poppins-medium leading-tight text-lg mb-8">

@@ -69,15 +69,15 @@ export default function ProductReview({ id }) {
   if (!data || !data.Reviews || data.Reviews.length === 0) return null;
 
   return (
-    <div className="py-10 lg:py-20 px-4">
+    <div className="px-4">
       <div className="flex justify-between flex-col md:flex-row gap-12">
         {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-12"> */}
         {/* Left Column */}
         <div className="max-w-2xl">
-          <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
+          <h1 className="text-4xl md:text-5xl text-black mb-4 md:mb-0 text-center font-black">
             PRODUCT REVIEW
           </h1>
-          <p className="text-black relative max-w-sm poppins-medium leading-tight text-lg mb-8">
+          <p className="text-black relative lg:max-w-[80%] mx-auto text-center poppins-medium leading-tight text-lg mb-8">
             Lorem ipsum dolor{" "}
             <span className="text font-semibold">consectetur</span> eiusmod
             tempor incididunt ut consectetur.

@@ -11,9 +11,9 @@ function Variant2() {
     return match ? match[1] : url;
   };
   return (
-    <div className="py-10 lg:py-10 ">
+    <div className="pt-10 lg:pt-10  ">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-10 md:mb-16 text-center">
+        <h1 className="text-4xl md:text-5xl text-black mb-8 text-center font-black">
           DESCRIPTION
         </h1>
         {/* Hero Video Section */}
@@ -39,7 +39,7 @@ function Variant2() {
         </div>
 
         {/* Masonry Style Image Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Large Image - Spans 2 columns */}
           <div className="col-span-2 row-span-2">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">

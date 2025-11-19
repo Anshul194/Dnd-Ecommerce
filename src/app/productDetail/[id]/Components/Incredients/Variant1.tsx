@@ -50,7 +50,7 @@ export default function RenderScrollingVariant() {
         <div className="flex flex-col space-y-8 flex-1">
           {/* Title */}
           <div className=" bg-white pb-4">
-            <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0">
+            <h1 className="text-4xl md:text-5xl text-black bebas mb-4 md:mb-0">
               INGREDIENTS
             </h1>
           </div>

@@ -17,6 +17,7 @@ import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { toast } from "react-toastify";
 import ProductCard from "@/app/search/ProductCard";
 import { useTrack } from "@/app/lib/tracking/useTrack";
+import AnimatedGradientBorder from "@/components/ui/AnimatedGradientBorder";
 
 const DynamicProductSlider = ({ content }) => {
   const { title, description, image } = content;
@@ -239,11 +240,12 @@ const DynamicProductSlider = ({ content }) => {
     <div className="flex relative flex-col gap-4 justify-between w-full h-fit py-20 px-4 lg:px-0">
       {/* Left Content - Dynamic from API */}
       <div className="flex-1 relative mb-8 lg:mb-0 lg:mr-8 z-20 text-center">
-        <h1 className="text-5xl w-full font-black text-gray-800 leading-tight mb-6">
+        <h1 className="text-4xl w-full font-black text-gray-800 leading-tight mb-2">
           {title}
         </h1>
+        <AnimatedGradientBorder />
         <div
-          className="text-gray-800 font-medium text-lg mt-2 lg:max-w-md mx-auto"
+          className="text-gray-800 font-medium text-lg mt-2 lg:max-w-[80%] mx-auto"
           dangerouslySetInnerHTML={{ __html: description }}
         />
       </div>
@@ -343,11 +345,12 @@ const DynamicProductSlider = ({ content }) => {
 
       <div className="mt-20">
         <div>
-          <h1 className="text-5xl w-full font-black text-gray-800 leading-tight mb-6 text-center">
+          <h1 className="text-3xl md:text-5xl w-full font-black text-gray-800 leading-tight mb-2 text-center">
             Story
           </h1>
+          <AnimatedGradientBorder />
         </div>
-        <div className="relative">
+        <div className="relative mt-5">
           {/* Left Arrow */}
           <button
             onClick={prevSlide}
@@ -417,7 +420,7 @@ const DynamicProductSlider = ({ content }) => {
                             {product?.storyVideoUrl.includes(".mp4") ? (
                               <video
                                 src={product?.storyVideoUrl}
-                                className="w-full h-full object-cover rounded-lg"
+                                className="w-full h-full object-cover rounded-2xl"
                                 // controls
                                 autoPlay
                                 muted
@@ -426,7 +429,7 @@ const DynamicProductSlider = ({ content }) => {
                               <img
                                 src={product?.storyVideoUrl}
                                 alt="Story Visual"
-                                className="w-full h-full object-cover rounded-lg"
+                                className="w-full h-full object-cover rounded-2xl"
                               />
                             )}
                             {/* Hover Overlay */}
@@ -501,7 +504,7 @@ const DynamicProductSlider = ({ content }) => {
                             {product?.storyVideoUrl.includes(".mp4") ? (
                               <video
                                 src={product?.storyVideoUrl}
-                                className="w-full h-full object-cover rounded-lg"
+                                className="w-full h-full object-cover rounded-2xl"
                                 // controls
                                 autoPlay
                                 muted
@@ -510,7 +513,7 @@ const DynamicProductSlider = ({ content }) => {
                               <img
                                 src={product?.storyVideoUrl}
                                 alt="Story Visual"
-                                className="w-full h-full object-cover rounded-lg"
+                                className="w-full h-full object-cover rounded-2xl"
                               />
                             )}
                             {/* Hover Overlay */}

@@ -6,6 +6,7 @@ import smile from "../../../public/images/smile.png";
 import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchFaqs } from "../../app/store/slices/faqSlice";
+import AnimatedGradientBorder from "../ui/AnimatedGradientBorder";
 
 export default function FAQAccordion({ content }) {
   const [openIndex, setOpenIndex] = useState(null);
@@ -27,7 +28,7 @@ export default function FAQAccordion({ content }) {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-7">
         {/* Left Section */}
         <div className="flex-1 w-full lg:w-1/2">
-          <h1 className="text-[56px] leading-none font-black text-black mb-5">
+          <h1 className="text-4xl md:text-5xl leading-none font-black text-black mb-2">
             {content?.title || "NO CONFUSION. JUST CLARITY."}
             <span className="relative">
               <Image
@@ -37,10 +38,11 @@ export default function FAQAccordion({ content }) {
               />
             </span>
           </h1>
+          <AnimatedGradientBorder align="left"/>
 
           {/* Green smiley face */}
 
-          <p className="text-black relative poppins-medium leading-tight text-lg ml-auto mb-8">
+          <p className="text-black relative poppins-medium leading-tight text-lg ml-auto mb-8 mt-5">
             {content?.description ||
               "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
           </p>

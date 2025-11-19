@@ -46,7 +46,7 @@ export default function PremiumIngredientsUI({ data }) {
   return (
     <div
       ref={sectionRef}
-      className="min-h-screen bg-white text-gray-900 py-16 px-4 md:px-8 overflow-hidden"
+      className="min-h-screen bg-white text-gray-900 px-4 md:px-8 overflow-hidden"
     >
       {/* Floating Background Elements */}
       <div className=" inset-0 pointer-events-none overflow-hidden">
@@ -65,7 +65,7 @@ export default function PremiumIngredientsUI({ data }) {
               </span>
             </div>
           </div>
-          <h1 className="text-6xl pb-2 md:text-8xl font-black mb-6 bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl pb-2 font-black bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 bg-clip-text text-transparent uppercase" style={{fontFamily: "Poppins, sans-serif" }} >
             Ingredients
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -148,7 +148,7 @@ export default function PremiumIngredientsUI({ data }) {
                         </div>
 
                         {/* Ingredient Name */}
-                        <h3 className="text-4xl font-black mb-3 text-gray-900">
+                        <h3 className="text-3xl md:text-4xl font-black mb-3 text-gray-900" style={{fontFamily: "Poppins, sans-serif" }}>
                           {ingredient.name}
                         </h3>
 

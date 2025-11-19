@@ -14,6 +14,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AnimatedGradientBorder from "@/components/ui/AnimatedGradientBorder";
 
 const Categories = ({ dynamicContent = null }) => {
   const { categories } = useSelector((state) => state.category);
@@ -70,10 +71,11 @@ const Categories = ({ dynamicContent = null }) => {
           />
         </div>
         <div className="flex-1 flex  flex-col relative mb-8 lg:mb-0 ">
-          <h1 className="text-4xl  md:text-5xl font-black text-gray-800 leading-tight mb-6 text-center">
+          <h1 className="text-4xl  md:text-5xl font-black text-gray-800 leading-tight mb-2 text-center">
             {dynamicContent?.title || "WHAT'S YOUR PICK?"}
           </h1>
-          <p className="text-black font-medium max-w-xl text-lg mt-2 m-auto text-center">
+          <AnimatedGradientBorder />
+          <p className="text-black font-medium lg:max-w-[80%] text-lg mt-2 m-auto text-center">
             {dynamicContent?.description ? (
               <span
                 dangerouslySetInnerHTML={{ __html: dynamicContent.description }}
@@ -115,12 +117,16 @@ const Categories = ({ dynamicContent = null }) => {
                   disableOnInteraction: false,
                 }}
                 breakpoints={{
-                  640: {
-                    slidesPerView: 2,
+                  0: {
+                    slidesPerView: 1,
                     spaceBetween: 2,
                   },
-                  768: {
-                    slidesPerView: 4,
+                  550: {
+                    slidesPerView: 2,
+                    spaceBetween: 16,
+                  },
+                  750: {
+                    slidesPerView: 3,
                     spaceBetween: 16,
                   },
                   1024: {
@@ -142,7 +148,7 @@ const Categories = ({ dynamicContent = null }) => {
                           height={100}
                           src={item?.thumbnail || "/placeholder.png"}
                           alt="Tea product"
-                          className="w-full h-full object-cover"
+                          className="w-full max-sm:h-[248px] sm:max-md:h-[248px] h-full md:object-cover"
                         />
                         <div className="bg text-white text-sm py-2 px-2 text-center flex items-center justify-center w-full font-medium">
                           {item?.name}

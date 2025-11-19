@@ -21,7 +21,7 @@ export default function BlogSection() {
         <div className="text-sm poppins text-gray-600 mb-2">Blogs</div>
 
         {/* Main Title */}
-        <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-5">
+        <h1 className="text-4xl md:text-5xl text-black bebas mb-5">
           Find Your Interesting One
         </h1>
 
