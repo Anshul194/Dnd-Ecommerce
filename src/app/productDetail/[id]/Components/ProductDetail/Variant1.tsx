@@ -10,6 +10,7 @@ import { ChevronDown, ShoppingCart, Star } from "lucide-react";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
 function Variant1() {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
@@ -19,6 +20,22 @@ function Variant1() {
   const [selectedVariant, setSelectedVariant] = React.useState<number>(
     productData?.variants[0]?._id || 0
   );
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const userId = useSelector((state) => state.auth.user?._id);
+
+  React.useEffect(() => {
+    if (productData?._id) {
+      try {
+        trackEvent("product_view", {
+          productId: productData._id,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {
+        /* non-blocking */
+      }
+    }
+  }, [productData?._id, isAuthenticated, userId]);
+
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
   };
@@ -60,6 +77,16 @@ function Variant1() {
         return;
       }
       await dispatch(getCartItems());
+      try {
+        trackEvent("add_to_cart", {
+          productId: productData._id,
+          variantId: selectedVariant,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {
+        /* non-blocking */
+      }
       dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -99,6 +126,16 @@ function Variant1() {
         return;
       }
       await dispatch(getCartItems());
+      try {
+        trackEvent("buy_now", {
+          productId: productData._id,
+          variantId: selectedVariant,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {
+        /* non-blocking */
+      }
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {

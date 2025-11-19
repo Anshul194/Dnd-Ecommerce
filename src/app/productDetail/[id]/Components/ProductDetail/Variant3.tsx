@@ -17,6 +17,7 @@ import {
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
 function Variant3() {
   const [expandedSection, setExpandedSection] =
@@ -29,6 +30,8 @@ function Variant3() {
   );
   const [showFixedBar, setShowFixedBar] = React.useState<boolean>(false);
   const actionButtonsRef = React.useRef<HTMLDivElement>(null);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const userId = useSelector((state) => state.auth.user?._id);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
@@ -46,6 +49,17 @@ function Variant3() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  React.useEffect(() => {
+    if (productData?._id) {
+      try {
+        trackEvent("product_view", {
+          productId: productData._id,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
+    }
+  }, [productData?._id, isAuthenticated, userId]);
 
   const handleQuantityChange = (delta: number) => {
     setQuantity(Math.max(1, quantity + delta));
@@ -75,6 +89,14 @@ function Variant3() {
         })
       );
       await dispatch(getCartItems());
+      try {
+        trackEvent("add_to_cart", {
+          productId: productData._id,
+          variantId: selectedVariant,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
       dispatch(toggleCart());
     } catch (error) {
       toast.error("Failed to add to cart");
@@ -105,6 +127,14 @@ function Variant3() {
         })
       );
       await dispatch(getCartItems());
+      try {
+        trackEvent("buy_now", {
+          productId: productData._id,
+          variantId: selectedVariant,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {
