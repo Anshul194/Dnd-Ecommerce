@@ -27,13 +27,13 @@ export const GET = withUserAuth(async function (request) {
     }
 
     const subdomain = getSubdomain(request);
-    console.log('Subdomain:', subdomain);
+    //console.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error('No database connection established for subdomain:', subdomain);
+      //console.error('No database connection established for subdomain:', subdomain);
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connected to database:', conn.name);
+    //console.log('Connected to database:', conn.name);
 
     // Register models
     const User = conn.models.User || conn.model('User', UserSchema);
@@ -45,7 +45,7 @@ export const GET = withUserAuth(async function (request) {
     const Ticket = conn.models.Ticket || conn.model('Ticket', TicketSchema);
     const Lead = conn.models.Lead || conn.model('Lead', leadSchema);
 
-    console.log('Models registered:', {
+    //console.log('Models registered:', {
       User: User.modelName,
       Role: Role.modelName,
       Order: Order.modelName,
@@ -88,7 +88,7 @@ export const GET = withUserAuth(async function (request) {
       data: result.data,
     });
   } catch (error) {
-    console.error('Route GET dashboard error:', error.message, error.stack);
+    //console.error('Route GET dashboard error:', error.message, error.stack);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 });

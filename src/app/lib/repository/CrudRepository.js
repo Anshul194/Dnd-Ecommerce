@@ -9,17 +9,17 @@ class CrudRepository {
       const result = await this.model.create(data);
       return result;
     } catch (error) {
-      console.log(error.message)
+      ////console.log(error.message)
       throw error;
     }
   }
 
   async destroy(id) {
     try {
-      // console.log('iddcfvghju',id);
+      // ////console.log('iddcfvghju',id);
       const result = await this.model.findByIdAndUpdate({ _id: id }, { deletedAt: new Date(), deleted: true });
       return result;
-      console.log('result',result);
+      ////console.log('result',result);
     } catch (error) {
       throw error;
     }
@@ -28,7 +28,7 @@ class CrudRepository {
 
   async get(id, populateFields = []) {
     try {
-      console.log('hello',id);
+      ////console.log('hello',id);
       
       let result = await this.model.findById(id);
       
@@ -40,7 +40,7 @@ class CrudRepository {
         result = await this.model.findById(id).populate(populateFields);
       }
       
-      console.log('result',result);
+      ////console.log('result',result);
       return result;
     } catch (error) {
       throw error;
@@ -59,7 +59,7 @@ class CrudRepository {
  
 
   async getAll(filterCon = {}, sortCon = {}, pageNum, limitNum, populateFields = [],selectFields = {}) {
-    console.log('dfgh', filterCon, sortCon, pageNum, limitNum, populateFields,selectFields);
+    ////console.log('dfgh', filterCon, sortCon, pageNum, limitNum, populateFields,selectFields);
     let query;
     sortCon = Object.keys(sortCon).length === 0 ? { createdAt: -1 } : sortCon;
     if(pageNum > 0){
@@ -86,7 +86,7 @@ class CrudRepository {
       });
     }
 
-    console.log('query', query);
+    ////console.log('query', query);
     const result = await query;
     // Get the total count of documents matching the filter
     const totalDocuments = await this.model.countDocuments(filterCon);
@@ -101,11 +101,11 @@ class CrudRepository {
 
   async update(id, data) {
     try {
-      console.log('id', id);
-      console.log('data', data);
-      console.log('model', this.model);
+      ////console.log('id', id);
+      ////console.log('data', data);
+      ////console.log('model', this.model);
       const result = await this.model.findByIdAndUpdate(id, data, { new: true });
-      console.log('result',result);
+      ////console.log('result',result);
       return result;
     } catch (error) {
       throw error;

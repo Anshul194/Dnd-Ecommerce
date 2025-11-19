@@ -28,18 +28,18 @@ async function parseFormData(req) {
 export async function GET(req) {
   try {
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //console.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //console.log("Connection name in route:", conn.name);
     const Brand = conn.models.Brand || conn.model("Brand", BrandSchema);
-    console.log("Models registered:", { Brand: Brand.modelName });
+    //console.log("Models registered:", { Brand: Brand.modelName });
     const brandService = new BrandService(conn);
 
     const { searchParams } = new URL(req.url);
@@ -54,7 +54,7 @@ export async function GET(req) {
       try {
         filtersObj = JSON.parse(filtersParam);
       } catch (err) {
-        console.warn("Invalid JSON in filters param, ignoring:", err.message);
+        //console.warn("Invalid JSON in filters param, ignoring:", err.message);
         filtersObj = undefined;
       }
     }
@@ -80,7 +80,7 @@ export async function GET(req) {
       pageSize: result.pageSize,
     });
   } catch (error) {
-    console.error("Route GET brands error:", error.message);
+    //console.error("Route GET brands error:", error.message);
     return NextResponse.json(
       {
         success: false,
@@ -94,27 +94,27 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //console.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //console.log("Connection name in route:", conn.name);
     const Brand = conn.models.Brand || conn.model("Brand", BrandSchema);
-    console.log("Models registered:", { Brand: Brand.modelName });
+    //console.log("Models registered:", { Brand: Brand.modelName });
     const brandService = new BrandService(conn);
 
     const { fields, files } = await parseFormData(req);
     const body = { ...fields };
-    console.log("files:", files);
+    //console.log("files:", files);
     // Handle image upload
     if (files.image) {
       const image = await saveFile(files.image);
-      console.log("Image uploaded --->>:", image);
+      //console.log("Image uploaded --->>:", image);
       body.image = image;
     }
 
@@ -137,7 +137,7 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Route POST brand error:", error.message);
+    //console.error("Route POST brand error:", error.message);
     return NextResponse.json(
       {
         success: false,

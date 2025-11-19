@@ -16,7 +16,7 @@ export async function POST(request, { params }) {
     const result = await convertLeadController(params.id, customerId, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error('POST /crm/leads/:id/convert error:', err);
+    //console.error('POST /crm/leads/:id/convert error:', err);
     return NextResponse.json({ success: false, message: 'Server error', error: err.message }, { status: 500 });
   }
 }

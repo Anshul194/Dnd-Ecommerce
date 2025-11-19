@@ -15,7 +15,7 @@ export const PUT = withSuperAdminOrRoleAdminAuth(async function (request) {
     const body = await request.json();
     return await bulkAssignLeadsController(body, conn);
   } catch (err) {
-    console.error('PUT /crm/leads/assign/bulk-assign error:', err);
+    //console.error('PUT /crm/leads/assign/bulk-assign error:', err);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
 }, '/api/crm/leads/assign/bulk-assign');

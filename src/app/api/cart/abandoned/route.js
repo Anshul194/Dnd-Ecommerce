@@ -35,7 +35,7 @@ export async function GET(request) {
             'hello_world', [],
         );
 
-        console.log('✅ WhatsApp test response:', response.data);
+        //console.log('✅ WhatsApp test response:', response.data);
 
         return NextResponse.json({
             success: true,
@@ -43,7 +43,7 @@ export async function GET(request) {
             data: response.data
         });
     } catch (err) {
-        console.error('❌ WhatsApp test error:', err.response ? .data || err.message);
+        //console.error('❌ WhatsApp test error:', err.response ? .data || err.message);
         return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
     } finally {
         // 🔹 Close mongoose connection (if opened per request)
@@ -74,7 +74,7 @@ export async function GET(request) {
 //             items: { $exists: true, $ne: [] },
 //         }).populate('user');
 
-//         console.log(`🛒 Found ${abandonedCarts.length} abandoned carts for ${subdomain}`);
+//         //console.log(`🛒 Found ${abandonedCarts.length} abandoned carts for ${subdomain}`);
 
 //         // 🔁 Update each cart and send event
 //         for (const cart of abandonedCarts) {
@@ -88,9 +88,9 @@ export async function GET(request) {
 //                     userId: cart.user ? ._id || null,
 //                     cartId: cart._id,
 //                 });
-//                 console.log(`✅ WhatsApp event sent for cart ${cart._id}`);
+//                 //console.log(`✅ WhatsApp event sent for cart ${cart._id}`);
 //             } catch (err) {
-//                 console.error(`❌ Failed to send WhatsApp event for cart ${cart._id}:`, err.message);
+//                 //console.error(`❌ Failed to send WhatsApp event for cart ${cart._id}:`, err.message);
 //             }
 //         }
 
@@ -99,7 +99,7 @@ export async function GET(request) {
 //             message: `Processed ${abandonedCarts.length} abandoned carts.`,
 //         });
 //     } catch (err) {
-//         console.error('🚨 GET /cart-abandoned error:', err);
+//         //console.error('🚨 GET /cart-abandoned error:', err);
 //         return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
 //     } finally {
 //         // Optional: close connection if your setup opens per request

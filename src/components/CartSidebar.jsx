@@ -31,7 +31,7 @@ const CartSidebar = () => {
   const [SelectedProduct, setSelectedProduct] = useState(null);
   const shipping = 65;
 
-  console.log("cart is open is : ", isCartOpen);
+  // console.log("cart is open is : ", isCartOpen);
 
   const handelCartToggle = () => {
     dispatch(toggleCart());

@@ -35,12 +35,12 @@ const SupportTickets = () => {
   const { user } = useSelector((state) => state.auth || {});
 
   // Debug: Log user data
-  // console.log('Current user:', user);
+  // //console.log('Current user:', user);
 
   // Debug: Log orders data
-  console.log("Orders state:", orders);
-  console.log("Orders loading:", ordersLoading);
-  console.log("Orders error:", ordersError);
+  //console.log("Orders state:", orders);
+  //console.log("Orders loading:", ordersLoading);
+  //console.log("Orders error:", ordersError);
 
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -127,8 +127,8 @@ const SupportTickets = () => {
       }
 
       // Debug log to verify customer ID
-      console.log("Submitting ticket with customer ID:", user._id);
-      console.log("Selected order ID:", ticketForm.orderId);
+      //console.log("Submitting ticket with customer ID:", user._id);
+      //console.log("Selected order ID:", ticketForm.orderId);
 
       // Add attachments if any
       ticketForm.attachments.forEach((file) => {
@@ -137,7 +137,7 @@ const SupportTickets = () => {
 
       // Debug: Log all form data entries
       for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
+        //console.log(`${key}:`, value);
       }
 
       // Dispatch the API call
@@ -175,7 +175,7 @@ const SupportTickets = () => {
         dispatch(resetTicketState());
       }, 3000);
     } catch (error) {
-      console.error("Error submitting ticket:", error);
+      //console.error("Error submitting ticket:", error);
       toast.error(
         error.message || "Failed to submit support ticket. Please try again.",
         {
@@ -275,7 +275,7 @@ const SupportTickets = () => {
 
       // Debug: Log all form data entries
       for (let [key, value] of formData.entries()) {
-        console.log(`Reply ${key}:`, value);
+        //console.log(`Reply ${key}:`, value);
       }
 
       // Dispatch the addTicketReply action
@@ -303,7 +303,7 @@ const SupportTickets = () => {
       // Refresh tickets to get updated data with populated fields
       await dispatch(fetchCustomerTickets());
     } catch (error) {
-      console.error("Error adding reply:", error);
+      //console.error("Error adding reply:", error);
       toast.error(error || "Failed to add reply. Please try again.", {
         position: "top-right",
         autoClose: 5000,
@@ -986,7 +986,7 @@ const SupportTickets = () => {
                   <option value="">Select an order (optional)</option>
                   {orders && orders.length > 0 ? (
                     orders.map((order) => {
-                      console.log("Rendering order:", order); // Debug log
+                      //console.log("Rendering order:", order); // Debug log
 
                       // Get the first item's variant title for display
                       const firstItemTitle =

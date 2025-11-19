@@ -53,7 +53,7 @@ const DynamicHomepage = () => {
   }
 
   if (error) {
-    console.error("Content loading error:", error);
+    //console.error("Content loading error:", error);
     // Fallback to static components if there's an error
     return (
       <main>
@@ -98,8 +98,8 @@ const DynamicHomepage = () => {
   });
 
   // Debug logging to see what sections we have
-  console.log("Available sections:", groupedContent.sections);
-  console.log("Visible sections:", allSections);
+  //console.log("Available sections:", groupedContent.sections);
+  //console.log("Visible sections:", allSections);
 
   // Sort by order
   allSections.sort((a, b) => a.order - b.order);
@@ -108,7 +108,7 @@ const DynamicHomepage = () => {
 
   const renderSection = (section) => {
     const { sectionType, content, _id } = section;
-    console.log("Rendering section: --->", section);
+    //console.log("Rendering section: --->", section);
     switch (sectionType) {
       case "offerBanner":
         return <DynamicOfferBanner key={_id} content={content} />;
@@ -163,7 +163,7 @@ const DynamicHomepage = () => {
           </div>
         );
       default:
-        console.warn("Unknown section type:", sectionType);
+        //console.warn("Unknown section type:", sectionType);
         return null;
     }
   };

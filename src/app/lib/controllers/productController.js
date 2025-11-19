@@ -142,7 +142,7 @@ class ProductController {
 
   async create(body, conn) {
     body = normalizeProductBody(body);
-    console.log("Normalized product body:", JSON.stringify(body, null, 2));
+    //console.log("Normalized product body:", JSON.stringify(body, null, 2));
 
     try {
       if (!body.name || !body.category) {
@@ -250,13 +250,13 @@ class ProductController {
       const product = await this.service.createProduct(body, conn);
       return { success: true, message: "Product created", data: product };
     } catch (error) {
-      console.error("Create error:", error);
+      //console.error("Create error:", error);
       return { success: false, message: error.message, data: null };
     }
   }
 
   async getAll(query, conn) {
-    console.log("Controller received query:", query);
+    //console.log("Controller received query:", query);
     try {
       const products = await this.service.getAllProducts(query, conn);
       return {
@@ -265,7 +265,7 @@ class ProductController {
         data: products,
       };
     } catch (error) {
-      console.error("GetAll error:", error);
+      //console.error("GetAll error:", error);
       return {
         success: false,
         message: error.message,
@@ -348,7 +348,7 @@ class ProductController {
 
       return { success: true, message: "Product fetched", data: productObj };
     } catch (error) {
-      console.error("GetById error:", error);
+      //console.error("GetById error:", error);
       return { success: false, message: error.message, data: null };
     }
   }
@@ -439,7 +439,7 @@ class ProductController {
       const product = await this.service.updateProduct(id, body, conn);
       return { success: true, message: "Product updated", data: product };
     } catch (error) {
-      console.error("Update error:", error);
+      //console.error("Update error:", error);
       return { success: false, message: error.message, data: null };
     }
   }
@@ -461,7 +461,7 @@ class ProductController {
         data: null,
       };
     } catch (error) {
-      console.error("Delete error:", error);
+      //console.error("Delete error:", error);
       return { success: false, message: error.message, data: null };
     }
   }

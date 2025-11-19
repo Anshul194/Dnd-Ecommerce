@@ -26,7 +26,7 @@ const isTokenExpiringSoon = (token) => {
     // Return true if token expires within 5 minutes (300 seconds)
     return timeUntilExpiry < 300;
   } catch (err) {
-    console.error('Token validation error:', err);
+    //console.error('Token validation error:', err);
     return true;
   }
 };
@@ -48,11 +48,11 @@ const useTokenRefresh = () => {
     // Check if token is expiring soon (within 5 minutes)
     if (isTokenExpiringSoon(accessToken)) {
       try {
-        console.log('Access token expiring soon, refreshing...');
+        //console.log('Access token expiring soon, refreshing...');
         await dispatch(refreshToken()).unwrap();
-        console.log('Tokens refreshed successfully');
+        //console.log('Tokens refreshed successfully');
       } catch (error) {
-        console.error('Token refresh failed:', error);
+        //console.error('Token refresh failed:', error);
         
         // Redirect to login on refresh failure
         if (typeof window !== 'undefined') {

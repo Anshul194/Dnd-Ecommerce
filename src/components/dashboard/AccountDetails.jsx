@@ -49,7 +49,7 @@ const AccountDetails = () => {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { orders } = useSelector((state) => state.order);
-  console.log("orders are ", orders);
+  //console.log("orders are ", orders);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -108,7 +108,7 @@ const AccountDetails = () => {
       setIsEditing(false);
       toast.success("Account details updated successfully!");
     } catch (error) {
-      console.log("Error updating account details:", error);
+      //console.log("Error updating account details:", error);
       const message =
         error?.payload?.message ||
         error?.message ||
@@ -139,7 +139,7 @@ const AccountDetails = () => {
       if (response?.error) {
         return toast.error(response?.error?.payload?.message);
       }
-      console.log("Password change response:", response);
+      //console.log("Password change response:", response);
       toast.success("Password changed successfully!");
       setPasswordForm({
         currentPassword: "",
@@ -147,7 +147,7 @@ const AccountDetails = () => {
         confirmPassword: "",
       });
     } catch (error) {
-      console.error("Error changing password:", error);
+      //console.error("Error changing password:", error);
       toast.error(error?.payload?.message);
     }
   };

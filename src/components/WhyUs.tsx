@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import Image from "next/image";
 
 export function WhyUs({ content }) {
-  console.log("why choose content ====>", content);
+  //console.log("why choose content ====>", content);
   return (
     <section className="max-w-7xl mx-auto py-20 relative overflow-hidden">
       <div className="absolute inset-0 " />

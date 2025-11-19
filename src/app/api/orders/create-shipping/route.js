@@ -16,10 +16,10 @@ export async function POST(req) {
   try {
     const tenant = req.headers.get("x-tenant");
     const body = await req.json();
-    console.log(
-      "Route received create order body:",
-      JSON.stringify(body, null, 2)
-    );
+    //console.log(
+    //   "Route received create order body:",
+    //   JSON.stringify(body, null, 2)
+    // );
 
     // Check if this is a DTDC shipping request
     if (body.method === "DTDC" || body.shipping_method === "DTDC") {
@@ -28,27 +28,27 @@ export async function POST(req) {
 
     // Default behavior for other methods
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //console.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
 
-    console.log("Connection name in route:", conn.name);
+    //console.log("Connection name in route:", conn.name);
     const Order = conn.models.Order || conn.model("Order", OrderSchema);
     const Coupon = conn.models.Coupon || conn.model("Coupon", CouponSchema);
     const Product = conn.models.Product || conn.model("Product", ProductSchema);
     const Variant = conn.models.Variant || conn.model("Variant", VariantSchema);
-    console.log("Models registered:", {
-      Order: Order.modelName,
-      Coupon: Coupon.modelName,
-      Product: Product.modelName,
-      Variant: Variant.modelName,
-    });
+    //console.log("Models registered:", {
+    //   Order: Order.modelName,
+    //   Coupon: Coupon.modelName,
+    //   Product: Product.modelName,
+    //   Variant: Variant.modelName,
+    // });
     const orderRepo = new OrderRepository(Order, conn);
     const couponRepo = new CouponRepository(Coupon);
     const couponService = new CouponService(couponRepo);
@@ -65,7 +65,7 @@ export async function POST(req) {
     }
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    console.error("Route POST order error:", error.message);
+    //console.error("Route POST order error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
@@ -75,7 +75,7 @@ export async function POST(req) {
 
 async function handleDTDCShipping(req, body, tenant) {
   try {
-    console.log("Handling DTDC shipping request");
+    //console.log("Handling DTDC shipping request");
 
     // Validate required fields for DTDC shipping
     const { orderId, service_type_id, dimensions, weight } = body;
@@ -146,7 +146,7 @@ async function handleDTDCShipping(req, body, tenant) {
       );
     }
 
-    console.log("Order found for DTDC shipping:", orderData._id);
+    //console.log("Order found for DTDC shipping:", orderData._id);
 
     // Initialize DTDC shipping service
     const dtdcService = new DTDCShippingService();
@@ -159,11 +159,11 @@ async function handleDTDCShipping(req, body, tenant) {
       declared_value: body.declared_value,
     });
 
-    console.log("DTDC shipping created successfully:", shippingResult);
+    //console.log("DTDC shipping created successfully:", shippingResult);
 
     return NextResponse.json(shippingResult, { status: 201 });
   } catch (error) {
-    console.error("DTDC shipping error:", error.message);
+    //console.error("DTDC shipping error:", error.message);
     return NextResponse.json(
       {
         success: false,

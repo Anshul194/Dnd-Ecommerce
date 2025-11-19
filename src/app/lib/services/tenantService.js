@@ -33,7 +33,7 @@ class TenantService {
       const dbUri = `mongodb+srv://anshul:anshul149@clusterdatabase.24furrx.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
       // Create the tenant's database connection (creates DB if not exists)
-      console.log('Creating tenant database:', dbUri);
+      //console.log('Creating tenant database:', dbUri);
       await createTenantDatabase(dbName);
 
 

@@ -142,7 +142,7 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
-    console.error("Refresh token error:", error);
+    //console.error("Refresh token error:", error);
     return NextResponse.json(
       {
         success: false,

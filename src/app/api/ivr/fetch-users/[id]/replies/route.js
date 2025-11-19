@@ -44,7 +44,7 @@ export const POST = withUserAuth(async function (req, { params }) {
     const result = await replyToTicket(id, replyData, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
-    console.error('POST Reply to Ticket Error:', error.message);
+    //console.error('POST Reply to Ticket Error:', error.message);
     return toNextResponse({ success: false, message: error.message }, 500);
   }
 });

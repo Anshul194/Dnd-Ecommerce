@@ -14,21 +14,21 @@ export const config = {
 export async function GET(request, { params }) {
   try {
     const subdomain = getSubdomain(request);
-    console.log('Subdomain:', subdomain);
+    //console.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error('No database connection established');
+      //console.error('No database connection established');
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connection name in route:', conn.name);
+    //console.log('Connection name in route:', conn.name);
     const id = params.id;
-    console.log('Processing influencer video ID:', id);
+    //console.log('Processing influencer video ID:', id);
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid influencer video ID' }, { status: 400 });
     }
     return await influencerVideoController.getInfluencerVideoById(request, null, id, conn);
   } catch (err) {
-    console.error('InfluencerVideo GET by ID error:', err.message, err.stack);
+    //console.error('InfluencerVideo GET by ID error:', err.message, err.stack);
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });
   }
 }
@@ -36,21 +36,21 @@ export async function GET(request, { params }) {
 export const PUT = withUserAuth(async function (request, { params }) {
   try {
     const subdomain = getSubdomain(request);
-    console.log('Subdomain:', subdomain);
+    //console.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error('No database connection established');
+      //console.error('No database connection established');
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connection name in route:', conn.name);
+    //console.log('Connection name in route:', conn.name);
     const id = params.id;
-    console.log('Processing influencer video ID:', id);
+    //console.log('Processing influencer video ID:', id);
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid influencer video ID' }, { status: 400 });
     }
     return await influencerVideoController.updateInfluencerVideo(request, null, id, conn);
   } catch (err) {
-    console.error('InfluencerVideo PUT error:', err.message, err.stack);
+    //console.error('InfluencerVideo PUT error:', err.message, err.stack);
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });
   }
 });
@@ -58,21 +58,21 @@ export const PUT = withUserAuth(async function (request, { params }) {
 export const DELETE = withUserAuth(async function (request, { params }) {
   try {
     const subdomain = getSubdomain(request);
-    console.log('Subdomain:', subdomain);
+    //console.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error('No database connection established');
+      //console.error('No database connection established');
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connection name in route:', conn.name);
+    //console.log('Connection name in route:', conn.name);
     const id = params.id;
-    console.log('Processing influencer video ID:', id);
+    //console.log('Processing influencer video ID:', id);
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid influencer video ID' }, { status: 400 });
     }
     return await influencerVideoController.deleteInfluencerVideo(request, null, id, conn);
   } catch (err) {
-    console.error('InfluencerVideo DELETE error:', err.message, err.stack);
+    //console.error('InfluencerVideo DELETE error:', err.message, err.stack);
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });
   }
 });

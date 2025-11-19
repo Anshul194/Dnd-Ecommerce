@@ -6,7 +6,7 @@ export async function POST(req) {
   try {
     const body = await req.json();
     const { orgPincode, desPincode } = body;
-    console.log("Request body: ", orgPincode, " - ", desPincode);
+    //console.log("Request body: ", orgPincode, " - ", desPincode);
 
     if (!orgPincode || !desPincode) {
       return NextResponse.json(
@@ -20,13 +20,13 @@ export async function POST(req) {
 
     // Get subdomain and establish tenant-specific database connection
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error(
-        "No database connection established for subdomain:",
-        subdomain
-      );
+      //console.error(
+      //   "No database connection established for subdomain:",
+      //   subdomain
+      // );
       return NextResponse.json(
         {
           success: false,
@@ -35,7 +35,7 @@ export async function POST(req) {
         { status: 404 }
       );
     }
-    console.log("Connected to database:", conn.name);
+    //console.log("Connected to database:", conn.name);
 
     // Register ShippingModel with tenant-specific connection
     const ShippingModel =
@@ -44,7 +44,7 @@ export async function POST(req) {
     const shippingMethods = await ShippingModel.find({ status: "active" }).sort(
       { priority: 1 }
     );
-    console.log("Using shipping methods:", shippingMethods.length);
+    //console.log("Using shipping methods:", shippingMethods.length);
     if (!shippingMethods || shippingMethods.length === 0) {
       return NextResponse.json(
         {
@@ -60,15 +60,15 @@ export async function POST(req) {
       .filter((m) => m.status === "active")
       .sort((a, b) => a.priority - b.priority);
 
-    console.log("Shipping methods after filtering and sorting:", methods);
+    //console.log("Shipping methods after filtering and sorting:", methods);
 
     for (const method of methods) {
       let isServiceable = false;
       let responseMessage = "";
       let extraData = {};
-      console.log("Checking shipping method:", method.name);
+      //console.log("Checking shipping method:", method.name);
       if (method.name === "DTDC") {
-        console.log("DTDC method selected <<<<<>>>>>>>");
+        //console.log("DTDC method selected <<<<<>>>>>>>");
         // Call DTDC API
 
         const dtdcApiUrl =
@@ -79,7 +79,7 @@ export async function POST(req) {
           body: JSON.stringify({ orgPincode, desPincode }),
         });
 
-        console.log("DTDC API response status: ===========>", response);
+        //console.log("DTDC API response status: ===========>", response);
 
         if (!response.ok) {
           throw new Error(`DTDC API responded with status: ${response.status}`);
@@ -110,9 +110,9 @@ export async function POST(req) {
 
       if (method.name === "Delivery" && !isServiceable) {
         try {
-          console.log(`Delhivery Token ${process.env.DELHIVERY_API_KEY}`);
+          //console.log(`Delhivery Token ${process.env.DELHIVERY_API_KEY}`);
 
-          console.log("Delhivery method selected <<<<<>>>>>>>");
+          //console.log("Delhivery method selected <<<<<>>>>>>>");
           const delhiveryApiUrl = `https://track.delhivery.com/c/api/pin-codes/json/?filter_codes=${desPincode}`;
 
           const response = await fetch(delhiveryApiUrl, {
@@ -123,7 +123,7 @@ export async function POST(req) {
             },
           });
 
-          console.log("Delhivery API response status: ===========>", response);
+          //console.log("Delhivery API response status: ===========>", response);
 
           if (!response.statusText.includes("OK")) {
             throw new Error(
@@ -140,7 +140,7 @@ export async function POST(req) {
             responseMessage = "Pincode is not serviceable by Delhivery";
           }
         } catch (error) {
-          console.log("Delhivery API error:", error);
+          //console.log("Delhivery API error:", error);
         }
       }
 
@@ -167,7 +167,7 @@ export async function POST(req) {
       data: { orgPincode, desPincode },
     });
   } catch (error) {
-    console.log("Route POST error:", error.message);
+    //console.log("Route POST error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }

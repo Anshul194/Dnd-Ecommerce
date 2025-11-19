@@ -48,7 +48,7 @@ const Addresses = () => {
   const fetchAddresses = async () => {
     // Simulate fetching addresses from an API
     const response = await dispatch(getuserAddresses(user._id));
-    console.log("Fetched addresses:", response);
+    //console.log("Fetched addresses:", response);
     setAddresses(response.payload || []);
   };
 
@@ -130,7 +130,7 @@ const Addresses = () => {
   };
 
   const handleEdit = (address) => {
-    console.log("Editing address:", address);
+    //console.log("Editing address:", address);
     setAddressForm({
       type: address.title,
       isDefault: address.isDefault,
@@ -160,19 +160,19 @@ const Addresses = () => {
       );
       await dispatch(updateUserAddress({ addressId, isDefault: true }));
       fetchAddresses();
-      console.log("Default address updated successfully");
+      //console.log("Default address updated successfully");
     } catch (error) {
-      console.error("Failed to update default address:", error);
+      //console.error("Failed to update default address:", error);
     }
   };
   const handleDelete = async (addressId) => {
     try {
       await dispatch(deleteUserAddress(addressId));
       setAddresses((prev) => prev.filter((addr) => addr._id !== addressId));
-      console.log("Address deleted successfully");
+      //console.log("Address deleted successfully");
       dispatch(getuserAddresses(user._id)); // Refresh addresses
     } catch (error) {
-      console.error("Failed to delete address:", error);
+      //console.error("Failed to delete address:", error);
     }
   };
 

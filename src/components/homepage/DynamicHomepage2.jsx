@@ -42,7 +42,7 @@ function DynamicHomepage2() {
 
   const renderSection = (section) => {
     const { sectionType, content, _id } = section;
-    console.log("Rendering section: ==>", section.sectionType);
+    // console.log("Rendering section: ==>", section.sectionType);
     switch (sectionType) {
       case "offerBanner":
         return (
@@ -128,8 +128,8 @@ function DynamicHomepage2() {
   });
 
   // Debug logging to see what sections we have
-  console.log("Available sections:", groupedContent.sections);
-  console.log("Visible sections:", allSections);
+  // console.log("Available sections:", groupedContent.sections);
+  // console.log("Visible sections:", allSections);
 
   // Sort by order
   allSections.sort((a, b) => a.order - b.order);

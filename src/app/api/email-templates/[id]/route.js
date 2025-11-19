@@ -31,7 +31,7 @@ export async function GET(req, { params }) {
     
     return NextResponse.json({ success: true, emailTemplate });
   } catch (error) {
-    console.error('Route GET by ID error:', error.message);
+    //console.error('Route GET by ID error:', error.message);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
@@ -62,7 +62,7 @@ export async function PUT(req, { params }) {
     
     return NextResponse.json({ success: true, emailTemplate: result.data });
   } catch (error) {
-    console.error('Route PUT error:', error.message);
+    //console.error('Route PUT error:', error.message);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
@@ -92,7 +92,7 @@ export async function DELETE(req, { params }) {
     
     return NextResponse.json({ success: true, message: 'Email template deleted successfully' });
   } catch (error) {
-    console.error('Route DELETE error:', error.message);
+    //console.error('Route DELETE error:', error.message);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }

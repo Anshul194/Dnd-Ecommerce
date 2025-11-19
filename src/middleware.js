@@ -9,7 +9,7 @@ const ALLOWED_ORIGINS = [
 ];
 
 export function middleware(request) {
-  console.log("Middleware running for:", request.url);
+  // console.log("Middleware running for:", request.url);
 
   const origin = request.headers.get("origin");
   const isAllowedOrigin = origin && ALLOWED_ORIGINS.includes(origin);

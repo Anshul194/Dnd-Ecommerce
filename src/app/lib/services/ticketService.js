@@ -79,10 +79,10 @@ class TicketService {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new Error('Invalid ticket ID');
       }
-      console.log(`Updating ticket with ID: ${id}`, data);
+      //console.log(`Updating ticket with ID: ${id}`, data);
       
       const updated = await this.repo.update(id, data);
-      console.log('Updated Ticket:', updated);
+      //console.log('Updated Ticket:', updated);
       return updated;
     } catch (error) {
       throw new Error(`Failed to update ticket: ${error.message}`);
@@ -92,7 +92,7 @@ class TicketService {
   async deleteTicket(id) {
     try {
       const result = await this.repo.delete(id);
-      console.log('Delete result:', result);
+      //console.log('Delete result:', result);
       return result;
     } catch (error) {
       throw new Error(`Failed to delete ticket: ${error.message}`);

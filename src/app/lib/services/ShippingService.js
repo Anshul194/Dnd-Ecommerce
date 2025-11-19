@@ -3,57 +3,57 @@ import mongoose from "mongoose";
 
 class ShippingService {
   async createShipping(data, conn) {
-    console.log(
-      "[ShippingService.createShipping] Creating shipping:",
-      JSON.stringify(data, null, 2),
-      "Connection:",
-      conn.name || "global mongoose"
-    );
+    // console.log(
+    //   "[ShippingService.createShipping] Creating shipping:",
+    //   JSON.stringify(data, null, 2),
+    //   "Connection:",
+    //   conn.name || "global mongoose"
+    // );
     this.validateShippingData(data);
     return await shippingRepository.createShipping(data, conn);
   }
 
   async getShippingById(id, conn) {
-    console.log(
-      "[ShippingService.getShippingById] Fetching shipping:",
-      id,
-      "Connection:",
-      conn.name || "global mongoose"
-    );
+    // console.log(
+    //   "[ShippingService.getShippingById] Fetching shipping:",
+    //   id,
+    //   "Connection:",
+    //   conn.name || "global mongoose"
+    // );
     return await shippingRepository.getShippingById(id, conn);
   }
 
   async getAllShipping(filters = {}, conn) {
-    console.log(
-      "[ShippingService.getAllShipping] Fetching all shipping methods",
-      "Connection:",
-      conn.name || "global mongoose",
-      "Filters:",
-      filters
-    );
+    // console.log(
+    //   "[ShippingService.getAllShipping] Fetching all shipping methods",
+    //   "Connection:",
+    //   conn.name || "global mongoose",
+    //   "Filters:",
+    //   filters
+    // );
     return await shippingRepository.getAllShipping(filters, conn);
   }
 
   async updateShipping(id, data, conn) {
-    console.log(
-      "[ShippingService.updateShipping] Updating shipping:",
-      id,
-      "Data:",
-      JSON.stringify(data, null, 2),
-      "Connection:",
-      conn.name || "global mongoose"
-    );
+    // console.log(
+    //   "[ShippingService.updateShipping] Updating shipping:",
+    //   id,
+    //   "Data:",
+    //   JSON.stringify(data, null, 2),
+    //   "Connection:",
+    //   conn.name || "global mongoose"
+    // );
     this.validateShippingData(data, true);
     return await shippingRepository.updateShipping(id, data, conn);
   }
 
   async deleteShipping(id, conn) {
-    console.log(
-      "[ShippingService.deleteShipping] Deleting shipping:",
-      id,
-      "Connection:",
-      conn.name || "global mongoose"
-    );
+    // console.log(
+    //   "[ShippingService.deleteShipping] Deleting shipping:",
+    //   id,
+    //   "Connection:",
+    //   conn.name || "global mongoose"
+    // );
     return await shippingRepository.deleteShipping(id, conn);
   }
 

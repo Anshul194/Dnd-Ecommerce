@@ -27,7 +27,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     let query = Object.fromEntries(searchParams.entries());
 
-    console.log('user in GET /crm/leads:', request.user);
+    //console.log('user in GET /crm/leads:', request.user);
 
     // Role-based filtering logic
     const user = request.user;
@@ -56,16 +56,16 @@ export async function GET(request) {
     // If not admin, filter leads to show only assigned ones
     if (!isAdmin) {
       query.assignedTo = user._id.toString();
-      console.log('Non-admin user - filtering leads by assignedTo:', user._id.toString());
+      //console.log('Non-admin user - filtering leads by assignedTo:', user._id.toString());
     } else {
-      console.log('Admin user - showing all leads');
+      //console.log('Admin user - showing all leads');
     }
 
     // ✅ Directly return the controller's response
     return await getLeadsController(query, conn);
 
   } catch (err) {
-    console.error('GET /crm/leads error:', err.message);
+    //console.error('GET /crm/leads error:', err.message);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
 }
@@ -89,13 +89,13 @@ export async function POST(request) {
 
     const body = await request.json();
 
-    console.log('user in POST /crm/leads:', request.user);
+    //console.log('user in POST /crm/leads:', request.user);
 
     // ✅ Directly return the controller's response
     return await createLeadController(body, conn);
 
   } catch (err) {
-    console.error('POST /crm/leads error:', err);
+    //console.error('POST /crm/leads error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
   }
 }

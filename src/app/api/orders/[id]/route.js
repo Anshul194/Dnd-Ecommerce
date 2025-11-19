@@ -15,13 +15,13 @@ import { withUserAuth } from '../../../middleware/commonAuth.js';
 export const GET = withUserAuth(async function (request, { params }) {
   try {
     const subdomain = getSubdomain(request);
-    console.log('Subdomain:', subdomain);
+    //console.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error('No database connection established');
+      //console.error('No database connection established');
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connection name in route:', conn.name);
+    //console.log('Connection name in route:', conn.name);
     const Order = conn.models.Order || conn.model('Order', OrderSchema);
     const Coupon = conn.models.Coupon || conn.model('Coupon', CouponSchema);
     const Product = conn.models.Product || conn.model('Product', ProductSchema);
@@ -38,7 +38,7 @@ export const GET = withUserAuth(async function (request, { params }) {
       data: result.data
     });
   } catch (error) {
-    console.error('Route GET order details error:', error.message, error.stack);
+    //console.error('Route GET order details error:', error.message, error.stack);
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
 });

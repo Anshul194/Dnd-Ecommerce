@@ -6,30 +6,30 @@ import { withSuperAdminOrRoleAdminAuth } from '../../../../../middleware/commonA
 
 export const PUT = withSuperAdminOrRoleAdminAuth(async function (request, { params }) {
   try {
-    console.log('Raw params:', params); // Debug log
+    //console.log('Raw params:', params); // Debug log
     const id = params.id; // Direct access to params.id
-    console.log('Extracted lead ID:', id); // Debug log
+    //console.log('Extracted lead ID:', id); // Debug log
 
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-      console.error('Invalid lead ID:', id);
+      //console.error('Invalid lead ID:', id);
       return NextResponse.json({ success: false, message: 'Invalid lead ID' }, { status: 400 });
     }
 
     const subdomain = getSubdomain(request);
-    console.log('Subdomain:', subdomain); // Debug log
+    //console.log('Subdomain:', subdomain); // Debug log
     const conn = await getDbConnection(subdomain);
 
     if (!conn) {
-      console.error('Database connection failed for subdomain:', subdomain);
+      //console.error('Database connection failed for subdomain:', subdomain);
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connected to database:', conn.name); // Debug log
+    //console.log('Connected to database:', conn.name); // Debug log
 
     const body = await request.json();
-    console.log('Request body:', body); // Debug log
+    //console.log('Request body:', body); // Debug log
     return await assignLeadController(id, body, conn);
   } catch (err) {
-    console.error('PUT /crm/leads/assign/:id error:', err);
+    //console.error('PUT /crm/leads/assign/:id error:', err);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
 });

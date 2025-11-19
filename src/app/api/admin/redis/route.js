@@ -20,7 +20,7 @@ export async function GET() {
       }
     });
   } catch (error) {
-    console.error('Error getting Redis status:', error);
+    //console.error('Error getting Redis status:', error);
     return NextResponse.json({
       success: false,
       message: 'Failed to get Redis status',
@@ -113,7 +113,7 @@ export async function POST(request) {
     }, { status: 400 });
 
   } catch (error) {
-    console.error('Error managing Redis:', error);
+    //console.error('Error managing Redis:', error);
     return NextResponse.json({
       success: false,
       message: 'Failed to manage Redis',
@@ -146,7 +146,7 @@ export async function PUT(request) {
     }, { status: 400 });
 
   } catch (error) {
-    console.error('Error updating Redis configuration:', error);
+    //console.error('Error updating Redis configuration:', error);
     return NextResponse.json({
       success: false,
       message: 'Failed to update Redis configuration',

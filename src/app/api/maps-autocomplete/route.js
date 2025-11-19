@@ -25,7 +25,7 @@ export async function GET(req) {
         const data = await res.json();
         return NextResponse.json(data);
     } catch (error) {
-        console.log("er", error.message);
+        //console.log("er", error.message);
         return NextResponse.json({ error: error.message || "Unknown error" }, { status: 500 });
     }
 }

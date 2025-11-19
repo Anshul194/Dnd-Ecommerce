@@ -10,16 +10,16 @@ import { withUserAuth } from "../../middleware/commonAuth.js";
 export const POST = withUserAuth(async function (req) {
   try {
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //console.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //console.log("Connection name in route:", conn.name);
 
     // Register models
     const FrequentlyPurchasedProduct =
@@ -27,7 +27,7 @@ export const POST = withUserAuth(async function (req) {
       conn.model("FrequentlyPurchasedProduct", FrequentlyPurchasedProductSchema);
     const Product = conn.models.Product || conn.model("Product", ProductSchema);
     const User = conn.models.User || conn.model("User", userSchema);
-    console.log("Models registered:", {
+    //console.log("Models registered:", {
       FrequentlyPurchasedProduct: FrequentlyPurchasedProduct.modelName,
       Product: Product.modelName,
       User: User.modelName,
@@ -98,7 +98,7 @@ export const POST = withUserAuth(async function (req) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Route POST frequently purchased error:", error.message);
+    //console.error("Route POST frequently purchased error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 400 }
@@ -109,20 +109,20 @@ export const POST = withUserAuth(async function (req) {
 export const GET = withUserAuth(async function (req) {
   try {
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //console.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //console.log("Connection name in route:", conn.name);
     const FrequentlyPurchasedProduct =
       conn.models.FrequentlyPurchasedProduct ||
       conn.model("FrequentlyPurchasedProduct", FrequentlyPurchasedProductSchema);
-    console.log("Models registered:", {
+    //console.log("Models registered:", {
       FrequentlyPurchasedProduct: FrequentlyPurchasedProduct.modelName,
     });
 
@@ -142,7 +142,7 @@ export const GET = withUserAuth(async function (req) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Route GET frequently purchased error:", error.message);
+    //console.error("Route GET frequently purchased error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 400 }

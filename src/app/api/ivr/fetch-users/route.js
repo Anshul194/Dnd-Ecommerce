@@ -57,7 +57,7 @@ export async function GET(req) {
     return toNextResponse(result.body, result.status);
 
   } catch (error) {
-    console.error('GET /ivr/fetch-users error:', error.message);
+    //console.error('GET /ivr/fetch-users error:', error.message);
     return toNextResponse({ success: false, message: error.message }, 500);
   }
 

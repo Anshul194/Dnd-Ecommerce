@@ -29,18 +29,18 @@ export async function GET(req, { params }) {
   try {
     const { id } = params;
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //console.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //console.log("Connection name in route:", conn.name);
     const Brand = conn.models.Brand || conn.model("Brand", BrandSchema);
-    console.log("Models registered:", { Brand: Brand.modelName });
+    //console.log("Models registered:", { Brand: Brand.modelName });
     const brandService = new BrandService(conn);
 
     const brand = await brandService.getBrandById(id);
@@ -61,7 +61,7 @@ export async function GET(req, { params }) {
       data: brand,
     });
   } catch (error) {
-    console.error("Route GET brand by ID error:", error.message);
+    //console.error("Route GET brand by ID error:", error.message);
     return NextResponse.json(
       {
         success: false,
@@ -76,18 +76,18 @@ export async function PUT(req, { params }) {
   try {
     const { id } = params;
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //console.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //console.log("Connection name in route:", conn.name);
     const Brand = conn.models.Brand || conn.model("Brand", BrandSchema);
-    console.log("Models registered:", { Brand: Brand.modelName });
+    //console.log("Models registered:", { Brand: Brand.modelName });
     const brandService = new BrandService(conn);
 
     const { fields, files } = await parseFormData(req);
@@ -125,7 +125,7 @@ export async function PUT(req, { params }) {
       data: updatedBrand,
     });
   } catch (error) {
-    console.error("Route PUT brand error:", error.message);
+    //console.error("Route PUT brand error:", error.message);
     return NextResponse.json(
       {
         success: false,
@@ -140,18 +140,18 @@ export async function DELETE(req, { params }) {
   try {
     const { id } = params;
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //console.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //console.log("Connection name in route:", conn.name);
     const Brand = conn.models.Brand || conn.model("Brand", BrandSchema);
-    console.log("Models registered:", { Brand: Brand.modelName });
+    //console.log("Models registered:", { Brand: Brand.modelName });
     const brandService = new BrandService(conn);
 
     const deleted = await brandService.deleteBrand(id);
@@ -171,7 +171,7 @@ export async function DELETE(req, { params }) {
       message: "Brand deleted successfully",
     });
   } catch (error) {
-    console.error("Route DELETE brand error:", error.message);
+    //console.error("Route DELETE brand error:", error.message);
     return NextResponse.json(
       {
         success: false,

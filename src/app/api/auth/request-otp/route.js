@@ -49,11 +49,11 @@ export async function POST(request) {
     try {
       if (redisWrapper.isEnabled()) {
         await redisWrapper.setex(`otp:${phone}`, 300, finalOtp); // Store OTP for 5 minutes
-        console.log(`📩 OTP sent to ${phone}: ${finalOtp}`);
+        //console.log(`📩 OTP sent to ${phone}: ${finalOtp}`);
       } else {
-        console.log(
-          `📴 Redis disabled - OTP would be: ${finalOtp} (for development)`
-        );
+        // //console.log(
+        //   `📴 Redis disabled - OTP would be: ${finalOtp} (for development)`
+        // );
         // In production, you might want to handle this differently
         // For now, we'll continue but log that Redis is disabled
       }
@@ -70,7 +70,7 @@ export async function POST(request) {
         { status: 200 }
       );
     } catch (redisError) {
-      console.error("Redis error:", redisError);
+      //console.error("Redis error:", redisError);
       return NextResponse.json(
         {
           success: false,
@@ -84,7 +84,7 @@ export async function POST(request) {
     // TODO: Integrate SMS service here
     // For now, we're just storing the OTP in Redis
   } catch (error) {
-    console.error("POST /auth/request-otp error:", error);
+    //console.error("POST /auth/request-otp error:", error);
     return NextResponse.json(
       {
         success: false,

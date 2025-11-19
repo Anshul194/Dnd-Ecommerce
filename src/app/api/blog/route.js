@@ -15,7 +15,7 @@ export async function POST(request) {
         const result = await createBlogController(form, conn);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
-        console.error('POST /blog error:', err);
+        //console.error('POST /blog error:', err);
         return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
     }
 }
@@ -34,7 +34,7 @@ export async function GET(request) {
         const result = await getBlogsController(query, conn);
         return NextResponse.json(result.body, { status: result.status });
     } catch (err) {
-        console.error('GET /blog error:', err);
+        //console.error('GET /blog error:', err);
         return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
     }
 }

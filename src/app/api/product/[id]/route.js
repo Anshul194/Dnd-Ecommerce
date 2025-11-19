@@ -23,7 +23,7 @@ export async function GET(req, { params }) {
     const productRepo = new ProductRepository(Product);
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
-    console.log("Fetching product with ID:", id);
+    //consolle.log("Fetching product with ID:", id);
     const response = await productController.getById(id, conn);
 
     return NextResponse.json(
@@ -119,11 +119,11 @@ export async function PUT(req, { params }) {
       body.howToUseSteps = existingProduct.howToUseSteps || [];
 
       for (const [key, value] of formData.entries()) {
-        console.log(
-          `Processing PUT field: ${key}=${
-            value instanceof File ? `File(${value.name})` : value
-          }`
-        );
+        //consolle.log(
+        //   `Processing PUT field: ${key}=${
+        //     value instanceof File ? `File(${value.name})` : value
+        //   }`
+        // );
 
         // Handle thumbnail fields specifically
         if (
@@ -134,9 +134,9 @@ export async function PUT(req, { params }) {
             try {
               const url = await saveFile(value, "uploads/Product");
               body.thumbnail = { url, alt: body.thumbnail?.alt || "" };
-              console.log(`Thumbnail updated: ${url}`);
+              //consolle.log(`Thumbnail updated: ${url}`);
             } catch (error) {
-              console.error(`Error saving thumbnail file:`, error.message);
+              //consolle.error(`Error saving thumbnail file:`, error.message);
             }
           }
           continue;
@@ -159,9 +159,9 @@ export async function PUT(req, { params }) {
             try {
               const url = await saveFile(value, "uploads/Product");
               body.thumbnail = { url, alt: body.thumbnail?.alt || "" };
-              console.log(`Thumbnail updated via bracket: ${url}`);
+              //consolle.log(`Thumbnail updated via bracket: ${url}`);
             } catch (error) {
-              console.error(`Error saving thumbnail file:`, error.message);
+              //consolle.error(`Error saving thumbnail file:`, error.message);
             }
           } else if (prop === "alt") {
             if (body.thumbnail) {
@@ -191,9 +191,9 @@ export async function PUT(req, { params }) {
               try {
                 const url = await saveFile(value, "uploads/Product");
                 body[arrKey][arrIdx].url = url;
-                console.log(`${arrKey}[${arrIdx}] file updated: ${url}`);
+                //consolle.log(`${arrKey}[${arrIdx}] file updated: ${url}`);
               } catch (error) {
-                console.error(`Error saving ${arrKey} file:`, error.message);
+                //consolle.error(`Error saving ${arrKey} file:`, error.message);
               }
             } else if (objKey === "alt") {
               body[arrKey][arrIdx].alt = value;
@@ -215,9 +215,9 @@ export async function PUT(req, { params }) {
               try {
                 const url = await saveFile(value, "Uploads/Product");
                 body[arrKey][arrIdx].image = url;
-                console.log(`${arrKey}[${arrIdx}] image updated: ${url}`);
+                //consolle.log(`${arrKey}[${arrIdx}] image updated: ${url}`);
               } catch (error) {
-                console.error(`Error saving ${arrKey} image:`, error.message);
+                //consolle.error(`Error saving ${arrKey} image:`, error.message);
               }
             } else if (objKey && objKey !== "image") {
               body[arrKey][arrIdx][objKey] = value;
@@ -252,20 +252,20 @@ export async function PUT(req, { params }) {
           try {
             const url = await saveFile(value, "uploads/Product");
             body.images.push({ url, alt: "" });
-            console.log(`New image added: ${url}`);
+            //consolle.log(`New image added: ${url}`);
           } catch (error) {
-            console.error(`Error saving images file:`, error.message);
+            //consolle.error(`Error saving images file:`, error.message);
           }
         } else if (key === "descriptionImages" && value instanceof File) {
           try {
             const url = await saveFile(value, "Uploads/Product");
             body.descriptionImages.push({ url, alt: "" });
-            console.log(`New description image added: ${url}`);
+            //consolle.log(`New description image added: ${url}`);
           } catch (error) {
-            console.error(
-              `Error saving descriptionImages file:`,
-              error.message
-            );
+            //consolle.error(
+            //   `Error saving descriptionImages file:`,
+            //   error.message
+            // );
           }
         } else if (
           (key === "storyVideoUrl" || key === "storyVideo") &&
@@ -277,14 +277,14 @@ export async function PUT(req, { params }) {
             if (mime.startsWith("video/") || mime === "image/gif") {
               const url = await saveFile(value, "uploads/Product");
               body.storyVideoUrl = url;
-              console.log(`storyVideoUrl updated: ${url}`);
+              //consolle.log(`storyVideoUrl updated: ${url}`);
             } else {
-              console.error(
-                `Invalid story video type for PUT: ${mime} (${value.name})`
-              );
+              //consolle.error(
+              //   `Invalid story video type for PUT: ${mime} (${value.name})`
+              // );
             }
           } catch (error) {
-            console.error("Error saving storyVideoUrl in PUT:", error.message);
+            //consolle.error("Error saving storyVideoUrl in PUT:", error.message);
           }
         } else if (/^storyVideoUrl\[(\w+)\]$/.test(key)) {
           const prop = key.match(/^storyVideoUrl\[(\w+)\]$/)[1];
@@ -294,17 +294,17 @@ export async function PUT(req, { params }) {
               if (mime.startsWith("video/") || mime === "image/gif") {
                 const url = await saveFile(value, "uploads/Product");
                 body.storyVideoUrl = url;
-                console.log(`storyVideoUrl updated via bracket: ${url}`);
+                //consolle.log(`storyVideoUrl updated via bracket: ${url}`);
               } else {
-                console.error(
-                  `Invalid story video type for PUT bracket: ${mime} (${value.name})`
-                );
+                //consolle.error(
+                //   `Invalid story video type for PUT bracket: ${mime} (${value.name})`
+                // );
               }
             } catch (error) {
-              console.error(
-                "Error saving storyVideoUrl (bracket) in PUT:",
-                error.message
-              );
+              //consolle.error(
+              //   "Error saving storyVideoUrl (bracket) in PUT:",
+              //   error.message
+              // );
             }
           } else if (prop === "url") {
             body.storyVideoUrl = value;
@@ -370,7 +370,7 @@ export async function PUT(req, { params }) {
       });
     }
 
-    console.log("Final PUT body:", JSON.stringify(body, null, 2));
+    //consolle.log("Final PUT body:", JSON.stringify(body, null, 2));
     const updateResult = await productController.update(id, body, conn);
 
     let fullProduct = null;
@@ -392,7 +392,7 @@ export async function PUT(req, { params }) {
       }
     );
   } catch (error) {
-    console.error("PUT error:", error);
+    //consolle.error("PUT error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

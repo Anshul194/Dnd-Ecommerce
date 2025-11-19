@@ -25,7 +25,7 @@ export async function POST(request) {
     const result = await createAddressController(form, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error("POST /address error:", err);
+    //console.error("POST /address error:", err);
     return NextResponse.json(
       { success: false, message: "Invalid request" },
       { status: 400 }
@@ -49,7 +49,7 @@ export async function GET(request) {
     const result = await getAddressesController(query, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error("GET /address error:", err);
+    //console.error("GET /address error:", err);
     return NextResponse.json(
       { success: false, message: err.message || "Server error" },
       { status: 500 }

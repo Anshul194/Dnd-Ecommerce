@@ -41,6 +41,7 @@ import { toast } from "react-toastify";
 import { fetchSettings } from "@/app/store/slices/settingSlice";
 import axiosInstance from "@/axiosConfig/axiosInstance";
 import { LoadingSpinner } from "./common/Loading";
+import { useTrack } from "@/app/lib/tracking/useTrack";
 
 export default function CheckoutPopup() {
   const checkoutOpen = useSelector((state) => state.checkout.checkoutOpen);
@@ -66,6 +67,7 @@ export default function CheckoutPopup() {
   const inputRefs = useRef([]); // Array of refs for each input field
   const [SelectedProduct, setSelectedProduct] = useState(null);
   const dispatch = useDispatch();
+  const { trackCheckout } = useTrack();
   const [formData, setFormData] = useState({
     pincode: "",
     firstName: "",
@@ -736,6 +738,28 @@ export default function CheckoutPopup() {
   const couponDiscount = selectedCoupon?.discount || 0;
   const subtotal = itemsTotal + shipping - couponDiscount;
   const total = subtotal;
+
+  useEffect(() => {
+    // Track checkout start when popup opens
+    if (checkoutOpen) {
+      const cartData = buyNowProduct
+        ? [
+            {
+              product: buyNowProduct.product.id,
+              quantity: buyNowProduct.quantity,
+              price: buyNowProduct.price,
+              variant: buyNowProduct.variant,
+            },
+          ]
+        : cartItems.map((item) => ({
+            product: item.product.id,
+            quantity: item.quantity,
+            price: item.price,
+            variant: item.variant,
+          }));
+      trackCheckout(cartData);
+    }
+  }, [checkoutOpen]);
 
   if (!checkoutOpen) return null;
 
