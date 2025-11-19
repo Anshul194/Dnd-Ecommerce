@@ -8,30 +8,108 @@ class ContentService {
 
   // Helper method to process file uploads in content
   async processContentFiles(content) {
+    // Return early for non-objects
     if (!content || typeof content !== 'object') return content;
 
-    const processedContent = { ...content };
-    
-    // Process each field in content that might be a file
-    for (const [key, value] of Object.entries(content)) {
-      if (value instanceof File) {
+    // Helper to detect file-like objects (browser File, multer-style, or objects with buffer)
+    const isFileLike = (val) => {
+      if (!val) return false;
+      if (typeof File !== 'undefined' && val instanceof File) return true;
+      if (Buffer && Buffer.isBuffer && Buffer.isBuffer(val)) return true;
+      if (typeof val === 'object') {
+        // multer style: { buffer, originalname, mimetype, size }
+        if (val.buffer || val.originalname || val.mimetype || val.path) return true;
+      }
+      return false;
+    };
+
+    // Recursive traversal to support nested objects/arrays and create metadata keys
+    const traverse = async (node, path = []) => {
+      if (isFileLike(node)) {
+        // Validate and save file-like object
         try {
-          validateImageFile(value);
-          // Save file and replace the File object with the URL
-          const fileUrl = await saveFile(value, 'content-images');
-          processedContent[key] = fileUrl;
-          
-          // Keep metadata
-          processedContent[`${key}_name`] = value.name;
-          processedContent[`${key}_size`] = value.size;
-          processedContent[`${key}_type`] = value.type;
-        } catch (fileError) {
-          throw new Error(`File upload error for ${key}: ${fileError.message}`);
+          validateImageFile(node);
+        } catch (err) {
+          throw new Error(`File validation error for ${path.join('.')}: ${err.message}`);
+        }
+
+        const fileUrl = await saveFile(node, 'content-images');
+        // Attach metadata keys (use underscore-separated path)
+        const metaBase = path.join('_');
+        const metadata = {
+          url: fileUrl,
+          name: node.originalname || node.name || null,
+          size: node.size || (node.buffer ? node.buffer.length : null),
+          type: node.mimetype || node.type || null
+        };
+
+        // Return an object representing saved URL (but the caller will set the field to URL)
+        return { __fileSaved: true, url: metadata.url, metaBase, metadata };
+      }
+
+      if (Array.isArray(node)) {
+        const arr = [];
+        for (let i = 0; i < node.length; i++) {
+          arr[i] = await traverse(node[i], path.concat(String(i)));
+        }
+        return arr;
+      }
+
+      if (node && typeof node === 'object') {
+        const out = {};
+        for (const [k, v] of Object.entries(node)) {
+          out[k] = await traverse(v, path.concat(k));
+        }
+        return out;
+      }
+
+      // primitive
+      return node;
+    };
+
+    // Perform traversal and then restructure to pull out saved-file markers into URL + metadata
+    const traversed = await traverse(content, []);
+
+    // Flatten traversed result, replacing saved-file markers with URL strings and attaching metadata keys
+    const processed = JSON.parse(JSON.stringify(traversed)); // start with deep clone to mutate safely
+
+    const attachMetadata = (obj, basePath = []) => {
+      if (Array.isArray(obj)) {
+        for (let i = 0; i < obj.length; i++) {
+          if (obj[i] && obj[i].__fileSaved) {
+            const key = basePath.concat(String(i)).join('_');
+            // replace array item with url and return metadata to parent via a sibling key
+            const url = obj[i].url;
+            obj[i] = url;
+            // attach metadata on parent object if possible (parent is array; metadata will be added to parent as "<key>_name" etc.)
+            // for array parent we add metadata at index level: "<base>_<i>_name"
+            obj[`${key}_name`] = obj[`${key}_name`] || obj[`${key}_name`] || (obj[i] ? null : null);
+            // create a flat storage on top-level object using globalMetadata map (we will merge later)
+          } else if (typeof obj[i] === 'object' && obj[i] !== null) {
+            attachMetadata(obj[i], basePath.concat(String(i)));
+          }
+        }
+      } else if (obj && typeof obj === 'object') {
+        for (const [k, v] of Object.entries(obj)) {
+          if (v && v.__fileSaved) {
+            const key = basePath.concat(k).join('_');
+            const url = v.url;
+            // replace the field with the URL
+            obj[k] = url;
+            // attach metadata fields next to it
+            obj[`${k}_name`] = v.metadata.name;
+            obj[`${k}_size`] = v.metadata.size;
+            obj[`${k}_type`] = v.metadata.type;
+          } else if (typeof v === 'object' && v !== null) {
+            attachMetadata(v, basePath.concat(k));
+          }
         }
       }
-    }
-    
-    return processedContent;
+    };
+
+    attachMetadata(processed, []);
+
+    return processed;
   }
 
   // Create a new homepage section
