@@ -29,13 +29,11 @@ export default function HomePage() {
 
   return (
     <main>
-      {/* {settings?.activeHomepageLayout !== "Minimal & Organic UI" ? (
+      {settings?.activeHomepageLayout === "Minimal & Organic UI" ? (
         <DynamicHomepage2 />
       ) : (
         <DynamicHomepage />
-      )} */}
-      <DynamicHomepage2 />
-      
+      )}
     </main>
   );
 }
