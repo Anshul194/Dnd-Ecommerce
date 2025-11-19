@@ -42,12 +42,12 @@ function LandingBanner({ content }) {
             }}
           >
             <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">
-              <div className="container   max-w-7xl mx-auto px-4 text-center text-white">
+              <div className="container max-w-7xl mx-auto px-4 text-center text-white">
                 <motion.h1
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
-                  className="text-4xl   w-2/3 text-start  md:text-6xl lg:text-7xl mb-6 drop-shadow-2xl"
+                  className="text-4xl  max-sm:w-full w-2/3 text-start  md:text-6xl lg:text-7xl mb-6 drop-shadow-2xl"
                 >
                   {content[currentSlide].content.title}
                 </motion.h1>
@@ -55,12 +55,12 @@ function LandingBanner({ content }) {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
-                  className="text-lg  w-2/3 text-start  md:text-xl lg:text-2xl mb-10 text-white/90 drop-shadow-lg"
+                  className="text-lg  max-sm:w-full w-2/3 text-start  md:text-xl lg:text-2xl mb-10 text-white/90 drop-shadow-lg"
                 >
                   {content[currentSlide].content.description}
                 </motion.p>
                 <motion.div
-                  className="w-2/3 text-start"
+                  className="w-2/3 max-sm:w-full text-start"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, delay: 0.6 }}
@@ -89,15 +89,15 @@ function LandingBanner({ content }) {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-md p-3 rounded-full transition-all hover:scale-110 shadow-xl"
+        className="absolute left-4 md:left-8 top-1/2 max-sm:p-2  -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-md p-3 rounded-full transition-all hover:scale-110 shadow-xl"
       >
-        <ChevronLeft className="w-6 h-6 text-white" />
+        <ChevronLeft className="w-6 h-6 max-sm:h-4 max-sm:w-4  text-white" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-md p-3 rounded-full transition-all hover:scale-110 shadow-xl"
+        className="absolute right-4 md:right-8 top-1/2 max-sm:p-2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-md p-3 rounded-full transition-all hover:scale-110 shadow-xl"
       >
-        <ChevronRight className="w-6 h-6 text-white" />
+        <ChevronRight className="w-6 h-6 max-sm:h-4 max-sm:w-4  text-white" />
       </button>
 
       {/* Dots */}

@@ -307,15 +307,15 @@ class OrderService {
       // Validate required fields
       //consolle.log("Checking order data: ===>");
       //consolle.log(
-        userId,
-        items,
-        items.length,
-        shippingAddress,
-        billingAddress,
-        paymentId,
-        deliveryOption,
-        paymentMode
-      );
+      //   userId,
+      //   items,
+      //   items.length,
+      //   shippingAddress,
+      //   billingAddress,
+      //   paymentId,
+      //   deliveryOption,
+      //   paymentMode
+      // );
       if (
         !userId ||
         !items ||
@@ -1559,16 +1559,16 @@ class OrderService {
 
   async buildPiecesDetail(order) {
     //consolle.log(
-      "Building pieces detail for order:",
-      order.items.map((i) => ({
-        description: i.product?.name || "Product",
-        declared_value: i.price.toString(),
-        weight: (i.price / 1000).toFixed(2), // dummy logic: price ≈ weight/1000
-        height: "5",
-        length: "5",
-        width: "5",
-      }))
-    );
+    //   "Building pieces detail for order:",
+    //   order.items.map((i) => ({
+    //     description: i.product?.name || "Product",
+    //     declared_value: i.price.toString(),
+    //     weight: (i.price / 1000).toFixed(2), // dummy logic: price ≈ weight/1000
+    //     height: "5",
+    //     length: "5",
+    //     width: "5",
+    //   }))
+    // );
     return order.items.map((i) => ({
       description: i.product?.name || "Product",
       declared_value: i.price.toString(),

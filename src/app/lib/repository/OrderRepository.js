@@ -10,11 +10,11 @@ class OrderRepository extends CrudRepository {
     this.model = model;
     this.connection = connection || mongoose;
     //consolle.log(
-      "OrderRepository initialized with connection:",
-      this.connection
-        ? this.connection.name || "global mongoose"
-        : "no connection"
-    );
+    //   "OrderRepository initialized with connection:",
+    //   this.connection
+    //     ? this.connection.name || "global mongoose"
+    //     : "no connection"
+    // );
   }
 
   async create(data) {
@@ -27,8 +27,8 @@ class OrderRepository extends CrudRepository {
           !this.model.schema.path("billingAddress")
         ) {
           //consolle.warn(
-            "Order model on connection is missing address fields. Re-registering Order model with canonical OrderSchema."
-          );
+          //   "Order model on connection is missing address fields. Re-registering Order model with canonical OrderSchema."
+          // );
           try {
             if (
               this.connection &&
@@ -40,9 +40,9 @@ class OrderRepository extends CrudRepository {
             }
             this.model = this.connection.model("Order", OrderSchema);
             //consolle.log(
-              "Re-registered Order model on connection:",
-              this.connection.name || "global mongoose"
-            );
+            //   "Re-registered Order model on connection:",
+            //   this.connection.name || "global mongoose"
+            // );
           } catch (regErr) {
             //consolle.error("Failed to re-register Order model:", regErr.message);
           }
