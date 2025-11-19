@@ -16,6 +16,7 @@ import {
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { toast } from "react-toastify";
 import ProductCard from "@/app/search/ProductCard";
+import { useTrack } from "@/app/lib/tracking/useTrack";
 
 const DynamicProductSlider = ({ content }) => {
   const { title, description, image } = content;
@@ -29,6 +30,7 @@ const DynamicProductSlider = ({ content }) => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const dispatch = useDispatch();
+  const { trackAddToCart, trackView } = useTrack();
 
   const nextSlide = () => {
     const stories = products?.products?.filter((P) => P.storyVideoUrl) || [];
@@ -112,6 +114,13 @@ const DynamicProductSlider = ({ content }) => {
       })
     );
     dispatch(toggleCart());
+
+    // track
+    try {
+      trackAddToCart(product._id);
+    } catch (err) {
+      // non-blocking
+    }
   };
 
   const handleBuyNow = async (e, productData) => {
@@ -148,7 +157,16 @@ const DynamicProductSlider = ({ content }) => {
       await dispatch(getCartItems());
       setOverlayProduct(null);
       dispatch(setCheckoutOpen(true));
-      // dispatch(toggleCart());
+
+      // track buy now (best-effort)
+      try {
+        trackAddToCart(productData._id); // reuse add_to_cart tracking
+        // also send BUY_NOW event
+        trackEvent("BUY_NOW", {
+          productId: productData._id,
+          variantId: productData.variants[0]._id,
+        });
+      } catch (err) {}
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
     }

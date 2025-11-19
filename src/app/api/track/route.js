@@ -141,3 +141,224 @@ export async function POST(req) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+// export async function GET(req) {
+//   try {
+//     const url = new URL(req.url);
+  
+
+//     let conn;
+//     try {
+//       conn = await getTrackDb(undefined, 8000);
+//       await waitForConnection(conn, 8000);
+//     } catch (dbErr) {
+//       return NextResponse.json(
+//         { success: false, error: "Database connection failed: " + dbErr.message },
+//         { status: 500 }
+//       );
+//     }
+
+//     const eventsColl = conn.db.collection("events");
+
+//     // Build filter from query params
+//     const filter = {};
+//     const type = url.searchParams.get("type");
+//     const productId = url.searchParams.get("productId");
+//     const userId = url.searchParams.get("userId");
+//     const since = url.searchParams.get("since"); // ISO date
+//     const limit = Math.min(1000, parseInt(url.searchParams.get("limit") || "200", 10));
+//     const sortParam = url.searchParams.get("sort") || "-timestamp";
+//     if (type) filter.type = type;
+//     if (productId) {
+//       try {
+//         filter.productId = mongoose.Types.ObjectId.isValid(productId)
+//           ? mongoose.Types.ObjectId(productId)
+//           : productId;
+//       } catch (e) {
+//         filter.productId = productId;
+//       }
+//     }
+//     if (userId) filter.userId = userId;
+//     if (since) {
+//       const d = new Date(since);
+//       if (!isNaN(d.getTime())) filter.timestamp = { $gte: d };
+//     }
+
+//     const sort = sortParam.startsWith("-")
+//       ? { [sortParam.slice(1)]: -1 }
+//       : { [sortParam]: 1 };
+
+//     const events = await eventsColl.find(filter).sort(sort).limit(limit).toArray();
+
+//     // If userId provided, also fetch user document and addresses (best-effort)
+//     let userDoc = null;
+//     let addresses = [];
+//     if (userId) {
+//       try {
+//         const usersColl = conn.db.collection("users");
+//         if (mongoose.Types.ObjectId.isValid(userId)) {
+//           userDoc = await usersColl.findOne({ _id: mongoose.Types.ObjectId(userId) });
+//         } else {
+//           userDoc = await usersColl.findOne({ _id: userId }) || await usersColl.findOne({ email: userId }) || null;
+//         }
+//       } catch (e) {
+//         // non-blocking: don't fail the whole request if user lookup fails
+//         userDoc = null;
+//       }
+
+//       try {
+//         const addressesColl = conn.db.collection("addresses");
+//         if (mongoose.Types.ObjectId.isValid(userId)) {
+//           addresses = await addressesColl.find({ userId: mongoose.Types.ObjectId(userId) }).toArray();
+//         } else {
+//           addresses = await addressesColl.find({ userId }).toArray();
+//         }
+//       } catch (e) {
+//         addresses = [];
+//       }
+//     }
+
+//     return NextResponse.json({ success: true, count: events.length, events, user: userDoc, addresses });
+//   } catch (err) {
+//     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+//   }
+// }
+
+
+export async function GET(req) {
+  try {
+    const url = new URL(req.url);
+  
+    let conn;
+    try {
+      conn = await getTrackDb(undefined, 8000);
+      await waitForConnection(conn, 8000);
+    } catch (dbErr) {
+      return NextResponse.json(
+        { success: false, error: "Database connection failed: " + dbErr.message },
+        { status: 500 }
+      );
+    }
+
+    const eventsColl = conn.db.collection("events");
+
+    // Build filter from query params
+    const filter = {};
+    const type = url.searchParams.get("type");
+    const productId = url.searchParams.get("productId");
+    const userId = url.searchParams.get("userId");
+    const since = url.searchParams.get("since");
+    const limit = Math.min(1000, parseInt(url.searchParams.get("limit") || "200", 10));
+    const sortParam = url.searchParams.get("sort") || "-timestamp";
+    
+    if (type) filter.type = type;
+    if (productId) {
+      try {
+        filter.productId = mongoose.Types.ObjectId.isValid(productId)
+          ? new mongoose.Types.ObjectId(productId)
+          : productId;
+      } catch (e) {
+        filter.productId = productId;
+      }
+    }
+    if (userId) filter.userId = userId;
+    if (since) {
+      const d = new Date(since);
+      if (!isNaN(d.getTime())) filter.timestamp = { $gte: d };
+    }
+
+    const sort = sortParam.startsWith("-")
+      ? { [sortParam.slice(1)]: -1 }
+      : { [sortParam]: 1 };
+
+    const events = await eventsColl.find(filter).sort(sort).limit(limit).toArray();
+
+    // Populate products for events (only name and variant)
+    const productsColl = conn.db.collection("products");
+    const productIds = [...new Set(
+      events
+        .map(e => e.productId)
+        .filter(id => id != null)
+    )];
+
+    let productsMap = {};
+    if (productIds.length > 0) {
+      const products = await productsColl.find(
+        {
+          _id: { $in: productIds.map(id => 
+            mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id
+          )}
+        },
+        {
+          projection: { name: 1, variant: 1, slug: 1 } // Only fetch name and variant fields
+        }
+      ).toArray();
+      
+      productsMap = products.reduce((acc, product) => {
+        acc[product._id.toString()] = {
+          name: product.name,
+          variant: product.variant
+        };
+        return acc;
+      }, {});
+    }
+
+    // Add populated product to each event
+    const populatedEvents = events.map(event => ({
+      ...event,
+      product: event.productId ? (productsMap[event.productId.toString()] || null) : null
+    }));
+
+    // If userId provided, fetch user document and addresses
+    let userDoc = null;
+    let addresses = [];
+    
+    if (userId) {
+      try {
+        const usersColl = conn.db.collection("users");
+        const userIdToQuery = mongoose.Types.ObjectId.isValid(userId) 
+          ? new mongoose.Types.ObjectId(userId)
+          : userId;
+        
+        userDoc = await usersColl.findOne({ _id: userIdToQuery });
+        
+        if (!userDoc && typeof userId === 'string') {
+          userDoc = await usersColl.findOne({ email: userId });
+        }
+      } catch (e) {
+        console.error('User lookup error:', e);
+        userDoc = null;
+      }
+
+      // Fetch addresses using the Address model structure
+      try {
+        const addressesColl = conn.db.collection("addresses");
+        const userIdToQuery = mongoose.Types.ObjectId.isValid(userId) 
+          ? new mongoose.Types.ObjectId(userId)
+          : userId;
+        
+        // Query for active addresses (not soft-deleted)
+        addresses = await addressesColl.find({ 
+          user: userIdToQuery,
+          deletedAt: null 
+        })
+        .sort({ isDefault: -1, createdAt: -1 })
+        .toArray();
+      } catch (e) {
+        console.error('Address lookup error:', e);
+        addresses = [];
+      }
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      count: populatedEvents.length, 
+      events: populatedEvents, 
+      user: userDoc, 
+      addresses 
+    });
+  } catch (err) {
+    console.error('API Error:', err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}

@@ -383,6 +383,16 @@ function Variant5({ detailSettings }) {
                         variant: productData.variants[selectedVariant]._id,
                       })
                     );
+                    try {
+                      trackEvent("ADD_TO_WISHLIST", {
+                        productId: productData._id,
+                        variantId: productData.variants[selectedVariant]._id,
+                        user: isAuthenticated ? userId : "guest",
+                        timestamp: new Date().toISOString(),
+                      });
+                    } catch (err) {
+                      /* non-blocking */
+                    }
                   }}
                   className="flex-1 border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                 >
