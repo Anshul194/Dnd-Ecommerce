@@ -22,7 +22,7 @@ export async function GET(request) {
       );
     }
 
-    console.log("Connection name in route:", conn.name);
+    //console.log("Connection name in route:", conn.name);
 
     // Initialize models
     const Order = conn.models.Order || conn.model("Order", OrderSchema);
@@ -52,7 +52,7 @@ export async function GET(request) {
       { status: result.success ? 200 : 400 }
     );
   } catch (error) {
-    console.error("GET /orders error:", error.message, error.stack);
+    //console.error("GET /orders error:", error.message, error.stack);
     return NextResponse.json(
       {
         success: false,

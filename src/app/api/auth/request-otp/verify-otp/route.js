@@ -82,7 +82,7 @@ export async function POST(request) {
             { status: 400 }
           );
         }
-        console.log("📴 Redis disabled - using development OTP validation");
+        //console.log("📴 Redis disabled - using development OTP validation");
       } else {
         const storedOtp = await redisWrapper.get(`otp:${phone}`);
 
@@ -215,7 +215,7 @@ export async function POST(request) {
 
         return response;
       } catch (createError) {
-        console.error("Error creating new user:", createError);
+        //console.error("Error creating new user:", createError);
         return NextResponse.json(
           {
             success: false,
@@ -226,7 +226,7 @@ export async function POST(request) {
         );
       }
     } catch (redisError) {
-      console.error("Redis error:", redisError);
+      //console.error("Redis error:", redisError);
       return NextResponse.json(
         {
           success: false,
@@ -237,7 +237,7 @@ export async function POST(request) {
       );
     }
   } catch (error) {
-    console.error("POST /auth/verify-otp error:", error);
+    //console.error("POST /auth/verify-otp error:", error);
     return NextResponse.json(
       {
         success: false,

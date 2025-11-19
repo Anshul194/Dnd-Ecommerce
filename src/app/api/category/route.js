@@ -15,7 +15,7 @@ export async function POST(request) {
     const result = await createCategory(form, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error('POST /category error:', err);
+    //console.error('POST /category error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
   }
 }
@@ -33,7 +33,7 @@ export async function GET(request) {
     const result = await getCategories(query, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error('GET /category error:', err);
+    //console.error('GET /category error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }

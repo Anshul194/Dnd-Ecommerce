@@ -55,7 +55,7 @@ export async function GET(req) {
       pageSize: limit,
     });
   } catch (error) {
-    console.error("Certificates GET error:", error.message);
+    //console.error("Certificates GET error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
@@ -97,7 +97,7 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Certificates POST error:", error.message);
+    //console.error("Certificates POST error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }

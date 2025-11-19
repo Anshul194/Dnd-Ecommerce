@@ -30,7 +30,7 @@ export async function GET(req, context) {
     const result = await getTicketById(id, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
-    console.error('GET Ticket by ID Error:', error.message);
+    //console.error('GET Ticket by ID Error:', error.message);
     return toNextResponse({ success: false, message: error.message }, 500);
   }
 }
@@ -55,7 +55,7 @@ export async function PUT(req, context) {
     const result = await updateTicket(id, body, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
-    console.error('PUT Ticket Error:', error.message);
+    //console.error('PUT Ticket Error:', error.message);
     return toNextResponse({ success: false, message: error.message }, 500);
   }
 }
@@ -80,7 +80,7 @@ export async function DELETE(req, context) {
     const result = await deleteTicket(id, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
-    console.error('DELETE Ticket Error:', error.message);
+    //console.error('DELETE Ticket Error:', error.message);
     return toNextResponse({ success: false, message: error.message }, 500);
   }
 }

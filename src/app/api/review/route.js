@@ -42,23 +42,23 @@ async function parseFormData(req) {
 export const POST = withUserAuth(async function (req) {
   try {
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //consolle.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //consolle.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //consolle.log("Connection name in route:", conn.name);
     const Review = conn.models.Review || conn.model("Review", ReviewSchema);
     const Product =
       conn.models.Product || conn.model("Product", ProductModel.schema);
-    console.log("Models registered:", {
-      Review: Review.modelName,
-      Product: Product.modelName,
-    });
+    //consolle.log("Models registered:", {
+    //   Review: Review.modelName,
+    //   Product: Product.modelName,
+    // });
     const reviewService = new ReviewService(conn);
 
     const userId = req.user._id; // Extract userId from authenticated user
@@ -104,7 +104,7 @@ export const POST = withUserAuth(async function (req) {
         imagePaths.push(`/uploads/${fileName}`); // Store the relative path
       }
       body.images = imagePaths;
-      console.log("Images uploaded:", imagePaths);
+      //consolle.log("Images uploaded:", imagePaths);
     }
 
     const newReview = await reviewService.createReview(body);
@@ -118,7 +118,7 @@ export const POST = withUserAuth(async function (req) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Route POST review error:", error.message);
+    //consolle.error("Route POST review error:", error.message);
     return NextResponse.json(
       {
         success: false,
@@ -132,18 +132,18 @@ export const POST = withUserAuth(async function (req) {
 export async function GET(req) {
   try {
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //consolle.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //consolle.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    console.log("Connection name in route:", conn.name);
+    //consolle.log("Connection name in route:", conn.name);
     const Review = conn.models.Review || conn.model("Review", ReviewSchema);
-    console.log("Models registered:", { Review: Review.modelName });
+    //consolle.log("Models registered:", { Review: Review.modelName });
     const reviewService = new ReviewService(conn);
 
     const { searchParams } = new URL(req.url);
@@ -167,7 +167,7 @@ export async function GET(req) {
       data: reviews,
     });
   } catch (error) {
-    console.error("Route GET reviews error:", error.message);
+    //consolle.error("Route GET reviews error:", error.message);
     return NextResponse.json(
       {
         success: false,

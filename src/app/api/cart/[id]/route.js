@@ -15,13 +15,13 @@ function validateCartItem(item) {
 export const PUT = withUserAuth(async function(request, { params }) {
   try {
     const subdomain = getSubdomain(request);
-    console.log('Subdomain:', subdomain);
+    //console.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error('No database connection established');
+      //console.error('No database connection established');
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connection name in route:', conn.name);
+    //console.log('Connection name in route:', conn.name);
     const cartId = params.id;
     if (!mongoose.Types.ObjectId.isValid(cartId)) {
       return NextResponse.json({ success: false, message: 'Invalid cart ID' }, { status: 400 });
@@ -39,7 +39,7 @@ export const PUT = withUserAuth(async function(request, { params }) {
     request.user = request.user || {};
     return await cartController.updateCartById(request, null, body, cartId, conn);
   } catch (err) {
-    console.error('Cart PUT error:', err.message);
+    //console.error('Cart PUT error:', err.message);
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });
   }
 });

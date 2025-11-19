@@ -26,7 +26,7 @@ export async function GET(request, context) {
     const { id } = context.params;
     return await getLeadByIdController(id, conn);
   } catch (err) {
-    console.error('GET /crm/leads/:id error:', err);
+    //console.error('GET /crm/leads/:id error:', err);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
 }
@@ -44,7 +44,7 @@ export async function PUT(request, context) {
     const { id } = context.params;
     return await updateLeadController(body, id, conn);
   } catch (err) {
-    console.error('PUT /crm/leads/:id error:', err);
+    //console.error('PUT /crm/leads/:id error:', err);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
 }
@@ -61,7 +61,7 @@ export async function DELETE(request, context) {
     const { id } = context.params;
     return await deleteLeadController(id, conn);
   } catch (err) {
-    console.error('DELETE /crm/leads/:id error:', err);
+    //console.error('DELETE /crm/leads/:id error:', err);
     return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
   }
 }

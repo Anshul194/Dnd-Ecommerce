@@ -27,12 +27,12 @@ function getModuleModel(conn = null) {
 export const POST = withSuperAdminCreationAuth(
     async function(request) {
         try {
-            console.log('POST /module called',request);
+            //console.log('POST /module called',request);
             await dbConnect();
             const result = await createModule(request);
             return NextResponse.json(result.body, { status: result.status });
         } catch (err) {
-            console.error('POST /module error:', err);
+            //console.error('POST /module error:', err);
             return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
         }
     }
@@ -75,12 +75,12 @@ export async function GET(request) {
     } else {
       // Get all modules that this user/role has permissions for (for sidebar)
       const permittedModules = await getPermittedModulesForUser(user, conn);
-    //   console.log('Permitted modules for user:', permittedModules);
+    //   //console.log('Permitted modules for user:', permittedModules);
       
       return NextResponse.json({ success: true, modules: permittedModules, status: 200 });
     }
   } catch (err) {
-    console.error('GET /module error:', err.message);
+    //console.error('GET /module error:', err.message);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }
@@ -104,13 +104,13 @@ export async function getPermittedModulesForUser(user, conn = null) {
 
     // Use tenant-specific connection for Role model
     const RoleModel = getRoleModel(conn);
-    console.log('Fetching role document for user:', user._id, 'Role:', role, 'Using connection:', conn ? 'tenant-specific' : 'default');
+    //console.log('Fetching role document for user:', user._id, 'Role:', role, 'Using connection:', conn ? 'tenant-specific' : 'default');
     if (typeof role === 'string' && mongoose.Types.ObjectId.isValid(role)) {
         role = new mongoose.Types.ObjectId(role);
     }
     
     let roleDoc = role.modulePermissions ? role : await RoleModel.findById(role).lean();
-    console.log('User role document:', roleDoc);
+    //console.log('User role document:', roleDoc);
     if (!roleDoc || !roleDoc.modulePermissions) return [];
 
     // Get all module IDs that the role has permissions for
@@ -150,7 +150,7 @@ try {
     const result = await updateModule(id, body);
     return NextResponse.json(result.body, { status: result.status });
 } catch (err) {
-    console.error('PUT /module error:', err);
+    //console.error('PUT /module error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
 }
 }
@@ -164,7 +164,7 @@ try {
     const result = await deleteModule(id);
     return NextResponse.json(result.body, { status: result.status });
 } catch (err) {
-    console.error('DELETE /module error:', err);
+    //console.error('DELETE /module error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
 }
 }

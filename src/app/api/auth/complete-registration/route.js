@@ -206,7 +206,7 @@ export async function POST(request) {
 
       return response;
     } catch (redisError) {
-      console.error("Redis error:", redisError);
+      //console.error("Redis error:", redisError);
       return NextResponse.json(
         {
           success: false,
@@ -217,7 +217,7 @@ export async function POST(request) {
       );
     }
   } catch (error) {
-    console.error("POST /auth/complete-registration error:", error);
+    //console.error("POST /auth/complete-registration error:", error);
     return NextResponse.json(
       {
         success: false,

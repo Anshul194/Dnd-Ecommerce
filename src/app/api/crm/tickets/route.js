@@ -78,9 +78,9 @@ export async function GET(req) {
       filters.assignedTo = user._id.toString(); // 🔒 Force assign filtering
       query.filters = JSON.stringify(filters);
 
-      console.log('[TICKETS] Staff user — only assigned tickets shown:', user._id.toString());
+      //console.log('[TICKETS] Staff user — only assigned tickets shown:', user._id.toString());
     } else {
-      console.log('[TICKETS] Admin user — all tickets visible');
+      //console.log('[TICKETS] Admin user — all tickets visible');
     }
 
     // ✅ Step 5: Fetch tickets
@@ -88,7 +88,7 @@ export async function GET(req) {
     return toNextResponse(result.body, result.status);
 
   } catch (error) {
-    console.error('GET /crm/tickets error:', error.message);
+    //console.error('GET /crm/tickets error:', error.message);
     return toNextResponse({ success: false, message: error.message }, 500);
   }
 }

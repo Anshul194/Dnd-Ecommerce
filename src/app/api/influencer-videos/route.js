@@ -13,16 +13,16 @@ export const config = {
 export async function GET(request) {
   try {
     const subdomain = getSubdomain(request);
-    console.log('Subdomain:', subdomain);
+    //console.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error('No database connection established');
+      //console.error('No database connection established');
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connection name in route:', conn.name);
+    //console.log('Connection name in route:', conn.name);
     return await influencerVideoController.getAllInfluencerVideos(request, null, conn);
   } catch (err) {
-    console.error('InfluencerVideo GET error:', err.message, err.stack);
+    //console.error('InfluencerVideo GET error:', err.message, err.stack);
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });
   }
 }
@@ -30,16 +30,16 @@ export async function GET(request) {
 export const POST = withUserAuth(async function (request) {
   try {
     const subdomain = getSubdomain(request);
-    console.log('Subdomain:', subdomain);
+    //console.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error('No database connection established');
+      //console.error('No database connection established');
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    console.log('Connection name in route:', conn.name);
+    //console.log('Connection name in route:', conn.name);
     return await influencerVideoController.createInfluencerVideo(request, null, conn);
   } catch (err) {
-    console.error('InfluencerVideo POST error:', err.message, err.stack);
+    //console.error('InfluencerVideo POST error:', err.message, err.stack);
     return NextResponse.json({ success: false, message: err.message }, { status: 400 });
   }
 });

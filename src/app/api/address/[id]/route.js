@@ -48,7 +48,7 @@ export async function GET(request, { params }) {
     }
     return NextResponse.json({ success: true, data: address });
   } catch (err) {
-    console.error("GET /api/address/[id] error:", err);
+    //console.error("GET /api/address/[id] error:", err);
     return NextResponse.json(
       { success: false, message: err.message || "Error fetching address" },
       { status: 500 }
