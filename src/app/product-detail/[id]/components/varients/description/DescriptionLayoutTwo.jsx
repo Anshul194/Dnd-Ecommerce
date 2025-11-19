@@ -38,7 +38,7 @@ export default function DescriptionLayoutTwo({ data }) {
             <div className="sticky top-10">
                 {/* Header */}
         <div className="mb-5">
-          <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-2">
+          <h1 className="text-4xl md:text-5xl text-black bebas mb-2">
             DESCRIPTION
           </h1>
         </div>

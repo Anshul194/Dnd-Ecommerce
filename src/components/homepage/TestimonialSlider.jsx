@@ -6,6 +6,7 @@ import heart from "../../../public/images/heart.png";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchReviews } from "@/app/store/slices/Reviews";
+import AnimatedGradientBorder from "../ui/AnimatedGradientBorder";
 
 export default function TestimonialSlider({ content }) {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -60,14 +61,13 @@ export default function TestimonialSlider({ content }) {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-16 bg-white">
       {/* Header Section */}
-      <div className="flex justify-between flex-wrap items-start mb-16">
-        <div className="flex-1">
-          <h1 className="text-[48px] text-black mb-4 md:mb-0 font-black">
-            {content?.title || "GENUI NE HEARTS. TRUE STORIES."}
-          </h1>
-        </div>
-        <div className="text-start w-fit">
-          <p className="text-black relative poppins-medium leading-tight max-w-[230px] text-lg ml-auto">
+      <div className="mb-9">
+        <h1 className="text-3xl md:text-5xl text-black mb-2 font-black text-center">
+          {content?.title || "GENUI NE HEARTS. TRUE STORIES."}
+        </h1>
+        < AnimatedGradientBorder/>
+        <div className="text-start lg:max-w-[80%] mx-auto mt-5">
+          <p className="text-black relative poppins-medium leading-tight text-lg ml-auto text-center">
             {content?.description ||
               "HEARTFELT TESTIMONIALS FROM OUR CUSTOMERS."}
             <span>
@@ -158,9 +158,8 @@ export default function TestimonialSlider({ content }) {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-              currentSlide === index ? "bg-green-500" : "bg-gray-300"
-            }`}
+            className={`w-2 h-2 rounded-full transition-colors duration-300 ${currentSlide === index ? "bg-green-500" : "bg-gray-300"
+              }`}
           />
         ))}
       </div>

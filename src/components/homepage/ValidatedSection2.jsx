@@ -5,9 +5,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCertificates } from "@/app/store/slices/certificateSlice";
-import AnimatedGradientBorder from "../ui/AnimatedGradientBorder";
 
-export default function ValidatedSection({ content }) {
+export default function ValidatedSection2({ content }) {
   const scrollContainerRef = useRef(null);
   const dispatch = useDispatch();
   const { certificates = [], loading: certLoading } = useSelector(
@@ -46,16 +45,15 @@ export default function ValidatedSection({ content }) {
       <div className=" mx-auto">
         {/* Header Section */}
         <div className="flex justify-between flex-col max-w-4xl mx-auto text-center items-start mb-16">
-          <div className="flex-1">
-            <h1 className="text-3xl md:text-5xl font-black text-black mb-2 ">
+          <div className="flex-1 mx-auto">
+            <h1 className="text-3xl md:text-4xl mb-4 bg-gradient-to-r from-[#3C950D] to-[#2d7009] bg-clip-text text-transparent text-center">
               {content?.title}
             </h1>
-            <AnimatedGradientBorder />
           </div>
 
-          <div className="flex-1 flex justify-center w-full   items-center mt-5">
+          <div className="flex-1 flex justify-center w-full items-center">
             <div className="max-w-md text-center lg:max-w-[80%] mx-auto">
-              <p className="text-black relative  poppins-medium leading-tight text-lg">
+              <p className="text-gray-600">
                 {content?.description}
                 <span className="relative">
                   <img
@@ -84,15 +82,15 @@ export default function ValidatedSection({ content }) {
                 {certificatesForUI.map((item, index) => (
                   <div
                     key={`a-${index}`}
-                    className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-4 border-green-500 bg-white"
+                    className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-2 border-[#3C950D] bg-white"
                   >
                     <Image
                       src={
                         item && item.file
                           ? item.file
                           : content?.images && content.images[index]
-                          ? content.images[index]
-                          : "/logo-place-holder.png"
+                            ? content.images[index]
+                            : "/logo-place-holder.png"
                       }
                       alt={`Certificate ${index + 1}`}
                       width={160}
@@ -108,15 +106,15 @@ export default function ValidatedSection({ content }) {
                 {certificatesForUI.map((item, index) => (
                   <div
                     key={`b-${index}`}
-                    className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-4 border-green-500 bg-white"
+                    className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-2 border-[#3C950D] bg-white"
                   >
                     <Image
                       src={
                         item && item.file
                           ? item.file
                           : content?.images && content.images[index]
-                          ? content.images[index]
-                          : "/logo-place-holder.png"
+                            ? content.images[index]
+                            : "/logo-place-holder.png"
                       }
                       alt={`Certificate duplicate ${index + 1}`}
                       width={160}

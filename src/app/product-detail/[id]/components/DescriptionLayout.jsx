@@ -12,7 +12,7 @@ export default function DescriptionLayout({ data }) {
         <div className="flex flex-col space-y-6 flex-1">
           {/* Description Text */}
           <div className="sticky top-10">
-            <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0">
+            <h1 className="text-4xl md:text-5xl text-black bebas mb-4 md:mb-0">
               DESCRIPTION
             </h1>
             <div

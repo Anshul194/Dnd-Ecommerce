@@ -64,7 +64,7 @@ export default function RenderCardsVariant() {
         {/* Left Column */}
         <div className={isMobileWidth ? "w-full" : "max-w-2xl"}>
           <h1
-            className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0"
+            className="text-4xl md:text-5xl text-black bebas mb-4 md:mb-0"
             style={titleStyle}
           >
             PRODUCT REVIEW

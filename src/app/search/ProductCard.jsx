@@ -143,7 +143,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         <div
           className={`${
             showDes ? "h-96  max-sm:h-75" : "h-fit "
-          } bg-white flex flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-[320px]`}
+          } bg-white flex flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
         >
           {/* Product Header */}
           <div className="relative bg-white rounded-t-2xl">

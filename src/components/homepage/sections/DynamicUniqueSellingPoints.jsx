@@ -10,6 +10,7 @@ import 'swiper/css';
 import 'swiper/css/autoplay';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import AnimatedGradientBorder from "@/components/ui/AnimatedGradientBorder";
 
 const DynamicUniqueSellingPoints = ({ content }) => {
   const { title, description, cta, cards, image } = content;
@@ -60,21 +61,20 @@ const DynamicUniqueSellingPoints = ({ content }) => {
         `}
       </style>
       {/* Heading at top */}
-      <div className="flex gap-6 justify-center align-middle mb-6">
-        <div className="text-left mb-10">
-          <h2 className="text-[48px] leading-none text-black font-black">
-            {title || "UNIQUE SELLING POINTS"}
-          </h2>
-        </div>
+      <div className="text-center mb-2">
+        <h2 className="text-3xl md:text-5xl leading-none text-black font-black">
+          {title || "UNIQUE SELLING POINTS"}
+        </h2>
+      </div>
+      <AnimatedGradientBorder/>
 
-        {/* Main Section */}
-        <div className="flex items-start flex-col-reverse flex-wrap md:flex-row gap-8">
-          {/* Left content */}
-          <div className="flex-1 w-full">
-            <p className="text-black relative poppins-medium leading-tight text-lg mb-8 max-w-xl">
-              {description || "gchj"}
-            </p>
-          </div>
+      {/* Main Section */}
+      <div className="flex items-start mx-auto lg:max-w-[80%] flex-col-reverse flex-wrap md:flex-row gap-8 mt-5">
+        {/* Left content */}
+        <div className="flex-1 w-full">
+          <p className="text-black relative poppins-medium leading-tight text-lg mb-8 text-center ">
+            {description || "gchj"}
+          </p>
         </div>
       </div>
 

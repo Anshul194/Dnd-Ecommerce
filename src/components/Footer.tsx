@@ -73,7 +73,7 @@ export default function Footer() {
     return null; // Don't render Navbar on product detail page
   }
   return (
-    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
+    <footer className={`bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden ${pathname.includes("/productDetail") ? "mb-[97px]": "mb-0"}`}>
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-[#3C950D]/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#3C950D]/10 rounded-full blur-3xl" />
@@ -278,7 +278,7 @@ export default function Footer() {
                   alt={payment.alt}
                   width={50}
                   height={30}
-                  className="h-8 min-w-8 w-fit rounded-md  inline-block mx-2"
+                  className="h-8 min-w-8 w-fit rounded-md mb-2 inline-block mx-2"
                 />
               ))}
             </div>

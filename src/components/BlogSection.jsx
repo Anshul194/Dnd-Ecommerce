@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import AnimatedGradientBorder from "./ui/AnimatedGradientBorder";
 
 export default function BlogSection({ content }) {
   const { items, loading } = useSelector((state) => state.blogs);
@@ -103,10 +104,11 @@ export default function BlogSection({ content }) {
     <div className="p-8 max-sm:px-4 bg-white">
       {/* Header Section */}
       <div className="mb-10">
-        <h1 className="text-[48px] text-center font-black text-black mb-4 md:mb-0">
+        <h1 className="text-3xl md:text-5xl text-center font-black text-black mb-2">
           {content?.title || "Blogs"}
         </h1>
-        <p className="text-black max-w-xl mx-auto  relative poppins-medium leading-tight text-center text-lg mb-8">
+        < AnimatedGradientBorder/>
+        <p className="text-black lg:max-w-[80%] mx-auto mt-5 relative poppins-medium leading-tight text-center text-lg mb-8">
           {content?.description ||
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
         </p>
@@ -140,10 +142,10 @@ export default function BlogSection({ content }) {
               >
                 <div
                   key={product._id}
-                  className="bg-gray-50/80 group hover:bg-gray-100 cursor-pointer rounded-b-md flex-shrink-0 min-w-64 max-w-[300px] w-full"
+                  className="bg-gray-50/80 group border hover:bg-gray-100 cursor-pointer rounded-xl flex-shrink-0 min-w-64 max-w-[300px] w-full"
                 >
                   {/* Product Image */}
-                  <div className="relative bg-gray-400 overflow-hidden rounded-t-md w-full h-48 mb-1 ">
+                  <div className="relative bg-gray-400 overflow-hidden rounded-t-xl w-full h-48 mb-1 ">
                     <Image
                       src={
                         product?.thumbnail?.url ||

@@ -14,7 +14,7 @@ function Variant3() {
     <div className="py-10 lg:py-20 px-4">
       <div className="max-w-7xl w-auto mx-auto">
         {/* Header */}
-        <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-10 md:mb-16 text-center">
+        <h1 className="text-4xl md:text-5xl text-black mb-8 text-center font-black">
           DESCRIPTION
         </h1>
 
