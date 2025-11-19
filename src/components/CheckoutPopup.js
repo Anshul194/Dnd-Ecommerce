@@ -68,6 +68,12 @@ export default function CheckoutPopup() {
   const [SelectedProduct, setSelectedProduct] = useState(null);
   const dispatch = useDispatch();
   const { trackCheckout } = useTrack();
+
+  // Track whether an order was placed while checkout was open
+  const orderPlacedRef = useRef(false);
+  // initialize prev as false so we only detect actual true->false transitions
+  const prevCheckoutOpen = useRef(false);
+
   const [formData, setFormData] = useState({
     pincode: "",
     firstName: "",
@@ -398,6 +404,8 @@ export default function CheckoutPopup() {
               selectedCoupon && (payload.discount = selectedCoupon.discount);
 
               await dispatch(placeOrder(payload));
+              // Mark that order was placed to avoid sending abandonment event
+              orderPlacedRef.current = true;
               dispatch(setCheckoutClose());
               dispatch(clearCart());
               router.push(location + "?Order_status=success");
@@ -470,6 +478,8 @@ export default function CheckoutPopup() {
           selectedCoupon && (payload.discount = selectedCoupon.discount);
 
           await dispatch(placeOrder(payload));
+          // Mark that order was placed to avoid sending abandonment event
+          orderPlacedRef.current = true;
           dispatch(setCheckoutClose());
           dispatch(clearCart());
           router.push(location + "?Order_status=success");
@@ -759,6 +769,44 @@ export default function CheckoutPopup() {
           }));
       trackCheckout(cartData);
     }
+  }, [checkoutOpen]);
+
+  // Only run when checkoutOpen changes so we don't accidentally send on unrelated updates
+  useEffect(() => {
+    // If popup just opened, reset the placed flag for the new session
+    if (checkoutOpen) {
+      orderPlacedRef.current = false;
+    }
+
+    // detect true -> false transition
+    if (prevCheckoutOpen.current && !checkoutOpen) {
+      if (!orderPlacedRef.current) {
+        const productIds = buyNowProduct
+          ? [buyNowProduct.product.id]
+          : (cartItems || []).map((it) => it.product.id);
+
+        const eventPayload = {
+          type: "CHECKOUT_ABANDONED",
+          productIds,
+          user: isAuthenticated
+            ? { _id: user?._id, email: user?.email, phone: user?.phone , name: user?.name }
+            : null,
+          timestamp: new Date().toISOString(),
+        };
+
+        fetch("/api/track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(eventPayload),
+        }).catch((err) => {
+          console.error("Failed to send checkout abandoned event:", err);
+        });
+      }
+      // prepare for next cycle
+      orderPlacedRef.current = false;
+    }
+
+    prevCheckoutOpen.current = checkoutOpen;
   }, [checkoutOpen]);
 
   if (!checkoutOpen) return null;
