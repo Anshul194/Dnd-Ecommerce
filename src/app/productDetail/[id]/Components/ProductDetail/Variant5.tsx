@@ -25,6 +25,7 @@ import { toast } from "react-toastify";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { addToWishlist } from "@/app/store/slices/wishlistSlice";
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
 const Base_Url = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -34,6 +35,19 @@ function Variant5({ detailSettings }) {
   const [selectedVariant, setSelectedVariant] = React.useState<number>(0);
   const productData = useSelector(selectSelectedProduct);
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const userId = useSelector((state) => state.auth.user?._id);
+
+  React.useEffect(() => {
+    if (productData?._id) {
+      try {
+        trackEvent("product_view", {
+          productId: productData._id,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
+    }
+  }, [productData?._id, isAuthenticated, userId]);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
@@ -74,6 +88,14 @@ function Variant5({ detailSettings }) {
         return;
       }
       await dispatch(getCartItems());
+      try {
+        trackEvent("add_to_cart", {
+          productId: productData._id,
+          variantId: productData.variants[selectedVariant]?._id,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
       dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -111,6 +133,14 @@ function Variant5({ detailSettings }) {
         return;
       }
       await dispatch(getCartItems());
+      try {
+        trackEvent("buy_now", {
+          productId: productData._id,
+          variantId: productData.variants[selectedVariant]?._id,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {

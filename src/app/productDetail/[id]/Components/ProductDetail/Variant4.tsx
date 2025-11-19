@@ -20,6 +20,7 @@ import {
 } from "@/app/store/slices/cartSlice";
 import { toast } from "react-toastify";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
+import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
 function Variant4() {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
@@ -32,6 +33,20 @@ function Variant4() {
     setExpandedSection(expandedSection === section ? "" : section);
   };
   const dispatch = useDispatch();
+
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const userId = useSelector((state) => state.auth.user?._id);
+
+  React.useEffect(() => {
+    if (productData?._id) {
+      try {
+        trackEvent("product_view", {
+          productId: productData._id,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
+    }
+  }, [productData?._id, isAuthenticated, userId]);
 
   const handleQuantityChange = (delta: number) => {
     setQuantity(Math.max(1, quantity + delta));
@@ -70,6 +85,14 @@ function Variant4() {
         return;
       }
       await dispatch(getCartItems());
+      try {
+        trackEvent("add_to_cart", {
+          productId: productData._id,
+          variantId: selectedVariant,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
       dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -109,6 +132,14 @@ function Variant4() {
         return;
       }
       await dispatch(getCartItems());
+      try {
+        trackEvent("buy_now", {
+          productId: productData._id,
+          variantId: selectedVariant,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {

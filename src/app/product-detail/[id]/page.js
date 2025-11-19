@@ -33,6 +33,7 @@ import {
   toggleCart,
 } from "@/app/store/slices/cartSlice";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
+import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
 function ProductPage({ params }) {
   const { id: slug } = React.use(params); // unwrap params with React.use()
@@ -44,6 +45,7 @@ function ProductPage({ params }) {
   const [data, setData] = useState({});
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const userId = useSelector((state) => state.auth.user?._id);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [showStickyButtons, setShowStickyButtons] = useState(false);
   const buttonRef = useRef(null);
@@ -82,42 +84,53 @@ function ProductPage({ params }) {
     }
   }, [dispatch, slug]);
 
-    const handleAddToCart = async () => {
-      // if (!isAuthenticated) {
-      //   setAuthModalOpen(true);
-      //   return;
-      // }
-      const price = data.variants.find((variant) => variant._id === selectedPack);
-      try {
-        const resultAction = await dispatch(
-          addToCart({
-            product: {
-              id: data._id,
-              name: data.name,
-              image: data.thumbnail || data.images[0],
-              variant: selectedPack,
-              slug: data.slug,
-            },
-            quantity,
-            price: price.salePrice || price.price,
+  const handleAddToCart = async () => {
+    // if (!isAuthenticated) {
+    //   setAuthModalOpen(true);
+    //   return;
+    // }
+    const price = data.variants.find((variant) => variant._id === selectedPack);
+    try {
+      const resultAction = await dispatch(
+        addToCart({
+          product: {
+            id: data._id,
+            name: data.name,
+            image: data.thumbnail || data.images[0],
             variant: selectedPack,
-          })
+            slug: data.slug,
+          },
+          quantity,
+          price: price.salePrice || price.price,
+          variant: selectedPack,
+        })
+      );
+      if (resultAction.error) {
+        // Show backend error (payload) if present, else generic
+        toast.error(
+          resultAction.payload ||
+            resultAction.error.message ||
+            "Failed to add to cart"
         );
-        if (resultAction.error) {
-          // Show backend error (payload) if present, else generic
-          toast.error(
-            resultAction.payload ||
-              resultAction.error.message ||
-              "Failed to add to cart"
-          );
-          return;
-        }
-        await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
-        dispatch(toggleCart());
-      } catch (error) {
-        toast.error(error?.message || "Failed to add to cart");
+        return;
       }
-    };
+      await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
+      // tracking: add to cart
+      try {
+        trackEvent("add_to_cart", {
+          productId: data._id,
+          variantId: selectedPack,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {
+        /* non-blocking */
+      }
+      dispatch(toggleCart());
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
+    }
+  };
 
   const handleBuyNow = async () => {
     // if (!isAuthenticated) {
@@ -150,6 +163,17 @@ function ProductPage({ params }) {
         return;
       }
       await dispatch(getCartItems());
+      // tracking: buy now
+      try {
+        trackEvent("buy_now", {
+          productId: data._id,
+          variantId: selectedPack,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {
+        /* non-blocking */
+      }
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {
@@ -177,6 +201,20 @@ function ProductPage({ params }) {
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // track view when product data becomes available
+  React.useEffect(() => {
+    if (data?._id) {
+      try {
+        trackEvent("product_view", {
+          productId: data._id,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {
+        /* non-blocking */
+      }
+    }
+  }, [data?._id, isAuthenticated, userId]);
 
   return (
     <>
