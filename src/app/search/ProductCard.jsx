@@ -142,8 +142,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
       >
         <div
           className={`${
-            showDes ? "h-96  max-sm:h-75" : "h-fit "
-          } bg-white flex flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
+            showDes ? "h-96  max-sm:h-80" : "h-fit max-sm:h-80"
+          } bg-white flex max-sm:w-full max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
         >
           {/* Product Header */}
           <div className="relative bg-white rounded-t-2xl">
@@ -207,7 +207,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               </button>
             </div>
             {/* Product Image */}
-            <div className="flex h-40 max-sm:h-24 max-sm:w-fit max-sm:mx-auto justify-center items-center">
+            <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center">
               <Image
                 src={product?.thumbnail?.url || product.images?.[0]?.url}
                 alt={product?.thumbnail?.alt || product.images?.[0]?.alt}

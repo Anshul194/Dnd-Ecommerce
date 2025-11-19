@@ -46,8 +46,8 @@ function Variant3() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   React.useEffect(() => {
@@ -163,12 +163,14 @@ function Variant3() {
               </h3>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-lg font-bold text-gray-900">
-                  ₹{productData.variants?.find(
+                  ₹
+                  {productData.variants?.find(
                     (variant) => variant._id === selectedVariant
                   )?.salePrice || productData.variants?.[0]?.salePrice}
                 </span>
                 <span className="text-sm text-gray-500 line-through">
-                  ₹{productData.variants?.find(
+                  ₹
+                  {productData.variants?.find(
                     (variant) => variant._id === selectedVariant
                   )?.price || productData.variants?.[0]?.price}
                 </span>
@@ -243,16 +245,18 @@ function Variant3() {
               }
             </span>
             <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-              {(((productData.variants.filter(
-                (variant) => variant._id === selectedVariant
-              )[0]?.salePrice -
+              {(
+                ((productData.variants.filter(
+                  (variant) => variant._id === selectedVariant
+                )[0]?.salePrice -
+                  productData.variants.filter(
+                    (variant) => variant._id === selectedVariant
+                  )[0]?.price) *
+                  100) /
                 productData.variants.filter(
                   (variant) => variant._id === selectedVariant
-                )[0]?.price) *
-                100) /
-                productData.variants.filter(
-                  (variant) => variant._id === selectedVariant
-                )[0]?.price).toFixed(0)}
+                )[0]?.price
+              ).toFixed(0)}
               % OFF
             </span>
           </div>
@@ -264,7 +268,7 @@ function Variant3() {
           <h3 className="text-lg font-semibold text-gray-900 mb-3">
             Choose Size
           </h3>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 max-sm:grid-cols-2 gap-3">
             {productData.variants.map((variant) => (
               <button
                 key={variant._id}
@@ -275,7 +279,7 @@ function Variant3() {
                 }`}
                 onClick={() => setSelectedVariant(variant._id)}
               >
-                <div className="font-semibold text-gray-900">
+                <div className="font-semibold max-sm:text-sm text-gray-900">
                   {variant.title}
                 </div>
                 <div className="text-sm text-gray-600">
@@ -319,7 +323,7 @@ function Variant3() {
             onClick={handleAddToCart}
             className="flex-1 bg-green-600 text-white py-4 px-6 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
           >
-            <ShoppingCart size={20} />
+            <ShoppingCart size={20} className="max-sm:hidden" />
             Add to Cart
           </button>
           <button
@@ -356,7 +360,7 @@ function Variant3() {
       {/* Product Details Tabs */}
       <div className="bg-white rounded-2xl shadow-sm pb-24 lg:pb-6">
         <div className="border-b border-gray-200">
-          <div className="flex">
+          <div className="flex max-sm:overflow-x-scroll ">
             {[
               { key: "details", label: "Details" },
               { key: "ingredients", label: "Ingredients" },

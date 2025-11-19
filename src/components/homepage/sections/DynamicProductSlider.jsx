@@ -399,7 +399,7 @@ const DynamicProductSlider = ({ content }) => {
                           minWidth: 0,
                         }}
                       >
-                        <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col group">
+                        <div className="bg-white border border-gray-200 rounded-2xl h-96  flex flex-col group">
                           {/* Name with green icon */}
                           <div className="absolute top-4 right-6 flex items-center justify-between mb-6 z-50">
                             <h3 className="text-md font-bold text-black uppercase tracking-wide">
@@ -433,7 +433,7 @@ const DynamicProductSlider = ({ content }) => {
                               />
                             )}
                             {/* Hover Overlay */}
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 rounded-b-lg">
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 max-sm:opacity-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 rounded-b-lg">
                               <div className="flex gap-2 justify-center">
                                 <button
                                   onClick={(e) => {
@@ -517,7 +517,7 @@ const DynamicProductSlider = ({ content }) => {
                               />
                             )}
                             {/* Hover Overlay */}
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 rounded-b-lg">
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 opacity-0 max-sm:opacity-100 group-hover:opacity-100 transition-opacity duration-300 p-4 rounded-b-lg">
                               <div className="flex gap-2 justify-center">
                                 <button
                                   onClick={(e) => {
@@ -568,13 +568,13 @@ const DynamicProductSlider = ({ content }) => {
         {/* Overlay for full-page media preview */}
         {overlayOpen && overlayProduct && (
           <div
-            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 p-4"
+            className="fixed max-sm:hidden inset-0 z-[99999] flex items-center justify-center bg-black/70 p-4"
             onClick={closeOverlay}
             aria-modal="true"
             role="dialog"
           >
             <div
-              className="relative h-[80%] bg-white rounded-lg overflow-hidden shadow-xl"
+              className="relative max-h-[80%]  bg-white rounded-lg overflow-hidden shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <button

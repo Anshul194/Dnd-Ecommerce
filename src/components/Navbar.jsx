@@ -185,7 +185,7 @@ export default function Navbar() {
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               {!pathname.includes("/dashboard") && (
                 <SheetTrigger asChild>
-                  <button className="md:hidden text-[#3C950D] hover:text-[#3C950D] transition-colors p-2">
+                  <button className="md:hidden text-[#3C950D] hover:text-[#3C950D] transition-colors p-2 pr-4">
                     <Menu className="w-6 h-6" />
                   </button>
                 </SheetTrigger>
@@ -197,7 +197,25 @@ export default function Navbar() {
                 <SheetHeader>
                   <SheetTitle className="text-[#3C950D]">Menu</SheetTitle>
                 </SheetHeader>
+
                 <div className="mt-6 flex flex-col gap-2">
+                  <div
+                    onClick={handleUserDashboardClick}
+                    className="flex mx-4 px-2 py-2 rounded-md bg-green-100 items-center gap-2 cursor-pointer hover:text-[#3C950D] transition-all hover:scale-105"
+                  >
+                    <div className="w-7 h-7 md:w-8 md:h-8 bg-[#3C950D]  rounded-full flex items-center justify-center">
+                      {displayName ? (
+                        <span className="text-white font-semibold">
+                          {displayName.charAt(0).toUpperCase()}
+                        </span>
+                      ) : (
+                        <span className="text-white font-semibold">User</span>
+                      )}
+                    </div>
+                    <span className=" text-sm text-[#3C950D]">
+                      {displayName ?? "User"}
+                    </span>
+                  </div>
                   <button
                     onClick={() => {
                       setIsOpen(false);
@@ -242,10 +260,11 @@ export default function Navbar() {
                             className="px-3 py-2 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
                           >
                             <ChevronDown
-                              className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${expandedCategory === category._id
+                              className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+                                expandedCategory === category._id
                                   ? "rotate-180"
                                   : ""
-                                }`}
+                              }`}
                             />
                           </button>
                         )}
@@ -254,10 +273,11 @@ export default function Navbar() {
                       {/* Collapsible subcategories */}
                       {category.subcategories?.length > 0 && (
                         <div
-                          className={`ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${expandedCategory === category._id
+                          className={`ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${
+                            expandedCategory === category._id
                               ? "max-h-96 opacity-100"
                               : "max-h-0 opacity-0"
-                            }`}
+                          }`}
                         >
                           {category.subcategories.map((sub) => (
                             <button
@@ -309,7 +329,7 @@ export default function Navbar() {
                   alt="TeaHaven Logo"
                   width={100}
                   height={100}
-                  className="rounded-full h-[90px] w-[90px] object-cover "
+                  className="rounded-full h-[90px] w-[90px] max-sm:h-[60px] max-sm:w-[60px] object-cover "
                 />
               </Link>
             </div>
@@ -335,8 +355,9 @@ export default function Navbar() {
                 <button className="flex items-center gap-1 text-gray-700 hover:text-[#3C950D] transition-colors py-2 font-medium">
                   Categories
                   <ChevronDown
-                    className={`w-4 h-4 transition-transform ${showCategoryMenu ? "rotate-180" : ""
-                      }`}
+                    className={`w-4 h-4 transition-transform ${
+                      showCategoryMenu ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -361,16 +382,19 @@ export default function Navbar() {
                                     onMouseEnter={() =>
                                       setHoveredCategory(category._id)
                                     }
-                                    className={`group cursor-pointer rounded-lg transition-all ${hoveredCategory === category._id
+                                    className={`group cursor-pointer rounded-lg transition-all ${
+                                      hoveredCategory === category._id
                                         ? "bg-white shadow-sm"
                                         : "hover:bg-white/50"
-                                      }`}
+                                    }`}
                                   >
                                     <div
                                       onClick={() => {
                                         setShowCategoryMenu(false);
                                         setHoveredCategory(null);
-                                        router.push(`/search?category=${category._id}`);
+                                        router.push(
+                                          `/search?category=${category._id}`
+                                        );
                                       }}
                                       className="flex items-center gap-3 p-3"
                                       style={{ cursor: "pointer" }}
@@ -394,30 +418,30 @@ export default function Navbar() {
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <h4
-                                          className={`font-medium text-sm transition-colors truncate ${hoveredCategory === category._id
+                                          className={`font-medium text-sm transition-colors truncate ${
+                                            hoveredCategory === category._id
                                               ? "text-[#3C950D]"
                                               : "text-gray-700"
-                                            }`}
+                                          }`}
                                         >
                                           {category.name}
                                         </h4>
-                                        {category.subcategories?.length >
-                                          0 && (
-                                            <p className="text-xs text-gray-500">
-                                              {category.subcategories.length}{" "}
-                                              items
-                                            </p>
-                                          )}
-                                      </div>
-                                      {category.subcategories?.length >
-                                        0 && (
-                                          <ChevronRight
-                                            className={`w-4 h-4 transition-colors ${hoveredCategory === category._id
-                                                ? "text-[#3C950D]"
-                                                : "text-gray-400"
-                                              }`}
-                                          />
+                                        {category.subcategories?.length > 0 && (
+                                          <p className="text-xs text-gray-500">
+                                            {category.subcategories.length}{" "}
+                                            items
+                                          </p>
                                         )}
+                                      </div>
+                                      {category.subcategories?.length > 0 && (
+                                        <ChevronRight
+                                          className={`w-4 h-4 transition-colors ${
+                                            hoveredCategory === category._id
+                                              ? "text-[#3C950D]"
+                                              : "text-gray-400"
+                                          }`}
+                                        />
+                                      )}
                                     </div>
                                   </div>
                                 );
@@ -449,14 +473,13 @@ export default function Navbar() {
                                         </p>
                                       </div>
 
-                                      {selectedCategory?.subcategories
-                                        ?.length > 0 ? (
+                                      {selectedCategory?.subcategories?.length >
+                                      0 ? (
                                         <div className="grid grid-cols-2 gap-3">
                                           {selectedCategory.subcategories.map(
                                             (subcategory) => {
                                               if (
-                                                subcategory.status !==
-                                                "Active"
+                                                subcategory.status !== "Active"
                                               )
                                                 return null;
                                               return (
@@ -464,9 +487,7 @@ export default function Navbar() {
                                                   key={subcategory._id}
                                                   href={`/search?category=${selectedCategory._id}&subcategory=${subcategory._id}`}
                                                   onClick={() => {
-                                                    setShowCategoryMenu(
-                                                      false
-                                                    );
+                                                    setShowCategoryMenu(false);
                                                     setHoveredCategory(null);
                                                   }}
                                                 >
@@ -477,9 +498,7 @@ export default function Navbar() {
                                                           src={
                                                             subcategory.image
                                                           }
-                                                          alt={
-                                                            subcategory.name
-                                                          }
+                                                          alt={subcategory.name}
                                                           width={48}
                                                           height={48}
                                                           className="w-full h-full object-cover"
@@ -556,8 +575,9 @@ export default function Navbar() {
                 <button className="flex items-center gap-1 text-gray-700 hover:text-[#3C950D] transition-colors py-2 font-medium">
                   Products
                   <ChevronDown
-                    className={`w-4 h-4 transition-transform ${showProductMenu ? "rotate-180" : ""
-                      }`}
+                    className={`w-4 h-4 transition-transform ${
+                      showProductMenu ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -572,107 +592,107 @@ export default function Navbar() {
                       <div className="grid grid-cols-5 gap-4 max-h-[400px] overflow-y-auto">
                         {products?.products?.length > 0
                           ? products?.products?.map((product) => (
-                            <Link
-                              key={product._id}
-                              href={`/productDetail/${product.slug}`}
-                              onClick={() => setShowProductMenu(false)}
-                            >
-                              <div className="group cursor-pointer">
-                                <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
-                                  <Image
-                                    src={
-                                      product?.thumbnail?.url ||
-                                      product.images?.[0]?.url
-                                    }
-                                    alt={
-                                      product?.thumbnail?.alt ||
-                                      product.images?.[0]?.alt
-                                    }
-                                    fill
-                                    className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                  />
-                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                              <Link
+                                key={product._id}
+                                href={`/productDetail/${product.slug}`}
+                                onClick={() => setShowProductMenu(false)}
+                              >
+                                <div className="group cursor-pointer">
+                                  <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
+                                    <Image
+                                      src={
+                                        product?.thumbnail?.url ||
+                                        product.images?.[0]?.url
+                                      }
+                                      alt={
+                                        product?.thumbnail?.alt ||
+                                        product.images?.[0]?.alt
+                                      }
+                                      fill
+                                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                  </div>
+                                  <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
+                                    {product.name}
+                                  </h4>
+                                  {product?.variants?.[0]?.price ? (
+                                    <div className="flex items-center gap-2">
+                                      {product?.variants[0]?.salePrice && (
+                                        <span className="text-[#3C950D] font-semibold text-sm">
+                                          Rs {product?.variants[0]?.salePrice}
+                                        </span>
+                                      )}
+                                      <span className="text-black/50 font-semibold text-xs line-through">
+                                        Rs {product?.variants[0]?.price}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      {product?.salePrice && (
+                                        <span className="text-[#3C950D] font-semibold text-sm">
+                                          Rs {product?.salePrice}
+                                        </span>
+                                      )}
+                                      <span className="text-black/50 font-semibold text-xs line-through">
+                                        Rs {product?.price}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
-                                <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
-                                  {product.name}
-                                </h4>
-                                {product?.variants?.[0]?.price ? (
-                                  <div className="flex items-center gap-2">
-                                    {product?.variants[0]?.salePrice && (
-                                      <span className="text-[#3C950D] font-semibold text-sm">
-                                        Rs {product?.variants[0]?.salePrice}
-                                      </span>
-                                    )}
-                                    <span className="text-black/50 font-semibold text-xs line-through">
-                                      Rs {product?.variants[0]?.price}
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-2">
-                                    {product?.salePrice && (
-                                      <span className="text-[#3C950D] font-semibold text-sm">
-                                        Rs {product?.salePrice}
-                                      </span>
-                                    )}
-                                    <span className="text-black/50 font-semibold text-xs line-through">
-                                      Rs {product?.price}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </Link>
-                          ))
+                              </Link>
+                            ))
                           : products?.map((product) => (
-                            <Link
-                              key={product._id}
-                              href={`/productDetail/${product.slug}`}
-                              onClick={() => setShowProductMenu(false)}
-                            >
-                              <div className="group cursor-pointer">
-                                <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
-                                  <Image
-                                    src={
-                                      product?.thumbnail?.url ||
-                                      product.images?.[0]?.url
-                                    }
-                                    alt={
-                                      product?.thumbnail?.alt ||
-                                      product.images?.[0]?.alt
-                                    }
-                                    fill
-                                    className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                  />
-                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                              <Link
+                                key={product._id}
+                                href={`/productDetail/${product.slug}`}
+                                onClick={() => setShowProductMenu(false)}
+                              >
+                                <div className="group cursor-pointer">
+                                  <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
+                                    <Image
+                                      src={
+                                        product?.thumbnail?.url ||
+                                        product.images?.[0]?.url
+                                      }
+                                      alt={
+                                        product?.thumbnail?.alt ||
+                                        product.images?.[0]?.alt
+                                      }
+                                      fill
+                                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                  </div>
+                                  <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
+                                    {product.name}
+                                  </h4>
+                                  {product?.variants?.[0]?.price ? (
+                                    <div className="flex items-center gap-2">
+                                      {product?.variants[0]?.salePrice && (
+                                        <span className="text-[#3C950D] font-semibold text-sm">
+                                          Rs {product?.variants[0]?.salePrice}
+                                        </span>
+                                      )}
+                                      <span className="text-black/50 font-semibold text-xs line-through">
+                                        Rs {product?.variants[0]?.price}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      {product?.salePrice && (
+                                        <span className="text-[#3C950D] font-semibold text-sm">
+                                          Rs {product?.salePrice}
+                                        </span>
+                                      )}
+                                      <span className="text-black/50 font-semibold text-xs line-through">
+                                        Rs {product?.price}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
-                                <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
-                                  {product.name}
-                                </h4>
-                                {product?.variants?.[0]?.price ? (
-                                  <div className="flex items-center gap-2">
-                                    {product?.variants[0]?.salePrice && (
-                                      <span className="text-[#3C950D] font-semibold text-sm">
-                                        Rs {product?.variants[0]?.salePrice}
-                                      </span>
-                                    )}
-                                    <span className="text-black/50 font-semibold text-xs line-through">
-                                      Rs {product?.variants[0]?.price}
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-2">
-                                    {product?.salePrice && (
-                                      <span className="text-[#3C950D] font-semibold text-sm">
-                                        Rs {product?.salePrice}
-                                      </span>
-                                    )}
-                                    <span className="text-black/50 font-semibold text-xs line-through">
-                                      Rs {product?.price}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </Link>
-                          ))}
+                              </Link>
+                            ))}
                       </div>
 
                       <Link
@@ -708,11 +728,11 @@ export default function Navbar() {
             {/* <div className="flex-1"></div> */}
 
             {/* Right Section */}
-            <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-2 md:gap-4 ">
               {/* Search Icon */}
               <button
                 onClick={() => setShowSearch(!showSearch)}
-                className="hover:text-[#3C950D] text-black outline-none transition-all hover:scale-110"
+                className="hover:text-[#3C950D] max-sm:hidden text-black outline-none transition-all hover:scale-110"
               >
                 <Search className="w-5 h-5 mb-1/2  md:w-6 md:h-6" />
               </button>
@@ -734,7 +754,7 @@ export default function Navbar() {
               {/* Cart */}
               <button
                 onClick={handelCartToggle}
-                className="relative flex hover:text-[#3C950D] text-black transition-all hover:scale-110"
+                className="relative flex max-sm:mr-2 hover:text-[#3C950D] text-black transition-all hover:scale-110"
               >
                 <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
                 <Badge className="absolute text-white -top-1 -right-1 md:-top-1 md:-right-2  bg-[#3C950D]  w-4 h-4  rounded-full p-0 flex items-center justify-center text-[10px]  shadow-lg">
@@ -745,7 +765,7 @@ export default function Navbar() {
               {/* User */}
               <div
                 onClick={handleUserDashboardClick}
-                className="flex items-center gap-2 cursor-pointer hover:text-[#3C950D] transition-all hover:scale-105"
+                className="flex max-sm:hidden items-center gap-2 cursor-pointer hover:text-[#3C950D] transition-all hover:scale-105"
               >
                 <div className="w-7 h-7 md:w-8 md:h-8 bg-[#3C950D]  rounded-full flex items-center justify-center">
                   {displayName ? (
@@ -766,8 +786,9 @@ export default function Navbar() {
 
         {/* Search Bar Dropdown */}
         <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? "max-h-fit opacity-100" : "max-h-0 opacity-0"
-            }`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            showSearch ? "max-h-fit opacity-100" : "max-h-0 opacity-0"
+          }`}
         >
           <div className="container mx-auto px-2 md:px-8 pb-4 pt-4">
             <div className="relative">

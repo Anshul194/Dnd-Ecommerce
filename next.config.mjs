@@ -70,6 +70,7 @@ const nextConfig = {
       "cdn.shopify.com",
       "cdn.sanity.io",
       "images.unsplash.com",
+      "bharat.nexprism.in",
     ],
   },
 };
