@@ -13,7 +13,7 @@ import 'swiper/css/pagination';
 
 const DynamicUniqueSellingPoints = ({ content }) => {
   const { title, description, cta, cards, image } = content;
-  console.log("DynamicUniqueSellingPoints content:", content);
+  // console.log("DynamicUniqueSellingPoints content:", content);
 
   const swiperRef = useRef(null);
 

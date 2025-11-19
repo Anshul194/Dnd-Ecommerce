@@ -41,7 +41,7 @@ export default class WhatsappService {
                 template: templateObj,
             };
 
-            console.log("Sending WhatsApp template message with payload:", JSON.stringify(payload));
+            //console.log("Sending WhatsApp template message with payload:", JSON.stringify(payload));
 
             const res = await axios.post(`${this.apiBase}/${this.phoneId}/messages`, payload, {
                 headers: {
@@ -50,12 +50,12 @@ export default class WhatsappService {
                 },
             });
 
-            console.log("✅ WhatsApp API response:", res.data);
+            //console.log("✅ WhatsApp API response:", res.data);
             return { success: true, data: res.data };
         } catch (err) {
             // safer error extraction
             const errData = err ? .response ? .data || err ? .message || err;
-            console.error("❌ WhatsApp API Error:", errData);
+            //console.error("❌ WhatsApp API Error:", errData);
             return { success: false, message: errData };
         }
     }

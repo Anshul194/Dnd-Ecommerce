@@ -5,16 +5,16 @@ import TemplateService from "../services/templateService.js";
 
 export async function createTemplate(data, conn) {
   try {
-    console.log("Creating template with data:", data);
-    console.log(
-      "Using tenant connection:",
-      conn ? "Connected" : "No connection"
-    );
+    //console.log("Creating template with data:", data);
+    //console.log(
+    //   "Using tenant connection:",
+    //   conn ? "Connected" : "No connection"
+    // );
     const templateService = new TemplateService(conn);
     const result = await templateService.createTemplate(data);
     return result;
   } catch (error) {
-    console.error("createTemplate error:", error);
+    //console.error("createTemplate error:", error);
     return {
       status: 500,
       body: {
@@ -29,9 +29,9 @@ export async function createTemplate(data, conn) {
 export async function getTemplateById(id, conn) {
   try {
     const templateService = new TemplateService(conn);
-    console.log("Fetching template by ID:", id);
+    //console.log("Fetching template by ID:", id);
     const result = await templateService.getTemplateById(id);
-    console.log("result is ---> ", result);
+    //console.log("result is ---> ", result);
     if (!result.body.data) {
       return {
         status: 404,
@@ -43,7 +43,7 @@ export async function getTemplateById(id, conn) {
       body: successResponse(result.body.data, "Template fetched successfully"),
     };
   } catch (err) {
-    console.error("getTemplateById error:", err.message);
+    //console.error("getTemplateById error:", err.message);
     return {
       status: 500,
       body: errorResponse("Server error", 500),
@@ -53,12 +53,12 @@ export async function getTemplateById(id, conn) {
 
 export async function getTemplateByProductId(productId, conn) {
   try {
-    console.log("Getting template by Product ID:", productId);
+    //console.log("Getting template by Product ID:", productId);
     const templateService = new TemplateService(conn);
     const result = await templateService.getTemplateByProductId(productId);
     return result;
   } catch (error) {
-    console.error("getTemplateByProductId error:", error);
+    //console.error("getTemplateByProductId error:", error);
     return {
       status: 500,
       body: {
@@ -72,12 +72,12 @@ export async function getTemplateByProductId(productId, conn) {
 
 export async function updateTemplate(id, data, conn) {
   try {
-    console.log("Updating template:", id, "with data:", data);
+    //console.log("Updating template:", id, "with data:", data);
     const templateService = new TemplateService(conn);
     const result = await templateService.updateTemplate(id, data);
     return result;
   } catch (error) {
-    console.error("updateTemplate error:", error);
+    //console.error("updateTemplate error:", error);
     return {
       status: 500,
       body: {
@@ -91,12 +91,12 @@ export async function updateTemplate(id, data, conn) {
 
 export async function deleteTemplate(id, conn) {
   try {
-    console.log("Deleting template:", id);
+    //console.log("Deleting template:", id);
     const templateService = new TemplateService(conn);
     const result = await templateService.deleteTemplate(id);
     return result;
   } catch (error) {
-    console.error("deleteTemplate error:", error);
+    //console.error("deleteTemplate error:", error);
     return {
       status: 500,
       body: {

@@ -5,12 +5,12 @@ import mongoose from 'mongoose';
 
 class WishlistService {
   async getWishlist(userId, conn) {
-    console.log('Fetching wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
+    //console.log('Fetching wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
     return wishlistRepository.getWishlistByUser(userId, conn);
   }
 
   async addItem(userId, { product, variant }, conn) {
-    console.log('[WishlistService.addItem] Validating product:', product, 'variant:', variant, 'Connection:', conn.name || 'global mongoose');
+    //console.log('[WishlistService.addItem] Validating product:', product, 'variant:', variant, 'Connection:', conn.name || 'global mongoose');
     const ProductModel = conn.models.Product || conn.model('Product', ProductSchema); // Updated to use ProductSchema
     const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
     if (!product) throw new Error('Product is required');
@@ -21,7 +21,7 @@ class WishlistService {
     if (variant) {
       if (!mongoose.Types.ObjectId.isValid(variant)) throw new Error('Invalid variant ID');
       const variantDoc = await VariantModel.findById(variant);
-      console.log('Variant found:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
+      //console.log('Variant found:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
       if (!variantDoc) throw new Error(`Variant ${variant} not found`);
       const variantProduct = variantDoc.product || variantDoc.productId;
       if (!variantProduct) throw new Error(`Variant ${variant} has no associated product or productId`);
@@ -31,7 +31,7 @@ class WishlistService {
   }
 
   async removeItem(userId, productId, variantId, conn) {
-    console.log('[WishlistService.removeItem] Removing product:', productId, 'variant:', variantId, 'Connection:', conn.name || 'global mongoose');
+    //console.log('[WishlistService.removeItem] Removing product:', productId, 'variant:', variantId, 'Connection:', conn.name || 'global mongoose');
     const ProductModel = conn.models.Product || conn.model('Product', ProductSchema); // Updated to use ProductSchema
     const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
     if (!mongoose.Types.ObjectId.isValid(productId)) throw new Error('Invalid product ID');
@@ -40,7 +40,7 @@ class WishlistService {
     if (variantId) {
       if (!mongoose.Types.ObjectId.isValid(variantId)) throw new Error('Invalid variant ID');
       const variantDoc = await VariantModel.findById(variantId);
-      console.log('Variant found:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
+      //console.log('Variant found:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
       if (!variantDoc) throw new Error(`Variant ${variantId} not found`);
       const variantProduct = variantDoc.product || variantDoc.productId;
       if (!variantProduct) throw new Error(`Variant ${variantId} has no associated product or productId`);
@@ -50,7 +50,7 @@ class WishlistService {
   }
 
   async updateWishlistById(wishlistId, userId, items, conn) {
-    console.log('[WishlistService.updateWishlistById] Updating wishlist:', wishlistId, 'for user:', userId, 'Items:', JSON.stringify(items, null, 2), 'Connection:', conn.name || 'global mongoose');
+    //console.log('[WishlistService.updateWishlistById] Updating wishlist:', wishlistId, 'for user:', userId, 'Items:', JSON.stringify(items, null, 2), 'Connection:', conn.name || 'global mongoose');
     const ProductModel = conn.models.Product || conn.model('Product', ProductSchema); // Updated to use ProductSchema
     const VariantModel = conn.models.Variant || conn.model('Variant', variantSchema);
 
@@ -64,7 +64,7 @@ class WishlistService {
       if (item.variant) {
         if (!mongoose.Types.ObjectId.isValid(item.variant)) throw new Error(`Invalid variant ID: ${item.variant}`);
         const variantDoc = await VariantModel.findById(item.variant);
-        console.log('Validating variant:', item.variant, 'Found:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
+        //console.log('Validating variant:', item.variant, 'Found:', variantDoc ? variantDoc._id.toString() : 'null', 'Product in variant:', variantDoc ? (variantDoc.product || variantDoc.productId)?.toString() : 'null');
         if (!variantDoc) throw new Error(`Variant ${item.variant} not found`);
         const variantProduct = variantDoc.product || variantDoc.productId;
         if (!variantProduct) throw new Error(`Variant ${item.variant} has no associated product or productId`);
@@ -85,7 +85,7 @@ class WishlistService {
   }
 
   async clearWishlist(userId, conn) {
-    console.log('[WishlistService.clearWishlist] Clearing wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
+    //console.log('[WishlistService.clearWishlist] Clearing wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
     return wishlistRepository.clearWishlist(userId, conn);
   }
 }

@@ -31,7 +31,7 @@ export default function ClientLayout({ children }) {
         const res = await fetchCategoryWithSubcategories();
         if (mounted && res) setCategories(res || []);
       } catch (err) {
-        console.error("Error loading categories in ClientLayout:", err);
+        // console.error("Error loading categories in ClientLayout:", err);
       }
     })();
 

@@ -24,7 +24,7 @@ export async function handleGetAddresses(query, conn) {
     }
 
     var result = await repo.getAll(filterConditions);
-    console.log("result", result);
+    // console.log("result", result);
 
     return result;
   } catch (err) {

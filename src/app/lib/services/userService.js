@@ -63,11 +63,11 @@ class UserService {
         }   
         // If role is global, tenant may be optional
       }   
-      console.log('Creating user with data:', data);   
+      //console.log('Creating user with data:', data);   
       // Create user in DB
       return await this.userRepo.createUser(data);
     } catch (error) {
-      console.error('UserService createUser error:', error?.message);
+      //console.error('UserService createUser error:', error?.message);
       throw error;
     }
   }     
@@ -189,7 +189,7 @@ async findById(id) {
     try {
       return await this.userRepo.findByEmail(email);
     } catch (error) {
-      console.error('UserService findByEmail error:', error?.message);
+      //console.error('UserService findByEmail error:', error?.message);
       throw error; // Rethrow the original error
     }
   }
@@ -199,7 +199,7 @@ async findById(id) {
     try {
       return await this.userRepo.findByPhone(phone);
     } catch (error) {
-      console.error('UserService findByPhone error:', error?.message);
+      //console.error('UserService findByPhone error:', error?.message);
       throw error; // Rethrow the original error
     }
   }
@@ -214,7 +214,7 @@ async findById(id) {
     try {
       return await this.userRepo.updateUser(id, data);
     } catch (error) {
-      console.error('UserService updateUserById error:', error?.message);
+      //console.error('UserService updateUserById error:', error?.message);
       throw error;
     }
   }
@@ -222,20 +222,20 @@ async findById(id) {
   // Update
   // async updateUser(id, data) {
   //   try {
-  //     console.log('Services Updating user with id:', id, 'and data:', data);
+  //     //console.log('Services Updating user with id:', id, 'and data:', data);
       
   //     return await this.userRepo.updateUser(id, data);
   //   } catch (error) {
-  //     console.error('UserService updateUser error:', error?.message);
+  //     //console.error('UserService updateUser error:', error?.message);
   //     throw error; // Rethrow the original error
   //   }
   // }
   async updateUser(id, data) {
   try {
-    console.log('Services Updating user with id:', id, 'and data:', data);
+    //console.log('Services Updating user with id:', id, 'and data:', data);
 
     const tenantId = data?.tenant || data?.tenantId;
-    console.log('Calling findById with ID:', id, 'and tenantId:', tenantId);
+    //console.log('Calling findById with ID:', id, 'and tenantId:', tenantId);
 
     const user = await this.userRepo.findById(id, tenantId);
     if (!user) {
@@ -247,7 +247,7 @@ async findById(id) {
 
     return await this.userRepo.updateUser(id, data);
   } catch (error) {
-    console.error('UserService updateUser error:', error?.message);
+    //console.error('UserService updateUser error:', error?.message);
     throw error; // Rethrow the original error
   }
 }
@@ -256,14 +256,14 @@ async findById(id) {
   // Delete (soft)
  async deleteUser(id) {
   try {
-    console.log('Deleting user with id:', id);
+    //console.log('Deleting user with id:', id);
     const deletedUser = await this.userRepo.softDelete(id);
     return {
       status: 200,
       body: { success: true, message: 'User deleted successfully', data: deletedUser }
     };
   } catch (error) {
-    console.error('UserService deleteUser error:', error?.message);
+    //console.error('UserService deleteUser error:', error?.message);
     return {
       status: 500,
       body: { success: false, message: 'Failed to delete user' }

@@ -23,7 +23,7 @@ class RoleService {
           userRole = await repo.getRoleById(currentUser.role);
         }
 
-        console.log("Current user role:", userRole);
+          // console.log("Current user role:", userRole);
         // Only allow assigning permissions that the user has
         if (
           userRole &&
@@ -56,7 +56,7 @@ class RoleService {
   // Read all
   async getRoles(query = {}, conn = null) {
     try {
-      console.log("getRoles query:", query);
+      // console.log("getRoles query:", query);
       const {
         page = 1,
         limit = 10,
@@ -85,16 +85,15 @@ class RoleService {
             ? JSON.parse(searchFields)
             : searchFields || {};
       } catch (err) {
-        console.warn(
-          "Invalid searchFields JSON provided to getRoles:",
-          err.message
-        );
+        // console.warn(
+        //   "Invalid searchFields JSON provided to getRoles:",
+        //   err.message
+        // );
         parsedSearchFields = {};
       }
       try {
         parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort || {};
       } catch (err) {
-        console.warn("Invalid sort JSON provided to getRoles:", err.message);
         parsedSort = {};
       }
 
@@ -106,10 +105,10 @@ class RoleService {
             ? JSON.parse(query.selectFields)
             : query.selectFields || {};
       } catch (err) {
-        console.warn(
-          "Invalid selectFields JSON provided to getRoles:",
-          err.message
-        );
+        // console.warn(
+        //   "Invalid selectFields JSON provided to getRoles:",
+        //   err.message
+        // );
         parsedSelectFields = {};
       }
 
@@ -162,7 +161,7 @@ class RoleService {
       );
       return result;
     } catch (error) {
-      console.error("RoleService.getRoles error:", error);
+      // console.error("RoleService.getRoles error:", error);
       throw new Error("Error fetching roles");
     }
   }
@@ -181,7 +180,7 @@ class RoleService {
   async updateRole(id, data, currentUser = null, conn = null) {
     try {
       // Debug: log currentUser at the start
-      console.log("updateRole called with currentUser:", currentUser);
+      // console.log("updateRole called with currentUser:", currentUser);
 
       // If currentUser is tenant admin, restrict permissions
       if (currentUser && !currentUser.isSuperAdmin) {
@@ -197,11 +196,11 @@ class RoleService {
         }
 
         // Debug: log admin's allowed permissions
-        console.log("Admin role:", userRole);
-        console.log(
-          "Admin role modulePermissions:",
-          userRole && userRole.modulePermissions
-        );
+        // console.log("Admin role:", userRole);
+        // console.log(
+        //   "Admin role modulePermissions:",
+        //   userRole && userRole.modulePermissions
+        // );
 
         // Only allow assigning permissions that the user has
         if (
@@ -218,9 +217,9 @@ class RoleService {
             .filter((mp) => {
               const allowedPerms = allowed[mp.module?.toString()] || [];
               // Debug: log requested permissions vs allowed
-              console.log(
-                `Requested module: ${mp.module}, requested permissions: ${mp.permissions}, allowed: ${allowedPerms}`
-              );
+              // console.log(
+              //   `Requested module: ${mp.module}, requested permissions: ${mp.permissions}, allowed: ${allowedPerms}`
+              // );
               // Only include if at least one permission matches allowed
               return (
                 allowed.hasOwnProperty(mp.module?.toString()) &&
@@ -232,11 +231,11 @@ class RoleService {
               permissions: mp.permissions.filter((p) => {
                 const allowedPerms = allowed[mp.module?.toString()] || [];
                 // Debug: log each permission check
-                console.log(
-                  `Checking permission "${p}" for module "${
-                    mp.module
-                  }": ${allowedPerms.includes(p)}`
-                );
+                // console.log(
+                //   `Checking permission "${p}" for module "${
+                //     mp.module
+                //   }": ${allowedPerms.includes(p)}`
+                // );
                 return allowedPerms.includes(p);
               }),
             }))
@@ -245,10 +244,10 @@ class RoleService {
           console.log("No modulePermissions to process or userRole missing.");
         }
       } else {
-        console.log(
-          "Current user is super admin or not provided.",
-          currentUser
-        );
+        // console.log(
+        //   "Current user is super admin or not provided.",
+        //   currentUser
+        // );
       }
       const repo = new RoleRepository(conn || this.conn);
       return await repo.updateRole(id, data);

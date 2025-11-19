@@ -20,6 +20,8 @@ import {
 import { ShoppingCart } from "lucide-react";
 import { toast } from "react-toastify";
 import { setCheckoutOpen } from "../store/slices/checkOutSlice";
+import { trackEvent } from "../lib/tracking/trackEvent";
+import { useTrack } from "../lib/tracking/useTrack";
 
 const ProductCard = ({ product, showDes, buyNow }) => {
   const router = useRouter();
@@ -31,6 +33,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
   const [heartAnimating, setHeartAnimating] = useState(false);
   const [localWishlisted, setLocalWishlisted] = useState(false);
   const [overlayProduct, setOverlayProduct] = useState(null);
+  const { trackView, trackAddToCart, trackWishlist, trackRemoveWishlist } =
+    useTrack();
 
   // Fast check: is userId in product.wishlist array?
   const isWishlisted =
@@ -38,6 +42,13 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     userId &&
     Array.isArray(product.wishlist) &&
     product.wishlist.includes(userId);
+
+  useEffect(() => {
+    // Track product view on mount
+    if (product?._id) {
+      trackView(product._id);
+    }
+  }, [product?._id]);
 
   const handleBuyNow = async (e) => {
     e.stopPropagation();
@@ -108,6 +119,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         variant: product?.variants[0]?._id,
       })
     );
+    trackAddToCart(product._id);
     dispatch(toggleCart());
   };
 
@@ -159,6 +171,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
                         variant: product?.variants[0]?._id,
                       })
                     );
+                    trackWishlist(product._id);
                   } else {
                     setLocalWishlisted(false);
                     await dispatch(
@@ -167,6 +180,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
                         variantId: product?.variants[0]?._id,
                       })
                     );
+                    trackRemoveWishlist(product._id);
                   }
 
                   setTimeout(() => setHeartAnimating(false), 400);

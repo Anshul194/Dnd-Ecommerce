@@ -7,7 +7,7 @@ import React from "react";
 
 const DynamicWhyUs = ({ content }) => {
   const { title, description, points } = content;
-  console.log("DynamicWhyUs content:", content);
+  // console.log("DynamicWhyUs content:", content);
 
   return (
     <div className="min-h-screen bg-white py-10 lg:py-20 px-4">

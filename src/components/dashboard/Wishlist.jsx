@@ -16,9 +16,9 @@ const Wishlist = () => {
   const loading = useSelector((state) => state.wishlist.loading);
   const error = useSelector((state) => state.wishlist.error);
 
-  console?.log("the data ====>", wishlistItems);
+  //console?.log("the data ====>", wishlistItems);
   useEffect(() => {
-    console.log("inside if ==?");
+    //console.log("inside if ==?");
     dispatch(fetchWishlist());
   }, [dispatch]);
 
@@ -42,7 +42,7 @@ const Wishlist = () => {
   };
 
   const addToCartHandler = (item) => {
-    console.log("Adding to cart:", item);
+    //console.log("Adding to cart:", item);
     dispatch(
       addToCart({
         product: {

@@ -4,7 +4,7 @@ import { shippingSchema } from '../models/Shipping.js'; // Import the schema
 
 class ShippingZoneService {
   async createShippingZone(data, conn) {
-    console.log('[ShippingZoneService.createShippingZone] Creating shipping zone:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
+    //console.log('[ShippingZoneService.createShippingZone] Creating shipping zone:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
     const existing = await this.getShippingZoneByShippingId(data.shippingId, conn);
     if (existing) {
       throw new Error('Shipping zone already exists for this shipping ID');
@@ -14,22 +14,22 @@ class ShippingZoneService {
   }
 
   async getShippingZoneByShippingId(shippingId, conn) {
-    console.log('[ShippingZoneService.getShippingZoneByShippingId] Fetching shipping zone for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
+    //console.log('[ShippingZoneService.getShippingZoneByShippingId] Fetching shipping zone for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
     return await shippingZoneRepository.getShippingZoneByShippingId(shippingId, conn);
   }
 
   async getAllShippingZones(conn, { page = 1, limit = 10, search = '' }) {
-    console.log('[ShippingZoneService.getAllShippingZones] Fetching all shipping zones', 'Connection:', conn.name || 'global mongoose', 'Page:', page, 'Limit:', limit, 'Search:', search);
+    //console.log('[ShippingZoneService.getAllShippingZones] Fetching all shipping zones', 'Connection:', conn.name || 'global mongoose', 'Page:', page, 'Limit:', limit, 'Search:', search);
     return await shippingZoneRepository.getAllShippingZones(conn, { page, limit, search });
   }
 
   async getShippingZonesByShippingId(shippingId, conn) {
-    console.log('[ShippingZoneService.getShippingZonesByShippingId] Fetching shipping zones for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
+    //console.log('[ShippingZoneService.getShippingZonesByShippingId] Fetching shipping zones for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
     return await shippingZoneRepository.getShippingZonesByShippingId(shippingId, conn);
   }
 
   async updateShippingZone(shippingId, data, conn) {
-    console.log('[ShippingZoneService.updateShippingZone] Updating shipping zone for shippingId:', shippingId, 'Data:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
+    //console.log('[ShippingZoneService.updateShippingZone] Updating shipping zone for shippingId:', shippingId, 'Data:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
     const existing = await this.getShippingZoneByShippingId(shippingId, conn);
     if (existing) {
       await this.validateShippingZoneData(data, true, conn);
@@ -42,7 +42,7 @@ class ShippingZoneService {
   }
 
   async deleteShippingZone(shippingId, conn) {
-    console.log('[ShippingZoneService.deleteShippingZone] Deleting shipping zone for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
+    //console.log('[ShippingZoneService.deleteShippingZone] Deleting shipping zone for shippingId:', shippingId, 'Connection:', conn.name || 'global mongoose');
     return await shippingZoneRepository.deleteShippingZone(shippingId, conn);
   }
 

@@ -34,7 +34,7 @@ export default function HomePage() {
       ) : (
         <DynamicHomepage />
       )} */}
-      <DynamicHomepage2 />
+      <DynamicHomepage/>
       
     </main>
   );

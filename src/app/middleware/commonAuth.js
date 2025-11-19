@@ -63,13 +63,13 @@ export async function getUserById(userId, tenantId = null, conn = null) {
             }
         }
 
-        console.log('[getUserById] Query:', query, 'TenantId:', tenantId, 'Using tenant DB:', conn !== mongoose);
+        //console.log('[getUserById] Query:', query, 'TenantId:', tenantId, 'Using tenant DB:', conn !== mongoose);
         
         user = await UserModel.findOne(query).lean();
-        console.log('[getUserById] Result:', user ? 'User found' : 'User not found');
+        //console.log('[getUserById] Result:', user ? 'User found' : 'User not found');
         return user;
     } catch (err) {
-        console.log('Error fetching user:', err.message);
+        //console.log('Error fetching user:', err.message);
         return null;
     }
 }
@@ -93,7 +93,7 @@ export async function verifyTokenAndUser(request, userType = 'user') {
     try {
         payload = await verifyJwtToken(token);
     } catch (err) {
-        console.error('JWT verification failed:', err.message);
+        //console.error('JWT verification failed:', err.message);
         return {
             error: NextResponse.json(
                 { success: false, message: 'Invalid or expired token' },
@@ -102,20 +102,20 @@ export async function verifyTokenAndUser(request, userType = 'user') {
         };
     }
 
-    // console.log('[verifyTokenAndUser] Decoded JWT payload:', payload);
+    // //console.log('[verifyTokenAndUser] Decoded JWT payload:', payload);
     // Try all possible id fields
     const userId = payload.userId || payload._id || payload.id;
     const tenantId = payload.tenantId || payload.tenant || getTenantFromRequest(request) || getSubdomain(request);
-    // console.log('[verifyTokenAndUser] userId:', userId, 'tenantId:', tenantId);
+    // //console.log('[verifyTokenAndUser] userId:', userId, 'tenantId:', tenantId);
 
     // Always get the correct tenant DB connection
 
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);    
-    console.log('[verifyTokenAndUser] DB connection established:', conn);
+    //console.log('[verifyTokenAndUser] DB connection established:', conn);
     const user = await getUserById(userId, tenantId, conn);
     if (!user) {
-        // console.error('[verifyTokenAndUser] User not found for query:', { userId, tenantId });
+        // //console.error('[verifyTokenAndUser] User not found for query:', { userId, tenantId });
         return {
             error: NextResponse.json(
                 { success: false, message: 'User not found or unauthorized', query: { userId, tenantId } },
@@ -209,7 +209,7 @@ export async function verifySuperAdminOrRoleAdminAccess(request) {
     
     // Check if user has 'admin' role (by name or by specific ObjectId)
     let roleDoc = result.user.role;
-    console.log('User role:', roleDoc);
+    //console.log('User role:', roleDoc);
     if (!roleDoc || typeof roleDoc === 'string' || (roleDoc._bsontype === 'ObjectId')) {
         // Fetch role document if not populated using tenant-specific connection
         const RoleModel = conn ? (conn.models.Role || conn.model('Role', Role)) : (mongoose.models.Role || mongoose.model('Role', Role));
@@ -273,11 +273,11 @@ export async function hasModulePermission(user, moduleId, permission = null, con
 
     // If role is populated, use directly; otherwise, fetch role document
     let roleDoc = role.modulePermissions ? role : await RoleModel.findById(role).lean();
-    console.log('Role id:', role, 'Role document modulePermissions:', roleDoc?.modulePermissions);
+    //console.log('Role id:', role, 'Role document modulePermissions:', roleDoc?.modulePermissions);
     if (!roleDoc) return false;
 
     // Check permission for requested module
-    console?.log('Checking permissions for module:', moduleId, 'and permission:', permission);
+    //console?.log('Checking permissions for module:', moduleId, 'and permission:', permission);
     if (moduleId) {
         if (permission) {
             // Check for specific permission
