@@ -43,7 +43,7 @@ export default function ContactPage() {
         setError(response?.data?.message || "Failed to send message");
       }
     } catch (err) {
-      console.error("Contact submit error:", err);
+      //consolle.error("Contact submit error:", err);
       // Prefer server message when available
       const msg =
         err?.response?.data?.message || err?.message || "Server error";

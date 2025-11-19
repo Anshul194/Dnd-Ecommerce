@@ -15,10 +15,10 @@ class ShippingRepository {
     if (!conn) {
       throw new Error("Database connection is required");
     }
-    console.log(
-      "ShippingRepository using connection:",
-      conn.name || "global mongoose"
-    );
+    //consolle.log(
+    //   "ShippingRepository using connection:",
+    //   conn.name || "global mongoose"
+    // );
     return conn.models.Shipping || conn.model("Shipping", shippingSchema);
   }
 
@@ -56,7 +56,7 @@ class ShippingRepository {
         }
         // add more parsed filters mapping here if needed
       } catch (err) {
-        console.warn("Invalid JSON in filters param, ignoring:", err.message);
+        //consolle.warn("Invalid JSON in filters param, ignoring:", err.message);
       }
     }
 
@@ -80,10 +80,10 @@ class ShippingRepository {
         }
         // extend mapping for other searchable fields here
       } catch (err) {
-        console.warn(
-          "Invalid JSON in searchFields param, ignoring:",
-          err.message
-        );
+        //consolle.warn(
+        //   "Invalid JSON in searchFields param, ignoring:",
+        //   err.message
+        // );
       }
     }
 
@@ -111,7 +111,7 @@ class ShippingRepository {
   }
 
   async updateShipping(id, update, conn) {
-    console.log("Updating shipping method:", id, update);
+    //consolle.log("Updating shipping method:", id, update);
     const Shipping = this.getShippingModel(conn);
     if (!mongoose.Types.ObjectId.isValid(id))
       throw new Error("Invalid shipping ID");

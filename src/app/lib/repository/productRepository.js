@@ -95,7 +95,7 @@ class ProductRepository extends CrudRepository {
       const skip = (pageNum - 1) * limitNum;
 
 
-      console.log("filter is ====> " , filter)
+      //consolle.log("filter is ====> " , filter)
 
       // Find products with pagination and sorting
       const products = await this.model
@@ -200,7 +200,7 @@ class ProductRepository extends CrudRepository {
         },
       };
     } catch (error) {
-      console.error("Repository getAll Error:", error.message);
+      //consolle.error("Repository getAll Error:", error.message);
       throw error;
     }
   }
@@ -218,7 +218,7 @@ class ProductRepository extends CrudRepository {
     try {
       return await this.model.create(data);
     } catch (error) {
-      console.error("Repository Create Error:", error.message);
+      //consolle.error("Repository Create Error:", error.message);
       throw error;
     }
   }
@@ -307,7 +307,7 @@ class ProductRepository extends CrudRepository {
 
       return productObj;
     } catch (error) {
-      console.error("Repository FindById Error:", error.message);
+      //consolle.error("Repository FindById Error:", error.message);
       throw error;
     }
   }
@@ -325,21 +325,21 @@ class ProductRepository extends CrudRepository {
         "attributes.attributeId"
       );
     } catch (error) {
-      console.error("getVariantsWithAttributes error:", error.message);
+      //consolle.error("getVariantsWithAttributes error:", error.message);
       throw error;
     }
   }
 
   async delete(id) {
     try {
-      console.log("Repo softDelete called with:", id);
+      //consolle.log("Repo softDelete called with:", id);
       return await this.model.findByIdAndUpdate(
         id,
         { deletedAt: new Date() },
         { new: true }
       );
     } catch (err) {
-      console.error("Repo softDelete error:", err);
+      //consolle.error("Repo softDelete error:", err);
       throw err;
     }
   }

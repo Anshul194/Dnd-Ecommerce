@@ -19,7 +19,7 @@ class TemplateRepository extends CrudRepository {
       const template = new this.Template(data);
       return await template.save();
     } catch (error) {
-      console.error("TemplateRepository create error:", error);
+      //consolle.error("TemplateRepository create error:", error);
       throw error;
     }
   }
@@ -36,7 +36,7 @@ class TemplateRepository extends CrudRepository {
     try {
       return await this.Template.findOne({ productId });
     } catch (error) {
-      console.error("TemplateRepository findByProductId error:", error);
+      //consolle.error("TemplateRepository findByProductId error:", error);
       throw error;
     }
   }
@@ -51,7 +51,7 @@ class TemplateRepository extends CrudRepository {
       });
       return updatedTemplate;
     } catch (error) {
-      console.error("TemplateRepository update error:", error);
+      //consolle.error("TemplateRepository update error:", error);
       throw error;
     }
   }
@@ -60,7 +60,7 @@ class TemplateRepository extends CrudRepository {
     try {
       return await this.Template.findByIdAndDelete(id);
     } catch (error) {
-      console.error("TemplateRepository delete error:", error);
+      //consolle.error("TemplateRepository delete error:", error);
       throw error;
     }
   }
@@ -69,7 +69,7 @@ class TemplateRepository extends CrudRepository {
     try {
       return await this.Template.find({ layoutId });
     } catch (error) {
-      console.error("TemplateRepository findByLayoutId error:", error);
+      //consolle.error("TemplateRepository findByLayoutId error:", error);
       throw error;
     }
   }
@@ -80,7 +80,7 @@ class TemplateRepository extends CrudRepository {
         layoutName: new RegExp(layoutName, "i"),
       });
     } catch (error) {
-      console.error("TemplateRepository findByLayoutName error:", error);
+      //consolle.error("TemplateRepository findByLayoutName error:", error);
       throw error;
     }
   }

@@ -51,7 +51,7 @@ export const POST = withUserAuth(async function (request) {
     request.user = request.user || {};
     return await wishlistController.addItem(request, null, body, conn);
   } catch (err) {
-    console.log("error ", err);
+    //consolle.log("error ", err);
     return NextResponse.json(
       { success: false, message: err.message },
       { status: 400 }
@@ -71,7 +71,7 @@ export const DELETE = withUserAuth(async function (request) {
     }
     const productId = request.nextUrl.searchParams.get("productId");
     const variantId = request.nextUrl.searchParams.get("variantId");
-    console.log("Removing item from wishlist:", productId, variantId);
+    //consolle.log("Removing item from wishlist:", productId, variantId);
 
     request.user = request.user || {};
     return await wishlistController.removeItem(

@@ -9,7 +9,7 @@ import { getSubdomain, getDbConnection } from '../../../lib/tenantDb';
 export async function POST(req) {
   try {
     const body = await req.json();
-    console.log('Route received apply body:', body);
+    //consolle.log('Route received apply body:', body);
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
@@ -25,7 +25,7 @@ export async function POST(req) {
     }
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error('Route POST apply error:', error.message);
+    //consolle.error('Route POST apply error:', error.message);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }

@@ -2096,8 +2096,8 @@ export default function ProductPageBuilder() {
         rowGap,
       },
     };
-    console.log("Saving page configuration:", config);
-    alert("Page configuration saved! Check console for details.");
+    //consolle.log("Saving page configuration:", config);
+    alert("Page configuration saved! Check //consolle for details.");
   }, [sections, componentSettings, columnGap, componentGap, rowGap]);
 
   const dispatch = useDispatch();
@@ -2107,28 +2107,28 @@ export default function ProductPageBuilder() {
         fetchProductById("vedicroots-ginger-green-tea")
       );
 
-      console.log("Fetched Product Data:", response.payload);
+      //consolle.log("Fetched Product Data:", response.payload);
       setProduct(response.payload);
     } catch (error) {
-      console.error("Error fetching product data:", error);
+      //consolle.error("Error fetching product data:", error);
     }
   }, [dispatch]);
 
   // Function to transform template data to sections format
   const transformTemplateToSections = useCallback((template) => {
-    console.log("transformTemplateToSections called with:", template);
+    //consolle.log("transformTemplateToSections called with:", template);
 
     if (!template || !template.columns) {
-      console.error("Invalid template data:", template);
-      console.error("Template is null:", !template);
-      console.error("Template columns missing:", template && !template.columns);
+      //consolle.error("Invalid template data:", template);
+      //consolle.error("Template is null:", !template);
+      //consolle.error("Template columns missing:", template && !template.columns);
       return;
     }
 
-    console.log("Template has", template.columns.length, "columns");
+    //consolle.log("Template has", template.columns.length, "columns");
     template.columns.forEach((col, index) => {
-      console.log(`Column ${index}:`, col);
-      console.log(`Column ${index} components:`, col.components);
+      //consolle.log(`Column ${index}:`, col);
+      //consolle.log(`Column ${index} components:`, col.components);
     });
 
     // Helper function to map template component types to existing component types
@@ -2214,9 +2214,9 @@ export default function ProductPageBuilder() {
     };
 
     // Replace current sections with template-based section
-    console.log("New section created:", newSection);
+    //consolle.log("New section created:", newSection);
     setSections([newSection]);
-    console.log("Sections updated with template data");
+    //consolle.log("Sections updated with template data");
 
     // Set component settings based on template
     const newComponentSettings = {};
@@ -2229,7 +2229,7 @@ export default function ProductPageBuilder() {
         };
       });
     });
-    console.log("New component settings:", newComponentSettings);
+    //consolle.log("New component settings:", newComponentSettings);
     setComponentSettings(newComponentSettings);
   }, []);
 
@@ -2243,13 +2243,13 @@ export default function ProductPageBuilder() {
           throw new Error(`Failed to fetch template: ${response.statusText}`);
         }
         const templateData = await response.json();
-        console.log("Fetched Template Data:", templateData);
-        console.log("Template data type:", typeof templateData);
-        console.log("Template columns:", templateData?.columns);
-        console.log(
-          "Template structure:",
-          JSON.stringify(templateData, null, 2)
-        );
+        //consolle.log("Fetched Template Data:", templateData);
+        //consolle.log("Template data type:", typeof templateData);
+        //consolle.log("Template columns:", templateData?.columns);
+        //consolle.log(
+        //   "Template structure:",
+        //   JSON.stringify(templateData, null, 2)
+        // );
         setTemplateData(templateData);
 
         // Check if templateData has the expected structure
@@ -2260,11 +2260,11 @@ export default function ProductPageBuilder() {
           // If API returns template data directly
           transformTemplateToSections(templateData);
         } else {
-          console.error("Template data is null or undefined");
+          //consolle.error("Template data is null or undefined");
           alert("Invalid template data received");
         }
       } catch (error) {
-        console.error("Error fetching template data:", error);
+        //consolle.error("Error fetching template data:", error);
         alert("Failed to load template. Please try again.");
       } finally {
         setIsLoadingTemplate(false);
@@ -2365,7 +2365,7 @@ export default function ProductPageBuilder() {
       ],
     };
 
-    console.log("Loading mock template data:", mockTemplateData);
+    //consolle.log("Loading mock template data:", mockTemplateData);
     setTemplateData(mockTemplateData);
     transformTemplateToSections(mockTemplateData);
   }, [transformTemplateToSections]);

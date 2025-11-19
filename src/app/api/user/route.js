@@ -78,7 +78,7 @@ export async function POST(request) {
       if (!roleDoc) {
         return NextResponse.json({ success: false, message: 'Role not found.' }, { status: 400 });
       }
-      console.log("Role document:", roleDoc);
+      ////consollle.log("Role document:", roleDoc);
       if (roleDoc.name == 'Customer') {
         finalTenant = roleDoc.tenantId || null;
       }
@@ -117,7 +117,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (err) {
-    console.error('POST /user error:', err?.message);
+    ////consollle.error('POST /user error:', err?.message);
     return NextResponse.json({ success: false, message: err?.message || "Something went wrong" }, { status: 400 });
   }
 }
@@ -127,8 +127,8 @@ export async function PATCH(request) {
   try {
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
-    console.log('PATCH /user login subdomain:', subdomain);
-    console.log('PATCH /user login conn:', conn ? 'connected' : 'not connected');
+    ////consollle.log('PATCH /user login subdomain:', subdomain);
+    ////consollle.log('PATCH /user login conn:', conn ? 'connected' : 'not connected');
 
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
@@ -173,7 +173,7 @@ export async function PATCH(request) {
       { status: 200 }
     );
   } catch (err) {
-    console.error('PATCH /user login error:', err?.message);
+    ////consollle.error('PATCH /user login error:', err?.message);
     return NextResponse.json({ success: false, message: 'Login failed' }, { status: 400 });
   }
 }
@@ -223,7 +223,7 @@ export async function GET(request) {
       }, { status: 200 });
     }
   } catch (err) {
-    console.error('GET /user error:', err);
+    ////consollle.error('GET /user error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }
@@ -232,8 +232,8 @@ export async function PUT(request) {
   try {
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
-    console.log('PUT /user subdomain:', subdomain);
-    console.log('PUT /user db connection:', conn ? 'connected' : 'not connected');
+    ////consollle.log('PUT /user subdomain:', subdomain);
+    ////consollle.log('PUT /user db connection:', conn ? 'connected' : 'not connected');
 
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
@@ -242,10 +242,10 @@ export async function PUT(request) {
     const userService = new UserService(conn);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    console.log('PUT /user id:', id);
+    ////consollle.log('PUT /user id:', id);
 
     const body = await request.json();
-    console.log('PUT /user update body:', body);
+    ////consollle.log('PUT /user update body:', body);
 
     const result = await userService.updateUser(id, body);
 
@@ -256,7 +256,7 @@ export async function PUT(request) {
     return NextResponse.json({ success: true, data: result }, { status: 200 });
 
   } catch (err) {
-    console.error('PUT /user error:', err);
+    ////consollle.error('PUT /user error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
   }
 }
@@ -274,13 +274,13 @@ export async function DELETE(request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const result = await userService.deleteUser(id);
-    console.log('DELETE /user result here conoling:', result);
+    ////consollle.log('DELETE /user result here conoling:', result);
     if (!result) {
       return NextResponse.json({ success: false, message: 'User not found or could not be deleted' }, { status: 404 });
     }
     return NextResponse.json({ success: true, message: 'User deleted successfully',result }, { status: 200 });
   } catch (err) {
-    console.error('DELETE /user error:', err);
+    ////consollle.error('DELETE /user error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }

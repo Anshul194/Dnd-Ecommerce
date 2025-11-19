@@ -12,7 +12,7 @@ export const createLead = async (data, conn) => {
     const Lead = getModel(conn, 'Lead', leadSchema);
     return await Lead.create(data);
   } catch (error) {
-    console.error('Error in createLead:', error);
+    //consolle.error('Error in createLead:', error);
     throw error;
   }
 };
@@ -65,7 +65,7 @@ export const getLeads = async (query, conn) => {
       totalPages: Math.ceil(totalDocuments / Number(limit)),
     };
   } catch (error) {
-    console.error('Error in getLeads:', error);
+    //consolle.error('Error in getLeads:', error);
     throw error;
   }
 };
@@ -81,7 +81,7 @@ export const getLeadById = async (id, conn) => {
       .populate('convertedTo')
       .populate('notes.createdBy');
   } catch (error) {
-    console.error('Error in getLeadById:', error);
+    //consolle.error('Error in getLeadById:', error);
     throw error;
   }
 };
@@ -92,7 +92,7 @@ export const updateLead = async (id, data, conn) => {
     const Lead = getModel(conn, 'Lead', leadSchema);
     return await Lead.findByIdAndUpdate(id, data, { new: true });
   } catch (error) {
-    console.error('Error in updateLead:', error);
+    //consolle.error('Error in updateLead:', error);
     throw error;
   }
 };
@@ -103,7 +103,7 @@ export const deleteLead = async (id, conn) => {
     const Lead = getModel(conn, 'Lead', leadSchema);
     return await Lead.findByIdAndDelete(id);
   } catch (error) {
-    console.error('Error in deleteLead:', error);
+    //consolle.error('Error in deleteLead:', error);
     throw error;
   }
 };
@@ -117,33 +117,33 @@ export const bulkAssignLeads = async (leadIds, assignedTo, conn) => {
       { $set: { assignedTo, status: 'assigned'} },
       { new: true }
     );
-    console.log('Bulk assign result:', result);
+    //consolle.log('Bulk assign result:', result);
     return result;
   } catch (error) {
-    console.error('Error in bulkAssignLeads:', error);
+    //consolle.error('Error in bulkAssignLeads:', error);
     throw error;
   }
 };
 
 export const validateStaffRole = async (userId, conn) => {
   try {
-    console.log('Validating staff role for user:', userId);
+    //consolle.log('Validating staff role for user:', userId);
     const User = getModel(conn, 'User', userSchema);
     const Role = getModel(conn, 'Role', roleSchema);
     const user = await User.findById(userId).populate('role').exec();
-    console.log('User found:', user ? { id: user._id, role: user.role } : 'null');
+    //consolle.log('User found:', user ? { id: user._id, role: user.role } : 'null');
     if (!user) {
       throw new Error('Assigned user not found');
     }
-    console.log('User role:', user.role);
+    //consolle.log('User role:', user.role);
 
-    console.log('role name:', user.role ? user.role.name : 'undefined');
+    //consolle.log('role name:', user.role ? user.role.name : 'undefined');
     // if (!user.role || user.role.name !== 'Staff') {
     //   throw new Error('Assigned user must have staff role');
     // }
     return true;
   } catch (error) {
-    console.error('Error in validateStaffRole:', error);
+    //consolle.error('Error in validateStaffRole:', error);
     throw error;
   }
 };

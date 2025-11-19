@@ -9,7 +9,7 @@ export async function POST(request) {
     const result = await createPlan(form);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error('POST /subscription/plan error:', err);
+    //consolle.error('POST /subscription/plan error:', err);
     return NextResponse.json({ success: false, message: 'Invalid request' }, { status: 400 });
   }
 }
@@ -22,7 +22,7 @@ export async function GET(request) {
     const result = await getPlans(query);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error('GET /subscription/plan error:', err);
+    //consolle.error('GET /subscription/plan error:', err);
     return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
   }
 }

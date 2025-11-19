@@ -10,14 +10,14 @@ function Variant1() {
     return match ? match[1] : url;
   };
   return (
-    <section className="min-h-screen bg-white py-10 lg:py-20 ">
+    <section className="min-h-screen bg-white px-4 ">
       <div className="max-w-full mx-auto">
         {/* Heading with style matching the image */}
         <div className="text-start mb-16">
-          <h2 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0 ">
+          <h2 className="text-4xl md:text-5xl text-black mb-4 md:mb-0 text-center font-black">
             HOW TO USE
           </h2>
-          <p className="text-black max-w-xl relative poppins-medium leading-tight text-lg mb-8">
+          <p className="text-black lg:max-w-[80%] mx-auto text-center relative poppins-medium leading-tight text-lg mb-8">
             Lorem ipsum dolor sit amet,{" "}
             <span className="text font-semibold">consectetur</span> eiusmod
             tempor incididunt ut labore et dolor magna aliquaLorem ipsum dolor

@@ -39,7 +39,7 @@ export async function GET(req, { params }) {
       );
     return NextResponse.json({ success: true, data: cert });
   } catch (error) {
-    console.error("Certificates GET id error:", error.message);
+    //consolle.error("Certificates GET id error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
@@ -86,7 +86,7 @@ export async function PUT(req, { params }) {
       data: cert,
     });
   } catch (error) {
-    console.error("Certificates PUT error:", error.message);
+    //consolle.error("Certificates PUT error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
@@ -119,7 +119,7 @@ export async function DELETE(req, { params }) {
     await cert.save();
     return NextResponse.json({ success: true, message: "Certificate deleted" });
   } catch (error) {
-    console.error("Certificates DELETE error:", error.message);
+    //consolle.error("Certificates DELETE error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }

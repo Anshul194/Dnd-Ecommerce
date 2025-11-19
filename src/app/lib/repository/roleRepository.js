@@ -19,7 +19,7 @@ class RoleRepository extends CrudRepository {
             const role = new this.Role(data);
             return await role.save();
         } catch (error) {
-            console.error('RoleRepo create error:', error);
+            //consolle.error('RoleRepo create error:', error);
             throw error;
         }
     }
@@ -29,7 +29,7 @@ class RoleRepository extends CrudRepository {
         try {
             return await this.Role.findOne({ _id: id, deletedAt: null });
         } catch (error) {
-            console.error('RoleRepo findById error:', error);
+            //consolle.error('RoleRepo findById error:', error);
             throw error;
         }
     }
@@ -42,7 +42,7 @@ class RoleRepository extends CrudRepository {
             role.set(data);
             return await role.save();
         } catch (error) {
-            console.error('RoleRepo update error:', error);
+            //consolle.error('RoleRepo update error:', error);
             throw error;
         }
     }
@@ -56,7 +56,7 @@ class RoleRepository extends CrudRepository {
                 { new: true }
             );
         } catch (error) {
-            console.error('RoleRepo softDelete error:', error);
+            //consolle.error('RoleRepo softDelete error:', error);
             throw error;
         }
     }
@@ -66,7 +66,7 @@ class RoleRepository extends CrudRepository {
         try {
             return await this.Role.findOne({ name, deletedAt: null });
         } catch (error) {
-            console.error('RoleRepo findByName error:', error);
+            //consolle.error('RoleRepo findByName error:', error);
             throw error;
         }
     }
@@ -76,7 +76,7 @@ class RoleRepository extends CrudRepository {
         try {
             return await this.Role.findOne({ _id: id, deletedAt: null });
         } catch (error) {
-            console.error('RoleRepo getRoleById error:', error);
+            //consolle.error('RoleRepo getRoleById error:', error);
             throw error;
         }
     }
@@ -89,7 +89,7 @@ class RoleRepository extends CrudRepository {
             role.set(data);
             return await role.save();
         } catch (error) {
-            console.error('RoleRepo updateRole error:', error);
+            //consolle.error('RoleRepo updateRole error:', error);
             throw error;
         }
     }
@@ -103,7 +103,7 @@ class RoleRepository extends CrudRepository {
                 { new: true }
             );
         } catch (error) {
-            console.error('RoleRepo deleteRole error:', error);
+            //consolle.error('RoleRepo deleteRole error:', error);
             throw error;
         }
     }

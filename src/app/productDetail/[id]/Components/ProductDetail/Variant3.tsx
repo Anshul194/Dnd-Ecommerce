@@ -17,6 +17,7 @@ import {
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
 function Variant3() {
   const [expandedSection, setExpandedSection] =
@@ -29,6 +30,8 @@ function Variant3() {
   );
   const [showFixedBar, setShowFixedBar] = React.useState<boolean>(false);
   const actionButtonsRef = React.useRef<HTMLDivElement>(null);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const userId = useSelector((state) => state.auth.user?._id);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
@@ -46,6 +49,17 @@ function Variant3() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  React.useEffect(() => {
+    if (productData?._id) {
+      try {
+        trackEvent("product_view", {
+          productId: productData._id,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
+    }
+  }, [productData?._id, isAuthenticated, userId]);
 
   const handleQuantityChange = (delta: number) => {
     setQuantity(Math.max(1, quantity + delta));
@@ -75,6 +89,14 @@ function Variant3() {
         })
       );
       await dispatch(getCartItems());
+      try {
+        trackEvent("add_to_cart", {
+          productId: productData._id,
+          variantId: selectedVariant,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
       dispatch(toggleCart());
     } catch (error) {
       toast.error("Failed to add to cart");
@@ -105,6 +127,14 @@ function Variant3() {
         })
       );
       await dispatch(getCartItems());
+      try {
+        trackEvent("buy_now", {
+          productId: productData._id,
+          variantId: selectedVariant,
+          quantity,
+          user: isAuthenticated ? userId : "guest",
+        });
+      } catch (err) {}
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {
@@ -146,17 +176,17 @@ function Variant3() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <div className="md:flex block gap-2">
               <button
                 onClick={handleAddToCart}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-1 text-sm"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-1 text-sm max-md:mb-2"
               >
                 <ShoppingCart size={16} />
                 Add to Cart
               </button>
               <button
                 onClick={handleBuyNow}
-                className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors text-sm"
+                className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors text-sm max-md:w-full"
               >
                 Buy Now
               </button>

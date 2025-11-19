@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import Link from "next/link";
+import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
 const CartSidebar = () => {
   const dispatch = useDispatch();
@@ -362,6 +363,21 @@ const CartSidebar = () => {
           <button
             onClick={() => {
               if (cartItems?.length > 0) {
+                // track checkout started
+                try {
+                  trackEvent("CHECKOUT_STARTED", {
+                    items: cartItems.map((it) => ({
+                      productId: it.product.id,
+                      quantity: it.quantity,
+                      price: it.price,
+                    })),
+                    total,
+                    timestamp: new Date().toISOString(),
+                  });
+                } catch (err) {
+                  // non-blocking
+                }
+
                 dispatch(toggleCart());
                 dispatch(removeBuyNowProduct());
                 dispatch(setCheckoutOpen(true));

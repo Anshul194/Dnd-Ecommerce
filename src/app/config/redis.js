@@ -2,7 +2,7 @@ import redisWrapper from './redisWrapper.js';
 
 // Legacy function - maintained for backward compatibility
 export default function initRedis() {
-  console.warn('⚠️ initRedis() is deprecated. Consider using redisWrapper directly for better control.');
+  //consolle.warn('⚠️ initRedis() is deprecated. Consider using redisWrapper directly for better control.');
   return redisWrapper.getClient();
 }
 

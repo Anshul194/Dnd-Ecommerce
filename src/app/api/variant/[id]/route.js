@@ -48,7 +48,7 @@ export async function PUT(req, context) {
     const variant = await getVariantById(id, conn);
     const body = {};
 
-    console.log("existing variant:", variant);
+    //consolle.log("existing variant:", variant);
     // Always start with old images
     body.images = variant.body.data.images ? [...variant.body.data.images] : [];
 
@@ -85,7 +85,7 @@ export async function PUT(req, context) {
       body.images = [...body.images, ...body.newImages];
       delete body.newImages;
     }
-    console.log("variant body:", body);
+    //consolle.log("variant body:", body);
 
     const result = await updateVariant(id, body, conn);
     return new Response(JSON.stringify(result.body), { status: result.status });

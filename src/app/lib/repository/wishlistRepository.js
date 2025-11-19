@@ -18,19 +18,19 @@ class WishlistRepository {
     if (!conn) {
       throw new Error('Database connection is required');
     }
-    console.log('WishlistRepository using connection:', conn.name || 'global mongoose');
+    //consolle.log('WishlistRepository using connection:', conn.name || 'global mongoose');
     return conn.models.Wishlist || conn.model('Wishlist', wishlistSchema);
   }
 
   async getWishlistByUser(userId, conn) {
-    console.log('Fetching wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
+    //consolle.log('Fetching wishlist for user:', userId, 'Connection:', conn.name || 'global mongoose');
     const Wishlist = this.getWishlistModel(conn);
     if (!userId) throw new Error('User ID is required to fetch wishlist');
     return Wishlist.findOne({ user: userId }).populate('items.product').populate('items.variant');
   }
 
   async getWishlistById(wishlistId, userId, conn) {
-    console.log('Fetching wishlist by ID:', wishlistId, 'for user:', userId, 'Connection:', conn.name || 'global mongoose');
+    //consolle.log('Fetching wishlist by ID:', wishlistId, 'for user:', userId, 'Connection:', conn.name || 'global mongoose');
     const Wishlist = this.getWishlistModel(conn);
     if (!mongoose.Types.ObjectId.isValid(wishlistId)) throw new Error('Invalid wishlist ID');
     const wishlist = await Wishlist.findOne({ _id: wishlistId, user: userId }).populate('items.product').populate('items.variant');
@@ -49,7 +49,7 @@ class WishlistRepository {
   }
 
   async updateWishlistById(wishlistId, userId, update, conn) {
-    console.log('Updating wishlist by ID:', wishlistId, 'for user:', userId, 'Connection:', conn.name || 'global mongoose');
+    //consolle.log('Updating wishlist by ID:', wishlistId, 'for user:', userId, 'Connection:', conn.name || 'global mongoose');
     const Wishlist = this.getWishlistModel(conn);
     if (!mongoose.Types.ObjectId.isValid(wishlistId)) throw new Error('Invalid wishlist ID');
     const wishlist = await Wishlist.findOneAndUpdate(

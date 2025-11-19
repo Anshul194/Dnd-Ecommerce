@@ -96,13 +96,13 @@ export default function RenderSliderVariant() {
   );
 
   return (
-    <div className="py-10 lg:py-20 px-4">
+    <div className="px-4">
       {/* Header Section */}
       <div className="mb-8">
-        <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0">
+        <h1 className="text-4xl md:text-5xl text-black mb-4 md:mb-0 text-center font-black">
           FREQUENTLY PURCHASED
         </h1>
-        <p className="text-black max-w-xl relative poppins-medium leading-tight text-lg mb-8">
+        <p className="text-black lg:max-w-[80%] mx-auto text-center relative poppins-medium leading-tight text-lg mb-8">
           Lorem ipsum dolor sit amet,{" "}
           <span className="text font-semibold">consectetur</span> eiusmod tempor
           incididunt ut labore et dolor magna aliquaLorem ipsum dolor sit amet,

@@ -30,7 +30,7 @@ export async function createAttribute(req, conn) {
       },
     };
   } catch (err) {
-    console.error("Create Attribute Error:", err.message);
+    //consolle.error("Create Attribute Error:", err.message);
     return {
       status: 500,
       body: {
@@ -61,10 +61,10 @@ export async function getAllAttributes(queryOrReq, conn) {
       },
     };
   } catch (err) {
-    console.error(
-      "Get All Attributes Error:",
-      err && err.message ? err.message : err
-    );
+    //consolle.error(
+    //   "Get All Attributes Error:",
+    //   err && err.message ? err.message : err
+    // );
     return {
       status: 500,
       body: {
@@ -104,7 +104,7 @@ export async function getByProductId(productId, conn) {
       },
     };
   } catch (err) {
-    console.error("Get Attributes by Product ID Error:", err.message);
+    //consolle.error("Get Attributes by Product ID Error:", err.message);
     return {
       status: 500,
       body: {
@@ -141,7 +141,7 @@ export async function getAttributeById(id, conn) {
       },
     };
   } catch (err) {
-    console.error("Get Attribute Error:", err.message);
+    //consolle.error("Get Attribute Error:", err.message);
     return {
       status: 500,
       body: {
@@ -179,7 +179,7 @@ export async function updateAttribute(id, data, conn) {
       },
     };
   } catch (err) {
-    console.error("Update Attribute Error:", err.message);
+    //consolle.error("Update Attribute Error:", err.message);
     return {
       status: 500,
       body: {
@@ -205,7 +205,7 @@ export async function deleteAttribute(id, conn) {
       },
     };
   } catch (err) {
-    console.error("Delete Attribute Error:", err.message);
+    //consolle.error("Delete Attribute Error:", err.message);
     return {
       status: 500,
       body: {
@@ -243,7 +243,7 @@ export async function searchAttributesByName(req, conn) {
       },
     };
   } catch (err) {
-    console.error("Search Attributes Error:", err.message);
+    //consolle.error("Search Attributes Error:", err.message);
     return {
       status: 500,
       body: {

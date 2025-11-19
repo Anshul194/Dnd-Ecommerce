@@ -17,12 +17,12 @@ async function refreshCategoriesCache(conn) {
     if (redisWrapper.isEnabled()) {
       const client = await redisWrapper.getClient();
       await client.set("allCategories", JSON.stringify(allCategories));
-      console.log("✅ Categories cache refreshed in Redis");
+      //consolle.log("✅ Categories cache refreshed in Redis");
     } else {
-      console.log("📴 Redis disabled - skipping cache refresh");
+      //consolle.log("📴 Redis disabled - skipping cache refresh");
     }
   } catch (error) {
-    console.error("Failed to refresh categories cache:", error);
+    //consolle.error("Failed to refresh categories cache:", error);
   }
 }
 
@@ -32,7 +32,7 @@ export async function createCategory(form, conn) {
     let thumbnailUrl = "";
     const categoryService = new CategoryService(conn);
 
-    console.log("Create Category form:", form);
+    //consolle.log("Create Category form:", form);
     const name = form.get("name");
     const slug = form.get("slug");
     const description = form.get("description");
@@ -45,7 +45,7 @@ export async function createCategory(form, conn) {
     const isFeatured = form.get("isFeatured");
 
     const existing = await categoryService.findByName(name);
-    console.log("Existing Category:", existing?.status);
+    //consolle.log("Existing Category:", existing?.status);
 
     if (existing?.status !== 404) {
       return {
@@ -53,14 +53,14 @@ export async function createCategory(form, conn) {
         body: errorResponse("Category with this name already exists", 400),
       };
     }
-    console.log("Category name:", image);
-    console.log("Category description:", image instanceof File);
+    //consolle.log("Category name:", image);
+    //consolle.log("Category description:", image instanceof File);
 
     if (image && image instanceof File) {
       try {
         validateImageFile(image);
         imageUrl = await saveFile(image, "category-images");
-        console.log("Image saved at:", imageUrl);
+        //consolle.log("Image saved at:", imageUrl);
       } catch (fileError) {
         return {
           status: 400,
@@ -110,14 +110,14 @@ export async function createCategory(form, conn) {
 
     const newCategory = await categoryService.createCategory(value);
     await refreshCategoriesCache(conn);
-    console.log("New Category created:", newCategory);
+    //consolle.log("New Category created:", newCategory);
 
     return {
       status: 201,
       body: successResponse("Category created", newCategory),
     };
   } catch (err) {
-    console.error("Create Category error:", err.message);
+    //consolle.error("Create Category error:", err.message);
     return {
       status: 500,
       body: errorResponse("Server error", 500),
@@ -128,7 +128,7 @@ export async function createCategory(form, conn) {
 export async function getCategories(query, conn) {
   try {
     const categoryService = new CategoryService(conn);
-    console.log("Get Categories query:", query);
+    //consolle.log("Get Categories query:", query);
     const result = await categoryService.getAllCategories(query);
     return {
       status: 200,
@@ -139,7 +139,7 @@ export async function getCategories(query, conn) {
       },
     };
   } catch (err) {
-    console.error("Get Categories error:", err.message);
+    //consolle.error("Get Categories error:", err.message);
     return {
       status: 500,
       body: {
@@ -174,7 +174,7 @@ export async function getCategoryById(id, conn) {
       },
     };
   } catch (err) {
-    console.error("Get Category error:", err.message);
+    //consolle.error("Get Category error:", err.message);
     return {
       status: 500,
       body: {
@@ -270,7 +270,7 @@ export async function updateCategory(id, data, conn) {
       body: { success: true, message: "Category updated", data: updated },
     };
   } catch (err) {
-    console.error("Update Category error:", err.message);
+    //consolle.error("Update Category error:", err.message);
     return {
       status: 500,
       body: { success: false, message: "Server error", data: null },
@@ -297,7 +297,7 @@ export async function deleteCategory(id, conn) {
       body: successResponse("Category deleted", deleted),
     };
   } catch (err) {
-    console.error("Delete Category error:", err.message);
+    //consolle.error("Delete Category error:", err.message);
     return {
       status: 500,
       body: { success: false, message: "Server error" },
@@ -317,7 +317,7 @@ export async function getAttributesByCategoryId(categoryId) {
       body: successResponse("Attributes fetched successfully", attributes),
     };
   } catch (err) {
-    console.error("Error fetching attributes for category:", err.message);
+    //consolle.error("Error fetching attributes for category:", err.message);
     return {
       status: 500,
       body: errorResponse("Failed to fetch attributes", 500),
@@ -361,7 +361,7 @@ export async function getNavbarCategoriesWithAttributes() {
       body: successResponse("Categories with attributes fetched", result),
     };
   } catch (err) {
-    console.error("Navbar fetch error:", err.message);
+    //consolle.error("Navbar fetch error:", err.message);
     return {
       status: 500,
       body: errorResponse("Failed to fetch categories", 500),

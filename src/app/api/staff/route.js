@@ -21,7 +21,7 @@ function getSubdomain(request) {
 
 // Helper to get DB connection based on subdomain
 async function getDbConnection(subdomain) {
-  console.log("getDbConnection subdomain: ===> ", subdomain);
+  //consolle.log("getDbConnection subdomain: ===> ", subdomain);
   if (!subdomain || subdomain === "localhost") {
     // Use default DB (from env)
 
@@ -34,9 +34,9 @@ async function getDbConnection(subdomain) {
 
     const url = `mongodb+srv://anshul:anshul149@clusterdatabase.24furrx.mongodb.net/tenant_${subDomain}?retryWrites=true&w=majority`;
 
-    console.log("Connecting to tenant DB for subdomain:", subDomain);
+    //consolle.log("Connecting to tenant DB for subdomain:", subDomain);
     await dbConnect(url);
-    console.log("Connected to global DB to fetch tenant info");
+    //consolle.log("Connected to global DB to fetch tenant info");
     const Tenant =
       mongoose.models.Tenant ||
       mongoose.model(
@@ -51,11 +51,11 @@ async function getDbConnection(subdomain) {
         )
       );
     const tenant = await Tenant.findOne({ subdomain: subDomain });
-    console.log("tenant db is ==> ", tenant);
+    //consolle.log("tenant db is ==> ", tenant);
     if (!tenant?.dbUri) return null;
     // Connect to tenant DB
 
-    console.log("tenant DB : ", tenant.dbUri);
+    //consolle.log("tenant DB : ", tenant.dbUri);
     return await dbConnect(tenant.dbUri);
   }
 }
@@ -84,7 +84,7 @@ export async function POST(request) {
       isActive,
       isDeleted,
     } = body;
-    console.log("Request body:", body);
+    //consolle.log("Request body:", body);
     // Basic validation
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -113,7 +113,7 @@ export async function POST(request) {
           { status: 400 }
         );
       }
-      console.log("Role document:", roleDoc);
+      //consolle.log("Role document:", roleDoc);
       if (roleDoc.name == "Customer") {
         finalTenant = roleDoc.tenantId || null;
       }
@@ -155,7 +155,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (err) {
-    console.error("POST /user error:", err?.message);
+    //consolle.error("POST /user error:", err?.message);
     return NextResponse.json(
       { success: false, message: err?.message || "Something went wrong" },
       { status: 400 }
@@ -168,11 +168,11 @@ export async function PATCH(request) {
   try {
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
-    console.log("PATCH /user login subdomain:", subdomain);
-    console.log(
-      "PATCH /user login conn:",
-      conn ? "connected" : "not connected"
-    );
+    //consolle.log("PATCH /user login subdomain:", subdomain);
+    //consolle.log(
+    //   "PATCH /user login conn:",
+    //   conn ? "connected" : "not connected"
+    // );
 
     if (!conn) {
       return NextResponse.json(
@@ -220,7 +220,7 @@ export async function PATCH(request) {
       { status: 200 }
     );
   } catch (err) {
-    console.error("PATCH /user login error:", err?.message);
+    //consolle.error("PATCH /user login error:", err?.message);
     return NextResponse.json(
       { success: false, message: "Login failed" },
       { status: 400 }
@@ -231,7 +231,7 @@ export async function PATCH(request) {
 export async function GET(request) {
   try {
     const subdomain = getSubdomain(request);
-    console.log("GET /user subdomain: ===> ", subdomain);
+    //consolle.log("GET /user subdomain: ===> ", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
       return NextResponse.json(
@@ -295,7 +295,7 @@ export async function GET(request) {
       );
     }
   } catch (err) {
-    console.error("GET /user error:", err);
+    //consolle.error("GET /user error:", err);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
@@ -307,11 +307,11 @@ export async function PUT(request) {
   try {
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
-    console.log("PUT /user subdomain:", subdomain);
-    console.log(
-      "PUT /user db connection:",
-      conn ? "connected" : "not connected"
-    );
+    //consolle.log("PUT /user subdomain:", subdomain);
+    //consolle.log(
+    //   "PUT /user db connection:",
+    //   conn ? "connected" : "not connected"
+    // );
 
     if (!conn) {
       return NextResponse.json(
@@ -323,10 +323,10 @@ export async function PUT(request) {
     const userService = new UserService(conn);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
-    console.log("PUT /user id:", id);
+    //consolle.log("PUT /user id:", id);
 
     const body = await request.json();
-    console.log("PUT /user update body:", body);
+    //consolle.log("PUT /user update body:", body);
 
     const result = await userService.updateUser(id, body);
 
@@ -339,7 +339,7 @@ export async function PUT(request) {
 
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (err) {
-    console.error("PUT /user error:", err);
+    //consolle.error("PUT /user error:", err);
     return NextResponse.json(
       { success: false, message: "Invalid request" },
       { status: 400 }
@@ -364,7 +364,7 @@ export async function DELETE(request) {
     const result = await userService.deleteUser(id);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
-    console.error("DELETE /user error:", err);
+    //consolle.error("DELETE /user error:", err);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }

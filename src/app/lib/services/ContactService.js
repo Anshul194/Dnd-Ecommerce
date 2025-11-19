@@ -12,7 +12,7 @@ export default class ContactService {
     try {
       return await this.contactRepository.getAll(query, conn);
     } catch (error) {
-      console.error("ContactService getAll error:", error.message);
+      //consolle.error("ContactService getAll error:", error.message);
       throw error;
     }
   }
@@ -42,7 +42,7 @@ export default class ContactService {
 
       return await this.contactRepository.create(payload, conn);
     } catch (error) {
-      console.error("ContactService create error:", error.message);
+      //consolle.error("ContactService create error:", error.message);
       throw error;
     }
   }
@@ -53,7 +53,7 @@ export default class ContactService {
         return { success: false, message: "ID is required", status: 400 };
       return await this.contactRepository.getById(id, conn);
     } catch (error) {
-      console.error("ContactService getById error:", error.message);
+      //consolle.error("ContactService getById error:", error.message);
       throw error;
     }
   }
@@ -87,7 +87,7 @@ export default class ContactService {
 
       return await this.contactRepository.updateById(id, payload, conn);
     } catch (error) {
-      console.error("ContactService updateById error:", error.message);
+      //consolle.error("ContactService updateById error:", error.message);
       throw error;
     }
   }

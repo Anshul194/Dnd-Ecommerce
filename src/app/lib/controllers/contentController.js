@@ -13,7 +13,7 @@ export async function createHomepageSectionController(body, conn, userId) {
       data: section
     }, { status: 201 });
   } catch (error) {
-    console.error('Error in createHomepageSectionController:', error);
+    //consolle.error('Error in createHomepageSectionController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to create homepage section'
@@ -33,7 +33,7 @@ export async function bulkCreateHomepageSectionsController(body, conn, userId) {
       data: sections
     }, { status: 201 });
   } catch (error) {
-    console.error('Error in bulkCreateHomepageSectionsController:', error);
+    //consolle.error('Error in bulkCreateHomepageSectionsController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to bulk create homepage sections'
@@ -115,7 +115,7 @@ export async function getHomepageSectionsController(query, conn) {
       pagination: result.pagination
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in getHomepageSectionsController:', error);
+    //consolle.error('Error in getHomepageSectionsController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to retrieve homepage sections'
@@ -135,7 +135,7 @@ export async function getHomepageSectionByIdController(id, conn) {
       data: section
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in getHomepageSectionByIdController:', error);
+    //consolle.error('Error in getHomepageSectionByIdController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to retrieve homepage section'
@@ -155,7 +155,7 @@ export async function updateHomepageSectionController(id, body, conn, userId) {
       data: section
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in updateHomepageSectionController:', error);
+    //consolle.error('Error in updateHomepageSectionController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to update homepage section'
@@ -175,7 +175,7 @@ export async function deleteHomepageSectionController(id, conn) {
       data: result.deletedSection
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in deleteHomepageSectionController:', error);
+    //consolle.error('Error in deleteHomepageSectionController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to delete homepage section'
@@ -202,7 +202,7 @@ export async function getSectionsByTypeController(sectionType, query, conn) {
       data: sections
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in getSectionsByTypeController:', error);
+    //consolle.error('Error in getSectionsByTypeController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to retrieve sections by type'
@@ -224,7 +224,7 @@ export async function toggleSectionVisibilityController(id, body, conn) {
       data: section
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in toggleSectionVisibilityController:', error);
+    //consolle.error('Error in toggleSectionVisibilityController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to update section visibility'
@@ -245,7 +245,7 @@ export async function reorderSectionsController(body, conn) {
       message: result.message
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in reorderSectionsController:', error);
+    //consolle.error('Error in reorderSectionsController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to reorder sections'
@@ -265,7 +265,7 @@ export async function getVisibleSectionsController(conn) {
       data: sections
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in getVisibleSectionsController:', error);
+    //consolle.error('Error in getVisibleSectionsController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to retrieve visible sections'
@@ -321,7 +321,7 @@ export async function getGroupedSectionsController(conn) {
       totalSections: result.sections.length
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in getGroupedSectionsController:', error);
+    //consolle.error('Error in getGroupedSectionsController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to retrieve grouped sections'
@@ -341,7 +341,7 @@ export async function duplicateSectionController(id, conn, userId) {
       data: section
     }, { status: 201 });
   } catch (error) {
-    console.error('Error in duplicateSectionController:', error);
+    //consolle.error('Error in duplicateSectionController:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to duplicate section'

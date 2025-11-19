@@ -15,7 +15,7 @@ class UserRepository extends CrudRepository {
       const user = new this.model(data);
       return await user.save();
     } catch (error) {
-      console.error('UserRepo createUser error:', error);
+      //consolle.error('UserRepo createUser error:', error);
       throw error;
     }
   }
@@ -29,7 +29,7 @@ class UserRepository extends CrudRepository {
 
       return await this.model.findOne(query);
     } catch (error) {
-      console.error('UserRepo findById error:', error);
+      //consolle.error('UserRepo findById error:', error);
       throw error;
     }
   }
@@ -38,7 +38,7 @@ class UserRepository extends CrudRepository {
     try {
       return await this.model.findOne({ email, deleted: { $ne: true } });
     } catch (error) {
-      console.error('UserRepo findByEmail error:', error?.message);
+      //consolle.error('UserRepo findByEmail error:', error?.message);
       throw error;
     }
   }
@@ -47,23 +47,23 @@ class UserRepository extends CrudRepository {
     try {
       return await this.model.findOne({ phone, deleted: { $ne: true } });
     } catch (error) {
-      console.error('UserRepo findByPhone error:', error?.message);
+      //consolle.error('UserRepo findByPhone error:', error?.message);
       throw error;
     }
   }
 
   async updateUser(id, data) {
     try {
-      console.log('UserRepo updateUser called with:', { id, data }); // ✅ Debug log
+      //consolle.log('UserRepo updateUser called with:', { id, data }); // ✅ Debug log
       const user = await this.model.findById(id);
-      console.log('User found:', user); // ✅ Debug log
+      //consolle.log('User found:', user); // ✅ Debug log
 
       if (!user || user.deleted) return null;
 
       user.set(data);
       return await user.save();
     } catch (error) {
-      console.error('UserRepo updateUser error:', error);
+      //consolle.error('UserRepo updateUser error:', error);
       throw error;
     }
   }
@@ -79,14 +79,14 @@ class UserRepository extends CrudRepository {
       );
 
       if (!doc) {
-        console.warn('User not found for soft delete:', id);
+        //consolle.warn('User not found for soft delete:', id);
         return null;
       }
 
-      console.log('Soft deleted user:', doc); // ✅ Debug log
+      //consolle.log('Soft deleted user:', doc); // ✅ Debug log
       return doc.toObject(); // ✅ Convert to plain object
     } catch (error) {
-      console.error('UserRepo softDelete error:', error?.message);
+      //consolle.error('UserRepo softDelete error:', error?.message);
       throw error;
     }
   }
@@ -96,7 +96,7 @@ class UserRepository extends CrudRepository {
     try {
       return await this.roleModel.findOne({ _id: roleId, isDeleted: false });
     } catch (error) {
-      console.error('UserRepo findRoleById error:', error);
+      //consolle.error('UserRepo findRoleById error:', error);
       throw error;
     }
   }

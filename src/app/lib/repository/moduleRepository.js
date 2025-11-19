@@ -11,7 +11,7 @@ class ModuleRepository extends CrudRepository {
     try {
         return await Module.find({ deletedAt: null });
     } catch (error) {
-        console.error('ModuleRepo findAllActive error:', error);
+        //consolle.error('ModuleRepo findAllActive error:', error);
         throw error;
     }
 }
@@ -23,7 +23,7 @@ class ModuleRepository extends CrudRepository {
             const module = new Module(data);
             return await module.save();
         } catch (error) {
-            console.error('ModuleRepo createModule error:', error);
+            //consolle.error('ModuleRepo createModule error:', error);
             throw error;
         }
     }
@@ -32,7 +32,7 @@ class ModuleRepository extends CrudRepository {
         try {
             return await Module.findOne({ _id: id, deletedAt: null });
         } catch (error) {
-            console.error('ModuleRepo findById error:', error);
+            //consolle.error('ModuleRepo findById error:', error);
             throw error;
         }
     }
@@ -41,7 +41,7 @@ class ModuleRepository extends CrudRepository {
         try {
             return await Module.findOne({ _id: id, deletedAt: null });
         } catch (error) {
-            console.error('ModuleRepo getById error:', error);
+            //consolle.error('ModuleRepo getById error:', error);
             throw error;
         }
     }
@@ -56,7 +56,7 @@ class ModuleRepository extends CrudRepository {
             module.set(data);
             return await module.save();
         } catch (error) {
-            console.error('ModuleRepo update error:', error);
+            //consolle.error('ModuleRepo update error:', error);
             throw error;
         }
     }
@@ -69,7 +69,7 @@ class ModuleRepository extends CrudRepository {
                 { new: true }
             );
         } catch (error) {
-            console.error('ModuleRepo softDelete error:', error);
+            //consolle.error('ModuleRepo softDelete error:', error);
             throw error;
         }
     }
@@ -78,7 +78,7 @@ class ModuleRepository extends CrudRepository {
         try {
             return await Module.findOne({ name, deletedAt: null });
         } catch (error) {
-            console.error('ModuleRepo findByName error:', error);
+            //consolle.error('ModuleRepo findByName error:', error);
             throw error;
         }
     }
@@ -87,7 +87,7 @@ class ModuleRepository extends CrudRepository {
         try {
             return await Module.findOne({ _id: id, deletedAt: null });
         } catch (error) {
-            console.error('ModuleRepo getModuleById error:', error);
+            //consolle.error('ModuleRepo getModuleById error:', error);
             throw error;
         }
     }
@@ -100,7 +100,7 @@ class ModuleRepository extends CrudRepository {
             module.set(data);
             return await module.save();
         } catch (error) {
-            console.error('ModuleRepo updateModule error:', error);
+            //consolle.error('ModuleRepo updateModule error:', error);
             throw error;
         }
     }
@@ -113,7 +113,7 @@ class ModuleRepository extends CrudRepository {
                 { new: true }
             );
         } catch (error) {
-            console.error('ModuleRepo deleteModule error:', error);
+            //consolle.error('ModuleRepo deleteModule error:', error);
             throw error;
         }
     }

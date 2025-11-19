@@ -25,28 +25,28 @@ class RedisConfig {
         });
 
         this.client.on('connect', () => {
-          console.log('✅ Redis connected globally');
+          //consolle.log('✅ Redis connected globally');
         });
 
         this.client.on('error', (err) => {
-          console.error('❌ Redis connection error:', err);
+          //consolle.error('❌ Redis connection error:', err);
           // Fallback to disabled mode on connection errors
           this.setEnabled(false);
         });
 
         this.client.on('close', () => {
-          console.log('⚠️ Redis connection closed');
+          //consolle.log('⚠️ Redis connection closed');
         });
 
         // Test connection
         await this.client.ping();
-        console.log('🔄 Redis connection test successful');
+        //consolle.log('🔄 Redis connection test successful');
       } catch (error) {
-        console.error('Failed to initialize Redis:', error);
+        //consolle.error('Failed to initialize Redis:', error);
         this.setEnabled(false);
       }
     } else {
-      console.log('📴 Redis is disabled - using in-memory fallback');
+      //consolle.log('📴 Redis is disabled - using in-memory fallback');
     }
 
     this.initialized = true;
@@ -63,7 +63,7 @@ class RedisConfig {
       await this.disconnect();
     }
 
-    console.log(`🔄 Redis globally ${enabled ? 'enabled' : 'disabled'}`);
+    //consolle.log(`🔄 Redis globally ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   // Check if Redis is enabled
@@ -85,18 +85,18 @@ class RedisConfig {
     return {
       // Basic Redis commands with in-memory fallback
       async get(key) {
-        console.log(`📝 [MOCK] GET ${key}`);
+        //consolle.log(`📝 [MOCK] GET ${key}`);
         return self.mockStorage.get(key) || null;
       },
 
       async set(key, value, ...args) {
-        console.log(`📝 [MOCK] SET ${key} = ${value}`);
+        //consolle.log(`📝 [MOCK] SET ${key} = ${value}`);
         self.mockStorage.set(key, value);
         return 'OK';
       },
 
       async setex(key, seconds, value) {
-        console.log(`📝 [MOCK] SETEX ${key} ${seconds} = ${value}`);
+        //consolle.log(`📝 [MOCK] SETEX ${key} ${seconds} = ${value}`);
         self.mockStorage.set(key, value);
         // In a real implementation, you might want to set up a timeout
         setTimeout(() => {
@@ -106,30 +106,30 @@ class RedisConfig {
       },
 
       async del(key) {
-        console.log(`📝 [MOCK] DEL ${key}`);
+        //consolle.log(`📝 [MOCK] DEL ${key}`);
         const existed = self.mockStorage.has(key);
         self.mockStorage.delete(key);
         return existed ? 1 : 0;
       },
 
       async exists(key) {
-        console.log(`📝 [MOCK] EXISTS ${key}`);
+        //consolle.log(`📝 [MOCK] EXISTS ${key}`);
         return self.mockStorage.has(key) ? 1 : 0;
       },
 
       async ping() {
-        console.log(`📝 [MOCK] PING`);
+        //consolle.log(`📝 [MOCK] PING`);
         return 'PONG';
       },
 
       async flushall() {
-        console.log(`📝 [MOCK] FLUSHALL`);
+        //consolle.log(`📝 [MOCK] FLUSHALL`);
         self.mockStorage.clear();
         return 'OK';
       },
 
       async keys(pattern) {
-        console.log(`📝 [MOCK] KEYS ${pattern}`);
+        //consolle.log(`📝 [MOCK] KEYS ${pattern}`);
         const keys = Array.from(self.mockStorage.keys());
         if (pattern === '*') return keys;
         // Simple pattern matching for common patterns
@@ -143,13 +143,13 @@ class RedisConfig {
       },
 
       async hget(key, field) {
-        console.log(`📝 [MOCK] HGET ${key} ${field}`);
+        //consolle.log(`📝 [MOCK] HGET ${key} ${field}`);
         const hash = self.mockStorage.get(key);
         return hash && typeof hash === 'object' ? hash[field] || null : null;
       },
 
       async hset(key, field, value) {
-        console.log(`📝 [MOCK] HSET ${key} ${field} = ${value}`);
+        //consolle.log(`📝 [MOCK] HSET ${key} ${field} = ${value}`);
         let hash = self.mockStorage.get(key);
         if (!hash || typeof hash !== 'object') {
           hash = {};
@@ -160,7 +160,7 @@ class RedisConfig {
       },
 
       async hdel(key, field) {
-        console.log(`📝 [MOCK] HDEL ${key} ${field}`);
+        //consolle.log(`📝 [MOCK] HDEL ${key} ${field}`);
         const hash = self.mockStorage.get(key);
         if (hash && typeof hash === 'object' && field in hash) {
           delete hash[field];
@@ -171,7 +171,7 @@ class RedisConfig {
 
       // Add more Redis commands as needed
       async expire(key, seconds) {
-        console.log(`📝 [MOCK] EXPIRE ${key} ${seconds}`);
+        //consolle.log(`📝 [MOCK] EXPIRE ${key} ${seconds}`);
         if (self.mockStorage.has(key)) {
           setTimeout(() => {
             self.mockStorage.delete(key);
@@ -182,7 +182,7 @@ class RedisConfig {
       },
 
       async ttl(key) {
-        console.log(`📝 [MOCK] TTL ${key}`);
+        //consolle.log(`📝 [MOCK] TTL ${key}`);
         // Mock implementation - in real scenario you'd track expiration times
         return self.mockStorage.has(key) ? -1 : -2;
       }

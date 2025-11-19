@@ -83,7 +83,7 @@ function Variant3() {
         <div className="text-center mb-20">
           <h1
             // keep classes for other styling but override size via inline style
-            className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0"
+            className="text-4xl md:text-5xl text-black bebas mb-4 md:mb-0"
             style={titleStyle}
           >
             HOW TO USE

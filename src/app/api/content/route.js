@@ -57,7 +57,7 @@ export async function GET(request) {
     }
 
   } catch (err) {
-    console.error('GET /api/content error:', err.message);
+    //consolle.error('GET /api/content error:', err.message);
     return NextResponse.json({ 
       success: false, 
       message: err.message || 'Server error' 
@@ -198,7 +198,7 @@ export async function POST(request) {
     }
 
   } catch (err) {
-    console.error('POST /api/content error:', err);
+    //consolle.error('POST /api/content error:', err);
     return NextResponse.json({ 
       success: false, 
       message: 'Invalid request' 
@@ -284,7 +284,7 @@ export async function PUT(request) {
     }
 
   } catch (err) {
-    console.error('PUT /api/content error:', err?.message);
+    //consolle.error('PUT /api/content error:', err?.message);
     return NextResponse.json({ 
       success: false, 
       message: 'Invalid request' 
@@ -321,7 +321,7 @@ export async function DELETE(request) {
     return await deleteHomepageSectionController(id, conn);
 
   } catch (err) {
-    console.error('DELETE /api/content error:', err);
+    //consolle.error('DELETE /api/content error:', err);
     return NextResponse.json({ 
       success: false, 
       message: 'Server error' 

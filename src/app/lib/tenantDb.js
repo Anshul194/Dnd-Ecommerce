@@ -14,11 +14,11 @@ export function getSubdomain(request) {
 
 export async function getDbConnection(subdomain) {
   if (!subdomain || subdomain === 'localhost') {
-    console?.log('Using default DB for subdomain29829:', subdomain);
+    //consolle?.log('Using default DB for subdomain29829:', subdomain);
     return await dbConnect();
   } else {
     // Use static URI for all subdomains except localhost/null
-    console?.log('Using static DB URI for subdomain:', subdomain);
+    //consolle?.log('Using static DB URI for subdomain:', subdomain);
     const staticUri = 'mongodb+srv://anshul:anshul149@clusterdatabase.24furrx.mongodb.net/tenant_bharat?retryWrites=true&w=majority';
     return await dbConnect(staticUri);
 

@@ -11,10 +11,10 @@ export async function POST(req) {
     const tenant = req.headers.get("x-tenant");
     const body = await req.json();
 
-    console.log(
-      "Shipping creation request body:",
-      JSON.stringify(body, null, 2)
-    );
+    //consolle.log(
+    //   "Shipping creation request body:",
+    //   JSON.stringify(body, null, 2)
+    // );
 
     // Validate request body
     const validation = ShippingValidation.validateCreateShippingRequest(body);
@@ -30,11 +30,11 @@ export async function POST(req) {
     }
 
     const subdomain = getSubdomain(req);
-    console.log("Subdomain:", subdomain);
+    //consolle.log("Subdomain:", subdomain);
 
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      console.error("No database connection established");
+      //consolle.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
@@ -170,7 +170,7 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Shipping creation error:", error.message);
+    //consolle.error("Shipping creation error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }

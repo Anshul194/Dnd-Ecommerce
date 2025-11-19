@@ -28,7 +28,7 @@ const DynamicWhyUs = ({ content }) => {
               />
             </div>
             <div className="w-1/2 max-sm:w-full">
-              <h1 className="text-[48px] leading-none  text-black -mt-[2vh] md:-mt-[4vh] lg:-mt-10 font-black">
+              <h1 className="text-3xl md:text-5xl leading-none mb-5 text-black font-black">
                 {title || "WHY US?"}
               </h1>
               <p className="text-black text-[16px] leading-relaxed mb-8 max-w-full">

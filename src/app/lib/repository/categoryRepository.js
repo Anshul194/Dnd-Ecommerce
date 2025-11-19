@@ -20,7 +20,7 @@ class CategoryRepository extends CrudRepository {
     try {
       return await this.Category.findOne({ _id: id, deletedAt: null });
     } catch (error) {
-      console.error('Repo findById error:', error);
+      //consolle.error('Repo findById error:', error);
       throw error;
     }
   }
@@ -30,7 +30,7 @@ class CategoryRepository extends CrudRepository {
       const category = new this.Category(data);
       return await category.save();
     } catch (error) {
-      console.error('Repo create error:', error);
+      //consolle.error('Repo create error:', error);
       throw error;
     }
   }
@@ -38,10 +38,10 @@ class CategoryRepository extends CrudRepository {
   async findByName(name) {
     try {
       var data = await this.Category.findOne({ name });
-      console.log('data', data);
+      //consolle.log('data', data);
       return data;
     } catch (error) {
-      console.error('Repo findByName error:', error);
+      //consolle.error('Repo findByName error:', error);
       throw error;
     }
   }
@@ -73,21 +73,21 @@ class CategoryRepository extends CrudRepository {
 
       return await category.save();
     } catch (err) {
-      console.error('Repo update error:', err);
+      //consolle.error('Repo update error:', err);
       throw err;
     }
   }
 
   async softDelete(id) {
     try {
-      console.log('Repo softDelete called with:', id);
+      //consolle.log('Repo softDelete called with:', id);
       return await this.Category.findByIdAndUpdate(
         id,
         { deletedAt: new Date() },
         { new: true }
       );
     } catch (err) {
-      console.error('Repo softDelete error:', err);
+      //consolle.error('Repo softDelete error:', err);
       throw err;
     }
   }

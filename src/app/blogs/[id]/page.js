@@ -61,10 +61,10 @@ export default function BlogDetailPage() {
   const getData = async () => {
     try {
       const response = await dispatch(fetchBlogById(blogId));
-      console.log("Fetched blog data:", response.payload);
+      //consolle.log("Fetched blog data:", response.payload);
       setData(response.payload);
     } catch (error) {
-      console.error("Error fetching blog data:", error);
+      //consolle.error("Error fetching blog data:", error);
     }
   };
 

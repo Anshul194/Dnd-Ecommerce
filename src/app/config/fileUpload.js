@@ -36,9 +36,9 @@ export async function deleteFile(fileUrl) {
 
     // Delete file
     await unlink(filepath);
-    console.log("Deleted old file:", filename);
+    //consolle.log("Deleted old file:", filename);
   } catch (error) {
-    console.error("Error deleting file:", error.message);
+    //consolle.error("Error deleting file:", error.message);
     // Don't throw error - just log it
   }
 }
@@ -55,7 +55,7 @@ export async function deleteFile(fileUrl) {
 //   ];
 //   const maxSize = 10 * 1024 * 1024; // 5MB
 
-//   console.log("Validating file:", typeof file, file.name, file.size, file.type);
+//   //consolle.log("Validating file:", typeof file, file.name, file.size, file.type);
 //   // If file is a string (e.g., from a URL or path), try to convert it to a File-like object
 //   if (typeof file === "string") {
 //     throw new Error(

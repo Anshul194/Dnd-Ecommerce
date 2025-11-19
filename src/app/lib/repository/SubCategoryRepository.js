@@ -19,7 +19,7 @@ class SubCategoryRepository extends CrudRepository {
     try {
       return await this.SubCategory.findOne({ _id: id, deletedAt: null }).populate('parentCategory');
     } catch (error) {
-      console.error('SubCategory Repo findById error:', error);
+      //consolle.error('SubCategory Repo findById error:', error);
       throw error;
     }
   }
@@ -29,7 +29,7 @@ class SubCategoryRepository extends CrudRepository {
       const subCategory = new this.SubCategory(data);
       return await subCategory.save();
     } catch (error) {
-      console.error('SubCategory Repo create error:', error);
+      //consolle.error('SubCategory Repo create error:', error);
       throw error;
     }
   }
@@ -38,7 +38,7 @@ class SubCategoryRepository extends CrudRepository {
     try {
       return await this.SubCategory.findOne({ name });
     } catch (error) {
-      console.error('SubCategory Repo findByName error:', error);
+      //consolle.error('SubCategory Repo findByName error:', error);
       throw error;
     }
   }
@@ -70,7 +70,7 @@ class SubCategoryRepository extends CrudRepository {
 
       return await subCategory.save();
     } catch (err) {
-      console.error('SubCategory Repo update error:', err);
+      //consolle.error('SubCategory Repo update error:', err);
       throw err;
     }
   }
@@ -83,7 +83,7 @@ class SubCategoryRepository extends CrudRepository {
         { new: true }
       );
     } catch (err) {
-      console.error('SubCategory Repo softDelete error:', err);
+      //consolle.error('SubCategory Repo softDelete error:', err);
       throw err;
     }
   }
@@ -92,7 +92,7 @@ class SubCategoryRepository extends CrudRepository {
     try {
       return await this.SubCategory.find({ parentCategory: parentCategoryId, deletedAt: null });
     } catch (err) {
-      console.error('SubCategory Repo findByParentCategory error:', err);
+      //consolle.error('SubCategory Repo findByParentCategory error:', err);
       throw err;
     }
   }

@@ -17,7 +17,7 @@ function Variant2() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2
-            className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4 md:mb-0"
+            className="text-4xl md:text-5xl text-black bebas mb-4 md:mb-0"
             style={{ fontFamily: "Bebas Neue, sans-serif" }}
           >
             HOW TO USE

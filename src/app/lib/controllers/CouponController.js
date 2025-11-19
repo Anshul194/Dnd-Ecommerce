@@ -6,7 +6,7 @@ class CouponController {
   }
 
   async create(req, conn) {
-    console.log('Controller received create data:', req.body);
+    //consolle.log('Controller received create data:', req.body);
     try {
       const result = await this.couponService.createCoupon(req.body, conn);
       return result;
@@ -20,7 +20,7 @@ class CouponController {
   }
 
   async getAll(query, conn) {
-    console.log('Controller received query:', query);
+    //consolle.log('Controller received query:', query);
     try {
       const result = await this.couponService.getAllCoupons(query, conn);
       return result;
@@ -62,7 +62,7 @@ class CouponController {
   }
 
   async apply(req, conn) {
-    console.log('Controller received apply data:', req.body);
+    //consolle.log('Controller received apply data:', req.body);
     try {
       const result = await this.couponService.applyCoupon(req.body, conn);
       return result;

@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchGroupedContent } from "@/app/store/slices/contentSlice";
 import Categories from "./Categories";
 import { LoadingSpinner } from "../common/Loading";
+import ValidatedSection2 from "./ValidatedSection2";
 
 function DynamicHomepage2() {
   const { groupedContent, loading, error } = useSelector(
@@ -94,6 +95,13 @@ function DynamicHomepage2() {
         return (
           <div key={_id} className="max-w-7xl mx-auto px-4">
             <FAQ content={content} />
+          </div>
+        );
+
+      case "3V":
+        return (
+          <div key={_id} className="max-w-7xl mx-auto px-4">
+            <ValidatedSection2 content={content} />
           </div>
         );
 

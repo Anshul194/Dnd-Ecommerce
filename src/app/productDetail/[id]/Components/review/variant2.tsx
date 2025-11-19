@@ -164,7 +164,7 @@ export default function RenderTestimonialVariant() {
         <div className="flex justify-between flex-col lg:flex-row gap-12 mb-16">
           <div className="max-w-2xl">
             <h1
-              className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4"
+              className="text-4xl md:text-5xl text-black bebas mb-4"
               style={{ fontFamily: "Bebas Neue, sans-serif" }}
             >
               PRODUCT REVIEW

@@ -51,7 +51,7 @@ export async function createPlan(form) {
 
         return successResponse(newPlan, "Plan created", 201);
     } catch (err) {
-        console.error('Create Plan error:', err.message);
+        //consolle.error('Create Plan error:', err.message);
         return errorResponse('Server error', 500);
     }
 }
@@ -62,7 +62,7 @@ export async function getPlans(query) {
         const plans = await planService.getPlans(query);
         return successResponse(plans, "Plans fetched successfully");
     } catch (err) {
-        console.error('Get Plans error:', err.message);
+        //consolle.error('Get Plans error:', err.message);
         return errorResponse('Server error', 500);
     }
 }
@@ -76,7 +76,7 @@ export async function getPlanById(id) {
         }
         return successResponse(plan, "Plan fetched");
     } catch (err) {
-        console.error('Get Plan error:', err.message);
+        //consolle.error('Get Plan error:', err.message);
         return errorResponse('Server error', 500);
     }
 }
@@ -90,7 +90,7 @@ export async function updatePlan(id, data) {
         }
         return successResponse(updated, "Plan updated");
     } catch (err) {
-        console.error('Update Plan error:', err.message);
+        //consolle.error('Update Plan error:', err.message);
         return errorResponse('Server error', 500);
     }
 }
@@ -104,7 +104,7 @@ export async function deletePlan(id) {
         }
         return successResponse(deleted, "Plan deleted");
     } catch (err) {
-        console.error('Delete Plan error:', err.message);
+        //consolle.error('Delete Plan error:', err.message);
         return errorResponse('Server error', 500);
     }
 }

@@ -9,7 +9,7 @@ class OrderRepository extends CrudRepository {
     super(model);
     this.model = model;
     this.connection = connection || mongoose;
-    console.log(
+    //consolle.log(
       "OrderRepository initialized with connection:",
       this.connection
         ? this.connection.name || "global mongoose"
@@ -19,14 +19,14 @@ class OrderRepository extends CrudRepository {
 
   async create(data) {
     try {
-      console.log("Creating order with data:", JSON.stringify(data, null, 2));
+      //consolle.log("Creating order with data:", JSON.stringify(data, null, 2));
       // Runtime guard: ensure the model schema contains address fields; if not, re-register using canonical OrderSchema
       try {
         if (
           !this.model.schema.path("shippingAddress") ||
           !this.model.schema.path("billingAddress")
         ) {
-          console.warn(
+          //consolle.warn(
             "Order model on connection is missing address fields. Re-registering Order model with canonical OrderSchema."
           );
           try {
@@ -39,16 +39,16 @@ class OrderRepository extends CrudRepository {
               delete this.connection.models.Order;
             }
             this.model = this.connection.model("Order", OrderSchema);
-            console.log(
+            //consolle.log(
               "Re-registered Order model on connection:",
               this.connection.name || "global mongoose"
             );
           } catch (regErr) {
-            console.error("Failed to re-register Order model:", regErr.message);
+            //consolle.error("Failed to re-register Order model:", regErr.message);
           }
         }
       } catch (guardErr) {
-        console.warn("Order model guard check failed:", guardErr.message);
+        //consolle.warn("Order model guard check failed:", guardErr.message);
       }
 
       // Debug: log schema paths so we can confirm the model actually contains address fields
@@ -57,35 +57,35 @@ class OrderRepository extends CrudRepository {
           0,
           200
         );
-        console.log("Order model schema paths:", schemaPaths);
+        //consolle.log("Order model schema paths:", schemaPaths);
       } catch (e) {
-        console.warn("Could not enumerate model.schema.paths:", e.message);
+        //consolle.warn("Could not enumerate model.schema.paths:", e.message);
       }
 
       const res = await this.model.create(data);
-      console.log("order created successfully:", res);
+      //consolle.log("order created successfully:", res);
       return res;
     } catch (error) {
-      console.error("OrderRepository Create Error:", error.message);
+      //consolle.error("OrderRepository Create Error:", error.message);
       throw error;
     }
   }
 
   async findProductById(productId) {
-    console.log("Finding product by ID:", productId);
+    //consolle.log("Finding product by ID:", productId);
     try {
       if (!this.connection) {
         throw new Error("Database connection is not provided");
       }
-      console.log(
-        "Connection name:",
-        this.connection.name || "global mongoose"
-      );
+      //consolle.log(
+      //   "Connection name:",
+      //   this.connection.name || "global mongoose"
+      // );
       const Product =
         this.connection.models.Product ||
         this.connection.model("Product", ProductSchema);
-      console.log("Using Product model:", Product.modelName);
-      console.log("Database:", this.connection.name || "global mongoose");
+      //consolle.log("Using Product model:", Product.modelName);
+      //consolle.log("Database:", this.connection.name || "global mongoose");
 
       if (!mongoose.Types.ObjectId.isValid(productId)) {
         throw new Error(`Invalid productId: ${productId}`);
@@ -95,10 +95,10 @@ class OrderRepository extends CrudRepository {
       if (!found) {
         throw new Error(`Product ${productId} not found`);
       }
-      console.log("Found product:", found);
+      //consolle.log("Found product:", found);
       return found;
     } catch (error) {
-      console.error("OrderRepository findProductById Error:", error.message);
+      //consolle.error("OrderRepository findProductById Error:", error.message);
       throw error;
     }
   }
@@ -120,29 +120,29 @@ class OrderRepository extends CrudRepository {
 
       const orders = await query.exec();
 
-      // console.log("Orders for tracking:", orders);
+      // //consolle.log("Orders for tracking:", orders);
       return orders;
     } catch (error) {
-      console.error("OrderRepository getAllOrdersForTracking Error:", error.message);
+      //consolle.error("OrderRepository getAllOrdersForTracking Error:", error.message);
       throw error;
     }
   }
 
   async findVariantById(variantId) {
-    console.log("Finding variant by ID:", variantId);
+    //consolle.log("Finding variant by ID:", variantId);
     try {
       if (!this.connection) {
         throw new Error("Database connection is not provided");
       }
-      console.log(
-        "Connection name:",
-        this.connection.name || "global mongoose"
-      );
+      //consolle.log(
+      //   "Connection name:",
+      //   this.connection.name || "global mongoose"
+      // );
       const Variant =
         this.connection.models.Variant ||
         this.connection.model("Variant", VariantSchema);
-      console.log("Using Variant model:", Variant.modelName);
-      console.log("Database:", this.connection.name || "global mongoose");
+      //consolle.log("Using Variant model:", Variant.modelName);
+      //consolle.log("Database:", this.connection.name || "global mongoose");
 
       if (!mongoose.Types.ObjectId.isValid(variantId)) {
         throw new Error(`Invalid variantId: ${variantId}`);
@@ -152,10 +152,10 @@ class OrderRepository extends CrudRepository {
       if (!variant) {
         throw new Error(`Variant ${variantId} not found`);
       }
-      console.log("Found variant:", variant);
+      //consolle.log("Found variant:", variant);
       return variant;
     } catch (error) {
-      console.error("OrderRepository findVariantById Error:", error.message);
+      //consolle.error("OrderRepository findVariantById Error:", error.message);
       throw error;
     }
   }
@@ -192,7 +192,7 @@ class OrderRepository extends CrudRepository {
             !!this.model.schema.path(root) ||
             !!(this.model.schema.virtuals && this.model.schema.virtuals[root]);
           if (!hasPath) {
-            console.warn(`Skipping populate for missing field: ${root}`);
+            //consolle.warn(`Skipping populate for missing field: ${root}`);
           }
           return hasPath;
         });
@@ -222,7 +222,7 @@ class OrderRepository extends CrudRepository {
         pageSize: limit || 10,
       };
     } catch (error) {
-      console.error("OrderRepository getUserOrders Error:", error.message);
+      //consolle.error("OrderRepository getUserOrders Error:", error.message);
       throw error;
     }
   }
@@ -230,7 +230,7 @@ class OrderRepository extends CrudRepository {
   //findById
   async findById(orderId) {
     try {
-      console.log("Finding order by ID:", orderId);
+      //consolle.log("Finding order by ID:", orderId);
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
       }
@@ -240,7 +240,7 @@ class OrderRepository extends CrudRepository {
       }
       return order;
     } catch (error) {
-      console.error("OrderRepository findById Error:", error.message);
+      //consolle.error("OrderRepository findById Error:", error.message);
       throw error;
     }
   }
@@ -275,7 +275,7 @@ class OrderRepository extends CrudRepository {
             !!this.model.schema.path(root) ||
             !!(this.model.schema.virtuals && this.model.schema.virtuals[root]);
           if (!hasPath) {
-            console.warn(`Skipping populate for missing field: ${root}`);
+            //consolle.warn(`Skipping populate for missing field: ${root}`);
           }
           return hasPath;
         });
@@ -285,7 +285,7 @@ class OrderRepository extends CrudRepository {
         });
       }
 
-      // console.log("query ===>  ", query);
+      // //consolle.log("query ===>  ", query);
 
       const order = await query.exec();
       if (!order) {
@@ -294,7 +294,7 @@ class OrderRepository extends CrudRepository {
 
       return order;
     } catch (error) {
-      console.error("OrderRepository getOrderById Error:", error.message);
+      //consolle.error("OrderRepository getOrderById Error:", error.message);
       throw error;
     }
   }
@@ -312,7 +312,7 @@ class OrderRepository extends CrudRepository {
       const orders = await query.exec();
       return orders;
     } catch (error) {
-      console.error("OrderRepository getRecentOrders Error:", error.message);
+      //consolle.error("OrderRepository getRecentOrders Error:", error.message);
       throw error;
     }
   }
@@ -326,7 +326,7 @@ class OrderRepository extends CrudRepository {
       );
       return totalIncome;
     } catch (error) {
-      console.error("OrderRepository calculateIncome Error:", error.message);
+      //consolle.error("OrderRepository calculateIncome Error:", error.message);
       throw error;
     }
   }
@@ -334,7 +334,7 @@ class OrderRepository extends CrudRepository {
   //updateOrder
   async updateOrder(orderId, updateData) {
     try {
-        // console.log('Updating order:', orderId, 'with data:', updateData);
+        // //consolle.log('Updating order:', orderId, 'with data:', updateData);
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
       }
@@ -347,10 +347,10 @@ class OrderRepository extends CrudRepository {
       if (!updatedOrder) {
         throw new Error("Order not found");
       }
-      // console.log('Order updated successfully:', updatedOrder);
+      // //consolle.log('Order updated successfully:', updatedOrder);
       return updatedOrder;
     } catch (error) {
-      console.error("OrderRepository updateOrder Error:", error.message);
+      //consolle.error("OrderRepository updateOrder Error:", error.message);
       throw error;
     }
   }
@@ -396,7 +396,7 @@ class OrderRepository extends CrudRepository {
         pageSize: limit || 10,
       };
     } catch (error) {
-      console.error("OrderRepository getAllOrders Error:", error.message);
+      //consolle.error("OrderRepository getAllOrders Error:", error.message);
       throw error;
     }
   }

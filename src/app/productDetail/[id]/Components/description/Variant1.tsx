@@ -34,7 +34,7 @@ function Variant1() {
         <div className="flex flex-col space-y-6 flex-1">
           {/* Description Text */}
           <div className="sticky top-10 self-start z-10">
-            <h1 className="text-[50px] leading-[6vh] lg:leading-[18vh] lg:text-[130px] text-black bebas mb-4">
+            <h1 className="text-4xl md:text-5xl text-black bebas mb-4">
               DESCRIPTION
             </h1>
             <div

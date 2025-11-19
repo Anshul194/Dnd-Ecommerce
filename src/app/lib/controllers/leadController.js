@@ -101,8 +101,8 @@ export const getLeadByIdController = async (id, conn) => {
 
 export const updateLeadController = async (body, id, conn) => {
   try {
-    console.log('Updating lead with ID:', id);
-    console.log('Request body:', body);
+    //consolle.log('Updating lead with ID:', id);
+    //consolle.log('Request body:', body);
 
     const updated = await updateLeadService(id, body, conn);
 
@@ -182,7 +182,7 @@ export const convertLeadController = async (leadId, customerId, conn) => {
       },
     };
   } catch (error) {
-    console.error('Error converting lead:', error);
+    //consolle.error('Error converting lead:', error);
     return {
       status: 500,
       body: {
@@ -197,7 +197,7 @@ export const convertLeadController = async (leadId, customerId, conn) => {
 export const assignLeadController = async (id, body, conn) => {
   try {
     const { assignedTo } = body;
-    console.log('Assigning lead with ID:', id, 'to user:', assignedTo); // Debug log
+    //consolle.log('Assigning lead with ID:', id, 'to user:', assignedTo); // Debug log
     if (!assignedTo) {
       return NextResponse.json({
         success: false,
@@ -211,7 +211,7 @@ export const assignLeadController = async (id, body, conn) => {
     }, conn);
 
     if (!updated) {
-      console.error('Lead not found for ID:', id);
+      //consolle.error('Lead not found for ID:', id);
       return NextResponse.json({
         success: false,
         message: 'Lead not found',
@@ -224,7 +224,7 @@ export const assignLeadController = async (id, body, conn) => {
       data: updated,
     });
   } catch (error) {
-    console.error('Error assigning lead:', error);
+    //consolle.error('Error assigning lead:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to assign lead',
@@ -258,7 +258,7 @@ export const bulkAssignLeadsController = async (body, conn) => {
       data: { modifiedCount: result.modifiedCount },
     });
   } catch (error) {
-    console.error('Error bulk assigning leads:', error);
+    //consolle.error('Error bulk assigning leads:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to bulk assign leads',
@@ -271,7 +271,7 @@ export const bulkAssignLeadsController = async (body, conn) => {
 export const addLeadNoteController = async (id, body, conn) => {
   try {
     const { note, userId, nextFollowUpAt } = body;
-    console.log('Adding note to lead ID:', id, 'note:', note, 'userId:', userId, 'nextFollowUpAt:', nextFollowUpAt);
+    //consolle.log('Adding note to lead ID:', id, 'note:', note, 'userId:', userId, 'nextFollowUpAt:', nextFollowUpAt);
     if (!note) {
       return NextResponse.json({
         success: false,
@@ -303,7 +303,7 @@ export const addLeadNoteController = async (id, body, conn) => {
     const updated = await updateLeadService(id, updatePayload, conn);
 
     if (!updated) {
-      console.error('Lead not found for ID:', id);
+      //consolle.error('Lead not found for ID:', id);
       return NextResponse.json({
         success: false,
         message: 'Lead not found',
@@ -316,7 +316,7 @@ export const addLeadNoteController = async (id, body, conn) => {
       data: updated,
     });
   } catch (error) {
-    console.error('Error adding lead note:', error);
+    //consolle.error('Error adding lead note:', error);
     return NextResponse.json({
       success: false,
       message: error.message || 'Failed to add note',

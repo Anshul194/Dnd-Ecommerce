@@ -19,7 +19,7 @@ export async function createModule(request) {
             body: successResponse(newModule, "Module created"),
         };
     } catch (err) {
-        console.error('Create Module error:', err.message);
+        //consolle.error('Create Module error:', err.message);
         return {
             status: 500,
             body: errorResponse('Error creating module', 500, err.message),
@@ -42,7 +42,7 @@ export async function updateModule(id, data) {
             body: successResponse("Module updated", updated),
         };
     } catch (err) {
-        console.error('Update Module error:', err.message);
+        //consolle.error('Update Module error:', err.message);
         return {
             status: 500,
             body: errorResponse('Server error', 500),
@@ -61,7 +61,7 @@ export async function getModule(id) {
             body: successResponse("Module fetched", module),
         };
     } catch (err) {
-        console.error('Get Module error:', err.message);
+        //consolle.error('Get Module error:', err.message);
         return {
             status: 500,
             body: errorResponse('Server error', 500),
@@ -78,7 +78,7 @@ export async function getAllModules() {
             body: result,
         };
     } catch (err) {
-        console.error('Get All Modules error:', err.message);
+        //consolle.error('Get All Modules error:', err.message);
         return {
             status: 500,
             body: errorResponse('Server error', 500),
@@ -102,7 +102,7 @@ export async function deleteModule(id) {
             body: successResponse("Module deleted", deleted),
         };
     } catch (err) {
-        console.error('Delete Module error:', err.message);
+        //consolle.error('Delete Module error:', err.message);
         return {
             status: 500,
             body: errorResponse('Server error', 500),

@@ -30,7 +30,7 @@ class PlanService {
     }
     async getPlans(query) {
         try {
-            console.log("Query Parameters:", query);
+            //consolle.log("Query Parameters:", query);
             const { page = 1, limit = 10, filters = "{}", searchFields = "{}", sort = "{}" } = query;
 
             const pageNum = parseInt(page);
@@ -67,7 +67,7 @@ class PlanService {
             const plans = await this.planRepo.getAll(filterConditions, sortConditions, pageNum, limitNum);
             return successResponse(plans, 'Plans fetched', StatusCodes.OK);
         } catch (error) {
-            console.log("error plan", error.message);
+            //consolle.log("error plan", error.message);
             return errorResponse("Cannot fetch data of all the plans", StatusCodes.INTERNAL_SERVER_ERROR, error.message);
         }
     }
