@@ -31,6 +31,8 @@ export async function POST(request) {
     try {
       validateImageFile(file);
     } catch (err) {
+          console.log("error in uploading : ", err);
+
       return NextResponse.json(
         { success: false, message: err.message || "Invalid file" },
         { status: 400 }
@@ -45,6 +47,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (err) {
+    console.log("error in uploading : ", err);
     return NextResponse.json(
       { success: false, message: err.message || "Upload failed" },
       { status: 500 }
