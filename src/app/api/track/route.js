@@ -252,16 +252,51 @@ export async function GET(req) {
     const sortParam = url.searchParams.get("sort") || "-timestamp";
     
     if (type) filter.type = type;
+    
+    // Build flexible productId filter: match either ObjectId or string
     if (productId) {
+      const prodFilter = {};
       try {
-        filter.productId = mongoose.Types.ObjectId.isValid(productId)
-          ? new mongoose.Types.ObjectId(productId)
-          : productId;
+        if (mongoose.Types.ObjectId.isValid(productId)) {
+          // match either stored ObjectId or stored string
+          prodFilter.$or = [
+            { productId: new mongoose.Types.ObjectId(productId) },
+            { productId: productId },
+          ];
+        } else {
+          prodFilter.productId = productId;
+        }
       } catch (e) {
-        filter.productId = productId;
+        prodFilter.productId = productId;
+      }
+      // merge prodFilter into main filter safely
+      if (Object.keys(filter).length > 0) {
+        filter.$and = filter.$and || [];
+        filter.$and.push(prodFilter);
+      } else {
+        Object.assign(filter, prodFilter);
       }
     }
-    if (userId) filter.userId = userId;
+
+    // Flexible userId filter as well (match ObjectId or string)
+    if (userId) {
+      const uFilter = {};
+      try {
+        if (mongoose.Types.ObjectId.isValid(userId)) {
+          uFilter.$or = [{ userId: new mongoose.Types.ObjectId(userId) }, { userId: userId }];
+        } else {
+          uFilter.userId = userId;
+        }
+      } catch (e) {
+        uFilter.userId = userId;
+      }
+      if (Object.keys(filter).length > 0) {
+        filter.$and = filter.$and || [];
+        filter.$and.push(uFilter);
+      } else {
+        Object.assign(filter, uFilter);
+      }
+    }
     if (since) {
       const d = new Date(since);
       if (!isNaN(d.getTime())) filter.timestamp = { $gte: d };
@@ -272,6 +307,72 @@ export async function GET(req) {
       : { [sortParam]: 1 };
 
     const events = await eventsColl.find(filter).sort(sort).limit(limit).toArray();
+
+    // --- Fetch users / addresses BEFORE creating populated events (fixes addressesByUser access) ---
+    const usersColl = conn.db.collection("users");
+    const addressesColl = conn.db.collection("addresses");
+
+    let userDoc = null;
+    let addresses = [];
+    let addressesByUser = {};
+
+    if (userId) {
+      try {
+        const userIdToQuery = mongoose.Types.ObjectId.isValid(userId)
+          ? new mongoose.Types.ObjectId(userId)
+          : userId;
+        userDoc = await usersColl.findOne({ _id: userIdToQuery });
+        if (!userDoc && typeof userId === 'string') {
+          userDoc = await usersColl.findOne({ email: userId });
+        }
+      } catch (e) {
+        console.error('User lookup error:', e);
+        userDoc = null;
+      }
+
+      try {
+        const userIdToQuery = mongoose.Types.ObjectId.isValid(userId)
+          ? new mongoose.Types.ObjectId(userId)
+          : userId;
+        addresses = await addressesColl.find({ user: userIdToQuery, deletedAt: null })
+          .sort({ isDefault: -1, createdAt: -1 })
+          .toArray();
+      } catch (e) {
+        console.error('Address lookup error:', e);
+        addresses = [];
+      }
+    } else {
+      // No single userId supplied — fetch addresses for users referenced in events (best-effort)
+      const eventUserIds = [...new Set(
+        events
+          .map(e => e.userId)
+          .filter(Boolean)
+          .map(id => (typeof id === "object" && id._id) ? id._id : id)
+      )];
+
+      const MAX_USERS_TO_POPULATE = 50;
+      if (eventUserIds.length > 0 && eventUserIds.length <= MAX_USERS_TO_POPULATE) {
+        try {
+          const userObjectIds = eventUserIds.map(id =>
+            mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id
+          );
+          const foundAddresses = await addressesColl.find({
+            user: { $in: userObjectIds },
+            deletedAt: null
+          }).toArray();
+
+          addressesByUser = foundAddresses.reduce((acc, addr) => {
+            const uid = (addr.user && addr.user.toString) ? addr.user.toString() : String(addr.user);
+            if (!acc[uid]) acc[uid] = [];
+            acc[uid].push(addr);
+            return acc;
+          }, {});
+        } catch (e) {
+          console.error('Bulk address lookup error:', e);
+          addressesByUser = {};
+        }
+      }
+    }
 
     // Populate products for events (only name and variant)
     const productsColl = conn.db.collection("products");
@@ -297,65 +398,51 @@ export async function GET(req) {
       productsMap = products.reduce((acc, product) => {
         acc[product._id.toString()] = {
           name: product.name,
-          variant: product.variant
+          variant: product.variant,
+          slug: product.slug
         };
         return acc;
       }, {});
     }
 
-    // Add populated product to each event
-    const populatedEvents = events.map(event => ({
-      ...event,
-      product: event.productId ? (productsMap[event.productId.toString()] || null) : null
-    }));
+    // Add populated product and addresses to each event
+    const populatedEvents = events.map((event) => {
+      const product = event.productId
+        ? productsMap[event.productId.toString()] || null
+        : null;
 
-    // If userId provided, fetch user document and addresses
-    let userDoc = null;
-    let addresses = [];
-    
-    if (userId) {
-      try {
-        const usersColl = conn.db.collection("users");
-        const userIdToQuery = mongoose.Types.ObjectId.isValid(userId) 
-          ? new mongoose.Types.ObjectId(userId)
-          : userId;
-        
-        userDoc = await usersColl.findOne({ _id: userIdToQuery });
-        
-        if (!userDoc && typeof userId === 'string') {
-          userDoc = await usersColl.findOne({ email: userId });
-        }
-      } catch (e) {
-        console.error('User lookup error:', e);
-        userDoc = null;
+      // normalize user id string for lookup
+      const uid =
+        event.userId && typeof event.userId === "object" && event.userId._id
+          ? String(event.userId._id)
+          : event.userId
+          ? String(event.userId)
+          : null;
+
+      let eventAddresses = [];
+      if (userId) {
+        // single-user path: use addresses fetched into `addresses` variable
+        eventAddresses = addresses || [];
+      } else if (uid && addressesByUser && addressesByUser[uid]) {
+        eventAddresses = addressesByUser[uid];
+      } else {
+        eventAddresses = [];
       }
 
-      // Fetch addresses using the Address model structure
-      try {
-        const addressesColl = conn.db.collection("addresses");
-        const userIdToQuery = mongoose.Types.ObjectId.isValid(userId) 
-          ? new mongoose.Types.ObjectId(userId)
-          : userId;
-        
-        // Query for active addresses (not soft-deleted)
-        addresses = await addressesColl.find({ 
-          user: userIdToQuery,
-          deletedAt: null 
-        })
-        .sort({ isDefault: -1, createdAt: -1 })
-        .toArray();
-      } catch (e) {
-        console.error('Address lookup error:', e);
-        addresses = [];
-      }
-    }
+      return {
+        ...event,
+        product,
+        addresses: eventAddresses,
+      };
+    });
 
     return NextResponse.json({ 
       success: true, 
-      count: populatedEvents.length, 
-      events: populatedEvents, 
-      user: userDoc, 
-      addresses 
+      count: populatedEvents.length,
+      events: populatedEvents,
+      user: userDoc,
+      addresses,
+      addressesByUser
     });
   } catch (err) {
     console.error('API Error:', err);
