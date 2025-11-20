@@ -1,4 +1,3 @@
-
 import CouponRepository from '../repository/CouponRepository.js';
 
 
@@ -52,7 +51,7 @@ class CouponService {
   async createCoupon(data, conn) {
     try {
       // Validate required fields
-      if (!data.code || !data.type || !data.value) {
+      if (!data.code || !data.type || (data.value === undefined)) {
         throw new Error('Code, type, and value are required');
       }
 
@@ -72,6 +71,16 @@ class CouponService {
 
       if (data.usageLimit && data.usageLimit <= 0) {
         throw new Error('Usage limit must be greater than 0');
+      }
+
+      // Validate start/end dates
+      if (data.startAt && data.endAt && new Date(data.startAt) > new Date(data.endAt)) {
+        throw new Error('startAt must be before endAt');
+      }
+
+      // If products provided ensure it's an array
+      if (data.products && !Array.isArray(data.products)) {
+        throw new Error('products must be an array of product ids');
       }
 
       // Create coupon
@@ -154,12 +163,29 @@ class CouponService {
 
   async applyCoupon(data, conn) {
     try {
-      const { code, cartValue } = data;
-      if (!code || cartValue === undefined) {
-        throw new Error('Coupon code and cart value are required');
-      }
-      if (typeof cartValue !== 'number' || cartValue < 0) {
-        throw new Error('Cart value must be a non-negative number');
+      // Accept either { code, cartValue, cartItems, customerId, paymentMethod } 
+      const { code, cartValue, cartItems, customerId, paymentMethod = 'prepaid' } = data;
+      if (!code) throw new Error('Coupon code is required');
+
+      // Normalize cartItems and cartValue; use actualPrice if present (apply on actual price)
+      let items = [];
+      let totalCartValue = 0;
+      if (Array.isArray(cartItems) && cartItems.length > 0) {
+        // each item expected: { productId, variantId?, price, actualPrice?, quantity }
+        items = cartItems.map(i => ({
+          productId: i.productId,
+          price: Number(i.price || 0), // sale price
+          actualPrice: i.actualPrice !== undefined ? Number(i.actualPrice) : undefined,
+          quantity: Number(i.quantity || 1)
+        }));
+        // Use actualPrice when coupon.applyOnActualPrice is true; we'll decide per-coupon below.
+        totalCartValue = items.reduce((s, it) => s + ((it.actualPrice !== undefined ? it.actualPrice : it.price) * it.quantity), 0);
+      } else {
+        if (cartValue === undefined) throw new Error('cartValue or cartItems are required');
+        if (typeof cartValue !== 'number' || cartValue < 0) {
+          throw new Error('Cart value must be a non-negative number');
+        }
+        totalCartValue = cartValue;
       }
 
       const coupon = await this.couponRepository.findByCode(code);
@@ -167,38 +193,227 @@ class CouponService {
         throw new Error('Invalid Coupon');
       }
 
-      // Check expiration
-      if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
+      const now = new Date();
+
+      // Check active flag and deletion
+      if (!coupon.isActive || coupon.deletedAt) throw new Error('Coupon is not active');
+
+      // Check start/end window
+      if (coupon.startAt && new Date(coupon.startAt) > now) {
+        throw new Error('Coupon is not active yet');
+      }
+      if (coupon.endAt && new Date(coupon.endAt) < now) {
         throw new Error('Coupon has expired');
       }
 
-      // Check usage limit
+      // Check usageLimit (global)
       if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
         throw new Error('Coupon usage limit exceeded');
       }
 
-      // Check minimum cart value
-      if (cartValue < coupon.minCartValue) {
-        throw new Error(`Cart value must be at least ${coupon.minCartValue}`);
+      // Validate customer eligibility using coupon.eligibility
+      if (coupon.eligibility && !coupon.eligibility.allCustomers) {
+        if (!customerId) throw new Error('Customer required for this coupon');
+        // direct inclusion check
+        const specific = (coupon.eligibility.specificCustomers || []).map(String);
+        if (specific.length > 0 && specific.includes(String(customerId))) {
+          // allowed
+        } else if ((coupon.eligibility.specificSegments || []).length > 0) {
+          // evaluate segments; be defensive if conn/models missing
+          const segments = coupon.eligibility.specificSegments || [];
+          let matchedSegment = false;
+          // Try to get models if conn provided
+          const OrderModel = conn && typeof conn.model === 'function' ? conn.model('Order') : null;
+          const CheckoutModel = conn && typeof conn.model === 'function' ? conn.model('Checkout') : null;
+          const CustomerModel = conn && typeof conn.model === 'function' ? conn.model('Customer') : null;
+
+          // fetch minimal customer/order info if needed
+          let orderCount = null;
+          if (OrderModel) {
+            try {
+              orderCount = await OrderModel.countDocuments({ customerId: customerId });
+            } catch (e) { /* ignore */ }
+          }
+
+          for (const seg of segments) {
+            if (seg === 'neverPurchased') {
+              if (orderCount === null && OrderModel) orderCount = await OrderModel.countDocuments({ customerId });
+              if (orderCount !== null && orderCount === 0) matchedSegment = true;
+            } else if (seg === 'purchasedMoreThanOnce') {
+              if (orderCount === null && OrderModel) orderCount = await OrderModel.countDocuments({ customerId });
+              if (orderCount !== null && orderCount > 1) matchedSegment = true;
+            } else if (seg === 'purchasedAtLeastOnce') {
+              if (orderCount === null && OrderModel) orderCount = await OrderModel.countDocuments({ customerId });
+              if (orderCount !== null && orderCount >= 1) matchedSegment = true;
+            } else if (seg === 'purchasedMoreThan3Times') {
+              if (orderCount === null && OrderModel) orderCount = await OrderModel.countDocuments({ customerId });
+              if (orderCount !== null && orderCount > 3) matchedSegment = true;
+            } else if (seg === 'abandonedCart30Days') {
+              if (CheckoutModel) {
+                const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                try {
+                  const abandoned = await CheckoutModel.findOne({
+                    customerId,
+                    updatedAt: { $gte: thirtyDaysAgo },
+                    // flexible check: either explicit status or a completed flag
+                    $or: [{ status: 'abandoned' }, { completed: false }]
+                  }).lean();
+                  if (abandoned) matchedSegment = true;
+                } catch (e) { /* ignore */ }
+              }
+            } else if (seg === 'emailSubscribers') {
+              if (CustomerModel) {
+                try {
+                  const cust = await CustomerModel.findById(customerId).select('isEmailSubscriber subscribed emailSubscribed').lean();
+                  if (cust && (cust.isEmailSubscriber || cust.subscribed || cust.emailSubscribed)) matchedSegment = true;
+                } catch (e) { /* ignore */ }
+              }
+            }
+            if (matchedSegment) break;
+          }
+
+          if (!matchedSegment) {
+            throw new Error('Customer is not eligible for this coupon');
+          }
+        } else {
+          // If specificCustomers provided but did not match
+          throw new Error('Customer is not eligible for this coupon');
+        }
+      }
+
+      // Check per-customer limit
+      if (coupon.limitToOnePerCustomer && customerId) {
+        const usageEntry = (coupon.usageByCustomer || []).find(u => String(u.customerId) === String(customerId));
+        if (usageEntry && usageEntry.count >= 1) {
+          throw new Error('Coupon limited to one use per customer');
+        }
+      }
+
+      // Determine eligible amount based on product targeting and quantity rules
+      let eligibleAmount = totalCartValue;
+      let totalEligibleQuantity = 0;
+      let hasEligibleItems = true;
+
+      if (coupon.products && coupon.products.length > 0) {
+        if (!items.length) throw new Error('Cart items are required for product-specific coupons');
+        const productSet = new Set(coupon.products.map(String));
+        const eligibleItems = items.filter(it => productSet.has(String(it.productId)));
+        totalEligibleQuantity = eligibleItems.reduce((s, it) => s + (it.quantity || 0), 0);
+        // decide price field based on coupon.applyOnActualPrice flag
+        eligibleAmount = eligibleItems.reduce((s, it) => {
+          const priceToUse = (coupon.applyOnActualPrice && it.actualPrice !== undefined) ? it.actualPrice : it.price;
+          return s + (priceToUse * it.quantity);
+        }, 0);
+        hasEligibleItems = eligibleItems.length > 0;
+        if (!hasEligibleItems) throw new Error('No eligible items in cart for this coupon');
+
+        // minQuantity enforcement scoped to selected products if configured
+        if (coupon.minQuantity && coupon.minQuantity > 0) {
+          const compareQty = coupon.minQuantityAppliesToSelectedProducts ? totalEligibleQuantity : items.reduce((s, it) => s + (it.quantity || 0), 0);
+          if (compareQty < coupon.minQuantity) throw new Error(`Minimum quantity of ${coupon.minQuantity} required`);
+        }
+      } else {
+        // no product scoping, still enforce minQuantity if present
+        if (coupon.minQuantity && coupon.minQuantity > 0) {
+          const totalQty = items.reduce((s, it) => s + (it.quantity || 0), 0);
+          if (totalQty < coupon.minQuantity) throw new Error(`Minimum quantity of ${coupon.minQuantity} required`);
+        }
+        // determine eligibleAmount using applyOnActualPrice flag
+        eligibleAmount = items.reduce((s, it) => {
+          const priceToUse = (coupon.applyOnActualPrice && it.actualPrice !== undefined) ? it.actualPrice : it.price;
+          return s + (priceToUse * it.quantity);
+        }, 0);
+      }
+
+      // Minimum cart value check (may apply to selected products)
+      if (coupon.minCartValue && coupon.minCartValue > 0) {
+        const compareAmount = coupon.minCartAppliesToSelectedProducts ? eligibleAmount : totalCartValue;
+        if (compareAmount < coupon.minCartValue) {
+          throw new Error(`Cart value must be at least ${coupon.minCartValue}`);
+        }
+      }
+
+      // Payment-specific rules: COD maximum order value / enforce outstanding COD order
+      const defaultMaxCOD = 1500; // as per requirement #10
+      if (paymentMethod === 'cod') {
+        const maxCod = coupon.codMaxOrderValue || defaultMaxCOD;
+        if (totalCartValue > maxCod) {
+          throw new Error(`Maximum order value for COD is ${maxCod}`);
+        }
+        if (coupon.enforceSingleOutstandingCOD && customerId && conn && typeof conn.model === 'function') {
+          const OrderModel = conn.model('Order');
+          if (OrderModel) {
+            const outstanding = await OrderModel.findOne({
+              customerId,
+              paymentMethod: 'cod',
+              status: { $nin: ['delivered', 'cancelled'] } // any not-delivered COD
+            }).lean();
+            if (outstanding) {
+              throw new Error('You have an outstanding COD order that is not yet delivered. Please use prepaid payment until delivery is complete.');
+            }
+          }
+        }
+      }
+
+      // Determine which discount rule to apply: payment-specific or top-level
+      let effectiveType = coupon.type;
+      let effectiveValue = coupon.value;
+      let effectiveSpecialAmount = coupon.specialAmount;
+
+      if (coupon.paymentSpecific && coupon.paymentDiscounts && paymentMethod) {
+        const pdisc = coupon.paymentDiscounts[paymentMethod];
+        if (pdisc && pdisc.type) {
+          effectiveType = pdisc.type;
+          effectiveValue = pdisc.value;
+          effectiveSpecialAmount = pdisc.specialAmount;
+        }
       }
 
       // Calculate discount
       let discount = 0;
-      if (coupon.type === 'flat') {
-        discount = coupon.value;
-      } else if (coupon.type === 'percent') {
-        discount = (coupon.value / 100) * cartValue;
+      if (effectiveType === 'flat') {
+        if (coupon.products && coupon.products.length > 0 && !coupon.oncePerOrder) {
+          discount = (effectiveValue || 0) * (totalEligibleQuantity || 0);
+        } else {
+          discount = effectiveValue || 0;
+        }
+        if (discount > eligibleAmount) discount = eligibleAmount;
+      } else if (effectiveType === 'percent') {
+        discount = ((effectiveValue || 0) / 100) * eligibleAmount;
+      } else if (effectiveType === 'special') {
+        // apply specialAmount if provided, else fallback to value
+        discount = effectiveSpecialAmount !== undefined ? effectiveSpecialAmount : (effectiveValue || 0);
+        // if product-scoped and not oncePerOrder, apply per eligible qty
+        if (coupon.products && coupon.products.length > 0 && !coupon.oncePerOrder) {
+          discount = discount * (totalEligibleQuantity || 0);
+        }
+        if (discount > eligibleAmount) discount = eligibleAmount;
       }
 
-      // Increment usedCount
-      await this.couponRepository.incrementUsedCount(coupon._id);
+      if (discount <= 0) {
+        throw new Error('Calculated discount is zero');
+      }
+
+      // Shipping charge suggestion per requirement #9
+      let shippingCharge = 0;
+      try {
+        if (paymentMethod === 'cod') {
+          shippingCharge = totalCartValue <= 500 ? 80 : 0;
+        } else {
+          shippingCharge = totalCartValue <= 500 ? 40 : 0;
+        }
+      } catch (e) { shippingCharge = 0; }
+
+      // Increment used counts (global and per customer if provided)
+      await this.couponRepository.incrementUsedCount(coupon._id, customerId);
 
       return {
         success: true,
         message: 'Coupon applied successfully',
         data: {
           discount,
-          coupon
+          coupon,
+          shippingCharge
         }
       };
     } catch (error) {
