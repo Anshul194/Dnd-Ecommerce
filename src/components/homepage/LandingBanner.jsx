@@ -77,7 +77,7 @@ function LandingBanner({ content }) {
                   transition={{ duration: 0.8, delay: 0.2 }}
                   className="text-4xl  max-sm:w-full w-2/3 text-start  md:text-6xl lg:text-7xl mb-6 drop-shadow-2xl"
                 >
-                  {content[currentSlide].content.title}
+                  {content?.[currentSlide]?.content?.title}
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 30 }}
@@ -85,7 +85,7 @@ function LandingBanner({ content }) {
                   transition={{ duration: 0.8, delay: 0.4 }}
                   className="text-lg  max-sm:w-full w-2/3 text-start  md:text-xl lg:text-2xl mb-10 text-white/90 drop-shadow-lg"
                 >
-                  {content[currentSlide].content.description}
+                  {content?.[currentSlide]?.content?.description}
                 </motion.p>
                 <motion.div
                   className="w-2/3 max-sm:w-full text-start"
