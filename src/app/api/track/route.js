@@ -53,6 +53,50 @@ const METRIC_MAP = {
       );
     }
   },
+  SIGNUP: async (event, conn) => {
+    try {
+      const usersColl = conn.db.collection("users");
+      if (!event.userId && event.user && (event.user._id || event.user.id)) {
+        event.userId = event.user._id || event.user.id;
+      }
+      const uid = event.userId;
+      if (uid) {
+        const query = mongoose.Types.ObjectId.isValid(uid) ? { _id: new mongoose.Types.ObjectId(uid) } : { _id: uid };
+        await usersColl.updateOne(query, { $inc: { signupCount: 1 }, $set: { signedUpAt: new Date() } }, { upsert: true });
+      }
+    } catch (e) {
+      console.error("SIGNUP metric error:", e);
+    }
+  },
+  LOGIN: async (event, conn) => {
+    try {
+      const usersColl = conn.db.collection("users");
+      if (!event.userId && event.user && (event.user._id || event.user.id)) {
+        event.userId = event.user._id || event.user.id;
+      }
+      const uid = event.userId;
+      if (uid) {
+        const query = mongoose.Types.ObjectId.isValid(uid) ? { _id: new mongoose.Types.ObjectId(uid) } : { _id: uid };
+        await usersColl.updateOne(query, { $inc: { loginCount: 1 }, $set: { lastLoginAt: new Date() } }, { upsert: false });
+      }
+    } catch (e) {
+      console.error("LOGIN metric error:", e);
+    }
+  },
+  PAGE_VIEW: async (event, conn) => {
+    try {
+      const pagesColl = conn.db.collection("pages");
+      const url = event.url || event.path || null;
+      if (!url) return;
+      await pagesColl.updateOne(
+        { url },
+        { $inc: { views: 1 }, $set: { lastViewedAt: new Date(), title: event.title || null } },
+        { upsert: true }
+      );
+    } catch (e) {
+      console.error("PAGE_VIEW metric error:", e);
+    }
+  },
   // ...other event types...
 };
 
