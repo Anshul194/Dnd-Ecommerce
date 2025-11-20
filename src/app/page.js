@@ -19,6 +19,22 @@ export default function HomePage() {
     }
   }, [dispatch]);
 
+  // Track homepage view (best-effort)
+  useEffect(() => {
+    try {
+      fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "PAGE_VIEW",
+          url: window.location.pathname,
+          title: document.title || "Home",
+          timestamp: new Date().toISOString(),
+        }),
+      }).catch(() => {});
+    } catch (e) {}
+  }, []);
+
   if (loading) {
     return (
       <div className="h-[90vh] flex justify-center items-center">

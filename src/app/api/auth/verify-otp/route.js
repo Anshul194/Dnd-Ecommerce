@@ -48,6 +48,49 @@ async function getDbConnection(subdomain) {
   }
 }
 
+// Helper to send tracking events to internal tracking endpoint (fire-and-forget)
+async function sendTrackingEvent(request, eventPayload, subdomain = null) {
+  // Build track URL relative to current request host
+  const trackUrl = new URL("/api/track", request.url).href;
+
+  // Include tenant info and small metadata
+  const evt = {
+    ...eventPayload,
+    timestamp: new Date().toISOString(),
+    source: "auth.verify-otp",
+    tenant: subdomain || null,
+  };
+
+  const body = JSON.stringify({ batch: [evt] });
+
+  try {
+    // Fire-and-forget: do not throw if tracking fails.
+    // Forward tenant and host headers so tracking can resolve tenant DB.
+    const headers = {
+      "Content-Type": "application/json",
+      // forward tenant header if present on original request
+      "x-tenant": request.headers.get("x-tenant") || (subdomain || ""),
+      // mark as internal
+      "x-internal-call": "1",
+      "x-forwarded-for": request.headers.get("x-forwarded-for") || "",
+    };
+
+    // keepalive helps ensure the request gets sent even if the handler finishes
+    fetch(trackUrl, {
+      method: "POST",
+      headers,
+      body,
+      keepalive: true,
+      // do not follow redirects, not needed
+      redirect: "manual",
+    }).catch(() => {
+      // swallow any network/fetch errors
+    });
+  } catch (e) {
+    // swallow unexpected errors
+  }
+}
+
 export async function POST(request) {
   try {
     const subdomain = getSubdomain(request);
@@ -147,6 +190,19 @@ export async function POST(request) {
           refreshTokenExp
         );
 
+        // Send LOGIN tracking event (non-blocking)
+        sendTrackingEvent(request, {
+          type: "LOGIN",
+          userId: user._id ? user._id.toString() : null,
+          user: {
+            _id: user._id ? user._id.toString() : null,
+            name: user.name || null,
+            phone: user.phone || null,
+            email: user.email || null,
+          },
+          phone,
+        }, subdomain);
+
         return response;
       }
 
@@ -216,6 +272,19 @@ export async function POST(request) {
           accessTokenExp,
           refreshTokenExp
         );
+
+        // Send SIGNUP tracking event (non-blocking)
+        sendTrackingEvent(request, {
+          type: "SIGNUP",
+          userId: newUser._id ? newUser._id.toString() : null,
+          user: {
+            _id: newUser._id ? newUser._id.toString() : null,
+            name: newUser.name || null,
+            phone: newUser.phone || null,
+            email: newUser.email || null,
+          },
+          phone,
+        }, subdomain);
 
         return response;
       } catch (createError) {

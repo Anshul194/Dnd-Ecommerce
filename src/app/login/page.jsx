@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Eye, EyeOff, Star } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { login, signUp } from "../store/slices/authSlice";
@@ -33,7 +33,27 @@ export function SignupPage() {
       return;
     }
     try {
-      await dispatch(login({ ...formData })).unwrap();
+      const loginResult = await dispatch(login({ ...formData })).unwrap();
+
+      // Track LOGIN event (best-effort)
+      try {
+        fetch("/api/track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "LOGIN",
+            user: {
+              _id: loginResult?._id || loginResult?.id || null,
+              email: loginResult?.email || formData.email,
+              name: loginResult?.name || null,
+            },
+            timestamp: new Date().toISOString(),
+          }),
+        }).catch(() => {});
+      } catch (e) {
+        // non-blocking
+      }
+
       const redirect = searchParams.get("redirect");
       if (redirect) {
         router.push(redirect);
@@ -45,6 +65,22 @@ export function SignupPage() {
       toast.error(error.message || "Login failed. Please try again.");
     }
   };
+
+  // Track page view for login page (best-effort)
+  useEffect(() => {
+    try {
+      fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "PAGE_VIEW",
+          url: window.location.pathname,
+          title: document.title || "Login",
+          timestamp: new Date().toISOString(),
+        }),
+      }).catch(() => {});
+    } catch (e) {}
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center p-4">

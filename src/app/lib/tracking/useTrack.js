@@ -11,6 +11,8 @@ export function useTrack() {
     trackSearch: (searchQuery, productIds = []) => trackEvent("SEARCH", { searchQuery, productIds }),
     trackFilter: (filter) => trackEvent("FILTER_APPLIED", { filter }),
     trackSort: (sort) => trackEvent("SORT_APPLIED", { sort }),
-    trackPageView: (url) => trackEvent("PAGE_VIEW", { url }),
+    trackPageView: (url, title) => trackEvent("PAGE_VIEW", { url, title }),
+    trackSignup: (user) => trackEvent("SIGNUP", { user, userId: user && (user._id || user.id) }),
+    trackLogin: (user) => trackEvent("LOGIN", { user, userId: user && (user._id || user.id) }),
   };
 }
