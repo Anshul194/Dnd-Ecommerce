@@ -1,0 +1,143 @@
+Performance issues audit - Dnd-Ecommerce
+Date: 2025-11-20
+
+Summary:
+This file collects the observable performance issues found by static analysis of the repository. It points to where the issues appear in the codebase and gives non-invasive mitigation recommendations. No code changes were applied — this is an audit-only file.
+
+High-level findings (priority ordered):
+
+1) Excessive client-side data fetching on mount
+ - Description: Many components perform network requests immediately on mount (client-side). This causes many parallel HTTP requests and delays first meaningful paint and time-to-interactive.
+ - Where found (examples):
+   - `src/components/Navbar.jsx` — `initialData()` invoked from `useEffect` which calls `fetchCategoryWithSubcategories()` and dispatches `fetchProducts`, `fetchBlogs`, `fetchWishlist` (multiple requests on mount).
+   - `src/components/Footer.jsx` — `getData()` invoked in `useEffect` calls `axiosInstance.get('/page?groupByMainTitle=true')` on every client load.
+   - `src/components/HeroExample.jsx` — fetches `/api/sections/grouped` on mount.
+   - Many other components and pages use `fetch()`/`axios` on mount (see list of files below).
+ - Impact: High — blocks rendering and increases network contention on initial load.
+ - Suggested mitigations (no code changes here):
+   * Serve stable/rarely-changing data with SSG/ISR or server-side rendering so clients don't fetch the same resources repeatedly.
+   * Cache results (server-side or client-side) and reuse across components (SWR/react-query or central redux store selects).
+   * Batch or lazy-load non-critical data (e.g., footer content or tracking events) after initial render.
+
+2) Frequent/search-triggered network requests without adequate caching
+ - Description: Search and other UI interactions trigger API requests frequently (debounced but still frequent when typing). Some components don't appear to use client-side caching or memoization.
+ - Where found: `src/components/Navbar.jsx` — `fetchProductsFromApi()` executed from a debounced effect for `searchTerm`.
+ - Impact: Medium — many small requests can saturate the client/server and slow pages.
+ - Suggested mitigations:
+   * Increase debounce or require explicit submit for low-value queries.
+   * Use caching (SWR/react-query) to dedupe identical requests.
+
+3) Many API calls and event-tracking requests on multiple routes
+ - Description: Tracking and telemetry calls are fired from multiple pages/components (e.g., `fetch('/api/track')`), and various server API wrappers call external providers.
+ - Where found (examples):
+   - `src/components/CheckoutPopup.js` (multiple `fetch` and axios calls)
+   - `src/app/page.js`, `src/app/login/page.jsx`, `src/app/signup/page.jsx` (calls to `/api/track`)
+   - `src/app/lib/tracking/batchTrackEvent.js` (tracking helper)
+ - Impact: Low-to-medium — extra network traffic and potentially blocking code.
+ - Suggested mitigations:
+   * Batch tracking events and send them asynchronously (non-blocking, background queue).
+   * Throttle or sample client-side tracking if volume is high.
+
+4) Large number of static image assets present & mixed formats
+ - Description: `public/` contains many image files (jpegs, jfif, png, avif, webp). Many assets appear to be uploaded originals (potentially large). Large or many images increase payload and memory usage.
+ - Where located: `public/category-images/`, `public/category-thumbnails/`, `public/subcategory-images/`, `public/subcategory-thumbnails/`, `public/uploads/`, `public/images/` (see repo `public/` tree).
+ - Evidence: folder listings show dozens of `profile-*.jpg/.jfif/.avif/.webp` and `uploads/Product/` content.
+ - Impact: High — heavy images degrade load time and LCP.
+ - Suggested mitigations:
+   * Ensure images are served in modern formats (AVIF/WebP) when supported and with responsive sizes.
+   * Verify `next/image` is used with appropriate `sizes`, `width`/`height`, and `loading="lazy"` for non-critical images.
+   * Compress/strip metadata and generate responsive variants (at build/upload time or via CDN).
+
+5) Inconsistent use of image optimizations / possible eager loading
+ - Description: Many components import `next/image` (good) — however, without auditing props it's unknown whether `priority`, `placeholder`, `sizes`, or `loading` are set appropriately; overuse of eager/priority images will slow the page.
+ - Where found: Many components import `next/image`, e.g., `src/components/homepage/*`, `src/components/Navbar.jsx`, `src/components/Footer.tsx`.
+ - Impact: Medium-high depending on usage.
+ - Suggested mitigations:
+   * Audit each `next/image` usage for `priority` and `sizes`. Reserve `priority` for above-the-fold single hero images only.
+   * Use `loading="lazy"` for offscreen images.
+
+6) Potential client bundle pollution from server-side dependencies
+ - Description: `package.json` contains several server-only packages (e.g., `mongoose`, `mongodb`, `googleapis`, `ioredis`, `bcrypt`, `multer`) and some node core polyfills are being disabled in `next.config.mjs`. If server-only modules are imported/required in client bundles, it can cause errors or large bundles; the repo attempts to alias/ignore them in `next.config.mjs`, but accidental client imports should be checked.
+ - Where found: `package.json` (root) and `next.config.mjs` alias/fallback rules.
+ - Impact: High (bundle size/regressions) if server libs leak into client bundles.
+ - Suggested mitigations:
+   * Ensure server-only code lives under `src/app/api` or server-only files and is not imported into client components.
+   * Use dynamic imports for heavy client-only libraries and only load them when needed.
+
+7) Potential bundle size / heavy dependencies
+ - Description: Several large client-side libraries are present (`swiper`, `xlsx`, `react-calendly`) and other heavy deps (googleapis, stripe libs). These increase JS bundle size if included on client initial load.
+ - Where found: `package.json` dependencies.
+ - Impact: High for initial page load and JS parsing time.
+ - Suggested mitigations:
+   * Use dynamic import() for rarely used heavy libraries.
+   * Verify tree-shaking and import only required modules.
+
+8) Many `useEffect` hooks and repeated state updates
+ - Description: Numerous components use multiple `useEffect` hooks (some updating state and triggering more effects). This can cause multiple renders and may trigger network calls repeatedly if dependencies are not tightly controlled.
+ - Where found (examples): `src/components/Navbar.jsx`, `src/components/homepage/TestimonialSlider.jsx`, `src/components/homepage/DynamicHomepage.jsx`, `src/components/Footer.jsx`, `src/components/ui/carousel.tsx`.
+ - Impact: Medium — unnecessary renders and re-fetching slows client performance.
+ - Suggested mitigations:
+   * Consolidate effects where possible and ensure dependency arrays are minimal and stable.
+   * Use memoization (useMemo/useCallback) to prevent child re-renders.
+
+9) Multiple places using raw fetch/axios to external APIs without caching or retries
+ - Description: Several server components and api routes call external provider APIs (shipping providers, delivery, etc.). These calls may be slow and affect page responsiveness if performed synchronously in request flows.
+ - Where found (examples):
+   - `src/app/lib/services/shippingProviderService.js`
+   - `src/app/lib/services/orderService.js`
+   - `src/app/api/delivery/check-pincode/route.js`
+ - Impact: Medium-high for affected user flows.
+ - Suggested mitigations:
+   * Use server-side caching, rate-limiting, and background retries for slow third-party calls.
+   * Move non-critical external calls to background jobs or async flows.
+
+10) Lack of static generation for stable content
+ - Description: Many stable UI elements (category lists, footer pages, FAQs) are fetched on client mount rather than served as SSG/ISR.
+ - Impact: Medium — more work on client and increased TTFB.
+ - Suggested mitigations:
+   * For content that changes infrequently, use SSG/ISR to pre-render and cache HTML.
+
+11) Dev tooling and warnings
+ - Description: `next.config.mjs` sets `eslint.ignoreDuringBuilds` and `typescript.ignoreBuildErrors` to true. These flags can hide issues that lead to inefficient code shipped to production.
+ - Impact: Low (development hygiene) but can cause latent inefficiencies.
+ - Suggested mitigation: Enable strict linting type checks in CI and fix issues incrementally.
+
+Files with notable hits (non-exhaustive):
+ - `src/components/Navbar.jsx` (multiple useEffects, network calls, search debounce)
+ - `src/components/Footer.jsx` (client fetch on mount)
+ - `src/components/CheckoutPopup.js` (many fetch/axios calls and logic)
+ - `src/components/homepage/TestimonialSlider.jsx` (client side effects)
+ - `src/components/homepage/HeroExample.jsx` (fetch of grouped sections)
+ - `src/app/page.js`, `src/app/login/page.jsx`, `src/app/signup/page.jsx` (tracking requests)
+ - `src/app/lib/tracking/batchTrackEvent.js`, `src/app/lib/services/*` (external API interactions)
+ - `public/` (many image files in `category-images`, `uploads`, `content-images`, etc.)
+ - `package.json` (large dependencies list)
+ - `next.config.mjs` (fallbacks and image domain settings)
+
+Quick wins (no code changes required to start):
+ - Audit and compress images in `public/` and `uploads/` (coordinate with ops/CI to optimize existing assets).
+ - Enable CDN and set proper caching headers for static assets and API responses.
+ - Add server-side or CDN caching for frequently requested resources (categories, footer pages).
+ - Review frequently-called tracking endpoints and batch/queue them.
+
+Suggested next steps (measurable):
+ 1. Run Lighthouse and WebPageTest on key pages (home, product, checkout). Note LCP, FCP, TTI, total blocking time, and requests.
+ 2. Run a bundle analysis (Next.js bundle analyzer) and identify top client-side modules by size.
+ 3. Prioritize image optimization and caching changes (these often yield largest LCP savings).
+ 4. Convert stable content fetches to SSG/ISR where possible.
+
+Commands / tools to run (examples):
+ - Run Lighthouse in Chrome DevTools or via CLI: `npx lhci autorun --collect.settings.collectUrl=YOUR_URL` (or run in browser)
+ - Next bundle analyzer (install `@next/bundle-analyzer` temporarily) and run build + analyze.
+ - WebPageTest: upload the URL and inspect waterfall and filmstrip.
+
+Notes / caveats:
+ - This audit is static: it inspects code structure, imports, and file layout only. Real runtime behavior (network latencies, third-party services) should be measured with Lighthouse/WebPageTest and server logs.
+ - Some client-side performance depends on production build, CDN, and server infra; those are out of scope for code-only analysis.
+
+If you want, I can:
+ - Run Lighthouse locally against a running instance and capture a report.
+ - Run a Next bundle analysis and create a prioritized list of heavy packages to optimize.
+ - Produce a smaller actionable checklist (top 5 fixes) and, with permission, prepare small PRs to implement them.
+
+End of report.

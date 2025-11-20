@@ -90,6 +90,84 @@ const DynamicProductSlider = ({ content }) => {
     handleScroll.timeout = setTimeout(updateScrollButtons, 50);
   };
 
+  // Auto-scroll slider on small screens (mobile)
+  useEffect(() => {
+    const container = sliderRef.current;
+    if (!container) return;
+
+    let intervalId = null;
+    let resumeTimeout = null;
+    const gap = 16; // tailwind space-x-4 => 1rem (16px)
+    const intervalMs = 3500;
+
+    const startAutoScroll = () => {
+      if (intervalId) return;
+      intervalId = setInterval(() => {
+        if (!container) return;
+        const card = container.firstElementChild;
+        if (!card) return;
+        const cardWidth = Math.ceil(card.getBoundingClientRect().width) + gap;
+        const { scrollLeft, scrollWidth, clientWidth } = container;
+
+        // If we're at (or very near) the end, go back to start
+        if (scrollLeft + clientWidth >= scrollWidth - 5) {
+          container.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          container.scrollBy({ left: cardWidth, behavior: "smooth" });
+        }
+      }, intervalMs);
+    };
+
+    const stopAutoScroll = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      if (resumeTimeout) {
+        clearTimeout(resumeTimeout);
+        resumeTimeout = null;
+      }
+    };
+
+    // When user interacts, pause and resume after inactivity
+    const pauseAndScheduleResume = () => {
+      stopAutoScroll();
+      // resume after short inactivity
+      resumeTimeout = setTimeout(() => {
+        // only start if still on mobile width
+        if (window.innerWidth < 640) startAutoScroll();
+      }, 4000);
+    };
+
+    const onUserInteract = () => pauseAndScheduleResume();
+
+    const onResize = () => {
+      stopAutoScroll();
+      if (window.innerWidth < 640) startAutoScroll();
+    };
+
+    // Only enable on mobile widths
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      startAutoScroll();
+    }
+
+    // Pause on touch/drag or pointerdown; also pause on mouseenter to be safe
+    container.addEventListener("touchstart", onUserInteract, { passive: true });
+    container.addEventListener("pointerdown", onUserInteract);
+    container.addEventListener("mouseenter", onUserInteract);
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      stopAutoScroll();
+      try {
+        container.removeEventListener("touchstart", onUserInteract);
+        container.removeEventListener("pointerdown", onUserInteract);
+        container.removeEventListener("mouseenter", onUserInteract);
+      } catch (e) {}
+      window.removeEventListener("resize", onResize);
+    };
+  }, [products?.products]);
+
   const handleAddToCart = (e, product) => {
     e.stopPropagation();
     // if (!isAuthenticated) {
@@ -399,7 +477,7 @@ const DynamicProductSlider = ({ content }) => {
                           minWidth: 0,
                         }}
                       >
-                        <div className="bg-white border border-gray-200 rounded-2xl h-96  flex flex-col group">
+                        <div className=" border border-gray-200 overflow-hidden rounded-2xl h-96  flex flex-col group">
                           {/* Name with green icon */}
                           <div className="absolute top-4 right-6 flex items-center justify-between mb-6 z-50">
                             <h3 className="text-md font-bold text-black uppercase tracking-wide">
@@ -415,12 +493,12 @@ const DynamicProductSlider = ({ content }) => {
                           </div>
 
                           {/* Gray placeholder box */}
-                          <div className="relative w-full h-full bg-gray-300 rounded-lg">
+                          <div className="relative w-full h-full  rounded-lg">
                             {/* Placeholder for image or additional content */}
                             {product?.storyVideoUrl.includes(".mp4") ? (
                               <video
                                 src={product?.storyVideoUrl}
-                                className="w-full h-full object-cover rounded-2xl"
+                                className="w-full h-full object-cover "
                                 // controls
                                 autoPlay
                                 muted
@@ -429,7 +507,7 @@ const DynamicProductSlider = ({ content }) => {
                               <img
                                 src={product?.storyVideoUrl}
                                 alt="Story Visual"
-                                className="w-full h-full object-cover rounded-2xl"
+                                className="w-full h-full object-cover "
                               />
                             )}
                             {/* Hover Overlay */}

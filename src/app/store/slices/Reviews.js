@@ -2,13 +2,29 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "@/axiosConfig/axiosInstance";
 
 // Async thunk to fetch reviews
+// keep a module-level reference to an in-flight request to avoid duplicate
+// network calls when multiple components dispatch `fetchReviews` simultaneously
+let inFlightFetchReviews = null;
+
 export const fetchReviews = createAsyncThunk(
   "reviews/fetchReviews",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get("/review/all");
-      console.log("reviews fetched ==> ", response.data);
-      return response.data?.data || [];
+      if (inFlightFetchReviews) {
+        // reuse the pending promise so we don't issue another HTTP request
+        return await inFlightFetchReviews;
+      }
+
+      inFlightFetchReviews = axiosInstance
+        .get("/review/all")
+        .then((response) => response.data?.data || [])
+        .finally(() => {
+          inFlightFetchReviews = null;
+        });
+
+      const data = await inFlightFetchReviews;
+      console.log("reviews fetched ==> ", data);
+      return data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
