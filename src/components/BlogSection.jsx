@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import AnimatedGradientBorder from "./ui/AnimatedGradientBorder";
 
@@ -26,6 +26,29 @@ export default function BlogSection({ content }) {
     const container = document.getElementById("products-slider");
     container.scrollBy({ left: 300, behavior: "smooth" });
   };
+
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (typeof window === "undefined") return;
+      setShowScrollButton(window.scrollY > 1.5 * window.innerHeight);
+    };
+
+    checkScroll();
+    window.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      window.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, []);
 
   const products = [
     {
@@ -107,7 +130,7 @@ export default function BlogSection({ content }) {
         <h1 className="text-3xl md:text-5xl text-center font-black text-black mb-2">
           {content?.title || "Blogs"}
         </h1>
-        < AnimatedGradientBorder/>
+        <AnimatedGradientBorder />
         <p className="text-black lg:max-w-[80%] mx-auto mt-5 relative poppins-medium leading-tight text-center text-lg mb-8">
           {content?.description ||
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit."}
@@ -184,12 +207,25 @@ export default function BlogSection({ content }) {
         </div>
       </div>
 
-      {/* Green Circle Button */}
-      <div className="fixed bottom-8 right-8">
-        <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg cursor-pointer">
-          <span className="text-white text-lg">→</span>
+      {/* Green Circle Button (shows after 150vh scroll) */}
+      {showScrollButton && (
+        <div className="fixed z-[9999] bottom-8 right-8">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={scrollToTop}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                scrollToTop();
+              }
+            }}
+            className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg cursor-pointer"
+          >
+            <span className="text-white text-lg">→</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
