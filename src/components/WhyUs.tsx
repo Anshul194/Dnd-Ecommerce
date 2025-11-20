@@ -23,12 +23,26 @@ export function WhyUs({ content }) {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-1 gap-8 max-w-4xl mx-auto">
             <div className="h-full">
+              {/* Mobile: show mobileImage if available */}
               <Image
-                src={content?.image || "/why-choose-us.jpg"}
+                src={
+                  content?.mobileImage || content?.image || "/why-choose-us.jpg"
+                }
                 alt="Why Choose Us"
                 width={800}
                 height={400}
-                className="mx-auto mb-6 rounded-lg shadow-lg"
+                className="mx-auto mb-6 rounded-lg shadow-lg block md:hidden"
+              />
+
+              {/* Desktop: show regular image on md+ */}
+              <Image
+                src={
+                  content?.image || content?.mobileImage || "/why-choose-us.jpg"
+                }
+                alt="Why Choose Us"
+                width={800}
+                height={400}
+                className="mx-auto mb-6 rounded-lg shadow-lg hidden md:block"
               />
             </div>
             <p className="text-gray-600">

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "motion/react";
@@ -8,12 +8,33 @@ import Link from "next/link";
 
 export function HeroSlider({ content }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % content.length);
     }, 5000);
     return () => clearInterval(timer);
+  }, [content.length]);
+
+  // detect small screens and update on resize / orientation change
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(max-width: 640px)");
+    const handle = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    if (mql.addEventListener) {
+      mql.addEventListener("change", handle);
+    } else if (mql.addListener) {
+      mql.addListener(handle);
+    }
+    return () => {
+      if (mql.removeEventListener) {
+        mql.removeEventListener("change", handle);
+      } else if (mql.removeListener) {
+        mql.removeListener(handle);
+      }
+    };
   }, []);
 
   const nextSlide = () => {
@@ -38,7 +59,11 @@ export function HeroSlider({ content }) {
           <div
             className="w-full h-full bg-cover bg-center"
             style={{
-              backgroundImage: `url(${content[currentSlide]?.content?.image})`,
+              backgroundImage: `url(${
+                isMobile && content[currentSlide]?.content?.mobileImage
+                  ? content[currentSlide]?.content?.mobileImage
+                  : content[currentSlide]?.content?.image
+              })`,
             }}
           >
             <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">

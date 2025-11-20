@@ -107,6 +107,7 @@ export default function Navbar() {
       console.log("Navigating to user dashboard 4a");
       router.push("/login");
     }
+    setIsOpen(false);
   };
 
   const [displayName, setDisplayName] = useState("User");

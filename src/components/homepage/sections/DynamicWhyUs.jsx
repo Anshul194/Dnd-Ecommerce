@@ -3,11 +3,26 @@
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const DynamicWhyUs = ({ content }) => {
-  const { title, description, points } = content;
+  const { title, description, points, image, mobileImage } = content;
   // console.log("DynamicWhyUs content:", content);
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const imageToShow =
+    isMobile && mobileImage
+      ? mobileImage
+      : image || "/images/why-us-placeholder.jpg";
 
   return (
     <div className="min-h-screen bg-white py-10 lg:py-20 px-4">
@@ -20,7 +35,7 @@ const DynamicWhyUs = ({ content }) => {
           <div className="mt-10 flex flex-col lg:flex-row gap-6 lg:gap-20">
             <div className=" w-[45%] max-sm:w-full  bg-gray-400 rounded-lg flex-shrink-0">
               <Image
-                src={content.image || "/images/why-us-placeholder.jpg"} // Placeholder image path
+                src={imageToShow}
                 alt="Why Us"
                 width={400}
                 height={400}

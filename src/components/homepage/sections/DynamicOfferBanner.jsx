@@ -6,7 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const DynamicOfferBanner = ({ content }) => {
-  const { tagline, title, description, countdown, cta, image } = content;
+  const { tagline, title, description, countdown, cta, image, mobileImage } =
+    content;
   // Only show countdown if countdown object is present
   let effectiveEndDate = null;
   if (countdown) {
@@ -20,6 +21,18 @@ const DynamicOfferBanner = ({ content }) => {
     minutes: 0,
     seconds: 0,
   });
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const imageToShow = isMobile && mobileImage ? mobileImage : image;
 
   useEffect(() => {
     if (!effectiveEndDate) return;
@@ -51,9 +64,9 @@ const DynamicOfferBanner = ({ content }) => {
   return (
     <div className="relative bg-gradient-to-r from-green-600 to-green-800 text-white py-16 overflow-hidden">
       {/* Background Image */}
-      {image && (
+      {imageToShow && (
         <div className="absolute inset-0 opacity-20">
-          <Image src={image} alt={title} fill className="object-cover" />
+          <Image src={imageToShow} alt={title} fill className="object-cover" />
         </div>
       )}
 
@@ -64,9 +77,7 @@ const DynamicOfferBanner = ({ content }) => {
           </p>
         )}
 
-        <h2 className="text-3xl md:text-5xl font-black mb-4">
-          {title}
-        </h2>
+        <h2 className="text-3xl md:text-5xl font-black mb-4">{title}</h2>
 
         <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
           {description}

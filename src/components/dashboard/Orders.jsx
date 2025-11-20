@@ -47,54 +47,6 @@ const Orders = () => {
   const orderId = searchParams.get("orderId");
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const relatedProducts = [
-    {
-      id: 1,
-      name: "Vitamin C Serum",
-      price: 899,
-      originalPrice: 1299,
-      image:
-        "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=200&h=200&fit=crop",
-      rating: 4.5,
-    },
-    {
-      id: 2,
-      name: "Hydrating Moisturizer",
-      price: 649,
-      originalPrice: 899,
-      image:
-        "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&h=200&fit=crop",
-      rating: 4.2,
-    },
-    {
-      id: 3,
-      name: "Gentle Face Cleanser",
-      price: 399,
-      originalPrice: 599,
-      image:
-        "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&h=200&fit=crop",
-      rating: 4.7,
-    },
-    {
-      id: 4,
-      name: "Anti-Aging Cream",
-      price: 1299,
-      originalPrice: 1799,
-      image:
-        "https://images.unsplash.com/photo-1570554886111-e80fcca6a029?w=200&h=200&fit=crop",
-      rating: 4.3,
-    },
-    {
-      id: 5,
-      name: "Eye Cream",
-      price: 799,
-      originalPrice: 1099,
-      image:
-        "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=200&h=200&fit=crop",
-      rating: 4.1,
-    },
-  ];
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
       day: "numeric",
@@ -401,80 +353,81 @@ const Orders = () => {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              {currentOrder?.shipping_details?.reference_number ||
-                (currentOrder?.shipping_details?.platform && (
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                      Shipping Details
-                    </h2>
+              {console.log("check current order == > : ", currentOrder)}
+              {(currentOrder?.shipping_details?.reference_number ||
+                currentOrder?.shipping_details?.platform) && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                    Shipping Details
+                  </h2>
 
-                    <div className="flex justify-between">
-                      <div>
-                        <div className="flex  items-center gap-2">
-                          <h1 className="text-md font-semibold text-gray-900">
-                            Shipping Number
-                          </h1>
-                          {currentOrder?.shipping_details?.reference_number && (
-                            <Clipboard
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                const ref =
-                                  currentOrder?.shipping_details
-                                    ?.reference_number || "";
-                                try {
-                                  await navigator.clipboard.writeText(ref);
-                                  // simple feedback; replace with your toast if available
-                                  alert("Tracking number copied to clipboard");
-                                } catch (err) {
-                                  console.error("Copy failed", err);
-                                  alert("Failed to copy tracking number");
-                                }
-                              }}
-                              title="Copy tracking number"
-                              className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer inline-block ml-2"
-                            />
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {currentOrder?.shipping_details?.reference_number ||
-                            "N/A"}
-                        </p>
+                  <div className="flex justify-between">
+                    <div>
+                      <div className="flex  items-center gap-2">
+                        <h1 className="text-md font-semibold text-gray-900">
+                          Shipping Number
+                        </h1>
+                        {currentOrder?.shipping_details?.reference_number && (
+                          <Clipboard
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const ref =
+                                currentOrder?.shipping_details
+                                  ?.reference_number || "";
+                              try {
+                                await navigator.clipboard.writeText(ref);
+                                // simple feedback; replace with your toast if available
+                                alert("Tracking number copied to clipboard");
+                              } catch (err) {
+                                console.error("Copy failed", err);
+                                alert("Failed to copy tracking number");
+                              }
+                            }}
+                            title="Copy tracking number"
+                            className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer inline-block ml-2"
+                          />
+                        )}
                       </div>
-
-                      {currentOrder?.shipping_details?.platform === "dtdc" && (
-                        <a
-                          target="_blank"
-                          href="https://www.dtdc.com/track-your-shipment/"
-                          className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
-                        >
-                          Track here
-                        </a>
-                      )}
-
-                      {currentOrder?.shipping_details?.platform ===
-                        "bluedart" && (
-                        <a
-                          target="_blank"
-                          href={currentOrder?.shipping_details?.tracking_url}
-                          className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
-                        >
-                          Track here
-                        </a>
-                      )}
-
-                      {currentOrder?.shipping_details?.platform ===
-                        "delhivery" && (
-                        <a
-                          target="_blank"
-                          href={currentOrder?.shipping_details?.tracking_url}
-                          className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
-                        >
-                          Track here
-                        </a>
-                      )}
+                      <p className="text-sm text-gray-500">
+                        {currentOrder?.shipping_details?.reference_number ||
+                          "N/A"}
+                      </p>
                     </div>
+
+                    {currentOrder?.shipping_details?.platform === "dtdc" && (
+                      <a
+                        target="_blank"
+                        href="https://www.dtdc.com/track-your-shipment/"
+                        className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
+                      >
+                        Track here
+                      </a>
+                    )}
+
+                    {currentOrder?.shipping_details?.platform ===
+                      "bluedart" && (
+                      <a
+                        target="_blank"
+                        href={currentOrder?.shipping_details?.tracking_url}
+                        className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
+                      >
+                        Track here
+                      </a>
+                    )}
+
+                    {currentOrder?.shipping_details?.platform ===
+                      "delhivery" && (
+                      <a
+                        target="_blank"
+                        href={currentOrder?.shipping_details?.tracking_url}
+                        className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
+                      >
+                        Track here
+                      </a>
+                    )}
                   </div>
-                ))}
+                </div>
+              )}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">

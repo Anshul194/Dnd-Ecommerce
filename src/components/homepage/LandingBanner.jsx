@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/router";
@@ -7,13 +7,37 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 
 function LandingBanner({ content }) {
+  console.log("content is ===> ", content);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % content.length);
     }, 5000);
     return () => clearInterval(timer);
+  }, []);
+
+  // detect small screens and update on resize / orientation change
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(max-width: 640px)");
+    const handle = (e) => setIsMobile(e.matches);
+    // set initial
+    setIsMobile(mql.matches);
+    // listen for changes
+    if (mql.addEventListener) {
+      mql.addEventListener("change", handle);
+    } else if (mql.addListener) {
+      mql.addListener(handle);
+    }
+    return () => {
+      if (mql.removeEventListener) {
+        mql.removeEventListener("change", handle);
+      } else if (mql.removeListener) {
+        mql.removeListener(handle);
+      }
+    };
   }, []);
 
   const nextSlide = () => {
@@ -38,7 +62,11 @@ function LandingBanner({ content }) {
           <div
             className="w-full h-full bg-cover bg-center"
             style={{
-              backgroundImage: `url(${content?.[currentSlide]?.content?.image})`,
+              backgroundImage: `url(${
+                isMobile && content?.[currentSlide]?.content?.mobileImage
+                  ? content?.[currentSlide]?.content?.mobileImage
+                  : content?.[currentSlide]?.content?.image
+              })`,
             }}
           >
             <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">

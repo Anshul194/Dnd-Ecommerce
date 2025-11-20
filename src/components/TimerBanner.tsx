@@ -69,8 +69,23 @@ export function TimerBanner({ content }) {
 
   return (
     <section className="relative  py-32 md:py-40 overflow-hidden">
+      {/* Mobile background: use mobileImage when available */}
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center block md:hidden"
+        style={{
+          backgroundImage: `url(${
+            content?.mobileImage ||
+            content?.image ||
+            "https://images.unsplash.com/photo-1589009649715-641c60b982ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcmVtaXVtJTIwdGVhJTIwc2V0fGVufDF8fHx8MTc2MDQyMTExN3ww&ixlib=rb-4.1.0&q=80&w=1080"
+          })`,
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/60 to-black/70" />
+      </div>
+
+      {/* Desktop background: original image for md+ */}
+      <div
+        className="absolute inset-0 bg-cover bg-center hidden md:block"
         style={{
           backgroundImage: `url(${
             content?.image ||
