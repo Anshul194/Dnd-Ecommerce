@@ -33,7 +33,7 @@ import {
 } from "@/app/store/slices/authSlice";
 import Loading from "@/components/Loading";
 import Image from "next/image";
-import { applyCoupon } from "@/app/store/slices/couponSlice";
+import { applyCoupon, clearSelectedCoupon } from "@/app/store/slices/couponSlice";
 import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { fetchProducts } from "@/app/store/slices/productSlice";
@@ -284,14 +284,14 @@ export default function CheckoutPopup() {
         items: buyNowProduct
           ? [
               {
-                product: buyNowProduct.product.id,
+                product: buyNowProduct.product?._id || buyNowProduct.product?.id,
                 quantity: buyNowProduct.quantity,
                 price: buyNowProduct.price,
                 variant: buyNowProduct.variant,
               },
             ]
           : cartItems.map((item) => ({
-              product: item.product.id,
+              product: item.product?._id || item.product?.id,
               quantity: item.quantity,
               price: item.price,
               variant: item.variant,
@@ -363,14 +363,14 @@ export default function CheckoutPopup() {
                 items: buyNowProduct
                   ? [
                       {
-                        product: buyNowProduct.product.id,
+                        product: buyNowProduct.product?._id || buyNowProduct.product?.id,
                         quantity: buyNowProduct.quantity,
                         price: buyNowProduct.price,
                         variant: buyNowProduct.variant,
                       },
                     ]
                   : cartItems.map((item) => ({
-                      product: item.product.id,
+                      product: item.product?._id || item.product?.id,
                       quantity: item.quantity,
                       price: item.price,
                       variant: item.variant,
@@ -439,14 +439,14 @@ export default function CheckoutPopup() {
             items: buyNowProduct
               ? [
                   {
-                    product: buyNowProduct.product.id,
+                    product: buyNowProduct.product?._id || buyNowProduct.product?.id,
                     quantity: buyNowProduct.quantity,
                     price: buyNowProduct.price,
                     variant: buyNowProduct.variant,
                   },
                 ]
               : cartItems.map((item) => ({
-                  product: item.product.id,
+                  product: item.product?._id || item.product?.id,
                   quantity: item.quantity,
                   price: item.price,
                   variant: item.variant,
@@ -809,6 +809,16 @@ export default function CheckoutPopup() {
     prevCheckoutOpen.current = checkoutOpen;
   }, [checkoutOpen]);
 
+  // Helper to extract error message from rejectWithValue / thrown Error
+  const extractErrorMessage = (err) => {
+    if (!err) return "Something went wrong";
+    if (typeof err === "string") return err;
+    if (err.message) return err.message;
+    if (err?.data?.message) return err.data.message;
+    if (err?.payload?.message) return err.payload.message;
+    return JSON.stringify(err);
+  };
+
   if (!checkoutOpen) return null;
 
   return (
@@ -865,7 +875,13 @@ export default function CheckoutPopup() {
                     </span>
                   </h2>
                 </div>
-                <button className="px-2 py-2 text-blue-600 text-sm font-medium">
+                <button
+                  onClick={() => {
+                    dispatch(clearSelectedCoupon());
+                    toast.info("Coupon removed");
+                  }}
+                  className="px-2 py-2 text-blue-600 text-sm font-medium"
+                >
                   Remove
                 </button>
               </div>
@@ -886,9 +902,48 @@ export default function CheckoutPopup() {
                   />
                 </div>
                 <button
-                  onClick={() =>
-                    dispatch(applyCoupon({ code: couponCode, total }))
-                  }
+                  onClick={async () => {
+                    if (!couponCode || couponCode.trim() === "") {
+                      toast.error("Please enter a coupon code");
+                      return;
+                    }
+
+                    // Build cartItems payload expected by CouponService — prefer product._id
+                    const itemsToSend = buyNowProduct
+                      ? [
+                          {
+                            productId:
+                              buyNowProduct.product?._id || buyNowProduct.product?.id,
+                            price: Number(buyNowProduct.price || 0),
+                            quantity: Number(buyNowProduct.quantity || 1),
+                          },
+                        ]
+                      : (cartItems || []).map((item) => ({
+                          productId: item.product?._id || item.product?.id,
+                          price: Number(item.price || 0),
+                          quantity: Number(item.quantity || 1),
+                          actualPrice:
+                            item.actualPrice !== undefined
+                              ? Number(item.actualPrice)
+                              : undefined,
+                        }));
+
+                    try {
+                      const action = await dispatch(
+                        applyCoupon({
+                          code: couponCode.trim(),
+                          total,
+                          cartItems: itemsToSend,
+                          paymentMethod,
+                        })
+                      ).unwrap();
+                      toast.success("Coupon applied");
+                      setCouponCode("");
+                    } catch (err) {
+                      const msg = extractErrorMessage(err);
+                      toast.error(msg);
+                    }
+                  }}
                   className="px-2 py-2 text-blue-600 text-sm font-medium"
                 >
                   Apply

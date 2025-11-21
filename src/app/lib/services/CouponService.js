@@ -1,4 +1,5 @@
 import CouponRepository from '../repository/CouponRepository.js';
+import mongoose from 'mongoose';
 
 
 class CouponService {
@@ -56,8 +57,8 @@ class CouponService {
       }
 
       // Ensure type is valid
-      if (!['percent', 'flat'].includes(data.type)) {
-        throw new Error('Invalid coupon type. Must be "percent" or "flat"');
+      if (!['percent', 'flat','special'].includes(data.type)) {
+        throw new Error('Invalid coupon type. Must be "percent", "flat", or "special"');
       }
 
       // Validate value
@@ -161,11 +162,13 @@ class CouponService {
   }
 
 
-  async applyCoupon(data, conn) {
+  async applyCoupon(data, conn,req) {
     try {
       // Accept either { code, cartValue, cartItems, customerId, paymentMethod } 
-      const { code, cartValue, cartItems, customerId, paymentMethod = 'prepaid' } = data;
+      const { code, cartValue, cartItems, paymentMethod = 'prepaid' } = data;
       if (!code) throw new Error('Coupon code is required');
+      console.log('Applying coupon code:', req);
+const customerId=req?.user?._id || req?.user?.id || data.customerId || null;
 
       // Normalize cartItems and cartValue; use actualPrice if present (apply on actual price)
       let items = [];
@@ -222,10 +225,19 @@ class CouponService {
           // evaluate segments; be defensive if conn/models missing
           const segments = coupon.eligibility.specificSegments || [];
           let matchedSegment = false;
-          // Try to get models if conn provided
-          const OrderModel = conn && typeof conn.model === 'function' ? conn.model('Order') : null;
-          const CheckoutModel = conn && typeof conn.model === 'function' ? conn.model('Checkout') : null;
-          const CustomerModel = conn && typeof conn.model === 'function' ? conn.model('Customer') : null;
+          // safe model getter: prefer connection models (if provided) else mongoose.models, never call conn.model(name)
+          const getModel = (name) => {
+            try {
+              return (conn && conn.models && conn.models[name]) || mongoose.models[name] || null;
+            } catch (e) {
+              return mongoose.models[name] || null;
+            }
+          };
+
+          // Try to get models safely without triggering "Schema hasn't been registered" errors
+          const OrderModel = getModel('Order');
+          const CheckoutModel = getModel('Checkout');
+          const CustomerModel = getModel('Customer');
 
           // fetch minimal customer/order info if needed
           let orderCount = null;
@@ -255,7 +267,6 @@ class CouponService {
                   const abandoned = await CheckoutModel.findOne({
                     customerId,
                     updatedAt: { $gte: thirtyDaysAgo },
-                    // flexible check: either explicit status or a completed flag
                     $or: [{ status: 'abandoned' }, { completed: false }]
                   }).lean();
                   if (abandoned) matchedSegment = true;
@@ -319,10 +330,15 @@ class CouponService {
           if (totalQty < coupon.minQuantity) throw new Error(`Minimum quantity of ${coupon.minQuantity} required`);
         }
         // determine eligibleAmount using applyOnActualPrice flag
-        eligibleAmount = items.reduce((s, it) => {
-          const priceToUse = (coupon.applyOnActualPrice && it.actualPrice !== undefined) ? it.actualPrice : it.price;
-          return s + (priceToUse * it.quantity);
-        }, 0);
+        // if no cart items were provided, fall back to totalCartValue (so cartValue-only requests work)
+        if (!items || items.length === 0) {
+          eligibleAmount = totalCartValue;
+        } else {
+          eligibleAmount = items.reduce((s, it) => {
+            const priceToUse = (coupon.applyOnActualPrice && it.actualPrice !== undefined) ? it.actualPrice : it.price;
+            return s + (priceToUse * it.quantity);
+          }, 0);
+        }
       }
 
       // Minimum cart value check (may apply to selected products)
@@ -340,13 +356,13 @@ class CouponService {
         if (totalCartValue > maxCod) {
           throw new Error(`Maximum order value for COD is ${maxCod}`);
         }
-        if (coupon.enforceSingleOutstandingCOD && customerId && conn && typeof conn.model === 'function') {
-          const OrderModel = conn.model('Order');
-          if (OrderModel) {
-            const outstanding = await OrderModel.findOne({
+        if (coupon.enforceSingleOutstandingCOD && customerId) {
+          const OrderModelForCOD = getModel('Order');
+          if (OrderModelForCOD) {
+            const outstanding = await OrderModelForCOD.findOne({
               customerId,
               paymentMethod: 'cod',
-              status: { $nin: ['delivered', 'cancelled'] } // any not-delivered COD
+              status: { $nin: ['delivered', 'cancelled'] }
             }).lean();
             if (outstanding) {
               throw new Error('You have an outstanding COD order that is not yet delivered. Please use prepaid payment until delivery is complete.');

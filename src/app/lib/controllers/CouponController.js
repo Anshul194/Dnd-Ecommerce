@@ -64,7 +64,7 @@ class CouponController {
   async apply(req, conn) {
     //console.log('Controller received apply data:', req.body);
     try {
-      const result = await this.couponService.applyCoupon(req.body, conn);
+      const result = await this.couponService.applyCoupon(req.body, conn,req);
       return result;
     } catch (error) {
       return {
