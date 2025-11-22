@@ -7,7 +7,7 @@ export function useTrack() {
     trackRemoveFromCart: (productId) => trackEvent("REMOVE_FROM_CART", { productId }),
     trackWishlist: (productId) => trackEvent("ADD_TO_WISHLIST", { productId }),
     trackRemoveWishlist: (productId) => trackEvent("REMOVE_FROM_WISHLIST", { productId }),
-    trackCheckout: (cart) => trackEvent("CHECKOUT_START", { cart }),
+    trackCheckout: (cart) => trackEvent("CHECKOUT_STARTED", { cart }),
     trackSearch: (searchQuery, productIds = []) => trackEvent("SEARCH", { searchQuery, productIds }),
     trackFilter: (filter) => trackEvent("FILTER_APPLIED", { filter }),
     trackSort: (sort) => trackEvent("SORT_APPLIED", { sort }),

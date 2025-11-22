@@ -202,6 +202,7 @@ const customerId=req?.user?._id || req?.user?.id || data.customerId || null;
       if (!coupon.isActive || coupon.deletedAt) throw new Error('Coupon is not active');
 
       // Check start/end window
+      console.log('Coupon validity period:', coupon.startAt, coupon.endAt, now);
       if (coupon.startAt && new Date(coupon.startAt) > now) {
         throw new Error('Coupon is not active yet');
       }
