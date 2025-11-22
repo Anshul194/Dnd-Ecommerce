@@ -30,6 +30,41 @@ const clearCartFromLocalStorage = () => {
   }
 };
 
+// Map server cart format to local cart storage format
+function mapServerCartToLocal(serverCart) {
+  if (!serverCart) return { cartId: null, cartItems: [], total: 0 };
+  const cartId =
+    serverCart._id ||
+    serverCart.id ||
+    (serverCart.userIsGestId
+      ? `guest:${serverCart.userIsGestId}`
+      : Date.now().toString());
+  const items = (serverCart.items || []).map((it) => {
+    const productId =
+      it.product && (it.product._id || it.product)
+        ? it.product._id || it.product
+        : null;
+    const variantId =
+      it.variant && (it.variant._id || it.variant)
+        ? it.variant._id || it.variant
+        : null;
+    const id = `${productId}:${variantId || ""}`;
+    return {
+      id,
+      product: productId,
+      variant: variantId,
+      quantity: it.quantity,
+      price: it.price,
+      addedAt: it.addedAt
+        ? new Date(it.addedAt).toISOString()
+        : new Date().toISOString(),
+    };
+  });
+  const total =
+    serverCart.total || items.reduce((s, it) => s + it.price * it.quantity, 0);
+  return { cartId, cartItems: items, total };
+}
+
 // Async thunk to add an item to the cart (using localStorage)
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
@@ -38,69 +73,96 @@ export const addToCart = createAsyncThunk(
     { rejectWithValue, getState }
   ) => {
     try {
-      const currentState = getState().cart;
+      // Try server API first. If it fails, fall back to localStorage.
+      const accessToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+      let guestId =
+        typeof window !== "undefined" ? localStorage.getItem("guestId") : null;
+
+      const headers = { "Content-Type": "application/json" };
+      if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+      if (guestId) headers["x-guest-id"] = guestId;
+
+      const payloadProduct =
+        product && (product._id || product.id)
+          ? product._id || product.id
+          : product;
+      const payloadVariant =
+        variant && (variant._id || variant.id)
+          ? variant._id || variant.id
+          : variant;
+      const resp = await fetch("/api/new-cart/items", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          product: payloadProduct,
+          variant: payloadVariant,
+          quantity,
+          price,
+          userIsGestId: guestId,
+        }),
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const serverCart = data.cart;
+        // Save guestId returned by server if present
+        if (serverCart && serverCart.userIsGestId) {
+          try {
+            localStorage.setItem("guestId", serverCart.userIsGestId);
+          } catch (e) {}
+        }
+
+        const mapped = mapServerCartToLocal(serverCart);
+        saveCartToLocalStorage(mapped);
+        return mapped;
+      }
+
+      // Fallback to localStorage behavior if server call fails
       const existingCart = getCartFromLocalStorage() || {
         cartId: Date.now().toString(),
         cartItems: [],
         total: 0,
       };
 
-      console.log("Adding to cart:", { product, variant, quantity, price });
-      console.log("Existing cart items:", existingCart.cartItems);
-
-      // Check if item already exists in cart (comparing both product ID and variant ID)
       const existingItemIndex = existingCart.cartItems.findIndex((item) => {
         const productMatch = String(item.product) === String(product);
         const variantMatch = String(item.variant) === String(variant);
-        console.log("Comparing:", {
-          existingProduct: item.product,
-          newProduct: product,
-          productMatch,
-          existingVariant: item.variant,
-          newVariant: variant,
-          variantMatch,
-        });
         return productMatch && variantMatch;
       });
 
       let updatedItems;
       if (existingItemIndex !== -1) {
-        // Update quantity if item exists
-        console.log(
-          "Item exists, updating quantity from",
-          existingCart.cartItems[existingItemIndex].quantity,
-          "to",
-          existingCart.cartItems[existingItemIndex].quantity + quantity
-        );
         updatedItems = [...existingCart.cartItems];
         updatedItems[existingItemIndex].quantity += quantity;
-        // Update price in case it has changed
         updatedItems[existingItemIndex].price = price;
       } else {
-        // Add new item
-        console.log("Adding new item to cart");
+        const payloadProduct =
+          product && (product._id || product.id)
+            ? product._id || product.id
+            : product;
+        const payloadVariant =
+          variant && (variant._id || variant.id)
+            ? variant._id || variant.id
+            : variant;
         const newItem = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          product,
-          variant,
+          product: payloadProduct,
+          variant: payloadVariant,
           quantity,
           price,
+          addedAt: new Date().toISOString(),
         };
         updatedItems = [...existingCart.cartItems, newItem];
       }
 
-      // Calculate total
       const total = updatedItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
       );
-
-      const updatedCart = {
-        ...existingCart,
-        cartItems: updatedItems,
-        total,
-      };
-
+      const updatedCart = { ...existingCart, cartItems: updatedItems, total };
       saveCartToLocalStorage(updatedCart);
       return updatedCart;
     } catch (error) {
@@ -114,17 +176,35 @@ export const getCartItems = createAsyncThunk(
   "cart/getCartItems",
   async (_, { rejectWithValue }) => {
     try {
-      const cartData = getCartFromLocalStorage();
+      // Try server first
+      try {
+        const accessToken =
+          typeof window !== "undefined"
+            ? localStorage.getItem("accessToken")
+            : null;
+        const guestId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("guestId")
+            : null;
+        const headers = {};
+        if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+        if (guestId) headers["x-guest-id"] = guestId;
 
-      if (!cartData) {
-        return {
-          cartId: null,
-          cartItems: [],
-          total: 0,
-        };
+        const resp = await fetch("/api/new-cart", { method: "GET", headers });
+        if (resp.ok) {
+          const data = await resp.json();
+          const mapped = mapServerCartToLocal(data.cart || data);
+          saveCartToLocalStorage(mapped);
+          return mapped;
+        }
+      } catch (e) {
+        // ignore and fallback to local
       }
 
-
+      const cartData = getCartFromLocalStorage();
+      if (!cartData) {
+        return { cartId: null, cartItems: [], total: 0 };
+      }
       return {
         cartId: cartData.cartId,
         cartItems: cartData.cartItems || [],
@@ -140,13 +220,46 @@ export const removeItemFromCart = createAsyncThunk(
   "cart/removeItemFromCart",
   async (itemId, { rejectWithValue }) => {
     try {
-      console.log("Removing Item ID:", itemId);
+      // Try server API
       const existingCart = getCartFromLocalStorage();
+      if (!existingCart) return rejectWithValue("Cart not found");
 
-      if (!existingCart) {
-        return rejectWithValue("Cart not found");
+      // itemId format from server mapping: productId:variantId
+      const parts = String(itemId).split(":");
+      const productId = parts[0];
+      const variantId = parts[1] || null;
+
+      const accessToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+      const guestId =
+        typeof window !== "undefined" ? localStorage.getItem("guestId") : null;
+      const headers = { "Content-Type": "application/json" };
+      if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+      if (guestId) headers["x-guest-id"] = guestId;
+
+      try {
+        const resp = await fetch("/api/new-cart/items", {
+          method: "DELETE",
+          headers,
+          body: JSON.stringify({
+            product: productId,
+            variant: variantId,
+            userIsGestId: guestId,
+          }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          const mapped = mapServerCartToLocal(data.cart);
+          saveCartToLocalStorage(mapped);
+          return { itemId, updatedCart: mapped };
+        }
+      } catch (e) {
+        // ignore and fallback to local
       }
 
+      // Local fallback
       const updatedItems = existingCart.cartItems.filter(
         (item) => item.id !== itemId
       );
@@ -154,13 +267,7 @@ export const removeItemFromCart = createAsyncThunk(
         (sum, item) => sum + item.price * item.quantity,
         0
       );
-
-      const updatedCart = {
-        ...existingCart,
-        cartItems: updatedItems,
-        total,
-      };
-
+      const updatedCart = { ...existingCart, cartItems: updatedItems, total };
       saveCartToLocalStorage(updatedCart);
       return { itemId, updatedCart };
     } catch (error) {
@@ -174,30 +281,55 @@ export const updateCartItemQuantity = createAsyncThunk(
   async ({ itemId, quantity }, { rejectWithValue }) => {
     try {
       const existingCart = getCartFromLocalStorage();
+      if (!existingCart) return rejectWithValue("Cart not found");
 
-      if (!existingCart) {
-        return rejectWithValue("Cart not found");
+      const parts = String(itemId).split(":");
+      const productId = parts[0];
+      const variantId = parts[1] || null;
+
+      const accessToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+      const guestId =
+        typeof window !== "undefined" ? localStorage.getItem("guestId") : null;
+      const headers = { "Content-Type": "application/json" };
+      if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+      if (guestId) headers["x-guest-id"] = guestId;
+
+      try {
+        const resp = await fetch("/api/new-cart/items", {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            product: productId,
+            variant: variantId,
+            quantity,
+            userIsGestId: guestId,
+          }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          const mapped = mapServerCartToLocal(data.cart);
+          saveCartToLocalStorage(mapped);
+          return mapped;
+        }
+      } catch (e) {
+        // fallback to local
       }
-      console.log("Updating Item ID:", itemId, "to Quantity:", quantity);
 
+      // Local fallback
       const updatedItems = existingCart.cartItems.map((item) => {
         if (item.id === itemId) {
           return { ...item, quantity: Math.max(1, quantity) };
         }
         return item;
       });
-
       const total = updatedItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
       );
-
-      const updatedCart = {
-        ...existingCart,
-        cartItems: updatedItems,
-        total,
-      };
-
+      const updatedCart = { ...existingCart, cartItems: updatedItems, total };
       saveCartToLocalStorage(updatedCart);
       return updatedCart;
     } catch (error) {
@@ -330,5 +462,11 @@ const cartSlice = createSlice({
   },
 });
 
-export const { toggleCart, openCart, closeCart , setBuyNowProduct, removeBuyNowProduct } = cartSlice.actions;
+export const {
+  toggleCart,
+  openCart,
+  closeCart,
+  setBuyNowProduct,
+  removeBuyNowProduct,
+} = cartSlice.actions;
 export default cartSlice.reducer;

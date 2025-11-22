@@ -7,9 +7,13 @@ import { SettingSchema } from "../models/Setting";
 import axios from "axios";
 import https from "https"; // if using ES modules
 import { ShippingSchema } from "../models/Shipping.js";
+import WhatsappService from "../../lib/services/WhatsappService.js";
+import UserService from "@/app/lib/services/userService.js";
+
 import path from "path";
 import fs from "fs";
 import { current } from "@reduxjs/toolkit";
+import { ProductSchema } from "../models/Product.js";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -978,8 +982,7 @@ class OrderService {
   }
 
   //getOrderForTracking
-  async getAllOrdersForTracking(request, conn)  
-      {
+  async getAllOrdersForTracking(request, conn) {
     try {
       // Ensure User model is registered on this connection so populate('user') works
       const User = conn.models.User || conn.model("User", UserSchema);
@@ -1003,7 +1006,6 @@ class OrderService {
       };
     }
   }
-  
 
   async getAllOrders(request, conn) {
     try {
@@ -1254,7 +1256,7 @@ class OrderService {
   }
 
   //trackShipment
-  async trackShipment(order, trackingNumber) {
+  async trackShipment(order, trackingNumber, conn) {
     const courier = order?.shipping_details?.platform;
     // //consolle.log("Tracking shipment for courier:", courier);
     if (!courier) {
@@ -1265,18 +1267,18 @@ class OrderService {
     }
     switch (courier.toUpperCase()) {
       case "DTDC":
-        return this.trackDtdcShipment(order);
+        return this.trackDtdcShipment(order, conn);
       case "DELHIVERY":
-        return this.trackDelhiveryShipment(order);
+        return this.trackDelhiveryShipment(order, conn);
       case "BLUEDART":
-        return this.trackBluedartShipment(order);
+        return this.trackBluedartShipment(order, conn);
       default:
         throw new Error("Unsupported courier for tracking");
     }
   }
 
   // DTDC tracking
-  async trackDtdcShipment(order) {
+  async trackDtdcShipment(order, conn) {
     // //consolle.log("Tracking DTDC shipment for order:", order);
     // You should store DTDC tracking username/password in env
     const username = process.env.DTDC_TRACK_USERNAME;
@@ -1327,11 +1329,13 @@ class OrderService {
     function parseDtdcDate(dateStr, timeStr) {
       if (!dateStr) return null;
       // expect DDMMYYYY (8 chars) or DDM M? fallback
-      const d = dateStr.length === 8 ? dateStr.slice(0, 2) : dateStr.slice(0, 2);
-      const m = dateStr.length === 8 ? dateStr.slice(2, 4) : dateStr.slice(2, 4);
+      const d =
+        dateStr.length === 8 ? dateStr.slice(0, 2) : dateStr.slice(0, 2);
+      const m =
+        dateStr.length === 8 ? dateStr.slice(2, 4) : dateStr.slice(2, 4);
       const y = dateStr.length === 8 ? dateStr.slice(4) : dateStr.slice(4);
-      const hh = (timeStr && timeStr.length >= 2) ? timeStr.slice(0, 2) : "00";
-      const mm = (timeStr && timeStr.length >= 4) ? timeStr.slice(2, 4) : "00";
+      const hh = timeStr && timeStr.length >= 2 ? timeStr.slice(0, 2) : "00";
+      const mm = timeStr && timeStr.length >= 4 ? timeStr.slice(2, 4) : "00";
       // return ISO string (UTC)
       const iso = new Date(`${y}-${m}-${d}T${hh}:${mm}:00Z`);
       return isNaN(iso.getTime()) ? null : iso.toISOString();
@@ -1345,7 +1349,10 @@ class OrderService {
         manifest: d.strManifestNo || null,
         origin: d.strOrigin || null,
         destination: d.strDestination || null,
-        actionDate: parseDtdcDate(d.strActionDate || d.strActionDate, d.strActionTime || d.strActionTime),
+        actionDate: parseDtdcDate(
+          d.strActionDate || d.strActionDate,
+          d.strActionTime || d.strActionTime
+        ),
         remarks: d.sTrRemarks || d.strRemarks || null,
         latitude: d.strLatitude || null,
         longitude: d.strLongitude || null,
@@ -1355,7 +1362,10 @@ class OrderService {
 
     // include header summary as the latest/top-level status entry (if present)
     if (header && Object.keys(header).length) {
-      const headerDate = parseDtdcDate(header.strStatusTransOn || header.strExpectedDeliveryDate, header.strStatusTransTime || header.strStatusTransTime);
+      const headerDate = parseDtdcDate(
+        header.strStatusTransOn || header.strExpectedDeliveryDate,
+        header.strStatusTransTime || header.strStatusTransTime
+      );
       statusHistory.push({
         code: header.strStatusRelCode || null,
         action: header.strStatus || header.strCNProduct || null,
@@ -1378,14 +1388,19 @@ class OrderService {
 
     // derive a friendly current status (prefer header.strStatus, fallback to last history action)
     const latestStatus =
-      header.strStatus ||
-      statusHistory.length
-        ? (statusHistory[statusHistory.length - 1]?.action || statusHistory[statusHistory.length - 1]?.raw?.strAction || null)
+      header.strStatus || statusHistory.length
+        ? statusHistory[statusHistory.length - 1]?.action ||
+          statusHistory[statusHistory.length - 1]?.raw?.strAction ||
+          null
         : null;
 
     // ensure the response has a place where existing code expects statusDescription
-    if (Array.isArray(trackResp.data.trackDetails) && trackResp.data.trackDetails.length) {
-      trackResp.data.trackDetails[0].statusDescription = trackResp.data.trackDetails[0].statusDescription || latestStatus;
+    if (
+      Array.isArray(trackResp.data.trackDetails) &&
+      trackResp.data.trackDetails.length
+    ) {
+      trackResp.data.trackDetails[0].statusDescription =
+        trackResp.data.trackDetails[0].statusDescription || latestStatus;
     } else {
       // create a synthetic entry so downstream code can read statusDescription
       trackResp.data.trackDetails = [{ statusDescription: latestStatus }];
@@ -1395,8 +1410,16 @@ class OrderService {
     const shippingDetails = {
       ...order.shipping_details,
       platform: order.shipping_details?.platform || "dtdc",
-      reference_number: header.strShipmentNo || header.strRefNo || order.shipping_details?.reference_number || null,
-      tracking_url: order.shipping_details?.tracking_url || `https://www.dtdc.in/tracking?awb=${header.strShipmentNo || header.strRefNo || ""}`,
+      reference_number:
+        header.strShipmentNo ||
+        header.strRefNo ||
+        order.shipping_details?.reference_number ||
+        null,
+      tracking_url:
+        order.shipping_details?.tracking_url ||
+        `https://www.dtdc.in/tracking?awb=${
+          header.strShipmentNo || header.strRefNo || ""
+        }`,
       status_history: statusHistory,
       current_status: latestStatus || order.status || "unknown",
       last_updated: new Date().toISOString(),
@@ -1405,8 +1428,78 @@ class OrderService {
 
     // //consolle.log("DTDC tracking details to be saved:", shippingDetails);
 
-    await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
-    
+    await this.orderRepository.updateOrder(order._id, {
+      shipping_details: shippingDetails,
+    });
+
+    console.log("checking order for shipping method Dtdc", order);
+    const userService = new UserService(conn);
+
+    let user = order.user;
+
+    if (!user?._id) {
+      const userResult = await userService.getUserById(order.user.toString());
+      if (userResult.success) {
+        user = userResult.data.user;
+      }
+    }
+
+    const whatsappService = new WhatsappService();
+    const payload2 = {
+      phone: user.phone,
+      name: user.name,
+      email: user.email,
+      extraFields: {
+        orderId: order._id.toString(),
+        orderTotal: order.total.toString(),
+        status: order.status,
+      },
+    };
+    const Product = conn.models.Product || conn.model("Product", ProductSchema);
+
+    const items = order.items || [];
+    const productPromises = items.map(async (item) => {
+      // If item has a productId, fetch by id; otherwise try to find by product name as a fallback
+      if (item.product) {
+        return Product.findById(item.product)
+          .lean()
+          .exec()
+          .catch((err) => {
+            console.error("Failed to fetch product by id", item.product, err);
+            return null;
+          });
+      } else if (item.product) {
+        return Product.findOne({ _id: item.product })
+          .lean()
+          .exec()
+          .catch((err) => {
+            console.error("Failed to fetch product by name", item.product, err);
+            return null;
+          });
+      } else {
+        console.warn(
+          "No productId or product name available for order item",
+          item
+        );
+        return null;
+      }
+    });
+    const products = await Promise.all(productPromises);
+    console.log("products ===> ", products);
+    products.forEach((product, index) => {
+      const item = items[index];
+      payload2.extraFields[`productName${index + 1}`] =
+        product?.name || item?.product || "";
+    });
+
+    console.log("payload is ===> ", payload2);
+    const response = await whatsappService.sendWebhookRequest({ ...payload2 });
+    console.log("api response ==> ", response);
+
+    if (!response.success) {
+      console.log("failed to send message on whatsapp");
+      result.whatsappError = response.error;
+    }
 
     return {
       success: true,
@@ -1426,7 +1519,7 @@ class OrderService {
       const apiUrl = `https://track.delhivery.com/api/v1/packages/json/?waybill=${referenceNumber}`;
 
       //consolle.log("Fetching Delhivery tracking for waybill:", referenceNumber);
-//consolle.log("Delhivery tracking API URL:", apiUrl);
+      //consolle.log("Delhivery tracking API URL:", apiUrl);
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
@@ -1456,17 +1549,23 @@ class OrderService {
           const sd = scanWrapper?.ScanDetail || scanWrapper;
           const dateStr = sd?.ScanDateTime || sd?.StatusDateTime || null;
           statusHistory.push({
-        code: sd?.StatusCode || null,
-        action: sd?.Scan || sd?.ScanType || sd?.Status || null,
-        manifest: shipment?.AWB || shipment?.ReferenceNo || null,
-        origin: sd?.ScannedLocation || shipment?.Origin || shipment?.PickupLocation || null,
-        destination:
-          shipment?.Consignee?.City ||
-          shipment?.Destination ||
-          (shipment?.Consignee?.PinCode ? String(shipment.Consignee.PinCode) : null),
-        actionDate: dateStr ? new Date(dateStr).toISOString() : null,
-        remarks: sd?.Instructions || sd?.Remarks || null,
-        raw: sd,
+            code: sd?.StatusCode || null,
+            action: sd?.Scan || sd?.ScanType || sd?.Status || null,
+            manifest: shipment?.AWB || shipment?.ReferenceNo || null,
+            origin:
+              sd?.ScannedLocation ||
+              shipment?.Origin ||
+              shipment?.PickupLocation ||
+              null,
+            destination:
+              shipment?.Consignee?.City ||
+              shipment?.Destination ||
+              (shipment?.Consignee?.PinCode
+                ? String(shipment.Consignee.PinCode)
+                : null),
+            actionDate: dateStr ? new Date(dateStr).toISOString() : null,
+            remarks: sd?.Instructions || sd?.Remarks || null,
+            raw: sd,
           });
         }
       }
@@ -1479,7 +1578,8 @@ class OrderService {
           action: s?.Status || s?.StatusType || null,
           manifest: shipment?.AWB || shipment?.ReferenceNo || null,
           origin: s?.StatusLocation || shipment?.Origin || null,
-          destination: shipment?.Consignee?.City || shipment?.Destination || null,
+          destination:
+            shipment?.Consignee?.City || shipment?.Destination || null,
           actionDate: dateStr ? new Date(dateStr).toISOString() : null,
           remarks: s?.Instructions || null,
           raw: s,
@@ -1497,11 +1597,14 @@ class OrderService {
       // derive readable latest status
       const latestStatus =
         (shipment?.Status && shipment.Status.Status) ||
-        (statusHistory.length ? statusHistory[statusHistory.length - 1]?.action : null) ||
+        (statusHistory.length
+          ? statusHistory[statusHistory.length - 1]?.action
+          : null) ||
         null;
 
       // prepare shipping_details payload for DB
-      const referenceNum = shipment?.AWB || shipment?.ReferenceNo || referenceNumber;
+      const referenceNum =
+        shipment?.AWB || shipment?.ReferenceNo || referenceNumber;
       const shippingDetails = {
         ...order.shipping_details,
         platform: "delhivery",
@@ -1515,9 +1618,84 @@ class OrderService {
       };
 
       // persist shipping details to order
-      await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
+      await this.orderRepository.updateOrder(order._id, {
+        shipping_details: shippingDetails,
+      });
 
-      
+      const userService = new UserService(conn);
+
+      let user = order.user;
+
+      if (!user?._id) {
+        const userResult = await userService.getUserById(order.user.toString());
+        if (userResult.success) {
+          user = userResult.data.user;
+        }
+      }
+
+      const whatsappService = new WhatsappService();
+      const payload2 = {
+        phone: user.phone,
+        name: user.name,
+        email: user.email,
+        extraFields: {
+          orderId: order._id.toString(),
+          orderTotal: order.total.toString(),
+          status: order.status,
+        },
+      };
+      const Product =
+        conn.models.Product || conn.model("Product", ProductSchema);
+
+      const items = order.items || [];
+      const productPromises = items.map(async (item) => {
+        // If item has a productId, fetch by id; otherwise try to find by product name as a fallback
+        if (item.product) {
+          return Product.findById(item.product)
+            .lean()
+            .exec()
+            .catch((err) => {
+              console.error("Failed to fetch product by id", item.product, err);
+              return null;
+            });
+        } else if (item.product) {
+          return Product.findOne({ _id: item.product })
+            .lean()
+            .exec()
+            .catch((err) => {
+              console.error(
+                "Failed to fetch product by name",
+                item.product,
+                err
+              );
+              return null;
+            });
+        } else {
+          console.warn(
+            "No productId or product name available for order item",
+            item
+          );
+          return null;
+        }
+      });
+      const products = await Promise.all(productPromises);
+      console.log("products ===> ", products);
+      products.forEach((product, index) => {
+        const item = items[index];
+        payload2.extraFields[`productName${index + 1}`] =
+          product?.name || item?.product || "";
+      });
+
+      console.log("payload is ===> ", payload2);
+      const response2 = await whatsappService.sendWebhookRequest({
+        ...payload2,
+      });
+      console.log("api response ==> ", response2);
+
+      if (!response2.success) {
+        console.log("filed to send message on whatsapp");
+        result.whatsappError = response2.error;
+      }
 
       return {
         success: true,
@@ -1730,15 +1908,15 @@ class OrderService {
 
       //consolle.log("📦 Delhivery shipment response:", res.data);
 
-    // --- 7️⃣ Save Shipment Details ---
-    if (res.data.success === true || res.data.package_count > 0) {
-      const shippingDetails = {
-        platform: "delhivery",
-        reference_number: masterWaybill,
-        tracking_url: `https://www.delhivery.com/track/package/${masterWaybill}`,
-        raw_response: res.data,
-        created_at: new Date(),
-      };
+      // --- 7️⃣ Save Shipment Details ---
+      if (res.data.success === true || res.data.package_count > 0) {
+        const shippingDetails = {
+          platform: "delhivery",
+          reference_number: masterWaybill,
+          tracking_url: `https://www.delhivery.com/track/package/${masterWaybill}`,
+          raw_response: res.data,
+          created_at: new Date(),
+        };
 
         await this.orderRepository.updateOrder(order._id, {
           shipping_details: shippingDetails,
