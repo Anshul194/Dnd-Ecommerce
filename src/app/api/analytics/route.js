@@ -67,6 +67,30 @@ export const GET = withUserAuth(async function (request) {
     ];
     const ticketStatuses = ["open", "in_progress", "resolved", "closed"];
 
+    // Parse date filters from query params
+    const { searchParams } = new URL(request.url);
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+
+    // Build date filter object for createdAt
+    let dateFilter = {};
+    if (startDate || endDate) {
+      dateFilter.createdAt = {};
+      if (startDate) dateFilter.createdAt.$gte = new Date(startDate);
+      if (endDate) dateFilter.createdAt.$lte = new Date(endDate);
+    }
+
+    // Calculate previous period for ROC
+    let prevDateFilter = {};
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffMs = end.getTime() - start.getTime();
+      const prevStart = new Date(start.getTime() - diffMs - 1);
+      const prevEnd = new Date(start.getTime() - 1);
+      prevDateFilter.createdAt = { $gte: prevStart, $lte: prevEnd };
+    }
+
     // Run counts in parallel
     const [
       totalUsers,
@@ -79,35 +103,62 @@ export const GET = withUserAuth(async function (request) {
       ticketsByStatusArr,
       recentOrders,
       recentTickets,
+      // Total revenue for current period
+      totalRevenueAgg,
+      // Total revenue for previous period (for ROC)
+      prevRevenueAgg,
+      // Returning customer count
+      returningCustomerAgg,
     ] = await Promise.all([
       User.countDocuments({ isDeleted: { $ne: true } }),
       Product.countDocuments({ deletedAt: null }),
       Category.countDocuments({ deletedAt: null }),
       Variant.countDocuments({ deletedAt: null }),
-      Order.countDocuments({}),
-      Order.countDocuments({ status: "pending" }),
+      Order.countDocuments({ ...dateFilter }),
+      Order.countDocuments({ status: "pending", ...dateFilter }),
       // orders by status
       Promise.all(
-        orderStatuses.map((s) => Order.countDocuments({ status: s }))
+        orderStatuses.map((s) =>
+          Order.countDocuments({ status: s, ...dateFilter })
+        )
       ),
       // tickets by status
       Promise.all(
-        ticketStatuses.map((s) => Ticket.countDocuments({ status: s }))
+        ticketStatuses.map((s) =>
+          Ticket.countDocuments({ status: s, ...dateFilter })
+        )
       ),
       // recent orders (most recent 10)
-      Order.find({})
+      Order.find({ ...dateFilter })
         .sort({ createdAt: -1 })
         .limit(10)
         .select("user items total status createdAt placedAt")
         .populate({ path: "user", select: "name email phone" })
         .lean(),
       // recent tickets (most recent 10)
-      Ticket.find({ isDeleted: { $ne: true } })
+      Ticket.find({ isDeleted: { $ne: true }, ...dateFilter })
         .sort({ createdAt: -1 })
         .limit(10)
         .select("subject status priority customer orderId createdAt")
         .populate({ path: "customer", select: "name email phone" })
         .lean(),
+      // Total revenue for current period
+      Order.aggregate([
+        { $match: { ...dateFilter } },
+        { $group: { _id: null, totalRevenue: { $sum: "$total" } } },
+      ]),
+      // Total revenue for previous period
+      Order.aggregate([
+        { $match: { ...prevDateFilter } },
+        { $group: { _id: null, totalRevenue: { $sum: "$total" } } },
+      ]),
+      // Returning customer count (users with >1 order in period)
+      Order.aggregate([
+        { $match: { ...dateFilter } },
+        { $group: { _id: "$user", orderCount: { $sum: 1 } } },
+        { $match: { orderCount: { $gt: 1 } } },
+        { $count: "returningCustomers" },
+      ]),
     ]);
 
     const ordersByStatus = {};
@@ -119,6 +170,30 @@ export const GET = withUserAuth(async function (request) {
     ticketStatuses.forEach((s, i) => {
       ticketsByStatus[s] = ticketsByStatusArr[i] || 0;
     });
+
+    // Calculate total revenue and ROC
+    const totalRevenue =
+      totalRevenueAgg && totalRevenueAgg[0]
+        ? totalRevenueAgg[0].totalRevenue
+        : 0;
+    const prevRevenue =
+      prevRevenueAgg && prevRevenueAgg[0]
+        ? prevRevenueAgg[0].totalRevenue
+        : 0;
+    let roc = null;
+    if (prevRevenue > 0) {
+      roc = ((totalRevenue - prevRevenue) / prevRevenue) * 100;
+    } else if (totalRevenue > 0) {
+      roc = 100;
+    } else {
+      roc = 0;
+    }
+
+    // Returning customer count
+    const returningCustomerCount =
+      returningCustomerAgg && returningCustomerAgg[0]
+        ? returningCustomerAgg[0].returningCustomers
+        : 0;
 
     const data = {
       totalUsers: totalUsers,
@@ -132,6 +207,9 @@ export const GET = withUserAuth(async function (request) {
       totalPendingTickets: ticketsByStatus["open"] || 0,
       recentOrders: recentOrders || [],
       recentTickets: recentTickets || [],
+      totalRevenue,
+      roc,
+      returningCustomerCount,
     };
 
     return NextResponse.json(
