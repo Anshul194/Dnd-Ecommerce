@@ -123,7 +123,12 @@ function ProductPage({ params }) {
             ? dataTpl.sections.map((s) => {
                 const cols = Array.isArray(s.columns) ? s.columns.length : 0;
                 const componentsCount = Array.isArray(s.columns)
-                  ? s.columns.reduce((acc, c) => acc + (Array.isArray(c.components) ? c.components.length : 0), 0)
+                  ? s.columns.reduce(
+                      (acc, c) =>
+                        acc +
+                        (Array.isArray(c.components) ? c.components.length : 0),
+                      0
+                    )
                   : Array.isArray(s.components)
                   ? s.components.length
                   : 0;
@@ -143,7 +148,8 @@ function ProductPage({ params }) {
               return {
                 ...existing,
                 templateId: response.payload.templateId,
-                templateName: dataTpl?.layoutName || existing.templateName || "",
+                templateName:
+                  dataTpl?.layoutName || existing.templateName || "",
                 sectionsCount: sectionsPreview.length,
                 sectionsPreview,
                 savedAt: Date.now(),
@@ -160,7 +166,10 @@ function ProductPage({ params }) {
           })();
 
           try {
-            localStorage.setItem(`prd:template:${slug}`, JSON.stringify(merged));
+            localStorage.setItem(
+              `prd:template:${slug}`,
+              JSON.stringify(merged)
+            );
             setTemplateCache(merged);
           } catch (e) {
             // non-blocking
@@ -289,10 +298,10 @@ function ProductPage({ params }) {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     handleScroll(); // Check initial state
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // track view when product data becomes available
