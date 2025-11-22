@@ -117,7 +117,7 @@ function ProductPage({ params }) {
       await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
       // tracking: add to cart
       try {
-        trackEvent("add_to_cart", {
+        trackEvent("ADD_TO_CART", {
           productId: data._id,
           variantId: selectedPack,
           quantity,
@@ -206,7 +206,7 @@ function ProductPage({ params }) {
   React.useEffect(() => {
     if (data?._id) {
       try {
-        trackEvent("product_view", {
+        trackEvent("PRODUCT_VIEW", {
           productId: data._id,
           user: isAuthenticated ? userId : "guest",
         });
