@@ -21,12 +21,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchCategories,
-  fetchCategoryWithSubcategories,
-} from "@/app/store/slices/categorySlice";
+import { fetchCategories } from "@/app/store/slices/categorySlice";
 import { getCartItems, toggleCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -40,7 +37,7 @@ import { fetchProducts } from "@/app/store/slices/productSlice";
 import { fetchBlogs } from "@/app/store/slices/blogSclie";
 import axiosInstance from "@/axiosConfig/axiosInstance";
 
-export default function Navbar() {
+function Navbar({ initialCategories = [] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [showProductMenu, setShowProductMenu] = useState(false);
@@ -62,8 +59,20 @@ export default function Navbar() {
   const router = useRouter();
 
   const initialData = async () => {
-    const res = await fetchCategoryWithSubcategories();
-    setCategories(res || []);
+    if (initialCategories && initialCategories.length > 0) {
+      setCategories(initialCategories);
+    } else {
+      try {
+        const { fetchCategoryWithSubcategories } = await import(
+          "@/app/store/slices/categorySlice"
+        );
+        const res = await fetchCategoryWithSubcategories();
+        setCategories(res || []);
+      } catch (err) {
+        // fallback: leave categories empty
+      }
+    }
+
     if (products?.products?.length == 0) {
       const payload = {
         page: 1,
@@ -907,3 +916,5 @@ export default function Navbar() {
     </>
   );
 }
+
+export default React.memo(Navbar);

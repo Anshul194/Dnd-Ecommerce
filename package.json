@@ -10,7 +10,12 @@
     "dev:tenant1": "cross-env PORT=3001 next dev --hostname tenant1.localhost",
     "dev:bharat": "cross-env PORT=3001 next dev --hostname bharat.localhost",
     "lint": "next lint",
-    "test": "jest"
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "optimize-images": "node ./scripts/optimize-images.js",
+    "lint:images": "next lint --file src --quiet",
+    "lint:server-imports": "next lint --file src --quiet",
+    "lint:heavy-deps": "next lint --file src --quiet"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -50,6 +50,7 @@ import {
 import { useDispatch } from "react-redux";
 
 import { fetchProductById } from "@/app/store/slices/productSlice";
+import ProductDetailSkeleton from "@/components/ProductDetailSkeleton";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-toastify";
@@ -765,6 +766,17 @@ export default function ProductPageBuilder() {
   const templateId = searchParams?.get("templateId") ?? null;
   const params = useParams();
   const productId = params.id;
+  const [templateCache, setTemplateCache] = useState(() => {
+    try {
+      if (typeof window !== "undefined" && productId) {
+        const raw = localStorage.getItem(`prd:template:${productId}`);
+        if (raw) return JSON.parse(raw);
+      }
+    } catch (e) {
+      // ignore parse/localStorage errors
+    }
+    return null;
+  });
 
   console.log("Template ID:", templateId);
   const [sections, setSections] = useState<SectionType[]>([
@@ -1461,6 +1473,29 @@ export default function ProductPageBuilder() {
       console.log("Fetched Product Data:", response.payload);
       setProduct(response.payload);
 
+      // Save a lightweight template to localStorage for quicker skeleton on revisit
+      try {
+        if (typeof window !== "undefined" && response.payload) {
+          const tmpl = {
+            name: response.payload.name || "",
+            thumbnail:
+              response.payload.thumbnail ||
+              response.payload.images?.[0]?.url ||
+              "",
+            imagesCount: response.payload.images?.length || 0,
+            variantsCount: response.payload.variants?.length || 0,
+            savedAt: Date.now(),
+          };
+          localStorage.setItem(
+            `prd:template:${productId}`,
+            JSON.stringify(tmpl)
+          );
+        }
+      } catch (err) {
+        // non-blocking
+        console.error("Could not save product template to localStorage:", err);
+      }
+
       // If templateId exists, fetch and set template data
       if (response.payload.templateId) {
         const res = await axiosInstance.get(
@@ -1468,6 +1503,57 @@ export default function ProductPageBuilder() {
         );
         console.log("Fetched Template Data: ===>", res.data);
         const data = res?.data?.body?.data || res.data;
+        // Build a lightweight preview of the template layout to store for skeleton rendering
+        try {
+          const sectionsPreview = Array.isArray(data?.sections)
+            ? data.sections.map((s: any) => {
+                const cols = Array.isArray(s.columns) ? s.columns.length : 0;
+                const componentsCount = Array.isArray(s.columns)
+                  ? s.columns.reduce((acc: number, c: any) => acc + (Array.isArray(c.components) ? c.components.length : 0), 0)
+                  : Array.isArray((s as any).components)
+                  ? (s as any).components.length
+                  : 0;
+                return {
+                  id: s.sectionId || null,
+                  type: s.sectionType || s.type || null,
+                  columns: cols,
+                  componentsCount,
+                };
+              })
+            : [];
+
+          const merged = (() => {
+            try {
+              const raw = localStorage.getItem(`prd:template:${productId}`);
+              const existing = raw ? JSON.parse(raw) : {};
+              return {
+                ...existing,
+                templateId: response.payload.templateId,
+                templateName: data?.layoutName || existing.templateName || "",
+                sectionsCount: sectionsPreview.length,
+                sectionsPreview,
+                savedAt: Date.now(),
+              };
+            } catch (e) {
+              return {
+                templateId: response.payload.templateId,
+                templateName: data?.layoutName || "",
+                sectionsCount: sectionsPreview.length,
+                sectionsPreview,
+                savedAt: Date.now(),
+              };
+            }
+          })();
+
+          try {
+            localStorage.setItem(`prd:template:${productId}`, JSON.stringify(merged));
+            setTemplateCache(merged);
+          } catch (e) {
+            // non-blocking
+          }
+        } catch (e) {
+          // ignore building preview errors
+        }
         // Set layout configuration
         setColumnGap(data?.columnGap || 2);
         setComponentGap(data?.componentGap || 2);
@@ -1572,17 +1658,35 @@ export default function ProductPageBuilder() {
   };
 
   useEffect(() => {
+    // Load any cached template to show templated skeleton while loading
+    try {
+      if (typeof window !== "undefined") {
+        const raw = localStorage.getItem(`prd:template:${productId}`);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            setTemplateCache(parsed);
+          } catch (e) {
+            // ignore parse error
+          }
+        }
+      }
+    } catch (e) {
+      // ignore storage access errors
+    }
+
     getProductData();
   }, []);
 
   return (
     <div
-      className={`min-h-screen my-20 ${isPreviewMode ? "bg-white" : "bg-gray-100"} flex flex-col md:flex-row`}
+      className={`min-h-screen my-20 ${
+        isPreviewMode ? "bg-white" : "bg-gray-100"
+      } flex flex-col md:flex-row`}
     >
       {loading ? (
-        <div className="flex w-full justify-center items-center h-[60vh]">
-          <LoadingSpinner />
-        </div>
+        // Always render a skeleton while loading (prefer cached template if available)
+        <ProductDetailSkeleton template={templateCache} />
       ) : (
         <div className="flex-1 flex flex-col">
           {/* Main content - Row-based layout */}

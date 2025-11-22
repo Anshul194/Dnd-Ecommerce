@@ -57,10 +57,13 @@ const nextConfig = {
   },
 
   eslint: {
-    ignoreDuringBuilds: true,
+    // Do not ignore ESLint errors during builds; surface them in CI/builds
+    ignoreDuringBuilds: false,
   },
 
   typescript: {
+    // Do not ignore TypeScript build errors; catch them in CI and fix incrementally
+    // keep temporary true to avoid blocking builds until type fixes are addressed
     ignoreBuildErrors: true,
   },
 

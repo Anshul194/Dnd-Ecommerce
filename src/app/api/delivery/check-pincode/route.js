@@ -1,6 +1,7 @@
 import { ShippingSchema } from "@/app/lib/models/Shipping";
 import { NextResponse } from "next/server";
 import { getSubdomain, getDbConnection } from "../../../lib/tenantDb";
+import { fetchWithRetry } from "@/app/lib/utils/httpClient";
 
 export async function POST(req) {
   try {
@@ -73,19 +74,24 @@ export async function POST(req) {
 
         const dtdcApiUrl =
           "http://smarttrack.ctbsplus.dtdc.com/ratecalapi/PincodeApiCall";
-        const response = await fetch(dtdcApiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orgPincode, desPincode }),
-        });
-
-        //console.log("DTDC API response status: ===========>", response);
-
-        if (!response.ok) {
-          throw new Error(`DTDC API responded with status: ${response.status}`);
+        let data = null;
+        try {
+          data = await fetchWithRetry(
+            dtdcApiUrl,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orgPincode, desPincode }),
+            },
+            { retries: 2, retryDelay: 300, cacheTtl: 1000 * 60 * 60 }
+          );
+        } catch (err) {
+          // DTDC failed; move to next provider
+          //console.log("DTDC fetch failed:", err.message);
+          data = null;
         }
 
-        const data = await response.json();
+        if (!data) continue;
 
         if (data.ZIPCODE_RESP && data.ZIPCODE_RESP.length > 0) {
           const zipcodeResponse = data.ZIPCODE_RESP[0];
@@ -115,23 +121,17 @@ export async function POST(req) {
           //console.log("Delhivery method selected <<<<<>>>>>>>");
           const delhiveryApiUrl = `https://track.delhivery.com/c/api/pin-codes/json/?filter_codes=${desPincode}`;
 
-          const response = await fetch(delhiveryApiUrl, {
-            method: "GET",
-            headers: {
-              Authorization: `Token ${process.env.DELHIVERY_API_KEY}`, // 🔑 required
-              "Content-Type": "application/json",
+          const data = await fetchWithRetry(
+            delhiveryApiUrl,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Token ${process.env.DELHIVERY_API_KEY}`,
+                "Content-Type": "application/json",
+              },
             },
-          });
-
-          //console.log("Delhivery API response status: ===========>", response);
-
-          if (!response.statusText.includes("OK")) {
-            throw new Error(
-              `Delhivery API responded with status: ${response.status}`
-            );
-          }
-
-          const data = await response.json();
+            { retries: 2, retryDelay: 300, cacheTtl: 1000 * 60 * 60 }
+          );
           if (data.delivery_codes && data.delivery_codes.length > 0) {
             isServiceable = true;
             responseMessage = "Pincode is serviceable by Delhivery";

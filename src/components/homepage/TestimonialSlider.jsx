@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchReviews } from "@/app/store/slices/Reviews";
 import AnimatedGradientBorder from "../ui/AnimatedGradientBorder";
 
-export default function TestimonialSlider({ content }) {
+function TestimonialSlider({ content }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slidesToShow, setSlidesToShow] = useState(4);
   const { reviews, loading, error } = useSelector((state) => state.reviews);
@@ -65,7 +65,7 @@ export default function TestimonialSlider({ content }) {
         <h1 className="text-3xl md:text-5xl text-black mb-2 font-black text-center">
           {content?.title || "GENUI NE HEARTS. TRUE STORIES."}
         </h1>
-        < AnimatedGradientBorder/>
+        <AnimatedGradientBorder />
         <div className="text-start lg:max-w-[80%] mx-auto mt-5">
           <p className="text-black relative poppins-medium leading-tight text-lg ml-auto text-center">
             {content?.description ||
@@ -158,11 +158,14 @@ export default function TestimonialSlider({ content }) {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-colors duration-300 ${currentSlide === index ? "bg-green-500" : "bg-gray-300"
-              }`}
+            className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+              currentSlide === index ? "bg-green-500" : "bg-gray-300"
+            }`}
           />
         ))}
       </div>
     </div>
   );
 }
+
+export default React.memo(TestimonialSlider);

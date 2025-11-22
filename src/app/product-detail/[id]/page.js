@@ -24,6 +24,7 @@ import ProductReviewThree from "./components/varients/review/ProductReviewThree"
 import ProductReview from "./components/ProductReview";
 import FrequentlyPurchased from "./components/FrequentlyPurchased";
 import { useDispatch } from "react-redux";
+import ProductDetailSkeleton from "@/components/ProductDetailSkeleton";
 import { fetchProductById } from "@/app/store/slices/productSlice";
 import Image from "next/image";
 import {
@@ -43,6 +44,18 @@ function ProductPage({ params }) {
   const [selectedPack, setSelectedPack] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [data, setData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [templateCache, setTemplateCache] = useState(() => {
+    try {
+      if (typeof window !== "undefined" && slug) {
+        const raw = localStorage.getItem(`prd:template:${slug}`);
+        if (raw) return JSON.parse(raw);
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  });
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const userId = useSelector((state) => state.auth.user?._id);
@@ -75,11 +88,91 @@ function ProductPage({ params }) {
 
   const getProductData = React.useCallback(async () => {
     try {
+      setLoading(true);
       // Fetch by slug instead of id
       const response = await dispatch(fetchProductById(slug));
       setSelectedPack(response?.payload?.variants[0]?._id);
       setData(response.payload);
+
+      // Save a lightweight template preview for quicker skeleton on revisit
+      try {
+        if (typeof window !== "undefined" && response.payload) {
+          const tmpl = {
+            name: response.payload.name || "",
+            thumbnail:
+              response.payload.thumbnail || response.payload.images?.[0] || "",
+            imagesCount: response.payload.images?.length || 0,
+            variantsCount: response.payload.variants?.length || 0,
+            savedAt: Date.now(),
+          };
+          localStorage.setItem(`prd:template:${slug}`, JSON.stringify(tmpl));
+          setTemplateCache(tmpl);
+        }
+      } catch (err) {
+        // non-blocking
+      }
+
+      // If templateId exists, try to fetch template layout and merge a preview
+      if (response.payload?.templateId) {
+        try {
+          const res = await require("@/axiosConfig/axiosInstance").default.get(
+            `/template?id=${response.payload.templateId}`
+          );
+          const dataTpl = res?.data?.body?.data || res.data;
+          const sectionsPreview = Array.isArray(dataTpl?.sections)
+            ? dataTpl.sections.map((s) => {
+                const cols = Array.isArray(s.columns) ? s.columns.length : 0;
+                const componentsCount = Array.isArray(s.columns)
+                  ? s.columns.reduce((acc, c) => acc + (Array.isArray(c.components) ? c.components.length : 0), 0)
+                  : Array.isArray(s.components)
+                  ? s.components.length
+                  : 0;
+                return {
+                  id: s.sectionId || null,
+                  type: s.sectionType || s.type || null,
+                  columns: cols,
+                  componentsCount,
+                };
+              })
+            : [];
+
+          const merged = (() => {
+            try {
+              const raw = localStorage.getItem(`prd:template:${slug}`);
+              const existing = raw ? JSON.parse(raw) : {};
+              return {
+                ...existing,
+                templateId: response.payload.templateId,
+                templateName: dataTpl?.layoutName || existing.templateName || "",
+                sectionsCount: sectionsPreview.length,
+                sectionsPreview,
+                savedAt: Date.now(),
+              };
+            } catch (e) {
+              return {
+                templateId: response.payload.templateId,
+                templateName: dataTpl?.layoutName || "",
+                sectionsCount: sectionsPreview.length,
+                sectionsPreview,
+                savedAt: Date.now(),
+              };
+            }
+          })();
+
+          try {
+            localStorage.setItem(`prd:template:${slug}`, JSON.stringify(merged));
+            setTemplateCache(merged);
+          } catch (e) {
+            // non-blocking
+          }
+        } catch (e) {
+          // ignore template fetch errors
+        }
+      }
+
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       // Optionally show a toast or error UI
     }
   }, [dispatch, slug]);
@@ -215,6 +308,10 @@ function ProductPage({ params }) {
       }
     }
   }, [data?._id, isAuthenticated, userId]);
+
+  if (loading) {
+    return <ProductDetailSkeleton template={templateCache} />;
+  }
 
   return (
     <>

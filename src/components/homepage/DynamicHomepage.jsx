@@ -190,4 +190,4 @@ const DynamicHomepage = () => {
   );
 };
 
-export default DynamicHomepage;
+export default React.memo(DynamicHomepage);

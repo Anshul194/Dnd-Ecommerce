@@ -7,13 +7,11 @@ import useTokenRefresh from "../hooks/useTokenRefresh";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector as useReduxSelector } from "react-redux";
 import { fetchSettings } from "./store/slices/settingSlice";
-import { fetchCategoryWithSubcategories } from "./store/slices/categorySlice";
-
-export default function ClientLayout({ children }) {
+export default function ClientLayout({ children, initialCategories = [] }) {
   const { isAuthenticated } = useSelector((state) => state.auth ?? {});
   const dispatch = useDispatch();
   const settings = useReduxSelector((state) => state.setting?.settings);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(initialCategories || []);
 
   // Always call hooks at top level
   // useTokenRefresh();
@@ -24,10 +22,16 @@ export default function ClientLayout({ children }) {
       dispatch(fetchSettings());
     }
 
-    // Fetch categories once and pass to Navbar
+    // If server provided categories are present, skip client fetch
+    if (initialCategories && initialCategories.length > 0) return;
+
+    // Otherwise, fetch categories once on client side and pass to Navbar
     let mounted = true;
     (async () => {
       try {
+        const { fetchCategoryWithSubcategories } = await import(
+          "./store/slices/categorySlice"
+        );
         const res = await fetchCategoryWithSubcategories();
         if (mounted && res) setCategories(res || []);
       } catch (err) {
@@ -38,7 +42,7 @@ export default function ClientLayout({ children }) {
     return () => {
       mounted = false;
     };
-  }, [dispatch, settings]);
+  }, [dispatch, settings, initialCategories]);
 
   return (
     <>

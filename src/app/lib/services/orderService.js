@@ -5,6 +5,7 @@ import CouponService from "./CouponService";
 import EmailService from "./EmailService";
 import { SettingSchema } from "../models/Setting";
 import axios from "axios";
+import { axiosWithRetry } from "../utils/httpClient";
 import https from "https"; // if using ES modules
 import { ShippingSchema } from "../models/Shipping.js";
 import path from "path";
@@ -815,13 +816,23 @@ class OrderService {
     const originPincode = "110001";
     const destinationPincode = order?.data?.shippingAddress?.postalCode; // replace if needed
 
-    const resp = await axios.post(
-      "http://smarttrack.ctbsplus.dtdc.com/ratecalapi/PincodeApiCall",
-      { orgPincode: originPincode, desPincode: destinationPincode }
-    );
-    // //consolle.log('DTDC response:', resp.data);
+    const respData = await (async () => {
+      try {
+        return await axiosWithRetry(
+          axios,
+          {
+            method: "post",
+            url: "http://smarttrack.ctbsplus.dtdc.com/ratecalapi/PincodeApiCall",
+            data: { orgPincode: originPincode, desPincode: destinationPincode },
+          },
+          { retries: 2, retryDelay: 300, cacheTtl: 1000 * 60 * 60 }
+        );
+      } catch (err) {
+        return null;
+      }
+    })();
 
-    const services = resp.data.SERV_LIST_DTLS || [];
+    const services = (respData && respData.SERV_LIST_DTLS) || [];
     // //consolle.log('Services:', services);
     return services.map((s) => ({
       code: s.CODE,
@@ -868,31 +879,54 @@ class OrderService {
       }
 
       // Generate JWT Token (assuming you store in ENV or helper)
-      const tokenResp = await axios.post(
-        process.env.BLUEDART_AUTH_URL, // e.g. https://api.bluedart.com/Authenticate
-        {
-          client_id: process.env.BLUEDART_CLIENT_ID,
-          client_secret: process.env.BLUEDART_CLIENT_SECRET,
+      const tokenResp = await (async () => {
+        try {
+          return await axiosWithRetry(
+            axios,
+            {
+              method: "post",
+              url: process.env.BLUEDART_AUTH_URL,
+              data: {
+                client_id: process.env.BLUEDART_CLIENT_ID,
+                client_secret: process.env.BLUEDART_CLIENT_SECRET,
+              },
+            },
+            { retries: 2, retryDelay: 300 }
+          );
+        } catch (err) {
+          return null;
         }
-      );
-      const jwtToken = tokenResp.data?.access_token;
+      })();
 
-      const resp = await axios.post(
-        process.env.BLUEDART_API_URL + "/GetServicesforPincodeAndProduct",
-        {
-          OriginPincode: originPincode,
-          DestinationPincode: destinationPincode,
-          ProductCode: "A", // Example product code (A = Express)
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "Content-Type": "application/json",
-          },
+      const jwtToken = tokenResp?.access_token;
+
+      const respData = await (async () => {
+        try {
+          return await axiosWithRetry(
+            axios,
+            {
+              method: "post",
+              url:
+                process.env.BLUEDART_API_URL +
+                "/GetServicesforPincodeAndProduct",
+              data: {
+                OriginPincode: originPincode,
+                DestinationPincode: destinationPincode,
+                ProductCode: "A",
+              },
+              headers: {
+                Authorization: `Bearer ${jwtToken}`,
+                "Content-Type": "application/json",
+              },
+            },
+            { retries: 2, retryDelay: 300 }
+          );
+        } catch (err) {
+          return null;
         }
-      );
+      })();
 
-      const services = resp.data?.Services || [];
+      const services = (respData && respData.Services) || [];
       return services.map((s) => ({
         code: s.ServiceCode,
         name: s.ServiceName,
@@ -978,8 +1012,7 @@ class OrderService {
   }
 
   //getOrderForTracking
-  async getAllOrdersForTracking(request, conn)  
-      {
+  async getAllOrdersForTracking(request, conn) {
     try {
       // Ensure User model is registered on this connection so populate('user') works
       const User = conn.models.User || conn.model("User", UserSchema);
@@ -1003,7 +1036,6 @@ class OrderService {
       };
     }
   }
-  
 
   async getAllOrders(request, conn) {
     try {
@@ -1327,11 +1359,13 @@ class OrderService {
     function parseDtdcDate(dateStr, timeStr) {
       if (!dateStr) return null;
       // expect DDMMYYYY (8 chars) or DDM M? fallback
-      const d = dateStr.length === 8 ? dateStr.slice(0, 2) : dateStr.slice(0, 2);
-      const m = dateStr.length === 8 ? dateStr.slice(2, 4) : dateStr.slice(2, 4);
+      const d =
+        dateStr.length === 8 ? dateStr.slice(0, 2) : dateStr.slice(0, 2);
+      const m =
+        dateStr.length === 8 ? dateStr.slice(2, 4) : dateStr.slice(2, 4);
       const y = dateStr.length === 8 ? dateStr.slice(4) : dateStr.slice(4);
-      const hh = (timeStr && timeStr.length >= 2) ? timeStr.slice(0, 2) : "00";
-      const mm = (timeStr && timeStr.length >= 4) ? timeStr.slice(2, 4) : "00";
+      const hh = timeStr && timeStr.length >= 2 ? timeStr.slice(0, 2) : "00";
+      const mm = timeStr && timeStr.length >= 4 ? timeStr.slice(2, 4) : "00";
       // return ISO string (UTC)
       const iso = new Date(`${y}-${m}-${d}T${hh}:${mm}:00Z`);
       return isNaN(iso.getTime()) ? null : iso.toISOString();
@@ -1345,7 +1379,10 @@ class OrderService {
         manifest: d.strManifestNo || null,
         origin: d.strOrigin || null,
         destination: d.strDestination || null,
-        actionDate: parseDtdcDate(d.strActionDate || d.strActionDate, d.strActionTime || d.strActionTime),
+        actionDate: parseDtdcDate(
+          d.strActionDate || d.strActionDate,
+          d.strActionTime || d.strActionTime
+        ),
         remarks: d.sTrRemarks || d.strRemarks || null,
         latitude: d.strLatitude || null,
         longitude: d.strLongitude || null,
@@ -1355,7 +1392,10 @@ class OrderService {
 
     // include header summary as the latest/top-level status entry (if present)
     if (header && Object.keys(header).length) {
-      const headerDate = parseDtdcDate(header.strStatusTransOn || header.strExpectedDeliveryDate, header.strStatusTransTime || header.strStatusTransTime);
+      const headerDate = parseDtdcDate(
+        header.strStatusTransOn || header.strExpectedDeliveryDate,
+        header.strStatusTransTime || header.strStatusTransTime
+      );
       statusHistory.push({
         code: header.strStatusRelCode || null,
         action: header.strStatus || header.strCNProduct || null,
@@ -1378,14 +1418,19 @@ class OrderService {
 
     // derive a friendly current status (prefer header.strStatus, fallback to last history action)
     const latestStatus =
-      header.strStatus ||
-      statusHistory.length
-        ? (statusHistory[statusHistory.length - 1]?.action || statusHistory[statusHistory.length - 1]?.raw?.strAction || null)
+      header.strStatus || statusHistory.length
+        ? statusHistory[statusHistory.length - 1]?.action ||
+          statusHistory[statusHistory.length - 1]?.raw?.strAction ||
+          null
         : null;
 
     // ensure the response has a place where existing code expects statusDescription
-    if (Array.isArray(trackResp.data.trackDetails) && trackResp.data.trackDetails.length) {
-      trackResp.data.trackDetails[0].statusDescription = trackResp.data.trackDetails[0].statusDescription || latestStatus;
+    if (
+      Array.isArray(trackResp.data.trackDetails) &&
+      trackResp.data.trackDetails.length
+    ) {
+      trackResp.data.trackDetails[0].statusDescription =
+        trackResp.data.trackDetails[0].statusDescription || latestStatus;
     } else {
       // create a synthetic entry so downstream code can read statusDescription
       trackResp.data.trackDetails = [{ statusDescription: latestStatus }];
@@ -1395,8 +1440,16 @@ class OrderService {
     const shippingDetails = {
       ...order.shipping_details,
       platform: order.shipping_details?.platform || "dtdc",
-      reference_number: header.strShipmentNo || header.strRefNo || order.shipping_details?.reference_number || null,
-      tracking_url: order.shipping_details?.tracking_url || `https://www.dtdc.in/tracking?awb=${header.strShipmentNo || header.strRefNo || ""}`,
+      reference_number:
+        header.strShipmentNo ||
+        header.strRefNo ||
+        order.shipping_details?.reference_number ||
+        null,
+      tracking_url:
+        order.shipping_details?.tracking_url ||
+        `https://www.dtdc.in/tracking?awb=${
+          header.strShipmentNo || header.strRefNo || ""
+        }`,
       status_history: statusHistory,
       current_status: latestStatus || order.status || "unknown",
       last_updated: new Date().toISOString(),
@@ -1405,8 +1458,9 @@ class OrderService {
 
     // //consolle.log("DTDC tracking details to be saved:", shippingDetails);
 
-    await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
-    
+    await this.orderRepository.updateOrder(order._id, {
+      shipping_details: shippingDetails,
+    });
 
     return {
       success: true,
@@ -1426,7 +1480,7 @@ class OrderService {
       const apiUrl = `https://track.delhivery.com/api/v1/packages/json/?waybill=${referenceNumber}`;
 
       //consolle.log("Fetching Delhivery tracking for waybill:", referenceNumber);
-//consolle.log("Delhivery tracking API URL:", apiUrl);
+      //consolle.log("Delhivery tracking API URL:", apiUrl);
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Token ${process.env.DELHIVERY_API_TOKEN}`,
@@ -1456,17 +1510,23 @@ class OrderService {
           const sd = scanWrapper?.ScanDetail || scanWrapper;
           const dateStr = sd?.ScanDateTime || sd?.StatusDateTime || null;
           statusHistory.push({
-        code: sd?.StatusCode || null,
-        action: sd?.Scan || sd?.ScanType || sd?.Status || null,
-        manifest: shipment?.AWB || shipment?.ReferenceNo || null,
-        origin: sd?.ScannedLocation || shipment?.Origin || shipment?.PickupLocation || null,
-        destination:
-          shipment?.Consignee?.City ||
-          shipment?.Destination ||
-          (shipment?.Consignee?.PinCode ? String(shipment.Consignee.PinCode) : null),
-        actionDate: dateStr ? new Date(dateStr).toISOString() : null,
-        remarks: sd?.Instructions || sd?.Remarks || null,
-        raw: sd,
+            code: sd?.StatusCode || null,
+            action: sd?.Scan || sd?.ScanType || sd?.Status || null,
+            manifest: shipment?.AWB || shipment?.ReferenceNo || null,
+            origin:
+              sd?.ScannedLocation ||
+              shipment?.Origin ||
+              shipment?.PickupLocation ||
+              null,
+            destination:
+              shipment?.Consignee?.City ||
+              shipment?.Destination ||
+              (shipment?.Consignee?.PinCode
+                ? String(shipment.Consignee.PinCode)
+                : null),
+            actionDate: dateStr ? new Date(dateStr).toISOString() : null,
+            remarks: sd?.Instructions || sd?.Remarks || null,
+            raw: sd,
           });
         }
       }
@@ -1479,7 +1539,8 @@ class OrderService {
           action: s?.Status || s?.StatusType || null,
           manifest: shipment?.AWB || shipment?.ReferenceNo || null,
           origin: s?.StatusLocation || shipment?.Origin || null,
-          destination: shipment?.Consignee?.City || shipment?.Destination || null,
+          destination:
+            shipment?.Consignee?.City || shipment?.Destination || null,
           actionDate: dateStr ? new Date(dateStr).toISOString() : null,
           remarks: s?.Instructions || null,
           raw: s,
@@ -1497,11 +1558,14 @@ class OrderService {
       // derive readable latest status
       const latestStatus =
         (shipment?.Status && shipment.Status.Status) ||
-        (statusHistory.length ? statusHistory[statusHistory.length - 1]?.action : null) ||
+        (statusHistory.length
+          ? statusHistory[statusHistory.length - 1]?.action
+          : null) ||
         null;
 
       // prepare shipping_details payload for DB
-      const referenceNum = shipment?.AWB || shipment?.ReferenceNo || referenceNumber;
+      const referenceNum =
+        shipment?.AWB || shipment?.ReferenceNo || referenceNumber;
       const shippingDetails = {
         ...order.shipping_details,
         platform: "delhivery",
@@ -1515,9 +1579,9 @@ class OrderService {
       };
 
       // persist shipping details to order
-      await this.orderRepository.updateOrder(order._id, { shipping_details: shippingDetails });
-
-      
+      await this.orderRepository.updateOrder(order._id, {
+        shipping_details: shippingDetails,
+      });
 
       return {
         success: true,
@@ -1730,15 +1794,15 @@ class OrderService {
 
       //consolle.log("📦 Delhivery shipment response:", res.data);
 
-    // --- 7️⃣ Save Shipment Details ---
-    if (res.data.success === true || res.data.package_count > 0) {
-      const shippingDetails = {
-        platform: "delhivery",
-        reference_number: masterWaybill,
-        tracking_url: `https://www.delhivery.com/track/package/${masterWaybill}`,
-        raw_response: res.data,
-        created_at: new Date(),
-      };
+      // --- 7️⃣ Save Shipment Details ---
+      if (res.data.success === true || res.data.package_count > 0) {
+        const shippingDetails = {
+          platform: "delhivery",
+          reference_number: masterWaybill,
+          tracking_url: `https://www.delhivery.com/track/package/${masterWaybill}`,
+          raw_response: res.data,
+          created_at: new Date(),
+        };
 
         await this.orderRepository.updateOrder(order._id, {
           shipping_details: shippingDetails,

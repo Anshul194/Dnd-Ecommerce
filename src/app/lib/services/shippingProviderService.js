@@ -1,3 +1,5 @@
+import { fetchWithRetry } from "../utils/httpClient";
+
 export class DTDCShippingService {
   constructor() {
     this.apiUrl =
@@ -12,22 +14,18 @@ export class DTDCShippingService {
         shippingDetails
       );
 
-      const response = await fetch(this.apiUrl, {
-        method: "POST",
-        headers: {
-          "api-key": this.apiKey,
-          "Content-Type": "application/json",
+      const result = await fetchWithRetry(
+        this.apiUrl,
+        {
+          method: "POST",
+          headers: {
+            "api-key": this.apiKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ consignments: [consignmentData] }),
         },
-        body: JSON.stringify({
-          consignments: [consignmentData],
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(`DTDC API Error: ${result.message || "Unknown error"}`);
-      }
+        { retries: 2, retryDelay: 300 }
+      );
 
       return {
         success: true,

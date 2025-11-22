@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // Custom SVG Icons
 const TikTokIcon = () => (
@@ -93,7 +93,7 @@ const CustomizationIcon = () => (
   </svg>
 );
 
-export default function Footer() {
+function Footer() {
   const [data, setData] = useState(null);
   const [openAccordions, setOpenAccordions] = useState({
     quickLinks: false,
@@ -129,8 +129,8 @@ export default function Footer() {
   useEffect(() => {
     getData();
   }, []);
-  
-  console.log("current path == > " , pathname)
+
+  console.log("current path == > ", pathname);
 
   if (
     pathname.includes("/signup") ||
@@ -565,3 +565,5 @@ export default function Footer() {
     </footer>
   );
 }
+
+export default React.memo(Footer);

@@ -1,6 +1,7 @@
 "use client";
 import DynamicHomepage from "@/components/homepage/DynamicHomepage";
 import DynamicHomepage2 from "@/components/homepage/DynamicHomepage2";
+import DynamicHomepageSkeleton from "@/components/homepage/DynamicHomepageSkeleton";
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSettings } from "./store/slices/settingSlice";
@@ -36,11 +37,8 @@ export default function HomePage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="h-[90vh] flex justify-center items-center">
-        <LoadingSpinner />
-      </div>
-    );
+    // Render a skeleton version of the homepage instead of the spinner
+    return <DynamicHomepageSkeleton />;
   }
 
   return (
