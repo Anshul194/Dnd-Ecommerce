@@ -19,7 +19,7 @@ export async function POST(req) {
     const couponRepo = new CouponRepository(Coupon);
     const couponService = new CouponService(couponRepo);
     const couponController = new CouponController(couponService);
-    const result = await couponController.apply({ body }, conn);
+    const result = await couponController.apply({ body }, conn, req);
     if (!result.success) {
       return NextResponse.json(result, { status: 400 });
     }

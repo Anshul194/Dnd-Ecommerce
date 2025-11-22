@@ -8,9 +8,13 @@ import axios from "axios";
 import { axiosWithRetry } from "../utils/httpClient";
 import https from "https"; // if using ES modules
 import { ShippingSchema } from "../models/Shipping.js";
+import WhatsappService from "../../lib/services/WhatsappService.js";
+import UserService from "@/app/lib/services/userService.js";
+
 import path from "path";
 import fs from "fs";
 import { current } from "@reduxjs/toolkit";
+import { ProductSchema } from "../models/Product.js";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -1013,6 +1017,7 @@ class OrderService {
 
   //getOrderForTracking
   async getAllOrdersForTracking(request, conn) {
+  async getAllOrdersForTracking(request, conn) {
     try {
       // Ensure User model is registered on this connection so populate('user') works
       const User = conn.models.User || conn.model("User", UserSchema);
@@ -1286,7 +1291,7 @@ class OrderService {
   }
 
   //trackShipment
-  async trackShipment(order, trackingNumber) {
+  async trackShipment(order, trackingNumber, conn) {
     const courier = order?.shipping_details?.platform;
     // //consolle.log("Tracking shipment for courier:", courier);
     if (!courier) {
@@ -1297,18 +1302,18 @@ class OrderService {
     }
     switch (courier.toUpperCase()) {
       case "DTDC":
-        return this.trackDtdcShipment(order);
+        return this.trackDtdcShipment(order, conn);
       case "DELHIVERY":
-        return this.trackDelhiveryShipment(order);
+        return this.trackDelhiveryShipment(order, conn);
       case "BLUEDART":
-        return this.trackBluedartShipment(order);
+        return this.trackBluedartShipment(order, conn);
       default:
         throw new Error("Unsupported courier for tracking");
     }
   }
 
   // DTDC tracking
-  async trackDtdcShipment(order) {
+  async trackDtdcShipment(order, conn) {
     // //consolle.log("Tracking DTDC shipment for order:", order);
     // You should store DTDC tracking username/password in env
     const username = process.env.DTDC_TRACK_USERNAME;

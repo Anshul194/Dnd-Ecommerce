@@ -291,7 +291,9 @@ export async function GET(req) {
     const type = url.searchParams.get("type");
     const productId = url.searchParams.get("productId");
     const userId = url.searchParams.get("userId");
-    const since = url.searchParams.get("since");
+    const since = url.searchParams.get("since"); // legacy alias for from
+    const from = url.searchParams.get("from") || since;
+    const to = url.searchParams.get("to");
     const limit = Math.min(1000, parseInt(url.searchParams.get("limit") || "200", 10));
     const sortParam = url.searchParams.get("sort") || "-timestamp";
     
@@ -302,7 +304,6 @@ export async function GET(req) {
       const prodFilter = {};
       try {
         if (mongoose.Types.ObjectId.isValid(productId)) {
-          // match either stored ObjectId or stored string
           prodFilter.$or = [
             { productId: new mongoose.Types.ObjectId(productId) },
             { productId: productId },
@@ -313,7 +314,6 @@ export async function GET(req) {
       } catch (e) {
         prodFilter.productId = productId;
       }
-      // merge prodFilter into main filter safely
       if (Object.keys(filter).length > 0) {
         filter.$and = filter.$and || [];
         filter.$and.push(prodFilter);
@@ -341,14 +341,40 @@ export async function GET(req) {
         Object.assign(filter, uFilter);
       }
     }
-    if (since) {
-      const d = new Date(since);
-      if (!isNaN(d.getTime())) filter.timestamp = { $gte: d };
+
+    // Date range filtering: from (>=) and to (<=)
+    if (from) {
+      const d = new Date(from);
+      if (!isNaN(d.getTime())) {
+        filter.timestamp = filter.timestamp || {};
+        filter.timestamp.$gte = d;
+      }
+    }
+    if (to) {
+      const d2 = new Date(to);
+      if (!isNaN(d2.getTime())) {
+        filter.timestamp = filter.timestamp || {};
+        filter.timestamp.$lte = d2;
+      }
     }
 
     const sort = sortParam.startsWith("-")
       ? { [sortParam.slice(1)]: -1 }
       : { [sortParam]: 1 };
+
+    // Compute totals per event type for the full matching set (ignore limit)
+    let eventTotals = {};
+    try {
+      const aggPipeline = [{ $match: filter }, { $group: { _id: "$type", count: { $sum: 1 } } }];
+      const aggRes = await eventsColl.aggregate(aggPipeline, { allowDiskUse: true }).toArray();
+      eventTotals = aggRes.reduce((acc, cur) => {
+        acc[cur._id || "UNKNOWN"] = cur.count;
+        return acc;
+      }, {});
+    } catch (e) {
+      console.error("Event totals agg error:", e);
+      eventTotals = {};
+    }
 
     const events = await eventsColl.find(filter).sort(sort).limit(limit).toArray();
 
@@ -486,7 +512,8 @@ export async function GET(req) {
       events: populatedEvents,
       user: userDoc,
       addresses,
-      addressesByUser
+      addressesByUser,
+      eventTotals // totals per event type for the whole matching set
     });
   } catch (err) {
     console.error('API Error:', err);

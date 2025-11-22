@@ -24,7 +24,7 @@ function Variant2() {
   React.useEffect(() => {
     if (productData?._id) {
       try {
-        trackEvent("product_view", {
+        trackEvent("PRODUCT_VIEW", {
           productId: productData._id,
           user: isAuthenticated ? userId : "guest",
         });
@@ -74,7 +74,7 @@ function Variant2() {
       }
       await dispatch(getCartItems());
       try {
-        trackEvent("add_to_cart", {
+        trackEvent("ADD_TO_CART", {
           productId: productData._id,
           variantId: selectedVariant,
           quantity,

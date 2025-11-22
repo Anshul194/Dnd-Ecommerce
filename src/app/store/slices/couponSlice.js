@@ -17,13 +17,34 @@ export const fetchCoupons = createAsyncThunk(
 
 export const applyCoupon = createAsyncThunk(
   "coupons/applyCoupon",
-  async ({ code, total }, { rejectWithValue }) => {
+  async ({ code, total, cartItems = [], paymentMethod = 'prepaid', customerId: passedCustomerId }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/coupon/apply", {
+      // Base payload
+      const payload = {
         code,
         cartValue: total,
-      });
-      console.log("Coupon applied:", response.data.data);
+        cartItems,        // pass cart items so server can evaluate product-level rules
+        paymentMethod     // pass payment method for payment-specific discounts/rules
+      };
+
+      // Determine customerId: prefer passedCustomerId, otherwise read from client-side localStorage if available
+      let customerId = passedCustomerId;
+      if (!customerId && typeof window !== "undefined" && window.localStorage) {
+        try {
+          const user = JSON.parse(window.localStorage.getItem("user") || "{}");
+          customerId = user?.id || user?._id || null;
+        } catch (e) {
+          customerId = null;
+        }
+      }
+
+      // Add customerId only if present
+      if (customerId) {
+        payload.customerId = customerId;
+      }
+
+      const response = await axiosInstance.post("/coupon/apply", payload);
+
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

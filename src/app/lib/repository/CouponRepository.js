@@ -52,7 +52,8 @@ class CouponRepository extends CrudRepository {
 
   async findByCode(code) {
     try {
-      return await this.model.findOne({ code, isActive: true });
+      // ensure we don't return soft-deleted coupons
+      return await this.model.findOne({ code, isActive: true, deletedAt: null });
     } catch (error) {
       console.error('CouponRepository findByCode Error:', error.message);
       throw error;
@@ -61,12 +62,10 @@ class CouponRepository extends CrudRepository {
 
   async softDelete(couponId) {
     try {
+      // single update object and options
       return await this.model.findByIdAndUpdate(
         couponId,
-        { deletedAt: new Date() },
-
-        { deleted: true },
-
+        { deletedAt: new Date(), deleted: true },
         { new: true }
       );
     } catch (error) {
@@ -75,13 +74,26 @@ class CouponRepository extends CrudRepository {
     }
   }
 
-  async incrementUsedCount(couponId) {
+  async incrementUsedCount(couponId, customerId = null) {
     try {
-      return await this.model.findByIdAndUpdate(
-        couponId,
-        { $inc: { usedCount: 1 } },
-        { new: true }
-      );
+      // Read-modify-write to update usedCount and per-customer usage
+      const coupon = await this.model.findById(couponId);
+      if (!coupon) throw new Error('Coupon not found');
+
+      coupon.usedCount = (coupon.usedCount || 0) + 1;
+
+      if (customerId) {
+        const idx = (coupon.usageByCustomer || []).findIndex(u => String(u.customerId) === String(customerId));
+        if (idx >= 0) {
+          coupon.usageByCustomer[idx].count = (coupon.usageByCustomer[idx].count || 0) + 1;
+        } else {
+          coupon.usageByCustomer = coupon.usageByCustomer || [];
+          coupon.usageByCustomer.push({ customerId, count: 1 });
+        }
+      }
+
+      await coupon.save();
+      return coupon;
     } catch (error) {
       console.error('CouponRepository incrementUsedCount Error:', error.message);
       throw error;

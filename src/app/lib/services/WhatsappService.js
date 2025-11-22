@@ -56,4 +56,60 @@ export default class NextelWhatsapp {
       return { success: false, error: err?.response?.data || err.message };
     }
   }
+ 
+  async sendWebhookRequest(data = {}) {
+    try {
+      // Expect a single object with keys: phone (required), name (required),
+      // email (optional), webhookUrl (optional) and any other fields.
+      const DEFAULT_WEBHOOK =
+        "https://app.handlingmedia.io/WEBHOOK_V1/Audience/set/ef2ee09ea9551de88bc11fd7eeea93b0";
+
+      if (!data || typeof data !== "object") {
+        return { success: false, error: "data object is required" };
+      }
+
+      const { phone, name, email, webhookUrl, extraFields } = data;
+
+      if (!phone) {
+        return { success: false, error: "phone is required in form data" };
+      }
+
+      if (!name) {
+        return { success: false, error: "name is required in form data" };
+      }
+
+      // build application/x-www-form-urlencoded body using URLSearchParams
+      const form = new FormData();
+
+      // append core fields
+      form.append("phone", phone);
+      form.append("name", name);
+      if (email) form.append("email", email);
+      // append extra fields if any
+      if (extraFields && typeof extraFields === "object") {
+        for (const [key, value] of Object.entries(extraFields)) {
+          form.append(key, value);
+        }
+      }
+
+      // log for debugging
+      // FormData doesn't stringify — iterate its entries to see actual fields
+      const entries = [];
+      for (const [key, value] of form.entries()) {
+        entries.push(`${key}=${value}`);
+      }
+      console.log("check form data:", entries.join("&"));
+
+      // send URLSearchParams directly so axios sets proper content-length
+      const res = await axios.post(webhookUrl || DEFAULT_WEBHOOK, form, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+        },
+      });
+
+      return { success: true, data: res.data };
+    } catch (err) {
+      return { success: false, error: err?.response?.data || err.message };
+    }
+  }
 }
