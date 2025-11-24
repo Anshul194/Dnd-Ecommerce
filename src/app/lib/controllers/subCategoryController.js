@@ -1,4 +1,3 @@
-
 import { saveFile, validateImageFile } from '../../config/fileUpload.js';
 import { successResponse, errorResponse } from '../../utils/response.js';
 import { subCategoryCreateValidator, subCategoryUpdateValidator } from '../../validators/subCategoryValidator.js';
@@ -121,7 +120,8 @@ export async function getSubCategoryById(id, conn) {
 export async function updateSubCategory(id, data, conn) {
   try {
     let imageUrl = '';
-    const { image, ...fields } = data;
+    let thumbnailUrl = '';
+    const { image, thumbnail, ...fields } = data;
     const SubCategoryService = (await import('../../lib/services/SubCategoryService.js')).default;
     const subCategoryService = new SubCategoryService(conn);
 
@@ -130,12 +130,21 @@ export async function updateSubCategory(id, data, conn) {
       imageUrl = await saveFile(image, 'subcategory-images');
     }
 
+    if (thumbnail && thumbnail instanceof File) {
+      validateImageFile(thumbnail);
+      thumbnailUrl = await saveFile(thumbnail, 'subcategory-thumbnails');
+    }
+
     const cleanedFields = Object.entries(fields).reduce((acc, [key, value]) => {
       if (value !== '') acc[key] = value;
       return acc;
     }, {});
 
-    const payload = imageUrl ? { ...cleanedFields, image: imageUrl } : cleanedFields;
+    const payload = {
+      ...cleanedFields,
+      ...(imageUrl ? { image: imageUrl } : (image ? { image } : {})),
+      ...(thumbnailUrl ? { thumbnail: thumbnailUrl } : (thumbnail ? { thumbnail } : {})),
+    };
 
     const { error, value } = subCategoryUpdateValidator.validate(payload);
     if (error) {

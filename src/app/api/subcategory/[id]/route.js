@@ -32,7 +32,7 @@ export async function GET(req, context) {
 }
 
 // PATCH /api/subcategory/:id
-export async function PUT(req, context) {
+export async function PATCH(req, context) {
   const { params } = context;
   const id = params?.id;
   const formData = await req.formData();
