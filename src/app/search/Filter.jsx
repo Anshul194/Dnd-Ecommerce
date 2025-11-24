@@ -16,6 +16,7 @@ const Filter = ({ onFilterChange = () => {} }) => {
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const [selectedOther, setSelectedOther] = useState("");
+  const [openCategories, setOpenCategories] = useState({}); // Track which categories are open
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -30,6 +31,15 @@ const Filter = ({ onFilterChange = () => {} }) => {
   const [categories, setCategories] = useState([]);
 
   const dispatch = useDispatch();
+
+  // Toggle category open/close
+  const toggleCategory = (categoryId) => {
+    setOpenCategories((prev) => ({
+      ...prev,
+      [categoryId]: !prev[categoryId],
+    }));
+  };
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     if (e.target.value.trim() === "") {
@@ -164,6 +174,11 @@ const Filter = ({ onFilterChange = () => {} }) => {
   useEffect(() => {
     if (paramCategories) {
       setSelectedCategory(paramCategories);
+      // Auto-open the selected category
+      setOpenCategories((prev) => ({
+        ...prev,
+        [paramCategories]: true,
+      }));
     }
     if (paramSubcategories) {
       setSelectedSubcategory(paramSubcategories);
@@ -230,48 +245,77 @@ const Filter = ({ onFilterChange = () => {} }) => {
             if (category.status !== "Active") {
               return null;
             }
+            const isOpen = openCategories[category._id];
+            const hasSubcategories = category.subcategories && category.subcategories.length > 0;
+
             return (
               <div key={category._id}>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="category"
-                    value={category._id}
-                    checked={selectedCategory === category._id}
-                    onChange={() => handleCategoryChange(category._id)}
-                    className="w-4 h-4 text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-sm text-gray-700">{category.name}</span>
-                </label>
-
-                {category.subcategories &&
-                  category.subcategories.length > 0 && (
-                    <div className="pl-6 mt-2">
-                      {category.subcategories.map((sub) => {
-                        if (sub.status !== "Active") {
-                          return null;
-                        }
-                        return (
-                          <label
-                            key={sub._id}
-                            className="flex items-center mb-1 space-x-2 cursor-pointer"
-                          >
-                            <input
-                              type="radio"
-                              name="subcategory"
-                              value={sub._id}
-                              checked={selectedSubcategory === sub._id}
-                              onChange={() => handleSubcategoryChange(sub._id)}
-                              className="w-4 h-4 text-green-600 focus:ring-green-500"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {sub.name}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center space-x-2 cursor-pointer flex-1">
+                    <input
+                      type="radio"
+                      name="category"
+                      value={category._id}
+                      checked={selectedCategory === category._id}
+                      onChange={() => handleCategoryChange(category._id)}
+                      className="w-4 h-4 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="text-sm text-gray-700">{category.name}</span>
+                  </label>
+                  
+                  {/* Toggle button for subcategories */}
+                  {hasSubcategories && (
+                    <button
+                      onClick={() => toggleCategory(category._id)}
+                      className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors"
+                    >
+                      <svg
+                        className={`w-4 h-4 text-gray-600 transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
                   )}
+                </div>
+
+                {/* Subcategories - only shown when category is open */}
+                {hasSubcategories && isOpen && (
+                  <div className="pl-6 mt-2 space-y-1">
+                    {category.subcategories.map((sub) => {
+                      if (sub.status !== "Active") {
+                        return null;
+                      }
+                      return (
+                        <label
+                          key={sub._id}
+                          className="flex items-center space-x-2 cursor-pointer"
+                        >
+                          <input
+                            type="radio"
+                            name="subcategory"
+                            value={sub._id}
+                            checked={selectedSubcategory === sub._id}
+                            onChange={() => handleSubcategoryChange(sub._id)}
+                            className="w-4 h-4 text-green-600 focus:ring-green-500"
+                          />
+                          <span className="text-sm text-gray-700">
+                            {sub.name}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -314,28 +358,6 @@ const Filter = ({ onFilterChange = () => {} }) => {
           </button>
         </div>
       </div>
-
-      {/* Other Options */}
-      {/* <div className="mb-4">
-        <h3 className="text-sm font-medium text-gray-800 mb-3">Other</h3>
-        <div className="space-y-2">
-          {["Ready Stock", "Pre Order", "Normal", "Combos"].map((option) => (
-            <button
-              key={option}
-              onClick={() =>
-                handleOtherChange(selectedOther === option ? "" : option)
-              }
-              className={`flex items-center space-x-2 cursor-pointer w-full text-left px-2 py-1 rounded text-sm ${
-                selectedOther === option
-                  ? "bg-green-600 text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      </div> */}
     </div>
   );
 };
