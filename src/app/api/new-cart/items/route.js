@@ -102,6 +102,15 @@ export const POST = async function (request) {
     }
     cart.total = cart.items.reduce((s, it) => s + it.price * it.quantity, 0);
     await cart.save();
+    // populate product and variant details before returning
+    try {
+      await cart.populate([
+        { path: "items.product" },
+        { path: "items.variant" },
+      ]);
+    } catch (e) {
+      // ignore populate errors, return cart as-is
+    }
     return NextResponse.json({ success: true, message: "Item added", cart });
   } catch (err) {
     return NextResponse.json(
@@ -156,6 +165,15 @@ export const PUT = async function (request) {
     item.quantity = quantity;
     cart.total = cart.items.reduce((s, it) => s + it.price * it.quantity, 0);
     await cart.save();
+    // populate product and variant details before returning
+    try {
+      await cart.populate([
+        { path: "items.product" },
+        { path: "items.variant" },
+      ]);
+    } catch (e) {
+      // ignore populate errors
+    }
     return NextResponse.json({ success: true, message: "Item updated", cart });
   } catch (err) {
     return NextResponse.json(
@@ -201,6 +219,15 @@ export const DELETE = async function (request) {
     );
     cart.total = cart.items.reduce((s, it) => s + it.price * it.quantity, 0);
     await cart.save();
+    // populate product and variant details before returning
+    try {
+      await cart.populate([
+        { path: "items.product" },
+        { path: "items.variant" },
+      ]);
+    } catch (e) {
+      // ignore populate errors
+    }
     return NextResponse.json({ success: true, message: "Item removed", cart });
   } catch (err) {
     return NextResponse.json(

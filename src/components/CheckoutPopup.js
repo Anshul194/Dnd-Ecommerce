@@ -33,7 +33,10 @@ import {
 } from "@/app/store/slices/authSlice";
 import Loading from "@/components/Loading";
 import Image from "next/image";
-import { applyCoupon, clearSelectedCoupon } from "@/app/store/slices/couponSlice";
+import {
+  applyCoupon,
+  clearSelectedCoupon,
+} from "@/app/store/slices/couponSlice";
 import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter } from "next/navigation";
 import { fetchProducts } from "@/app/store/slices/productSlice";
@@ -284,7 +287,8 @@ export default function CheckoutPopup() {
         items: buyNowProduct
           ? [
               {
-                product: buyNowProduct.product?._id || buyNowProduct.product?.id,
+                product:
+                  buyNowProduct.product?._id || buyNowProduct.product?.id,
                 quantity: buyNowProduct.quantity,
                 price: buyNowProduct.price,
                 variant: buyNowProduct.variant,
@@ -363,7 +367,9 @@ export default function CheckoutPopup() {
                 items: buyNowProduct
                   ? [
                       {
-                        product: buyNowProduct.product?._id || buyNowProduct.product?.id,
+                        product:
+                          buyNowProduct.product?._id ||
+                          buyNowProduct.product?.id,
                         quantity: buyNowProduct.quantity,
                         price: buyNowProduct.price,
                         variant: buyNowProduct.variant,
@@ -439,7 +445,8 @@ export default function CheckoutPopup() {
             items: buyNowProduct
               ? [
                   {
-                    product: buyNowProduct.product?._id || buyNowProduct.product?.id,
+                    product:
+                      buyNowProduct.product?._id || buyNowProduct.product?.id,
                     quantity: buyNowProduct.quantity,
                     price: buyNowProduct.price,
                     variant: buyNowProduct.variant,
@@ -789,7 +796,12 @@ export default function CheckoutPopup() {
           type: "CHECKOUT_ABANDONED",
           productIds,
           user: isAuthenticated
-            ? { _id: user?._id, email: user?.email, phone: user?.phone , name: user?.name }
+            ? {
+                _id: user?._id,
+                email: user?.email,
+                phone: user?.phone,
+                name: user?.name,
+              }
             : null,
           timestamp: new Date().toISOString(),
         };
@@ -913,7 +925,8 @@ export default function CheckoutPopup() {
                       ? [
                           {
                             productId:
-                              buyNowProduct.product?._id || buyNowProduct.product?.id,
+                              buyNowProduct.product?._id ||
+                              buyNowProduct.product?.id,
                             price: Number(buyNowProduct.price || 0),
                             quantity: Number(buyNowProduct.quantity || 1),
                           },
@@ -1123,10 +1136,18 @@ export default function CheckoutPopup() {
                         key={index}
                         className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3"
                       >
+                        {console.log("cart items in checkout ==> ", cartItems)}
                         <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
                           <Image
-                            src={item?.product?.image.url}
-                            alt={item?.product?.image.alt || "Product"}
+                            src={
+                              item?.product?.image?.url ||
+                              item?.product?.image?.[0]?.url
+                            }
+                            alt={
+                              item?.product?.image?.alt ||
+                              item?.product?.image?.[0]?.alt ||
+                              "Product"
+                            }
                             width={56}
                             height={64}
                             className="object-cover h-full w-full"
