@@ -1,5 +1,3 @@
-
-
 import slugify from 'slugify';
 import CrudRepository from "./CrudRepository.js";
 import { categorySchema } from '../models/Category.js';
@@ -88,6 +86,43 @@ class CategoryRepository extends CrudRepository {
       );
     } catch (err) {
       //consolle.error('Repo softDelete error:', err);
+      throw err;
+    }
+  }
+
+  async getAll(filter = {}, sort = {}, page = 1, limit = 10) {
+    try {
+      Object.keys(filter).forEach(key => {
+        if (filter[key] === undefined) delete filter[key];
+      });
+
+      // Case-insensitive status filter
+      if (filter.status) {
+        filter.status = { $regex: `^${filter.status}$`, $options: 'i' };
+      }
+
+      const skip = (page - 1) * limit;
+      const query = this.Category.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit);
+
+      const result = await query.exec();
+      const totalDocuments = await this.Category.countDocuments(filter);
+
+      // Correct totalPages calculation
+      let totalPages = 0;
+      if (limit > 0 && totalDocuments > 0) {
+        totalPages = Math.ceil(totalDocuments / limit);
+      }
+
+      return {
+        result,
+        currentPage: page,
+        totalPages,
+        totalDocuments
+      };
+    } catch (err) {
       throw err;
     }
   }
