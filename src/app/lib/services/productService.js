@@ -37,6 +37,8 @@ class ProductService {
       minPrice,
       maxPrice,
       name,
+      sortBy,
+      sortOrder,
     } = query;
 
     const pageNum = parseInt(page);
@@ -152,9 +154,17 @@ class ProductService {
       filterConditions.$or = searchConditions;
     }
 
+    // Sorting logic: handle sortBy/sortOrder and merge with parsedSort
     const sortConditions = {};
+    // If sort param is provided, parse it first
     for (const [field, direction] of Object.entries(parsedSort)) {
       sortConditions[field] = direction === "asc" ? 1 : -1;
+    }
+    // If sortBy is provided, override/add it
+    if (sortBy) {
+      // Remove leading/trailing quotes from sortBy
+      const cleanSortBy = typeof sortBy === "string" ? sortBy.replace(/^"+|"+$/g, "") : sortBy;
+      sortConditions[cleanSortBy] = (sortOrder === "asc" ? 1 : -1);
     }
 
     return await this.productRepository.getAll(

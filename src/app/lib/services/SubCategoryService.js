@@ -52,8 +52,10 @@ class SubCategoryService {
         sortConditions[field] = direction === "asc" ? 1 : -1;
       }
 
-      const subCategories = await this.subCategoryRepo.getAll(filterConditions, sortConditions, pageNum, limitNum);
-      return successResponse(subCategories, 'Subcategories fetched', StatusCodes.OK);
+      // Use the new getAll method
+      const subCategoriesData = await this.subCategoryRepo.getAll(filterConditions, sortConditions, pageNum, limitNum);
+
+      return successResponse(subCategoriesData, 'Subcategories fetched', StatusCodes.OK);
     } catch (error) {
       //consolle.error("Error fetching all subcategories:", error.message);
       return errorResponse("Cannot fetch subcategory data", StatusCodes.INTERNAL_SERVER_ERROR, error.message);

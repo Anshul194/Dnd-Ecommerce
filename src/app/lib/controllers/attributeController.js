@@ -19,6 +19,20 @@ export async function createAttribute(req, conn) {
     }
 
     const attributeService = new AttributeService(conn);
+
+    // Check for duplicate name
+    const existing = await attributeService.searchAttributesByName(req.body.name);
+    if (existing && existing.length > 0) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: "Attribute with this name already exists",
+          data: null,
+        },
+      };
+    }
+
     const attribute = await attributeService.createAttribute(req.body);
 
     return {
@@ -35,7 +49,7 @@ export async function createAttribute(req, conn) {
       status: 500,
       body: {
         success: false,
-        message: "Server error",
+        message: err?.message?.includes('duplicate') ? "Attribute with this name already exists" : "Server error",
         data: null,
       },
     };

@@ -1,4 +1,3 @@
-
 import { getSubdomain } from '@/app/lib/tenantDb';
 import { getDbConnection } from '../../lib/tenantDb';
 import { createSubCategory, getSubCategories } from '../../lib/controllers/subCategoryController';

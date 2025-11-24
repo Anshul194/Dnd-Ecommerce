@@ -98,10 +98,18 @@ class ProductRepository extends CrudRepository {
       //consolle.log("filter is ====> " , filter)
 
       // Find products with pagination and sorting
+      // Fix: Clean up sortConditions keys if they have quotes
+      const cleanedSortConditions = {};
+      for (const [field, direction] of Object.entries(sortConditions)) {
+        // Remove leading/trailing quotes from field name
+        const cleanField = typeof field === "string" ? field.replace(/^"+|"+$/g, "") : field;
+        cleanedSortConditions[cleanField] = direction;
+      }
+
       const products = await this.model
         .find(filter)
         .populate(populateOptions)
-        .sort(sortConditions)
+        .sort(cleanedSortConditions)
         .skip(skip)
         .limit(limitNum)
         .select(selectFields);

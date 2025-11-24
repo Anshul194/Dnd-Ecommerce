@@ -1,4 +1,3 @@
-
 import slugify from 'slugify';
 import CrudRepository from "./CrudRepository.js";
 import { default as subCategorySchema } from '../models/SubCategory.js';
@@ -93,6 +92,38 @@ class SubCategoryRepository extends CrudRepository {
       return await this.SubCategory.find({ parentCategory: parentCategoryId, deletedAt: null });
     } catch (err) {
       //consolle.error('SubCategory Repo findByParentCategory error:', err);
+      throw err;
+    }
+  }
+
+  async getAll(filter = {}, sort = {}, page = 1, limit = 10) {
+    try {
+      // Remove undefined/null filters
+      Object.keys(filter).forEach(key => {
+        if (filter[key] === undefined) delete filter[key];
+      });
+
+      // If status filter is present, ensure case-insensitive match
+      if (filter.status) {
+        filter.status = { $regex: `^${filter.status}$`, $options: 'i' };
+      }
+
+      const skip = (page - 1) * limit;
+      const query = this.SubCategory.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit);
+
+      const result = await query.exec();
+      const totalDocuments = await this.SubCategory.countDocuments(filter);
+
+      return {
+        result,
+        currentPage: page,
+        totalPages: Math.ceil(totalDocuments / limit),
+        totalDocuments
+      };
+    } catch (err) {
       throw err;
     }
   }
