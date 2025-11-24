@@ -1,8 +1,8 @@
-import UserRepository from '../repository/userRepository.js';
-import TenantRepository from '../repository/tenantRepository.js';
-import mongoose from 'mongoose';
-import RoleRepository from '../repository/roleRepository.js';
-import { file } from 'googleapis/build/src/apis/file/index.js';
+import UserRepository from "../repository/userRepository.js";
+import TenantRepository from "../repository/tenantRepository.js";
+import mongoose from "mongoose";
+import RoleRepository from "../repository/roleRepository.js";
+import { file } from "googleapis/build/src/apis/file/index.js";
 
 class UserService {
   constructor(conn) {
@@ -12,17 +12,15 @@ class UserService {
   }
 
   // Create
-   async createUser(data) {
+  async createUser(data) {
     try {
       // For phone-based registration, only require name and phone, make email optional
-     
-      
 
       // Check if user already exists by email (if email provided)
       if (data.email) {
         const existingUser = await this.userRepo.findByEmail(data.email);
         if (existingUser) {
-          throw new Error('User with this email already exists');
+          throw new Error("User with this email already exists");
         }
       }
 
@@ -30,47 +28,49 @@ class UserService {
       if (data.phone) {
         const existingPhoneUser = await this.userRepo.findByPhone(data.phone);
         if (existingPhoneUser) {
-          throw new Error('User with this phone number already exists');
+          throw new Error("User with this phone number already exists");
         }
       }
 
       // Validate role id and tenant id if provided
       if (data.role && !mongoose.Types.ObjectId.isValid(data.role)) {
-        throw new Error('Invalid role ID');
+        throw new Error("Invalid role ID");
       }
       if (data.tenant && !mongoose.Types.ObjectId.isValid(data.tenant)) {
-        throw new Error('Invalid tenant ID');
-      }   
+        throw new Error("Invalid tenant ID");
+      }
       // If tenant is provided, verify it exists
       let tenant = null;
       if (data.tenant) {
         tenant = await this.tenantRepo.findByTenantId(data.tenant);
         if (!tenant) {
-          throw new Error('Tenant not found');
+          throw new Error("Tenant not found");
         }
-      }   
+      }
       // If role is provided, verify role exists and matches tenant if applicable
       if (data.role) {
-        const role = await this.roleRepo.findById({ _id: data.role });   
+        const role = await this.roleRepo.findById({ _id: data.role });
         if (!role) {
-          throw new Error('Role not found');
-        }   
+          throw new Error("Role not found");
+        }
         // If the role is tenant-scoped, ensure it belongs to the correct tenant
-        if (role.scope === 'tenant') {
+        if (role.scope === "tenant") {
           if (!role.tenantId || role.tenantId.toString() !== data.tenant) {
-            throw new Error('Tenant-scoped role does not belong to the specified tenant');
+            throw new Error(
+              "Tenant-scoped role does not belong to the specified tenant"
+            );
           }
-        }   
+        }
         // If role is global, tenant may be optional
-      }   
-      //console.log('Creating user with data:', data);   
+      }
+      //console.log('Creating user with data:', data);
       // Create user in DB
       return await this.userRepo.createUser(data);
     } catch (error) {
       //console.error('UserService createUser error:', error?.message);
       throw error;
     }
-  }     
+  }
 
   // Read all
   async getAllUsers(query = {}) {
@@ -92,10 +92,31 @@ class UserService {
       const parsedFilters =
         typeof filters === "string" ? JSON.parse(filters) : filters;
       const parsedSearchFields =
-        typeof searchFields === "string" ? JSON.parse(searchFields) : searchFields;
+        typeof searchFields === "string"
+          ? JSON.parse(searchFields)
+          : searchFields;
       const parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort;
 
       const filterConditions = { ...parsedFilters };
+      // Check for OR flag: when true, simple fields (name,email,phone) will be combined with $or
+      const orFlag =
+        query &&
+        (query.or === true || String(query.or).toLowerCase() === "true");
+      const orConditions = [];
+
+      // Debug: log incoming query and the initial filterConditions
+      try {
+        console.debug(
+          "[UserService.getAllUsers] incoming query:",
+          JSON.stringify(query)
+        );
+        console.debug(
+          "[UserService.getAllUsers] initial filterConditions:",
+          JSON.stringify(filterConditions)
+        );
+      } catch (e) {
+        // ignore logging errors
+      }
 
       // Only add deleted filter if not explicitly requesting all users
       if (!includeDeleted) {
@@ -118,12 +139,35 @@ class UserService {
         if (controlKeys.has(k)) continue;
         if (v === undefined || v === null || v === "") continue;
         if (["name", "email", "phone"].includes(k)) {
-          filterConditions[k] = { $regex: v, $options: "i" };
+          const cond = { [k]: { $regex: v, $options: "i" } };
+          if (orFlag) {
+            orConditions.push(cond);
+          } else {
+            filterConditions[k] = cond[k];
+          }
         } else {
           filterConditions[k] = v;
         }
       }
 
+      // If orFlag is set and we collected orConditions, add them to filterConditions.$or
+      if (orFlag && orConditions.length > 0) {
+        if (filterConditions.$or) {
+          filterConditions.$or = filterConditions.$or.concat(orConditions);
+        } else {
+          filterConditions.$or = orConditions;
+        }
+      }
+
+      // Debug: log filterConditions after processing simple query params
+      try {
+        console.debug(
+          "[UserService.getAllUsers] filterConditions after simple params:",
+          JSON.stringify(filterConditions)
+        );
+      } catch (e) {
+        // ignore
+      }
       // Build searchFields $or conditions
       const searchConditions = [];
       if (parsedSearchFields && typeof parsedSearchFields === "object") {
@@ -140,6 +184,20 @@ class UserService {
         } else {
           filterConditions.$or = searchConditions;
         }
+      }
+
+      // Debug: log parsedSearchFields and the final filterConditions before query
+      try {
+        console.debug(
+          "[UserService.getAllUsers] parsedSearchFields:",
+          JSON.stringify(parsedSearchFields)
+        );
+        console.debug(
+          "[UserService.getAllUsers] final filterConditions:",
+          JSON.stringify(filterConditions)
+        );
+      } catch (e) {
+        // ignore
       }
 
       // Build sort conditions
@@ -160,6 +218,17 @@ class UserService {
         selectFields
       );
 
+      try {
+        console.debug(
+          "[UserService.getAllUsers] foundCount:",
+          result.totalDocuments,
+          "returned:",
+          result.result.length
+        );
+      } catch (e) {
+        // ignore
+      }
+
       // Transform the response to match expected format
       return {
         users: result.result,
@@ -174,15 +243,13 @@ class UserService {
   }
 
   // Read one
-async getUserById(id) {
-  return await this.userRepo.findById(id);
-}
+  async getUserById(id) {
+    return await this.userRepo.findById(id);
+  }
 
-async findById(id) {
-  return await this.userRepo.findById(id);
-}
-
-
+  async findById(id) {
+    return await this.userRepo.findById(id);
+  }
 
   // Find by email
   async findByEmail(email) {
@@ -223,7 +290,7 @@ async findById(id) {
   // async updateUser(id, data) {
   //   try {
   //     //console.log('Services Updating user with id:', id, 'and data:', data);
-      
+
   //     return await this.userRepo.updateUser(id, data);
   //   } catch (error) {
   //     //console.error('UserService updateUser error:', error?.message);
@@ -231,48 +298,48 @@ async findById(id) {
   //   }
   // }
   async updateUser(id, data) {
-  try {
-    //console.log('Services Updating user with id:', id, 'and data:', data);
+    try {
+      //console.log('Services Updating user with id:', id, 'and data:', data);
 
-    const tenantId = data?.tenant || data?.tenantId;
-    //console.log('Calling findById with ID:', id, 'and tenantId:', tenantId);
+      const tenantId = data?.tenant || data?.tenantId;
+      //console.log('Calling findById with ID:', id, 'and tenantId:', tenantId);
 
-    const user = await this.userRepo.findById(id, tenantId);
-    if (!user) {
-      return {
-        status: 404,
-        body: { success: false, message: 'User not found' },
-      };
+      const user = await this.userRepo.findById(id, tenantId);
+      if (!user) {
+        return {
+          status: 404,
+          body: { success: false, message: "User not found" },
+        };
+      }
+
+      return await this.userRepo.updateUser(id, data);
+    } catch (error) {
+      //console.error('UserService updateUser error:', error?.message);
+      throw error; // Rethrow the original error
     }
-
-    return await this.userRepo.updateUser(id, data);
-  } catch (error) {
-    //console.error('UserService updateUser error:', error?.message);
-    throw error; // Rethrow the original error
   }
-}
-
 
   // Delete (soft)
- async deleteUser(id) {
-  try {
-    //console.log('Deleting user with id:', id);
-    const deletedUser = await this.userRepo.softDelete(id);
-    return {
-      status: 200,
-      body: { success: true, message: 'User deleted successfully', data: deletedUser }
-    };
-  } catch (error) {
-    //console.error('UserService deleteUser error:', error?.message);
-    return {
-      status: 500,
-      body: { success: false, message: 'Failed to delete user' }
-    };
+  async deleteUser(id) {
+    try {
+      //console.log('Deleting user with id:', id);
+      const deletedUser = await this.userRepo.softDelete(id);
+      return {
+        status: 200,
+        body: {
+          success: true,
+          message: "User deleted successfully",
+          data: deletedUser,
+        },
+      };
+    } catch (error) {
+      //console.error('UserService deleteUser error:', error?.message);
+      return {
+        status: 500,
+        body: { success: false, message: "Failed to delete user" },
+      };
+    }
   }
-}
-
-
-
 
   // Additional methods can be added as needed
   async findRoleById(roleId) {
