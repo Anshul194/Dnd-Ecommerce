@@ -56,7 +56,7 @@ export default class NextelWhatsapp {
       return { success: false, error: err?.response?.data || err.message };
     }
   }
-
+ 
   async sendWebhookRequest(data = {}) {
     try {
       // Expect a single object with keys: phone (required), name (required),
