@@ -15,10 +15,17 @@ export async function GET(request) {
       );
     }
 
-    // Fetch categories and subcategories in parallel
+    // Read pagination params from the request query (frontend may send page/limit)
+    const url = new URL(request.url);
+    const page = url.searchParams.get("page") || "1";
+    const limit = url.searchParams.get("limit") || "1000";
+
+    const query = { page, limit };
+
+    // Fetch categories and subcategories in parallel, forwarding pagination params
     const [catResult, subResult] = await Promise.all([
-      getCategories({}, conn),
-      getSubCategories({}, conn),
+      getCategories(query, conn),
+      getSubCategories(query, conn),
     ]);
 
     // Helper to safely extract an array of items from controller/service responses

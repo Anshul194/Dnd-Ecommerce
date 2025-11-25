@@ -138,7 +138,13 @@ const DynamicHomepage = () => {
         return (
           <div key={_id} className="max-w-7xl mx-auto px-4">
             <TestimonialSlider content={content} />
-            <TeaPartyBanner />
+          </div>
+        );
+
+      case "secondaryBanner":
+        return (
+          <div key={_id} className="max-w-7xl mx-auto px-4">
+            <TeaPartyBanner content={content} />
           </div>
         );
 

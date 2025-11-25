@@ -12,6 +12,7 @@ const homepageSectionSchema = new mongoose.Schema(
         "productSlider",
         "whyUs",
         "uniqueSellingPoints",
+        "secondaryBanner",
         "promoBanner",
         "testimonial",
         "blogs",
