@@ -39,8 +39,12 @@ const CartSidebar = () => {
   };
 
   const removeItem = async (cartId) => {
+    const item = cartItems.find((item) => item.id === cartId);
     await dispatch(removeItemFromCart(cartId));
     dispatch(getCartItems());
+    if (item?.product?._id) {
+      trackEvent("REMOVE_FROM_CART", { productId: item.product._id });
+    }
   };
 
   const updateQuantity = async (itemId, change) => {

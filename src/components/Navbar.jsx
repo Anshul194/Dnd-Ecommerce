@@ -409,13 +409,7 @@ export default function Navbar() {
                                             height={40}
                                             className="w-full h-full object-cover"
                                           />
-                                        ) : (
-                                          <div className="w-full h-full bg-gradient-to-br from-[#3C950D]/20 to-[#2d7009]/20 flex items-center justify-center">
-                                            <span className="text-[#3C950D] font-bold">
-                                              {category.name.charAt(0)}
-                                            </span>
-                                          </div>
-                                        )}
+                                        ) : null}
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <h4
@@ -504,15 +498,7 @@ export default function Navbar() {
                                                           height={48}
                                                           className="w-full h-full object-cover"
                                                         />
-                                                      ) : (
-                                                        <div className="w-full h-full bg-gradient-to-br from-[#3C950D]/10 to-[#2d7009]/10 flex items-center justify-center">
-                                                          <span className="text-[#3C950D] font-semibold">
-                                                            {subcategory.name.charAt(
-                                                              0
-                                                            )}
-                                                          </span>
-                                                        </div>
-                                                      )}
+                                                      ) : null}
                                                     </div>
                                                     <span className="text-sm font-medium text-gray-700 group-hover/sub:text-[#3C950D] transition-colors">
                                                       {subcategory.name}
@@ -858,19 +844,24 @@ export default function Navbar() {
                         key={product._id}
                       >
                         <div className="border-2 cursor-pointer p-2 rounded-md flex gap-2 border-gray-200">
-                          <Image
-                            src={
-                              product?.thumbnail?.url ||
-                              product?.images?.[0]?.url
-                            }
-                            alt={
-                              product?.thumbnail?.alt ||
-                              product?.images?.[0]?.alt
-                            }
-                            width={100}
-                            height={60}
-                            className="w-24 h-16 max-sm:w-20 max-sm:h-14 object-cover rounded-md"
-                          />
+                          {/* Only render Image if src is a non-empty string */}
+                          {typeof (product?.thumbnail?.url || product?.images?.[0]?.url) === "string" &&
+                            (product?.thumbnail?.url || product?.images?.[0]?.url) !== "" && (
+                            <Image
+                              src={
+                                product?.thumbnail?.url ||
+                                product?.images?.[0]?.url
+                              }
+                              alt={
+                                product?.thumbnail?.alt ||
+                                product?.images?.[0]?.alt ||
+                                "Product Image"
+                              }
+                              width={100}
+                              height={60}
+                              className="w-24 h-16 max-sm:w-20 max-sm:h-14 object-cover rounded-md"
+                            />
+                          )}
 
                           <div>
                             <h3 className="text-gray-800 w-20 text-xs font-medium">
