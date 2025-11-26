@@ -48,10 +48,11 @@ function mapServerCartToLocal(serverCart) {
       it.variant && (it.variant._id || it.variant)
         ? it.variant._id || it.variant
         : null;
+    console.log("product details : ", it.product);
     const id = `${productId}:${variantId || ""}`;
     return {
       id,
-      product: productId,
+      product: it.product,
       variant: variantId,
       quantity: it.quantity,
       price: it.price,
@@ -149,7 +150,7 @@ export const addToCart = createAsyncThunk(
             : variant;
         const newItem = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          product: payloadProduct,
+          product: product,
           variant: payloadVariant,
           quantity,
           price,

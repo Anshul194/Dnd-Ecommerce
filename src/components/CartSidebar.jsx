@@ -140,6 +140,7 @@ const CartSidebar = () => {
                   key={index}
                   className="flex items-center gap-4 pb-6 border-b border-gray-200"
                 >
+                  {console.log("cart items ====> ", item)}
                   <div
                     className="w-16 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden cursor-pointer"
                     onClick={(e) => handelRedirect(e, item)}
@@ -170,6 +171,7 @@ const CartSidebar = () => {
                           className="text-sm font-medium text-gray-900 leading-tight cursor-pointer"
                           onClick={(e) => handelRedirect(e, item)}
                         >
+                          {console.log("cart items ===> ", item)}
                           {item?.product?.name}
                         </h3>
                         {/* <p className="text-xs text-gray-500 mt-1">

@@ -127,10 +127,10 @@ export default function BlogDetailPage() {
                 <User size={16} />
                 <span> {data?.author || "Unknown"}</span>
               </div>
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <Eye size={16} />
                 <span>3.2k views</span>
-              </div>
+              </div> */}
             </div>
 
             <h1 className="bebas text-6xl md:text-7xl font-bold leading-tight mb-4 text-gray-900">
@@ -147,7 +147,7 @@ export default function BlogDetailPage() {
       {/* Article Content */}
       <article className="max-w-4xl mx-auto px-6 py-16">
         {/* Article Stats */}
-        <div className="flex items-center justify-between border-b border-gray-200 pb-6 mb-12">
+        {/* <div className="flex items-center justify-between border-b border-gray-200 pb-6 mb-12">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 text-gray-500">
               <Heart size={18} />
@@ -159,7 +159,7 @@ export default function BlogDetailPage() {
             </div>
           </div>
           <div className="text-sm text-gray-500">6 min read</div>
-        </div>
+        </div> */}
 
         {/* Article Body */}
         <div

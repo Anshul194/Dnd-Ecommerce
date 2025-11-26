@@ -153,7 +153,7 @@ function Variant4() {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {productData.name}
+              {productData.name} 
             </h1>
             <p className="text-md text-gray-600">{productData.subtitle}</p>
           </div>

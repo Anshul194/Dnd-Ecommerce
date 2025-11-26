@@ -40,7 +40,7 @@ import { fetchProducts } from "@/app/store/slices/productSlice";
 import { fetchBlogs } from "@/app/store/slices/blogSclie";
 import axiosInstance from "@/axiosConfig/axiosInstance";
 
-export default function Navbar() {
+export default function Navbar({ initialCategories = [] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [showProductMenu, setShowProductMenu] = useState(false);
@@ -62,9 +62,18 @@ export default function Navbar() {
   const router = useRouter();
 
   const initialData = async () => {
-    const res = await fetchCategoryWithSubcategories();
-    setCategories(res || []);
-    if (products?.products?.length == 0) {
+    // Use categories provided by parent (e.g. ClientLayout) when available
+    if (initialCategories && initialCategories.length > 0) {
+      setCategories(initialCategories);
+    } else {
+      const res = await fetchCategoryWithSubcategories();
+      setCategories(res || []);
+    }
+    if (
+      Array.isArray(products)
+        ? products.length === 0
+        : products?.products?.length == 0
+    ) {
       const payload = {
         page: 1,
         limit: 10,
@@ -578,108 +587,114 @@ export default function Navbar() {
                       </h3>
                       <div className="grid grid-cols-5 gap-4 max-h-[400px] overflow-y-auto">
                         {products?.products?.length > 0
-                          ? products?.products?.map((product) => (
-                              <Link
-                                key={product._id}
-                                href={`/productDetail/${product.slug}`}
-                                onClick={() => setShowProductMenu(false)}
-                              >
-                                <div className="group cursor-pointer">
-                                  <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
-                                    <Image
-                                      src={
-                                        product?.thumbnail?.url ||
-                                        product.images?.[0]?.url
-                                      }
-                                      alt={
-                                        product?.thumbnail?.alt ||
-                                        product.images?.[0]?.alt
-                                      }
-                                      fill
-                                      className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                    />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                          ? products?.products?.map((product) => {
+                              if (product?.variants?.length == 0) return null;
+                              return (
+                                <Link
+                                  key={product._id}
+                                  href={`/productDetail/${product.slug}`}
+                                  onClick={() => setShowProductMenu(false)}
+                                >
+                                  <div className="group cursor-pointer">
+                                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
+                                      <Image
+                                        src={
+                                          product?.thumbnail?.url ||
+                                          product.images?.[0]?.url
+                                        }
+                                        alt={
+                                          product?.thumbnail?.alt ||
+                                          product.images?.[0]?.alt
+                                        }
+                                        fill
+                                        className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                      />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                    </div>
+                                    <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
+                                      {product.name}
+                                    </h4>
+                                    {product?.variants?.[0]?.price ? (
+                                      <div className="flex items-center gap-2">
+                                        {product?.variants[0]?.salePrice && (
+                                          <span className="text-[#3C950D] font-semibold text-sm">
+                                            Rs {product?.variants[0]?.salePrice}
+                                          </span>
+                                        )}
+                                        <span className="text-black/50 font-semibold text-xs line-through">
+                                          Rs {product?.variants[0]?.price}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-2">
+                                        {product?.salePrice && (
+                                          <span className="text-[#3C950D] font-semibold text-sm">
+                                            Rs {product?.salePrice}
+                                          </span>
+                                        )}
+                                        <span className="text-black/50 font-semibold text-xs line-through">
+                                          Rs {product?.price}
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
-                                  <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
-                                    {product.name}
-                                  </h4>
-                                  {product?.variants?.[0]?.price ? (
-                                    <div className="flex items-center gap-2">
-                                      {product?.variants[0]?.salePrice && (
-                                        <span className="text-[#3C950D] font-semibold text-sm">
-                                          Rs {product?.variants[0]?.salePrice}
-                                        </span>
-                                      )}
-                                      <span className="text-black/50 font-semibold text-xs line-through">
-                                        Rs {product?.variants[0]?.price}
-                                      </span>
+                                </Link>
+                              );
+                            })
+                          : products?.map((product) => {
+                              if (product?.variants?.length == 0) return null;
+                              return (
+                                <Link
+                                  key={product._id}
+                                  href={`/productDetail/${product.slug}`}
+                                  onClick={() => setShowProductMenu(false)}
+                                >
+                                  <div className="group cursor-pointer">
+                                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
+                                      <Image
+                                        src={
+                                          product?.thumbnail?.url ||
+                                          product.images?.[0]?.url
+                                        }
+                                        alt={
+                                          product?.thumbnail?.alt ||
+                                          product.images?.[0]?.alt
+                                        }
+                                        fill
+                                        className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                      />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
                                     </div>
-                                  ) : (
-                                    <div className="flex items-center gap-2">
-                                      {product?.salePrice && (
-                                        <span className="text-[#3C950D] font-semibold text-sm">
-                                          Rs {product?.salePrice}
+                                    <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
+                                      {product.name}
+                                    </h4>
+                                    {product?.variants?.[0]?.price ? (
+                                      <div className="flex items-center gap-2">
+                                        {product?.variants[0]?.salePrice && (
+                                          <span className="text-[#3C950D] font-semibold text-sm">
+                                            Rs {product?.variants[0]?.salePrice}
+                                          </span>
+                                        )}
+                                        <span className="text-black/50 font-semibold text-xs line-through">
+                                          Rs {product?.variants[0]?.price}
                                         </span>
-                                      )}
-                                      <span className="text-black/50 font-semibold text-xs line-through">
-                                        Rs {product?.price}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </Link>
-                            ))
-                          : products?.map((product) => (
-                              <Link
-                                key={product._id}
-                                href={`/productDetail/${product.slug}`}
-                                onClick={() => setShowProductMenu(false)}
-                              >
-                                <div className="group cursor-pointer">
-                                  <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
-                                    <Image
-                                      src={
-                                        product?.thumbnail?.url ||
-                                        product.images?.[0]?.url
-                                      }
-                                      alt={
-                                        product?.thumbnail?.alt ||
-                                        product.images?.[0]?.alt
-                                      }
-                                      fill
-                                      className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                    />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-2">
+                                        {product?.salePrice && (
+                                          <span className="text-[#3C950D] font-semibold text-sm">
+                                            Rs {product?.salePrice}
+                                          </span>
+                                        )}
+                                        <span className="text-black/50 font-semibold text-xs line-through">
+                                          Rs {product?.price}
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
-                                  <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
-                                    {product.name}
-                                  </h4>
-                                  {product?.variants?.[0]?.price ? (
-                                    <div className="flex items-center gap-2">
-                                      {product?.variants[0]?.salePrice && (
-                                        <span className="text-[#3C950D] font-semibold text-sm">
-                                          Rs {product?.variants[0]?.salePrice}
-                                        </span>
-                                      )}
-                                      <span className="text-black/50 font-semibold text-xs line-through">
-                                        Rs {product?.variants[0]?.price}
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center gap-2">
-                                      {product?.salePrice && (
-                                        <span className="text-[#3C950D] font-semibold text-sm">
-                                          Rs {product?.salePrice}
-                                        </span>
-                                      )}
-                                      <span className="text-black/50 font-semibold text-xs line-through">
-                                        Rs {product?.price}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </Link>
-                            ))}
+                                </Link>
+                              );
+                            })}
                       </div>
 
                       <Link
