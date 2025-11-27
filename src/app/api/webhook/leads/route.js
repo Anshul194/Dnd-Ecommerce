@@ -4,7 +4,7 @@ import { getSubdomain, getDbConnection } from '@/app/lib/tenantDb.js';
 import { createLeadService } from '@/app/lib/services/leadService.js';
 
 const VERIFY_TOKEN = "bharatLeadToken";
-const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || "EAAO4LKbXZBCcBQGieardibApI4WwpZBwMODFB7A26eWMvRJwdT6yNqZCCjcJl6ZABTo5Vcktx1pHJISrTZC365YIkukWAkA5iehGu8whPksRI5f3HC3aBxGIAF8CuuC3Nk45wH3GarAWBRmIVFSU01DebWoYuI60vwp0a91xSMflHsDb0TH9cbDpZBfNOayXTza4jPQiNm8IsV6C0ZAftt3JZBQHgASH87vZCgaoYDnpapozGP4XMw22zBX2oJCjT91GBdnsT7ZBCndcBflUtK2sYNeSDCZBAZDZD";
+const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || "EAAO4LKbXZBCcBQJS7Tayc0ZBZCYv5ZAdtVZBtcPtpvoaOiUKo3hwbpYmcP83ZBtHWd1OAZBWQkKgILlOn9m42QhWVFvyIsbe3ZCZChxcFZBl7TWmcPuKf7iCkAIcCUp4Ybf3aVGZBmSq1FR1SEKWg7G8C1VZCC7D8xkgZC6vzXffqjjfgbvWNno7vtgnxCdZCQPzkgn5yCvGgZBZAxQEbEtYyUV26jR0jNADYTkqM2nmPCobHZAEZD";
 
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
