@@ -35,6 +35,14 @@ export const fetchOrderById = createAsyncThunk(
     return response.data.data;
   }
 );
+// Async thunk to cancel an order
+export const cancelOrder = createAsyncThunk(
+  "order/cancelOrder",
+  async (orderId) => {
+    const response = await axiosInstance.put(`/orders/${orderId}/cancel`);
+    return response.data.data;
+  }
+);
 
 // Slice
 const orderSlice = createSlice({
@@ -72,6 +80,27 @@ const orderSlice = createSlice({
         state.currentOrder = action.payload;
       })
       .addCase(fetchOrderById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+
+      // Cancel order
+      .addCase(cancelOrder.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(cancelOrder.fulfilled, (state, action) => {
+        state.loading = false;
+        if (state.currentOrder && state.currentOrder._id === action.payload._id) {
+          state.currentOrder = { ...state.currentOrder, status: 'cancelled' };
+        }
+        // Update in orders list if present
+        const index = state.orders.findIndex(o => o._id === action.payload._id);
+        if (index !== -1) {
+          state.orders[index] = { ...state.orders[index], status: 'cancelled' };
+        }
+      })
+      .addCase(cancelOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

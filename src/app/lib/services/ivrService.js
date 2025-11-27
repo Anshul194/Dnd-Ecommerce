@@ -26,11 +26,11 @@ class IVRService {
       if (apiResult.status !== "success" || !Array.isArray(apiResult.data)) {
         throw new Error("Invalid API response");
       }
-      console.log("check api ======>")
+      //console.log("check api ======>")
       const users = [];
       for (const apiUser of apiResult.data) {
         const userDoc = await this.repo.upsert(apiUser);
-        console.log(" ==== > ", userDoc);
+        //console.log(" ==== > ", userDoc);
         users.push(userDoc);
       }
       return users;
@@ -44,7 +44,7 @@ class IVRService {
     try {
       // Process the after call data
       // This is a placeholder for actual processing logic
-      console.log("Processing after call data:", body);
+      //console.log("Processing after call data:", body);
 
       // --- Setup repositories ---
       const userRepo = this.repo;
@@ -135,7 +135,7 @@ class IVRService {
       });
       // }
       // You can add your business logic here
-      console.log("After call data processed successfully");
+      //console.log("After call data processed successfully");
       return { success: true };
     } catch (error) {
       throw new Error(`Failed to process after call data: ${error.message}`);

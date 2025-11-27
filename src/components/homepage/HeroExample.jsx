@@ -14,12 +14,12 @@ const HeroExample = () => {
         // Replace with your actual API endpoint
         const response = await fetch('/api/sections/grouped');
         const data = await response.json();
-        
+
         if (data.success && data.data.hero) {
           setHeroData(data.data.hero);
         }
       } catch (error) {
-        console.error('Error fetching hero sections:', error);
+        // console.error('Error fetching hero sections:', error);
         // Fallback to empty array - component will show default content
         setHeroData([]);
       } finally {

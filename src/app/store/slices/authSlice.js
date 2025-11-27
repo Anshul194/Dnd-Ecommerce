@@ -45,7 +45,7 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.patch("/user", credentials);
-      console.log("Login Response:", response.data);
+      //console.log("Login Response:", response.data);
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("refreshToken", response.data.refreshToken);
       localStorage.setItem("user", JSON.stringify(response.data.user));
@@ -63,7 +63,7 @@ export const sendOtp = createAsyncThunk(
       const response = await axiosInstance.post("/auth/request-otp", {
         phone,
       });
-      console.log("OTP sent successfully:", response.data);
+      //console.log("OTP sent successfully:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -76,7 +76,7 @@ export const verifyOtp = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post("/auth/verify-otp", data);
-      console.log("OTP verification response:", response.data.data);
+      //console.log("OTP verification response:", response.data.data);
       if (!response.data.success) {
         throw new Error(response.data.message || "OTP verification failed");
       }
@@ -118,7 +118,7 @@ export const getuserAddresses = createAsyncThunk(
   async (userId, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(`/address?user=${userId}`);
-      console.log("User addresses fetched successfully:", response.data);
+      //console.log("User addresses fetched successfully:", response.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -131,7 +131,7 @@ export const createUserAddress = createAsyncThunk(
   async (addressData, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post("/address", addressData);
-      console.log("Address created successfully:", response.data);
+      //console.log("Address created successfully:", response.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -144,7 +144,7 @@ export const updateUserProfile = createAsyncThunk(
   async ({ id, data }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.put(`/user?id=${id}`, data);
-      console.log("User profile updated successfully:", response.data);
+      //console.log("User profile updated successfully:", response.data);
 
       return response.data.data;
     } catch (error) {
@@ -161,7 +161,7 @@ export const updateUserAddress = createAsyncThunk(
         `/address/${addressId}`,
         addressData
       );
-      console.log("Address updated successfully:", response.data);
+      //console.log("Address updated successfully:", response.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -174,7 +174,7 @@ export const deleteUserAddress = createAsyncThunk(
   async (addressId, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.delete(`/address/${addressId}`);
-      console.log("Address deleted successfully:", response.data);
+      //console.log("Address deleted successfully:", response.data);
       return addressId; // Return the address ID to remove it from the state
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -187,10 +187,10 @@ export const changePassword = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(`/user/change-password`, data);
-      console.log("Password changed successfully:", response.data);
+      //console.log("Password changed successfully:", response.data);
       return response.data.data;
     } catch (error) {
-      console.log("Error changing password: ===>", error);
+      //console.log("Error changing password: ===>", error);
       toast.error(error?.response.data?.message);
       return rejectWithValue(error.response.data);
     }
@@ -268,7 +268,7 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(verifyOtp.fulfilled, (state, action) => {
-        console.log("Verify OTP Response:", action.payload);
+        //console.log("Verify OTP Response:", action.payload);
         state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload.user; // Assuming the user data is returned in the response
@@ -307,7 +307,7 @@ const authSlice = createSlice({
         localStorage.removeItem("user");
       })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
-        console.log("pay load is ===>", action.payload);
+        //console.log("pay load is ===>", action.payload);
         state.loading = false;
         state.user = action.payload;
         localStorage.setItem("user", JSON.stringify(action.payload));

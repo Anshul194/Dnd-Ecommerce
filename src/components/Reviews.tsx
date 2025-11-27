@@ -33,7 +33,7 @@ const itemVariants = {
 };
 
 export function Reviews({ content }) {
-  console.log("reviews content ====>", content);
+  //console.log("reviews content ====>", content);
   const { reviews, loading, error } = useSelector((state) => state.reviews);
   const dispatch = useDispatch();
   useEffect(() => {

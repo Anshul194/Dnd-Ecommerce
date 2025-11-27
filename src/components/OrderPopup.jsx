@@ -10,7 +10,7 @@ const OrderPopup = () => {
   const orderStatus = searchParams.get("Order_status");
   const router = useRouter();
   const pathname = usePathname();
-  console.log("Order Status:", orderStatus);
+  //console.log("Order Status:", orderStatus);
 
   const closePopup = () => {
     router.push('/');
@@ -18,7 +18,7 @@ const OrderPopup = () => {
 
   const handleTryAgain = () => {
     // Add your retry logic here
-    console.log("Retrying order...");
+    //console.log("Retrying order...");
     closePopup();
   };
 
@@ -31,7 +31,7 @@ const OrderPopup = () => {
 
   useEffect(() => {
     // This effect runs when the orderStatus changes
-    console.log("Order status changed:", orderStatus);
+    //console.log("Order status changed:", orderStatus);
   }, [orderStatus, pathname, searchParams]);
 
   return (

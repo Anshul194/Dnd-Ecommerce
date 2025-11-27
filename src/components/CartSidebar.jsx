@@ -32,7 +32,7 @@ const CartSidebar = () => {
   const [SelectedProduct, setSelectedProduct] = useState(null);
   const shipping = 65;
 
-  // console.log("cart is open is : ", isCartOpen);
+  // //console.log("cart is open is : ", isCartOpen);
 
   const handelCartToggle = () => {
     dispatch(toggleCart());
@@ -99,7 +99,7 @@ const CartSidebar = () => {
     return null;
   }
 
-  console.log("Cart Items:", cartItems);
+  //console.log("Cart Items:", cartItems);
 
   return (
     <div className="fixed top-0  inset-1 z-[999999] flex">
@@ -140,7 +140,7 @@ const CartSidebar = () => {
                   key={index}
                   className="flex items-center gap-4 pb-6 border-b border-gray-200"
                 >
-                  {console.log("cart items ====> ", item)}
+
                   <div
                     className="w-16 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden cursor-pointer"
                     onClick={(e) => handelRedirect(e, item)}
@@ -171,7 +171,7 @@ const CartSidebar = () => {
                           className="text-sm font-medium text-gray-900 leading-tight cursor-pointer"
                           onClick={(e) => handelRedirect(e, item)}
                         >
-                          {console.log("cart items ===> ", item)}
+
                           {item?.product?.name}
                         </h3>
                         {/* <p className="text-xs text-gray-500 mt-1">
@@ -190,11 +190,10 @@ const CartSidebar = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => updateQuantity(item?.id, -1)}
-                          className={`${
-                            item?.quantity === 1
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          } w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50`}
+                          className={`${item?.quantity === 1
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                            } w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50`}
                         >
                           <Minus size={14} />
                         </button>
@@ -203,11 +202,10 @@ const CartSidebar = () => {
                         </span>
                         <button
                           onClick={() => updateQuantity(item?.id, 1)}
-                          className={`${
-                            item?.quantity === item?.product?.stock
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          } w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50`}
+                          className={`${item?.quantity === item?.product?.stock
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                            } w-8 h-8 border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50`}
                         >
                           <Plus size={14} />
                         </button>
@@ -276,7 +274,7 @@ const CartSidebar = () => {
                                   key={index}
                                   onClick={(e) => {
                                     e.preventDefault();
-                                    console.log(item);
+                                    //console.log(item);
                                     handleSelectVariant(
                                       {
                                         id: item?._id,
@@ -346,9 +344,8 @@ const CartSidebar = () => {
 
         {/* Footer */}
         <div
-          className={`${
-            cartItems?.length > 0 ? "" : "opacity-40 cursor-not-allowed"
-          } *: border-t bg-white p-6 space-y-4`}
+          className={`${cartItems?.length > 0 ? "" : "opacity-40 cursor-not-allowed"
+            } *: border-t bg-white p-6 space-y-4`}
         >
           {/* Shipping */}
           <div className="flex justify-between items-center">

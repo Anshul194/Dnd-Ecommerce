@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 
 function LandingBanner({ content }) {
-  console.log("content is ===> ", content);
+  // console.log("content is ===> ", content);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -62,11 +62,10 @@ function LandingBanner({ content }) {
           <div
             className="w-full h-full  bg-center"
             style={{
-              backgroundImage: `url(${
-                isMobile && content?.[currentSlide]?.content?.mobileImage
+              backgroundImage: `url(${isMobile && content?.[currentSlide]?.content?.mobileImage
                   ? content?.[currentSlide]?.content?.mobileImage
                   : content?.[currentSlide]?.content?.image
-              })`,
+                })`,
             }}
           >
             <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">
@@ -134,11 +133,10 @@ function LandingBanner({ content }) {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`h-2 rounded-full transition-all ${
-              index === currentSlide
+            className={`h-2 rounded-full transition-all ${index === currentSlide
                 ? "bg-white w-10 shadow-lg"
                 : "bg-white/50 w-2 hover:bg-white/70"
-            }`}
+              }`}
           />
         ))}
       </div>

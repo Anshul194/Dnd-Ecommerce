@@ -16,7 +16,7 @@ class DTDCShippingService {
    */
   async createShipping(orderData, shippingDetails) {
     try {
-      console.log("Creating DTDC shipping for order:", orderData._id);
+      //console.log("Creating DTDC shipping for order:", orderData._id);
 
       // Validate required fields
       this.validateOrderData(orderData);
@@ -25,7 +25,7 @@ class DTDCShippingService {
       // Transform order data to DTDC format
       const dtdcPayload = this.transformToDTO(orderData, shippingDetails);
 
-      console.log("DTDC API Payload:", JSON.stringify(dtdcPayload, null, 2));
+      //console.log("DTDC API Payload:", JSON.stringify(dtdcPayload, null, 2));
 
       // Make API call to DTDC
       const response = await axios.post(this.baseURL, dtdcPayload, {
@@ -35,18 +35,17 @@ class DTDCShippingService {
         },
       });
 
-      console.log("DTDC API Response:", response.data);
+      //console.log("DTDC API Response:", response.data);
 
       // Process response
       return this.processResponse(response.data);
     } catch (error) {
-      console.error("DTDC Shipping Error:", error.message);
+      //console.error("DTDC Shipping Error:", error.message);
 
       if (error.response) {
-        console.error("DTDC API Error Response:", error.response.data);
+        //console.error("DTDC API Error Response:", error.response.data);
         throw new Error(
-          `DTDC API Error: ${
-            error.response.data.message || error.response.statusText
+          `DTDC API Error: ${error.response.data.message || error.response.statusText
           }`
         );
       }
@@ -93,7 +92,7 @@ class DTDCShippingService {
    * Validate shipping details from request
    * @param {Object} shippingDetails
    */
-  validateShippingDetails(shippingDetails) { 
+  validateShippingDetails(shippingDetails) {
     if (!shippingDetails) {
       throw new Error("Shipping details are required");
     }

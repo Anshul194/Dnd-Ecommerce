@@ -91,7 +91,7 @@ export function CustomerFavorites({ content }) {
   }, [wishlistedIds]);
 
   useEffect(() => {
-    console.log("CustomerFavorites content is ===> ", content);
+    // console.log("CustomerFavorites content is ===> ", content);
     dispatch(
       fetchProducts({
         page: 1,
@@ -103,7 +103,7 @@ export function CustomerFavorites({ content }) {
       })
     );
   }, [content, dispatch]);
-  console.log("product slider content is ===> ", products);
+  // console.log("product slider content is ===> ", products);
   return (
     <section className="max-w-7xl mx-auto py-20 ">
       <div className="container mx-auto px-4">
