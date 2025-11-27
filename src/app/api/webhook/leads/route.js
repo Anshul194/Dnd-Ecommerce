@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
-import { getSubdomain, getDbConnection } from '../../../../lib/tenantDb';
-import { createLeadService } from '../../../../lib/services/leadService';
+import { getSubdomain, getDbConnection } from '@/app/lib/tenantDb.js';
+import { createLeadService } from '@/app/lib/services/leadService.js';
 
 const VERIFY_TOKEN = "bharatLeadToken";
 const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || "EAAO4LKbXZBCcBQGieardibApI4WwpZBwMODFB7A26eWMvRJwdT6yNqZCCjcJl6ZABTo5Vcktx1pHJISrTZC365YIkukWAkA5iehGu8whPksRI5f3HC3aBxGIAF8CuuC3Nk45wH3GarAWBRmIVFSU01DebWoYuI60vwp0a91xSMflHsDb0TH9cbDpZBfNOayXTza4jPQiNm8IsV6C0ZAftt3JZBQHgASH87vZCgaoYDnpapozGP4XMw22zBX2oJCjT91GBdnsT7ZBCndcBflUtK2sYNeSDCZBAZDZD";
