@@ -7,7 +7,7 @@ const leadSchema = new mongoose.Schema(
     phone: { type: String, trim: true, default: null },
     source: {
       type: String,
-      enum: ['website', 'newsletter', 'popup', 'referral', 'manual', 'other', 'IVR'],
+      enum: ['website', 'newsletter', 'popup', 'referral', 'manual', 'other', 'IVR', 'facebook_lead_ads'],
       default: 'website',
     },
     status: {
