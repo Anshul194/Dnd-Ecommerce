@@ -4,7 +4,7 @@ import { EmailTemplateSchema } from '../models/EmailTemplate.js';
 
 class EmailService {
   constructor() {
-        this.transporter = nodemailer.createTransport({
+    this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.zoho.com',
       port: Number(process.env.SMTP_PORT) || 465,
       secure: process.env.SMTP_SECURE === 'true', // true for port 465
@@ -27,13 +27,13 @@ class EmailService {
         html,
       };
 
-      console.log('Sending email with options:', mailOptions);
-      
+      //console.log('Sending email with options:', mailOptions);
+
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Email sent:', info.messageId);
+      //console.log('Email sent:', info.messageId);
       return { success: true, message: 'Email sent successfully', data: info };
     } catch (error) {
-      console.error('EmailService sendEmail Error:', error.message);
+      //console.error('EmailService sendEmail Error:', error.message);
       return { success: false, message: error.message };
     }
   }
@@ -47,7 +47,7 @@ class EmailService {
       }
       return template;
     } catch (error) {
-      console.error('EmailService getEmailTemplate Error:', error.message);
+      //console.error('EmailService getEmailTemplate Error:', error.message);
       throw error;
     }
   }
@@ -66,7 +66,7 @@ class EmailService {
         from: template.from,
       });
     } catch (error) {
-      console.error('EmailService sendOrderEmail Error:', error.message);
+      //console.error('EmailService sendOrderEmail Error:', error.message);
       return { success: false, message: error.message };
     }
   }

@@ -61,7 +61,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "paid", "shipped", "completed", "cancelled"],
+      enum: ["pending", "paid", "shipped", "completed", "cancelled", "return_requested", "returned", "refunded"],
       default: "pending",
     },
     placedAt: {
@@ -125,7 +125,54 @@ const orderSchema = new mongoose.Schema(
       status_history: { type: Array, default: [] }, // Array of status updates
       current_status: { type: String, default: null }, // Latest status
       last_updated: { type: Date, default: Date.now },
-      
+    },
+
+    // Return & Refund Management
+    return_details: {
+      is_return_requested: { type: Boolean, default: false },
+      return_status: {
+        type: String,
+        enum: ['none', 'requested', 'approved', 'rejected', 'received', 'completed'],
+        default: 'none'
+      },
+      return_reason: { type: String, default: null },
+      return_comments: { type: String, default: null },
+      return_requested_at: { type: Date, default: null },
+      return_approved_at: { type: Date, default: null },
+      return_approved_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+      return_received_at: { type: Date, default: null },
+      return_images: [{ type: String }], // URLs to uploaded images
+
+      // Refund Information
+      refund_status: {
+        type: String,
+        enum: ['none', 'pending', 'processing', 'completed', 'failed'],
+        default: 'none'
+      },
+      refund_amount: { type: Number, default: 0 },
+      refund_method: {
+        type: String,
+        enum: ['original_payment', 'bank_transfer', 'wallet', 'store_credit'],
+        default: 'original_payment'
+      },
+      refund_initiated_at: { type: Date, default: null },
+      refund_initiated_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+      refund_completed_at: { type: Date, default: null },
+      refund_transaction_id: { type: String, default: null },
+      refund_notes: { type: String, default: null },
+
+      // Bank Details for Manual Refund (if needed)
+      bank_details: {
+        account_holder_name: { type: String, default: null },
+        account_number: { type: String, default: null },
+        ifsc_code: { type: String, default: null },
+        bank_name: { type: String, default: null },
+        upi_id: { type: String, default: null },
+      },
+
+      // Timeline tracking
+      refund_deadline: { type: Date, default: null }, // 7 days from return approval
+      days_remaining: { type: Number, default: null },
     }
   },
   {

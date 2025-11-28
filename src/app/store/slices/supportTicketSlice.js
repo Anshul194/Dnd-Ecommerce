@@ -7,15 +7,15 @@ export const fetchCustomerTickets = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/crm/tickets/customer");
-      console.log("Fetched Tickets As :- :", response.data);
+      // console.log("Fetched Tickets As :- :", response.data);
       return response.data?.data;
     } catch (error) {
       // Ensure we return a string error message
       let errorMessage = "An error occurred while fetching tickets";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-        
+
         // If it's a validation error with details, format it nicely
         if (error.response.data.data && Array.isArray(error.response.data.data)) {
           const validationErrors = error.response.data.data.map(err => err.message).join(', ');
@@ -26,7 +26,7 @@ export const fetchCustomerTickets = createAsyncThunk(
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       return rejectWithValue(errorMessage);
     }
   }
@@ -46,10 +46,10 @@ export const createSupportTicket = createAsyncThunk(
     } catch (error) {
       // Ensure we return a string error message
       let errorMessage = "An error occurred while creating the ticket";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-        
+
         // If it's a validation error with details, format it nicely
         if (error.response.data.data && Array.isArray(error.response.data.data)) {
           const validationErrors = error.response.data.data.map(err => err.message).join(', ');
@@ -60,7 +60,7 @@ export const createSupportTicket = createAsyncThunk(
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       return rejectWithValue(errorMessage);
     }
   }
@@ -80,10 +80,10 @@ export const addTicketReply = createAsyncThunk(
     } catch (error) {
       // Ensure we return a string error message
       let errorMessage = "An error occurred while adding the reply";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
-        
+
         // If it's a validation error with details, format it nicely
         if (error.response.data.data && Array.isArray(error.response.data.data)) {
           const validationErrors = error.response.data.data.map(err => err.message).join(', ');
@@ -94,7 +94,7 @@ export const addTicketReply = createAsyncThunk(
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       return rejectWithValue(errorMessage);
     }
   }
@@ -187,7 +187,7 @@ const supportTicketSlice = createSlice({
       .addCase(addTicketReply.fulfilled, (state, action) => {
         state.replyLoading = false;
         state.reply = action.payload;
-        
+
         // Note: We don't update the tickets list here because the new reply
         // from the backend may not have populated fields (repliedBy name, etc.)
         // The tickets will be refreshed in the component to get proper populated data

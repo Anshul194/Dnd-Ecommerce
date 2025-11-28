@@ -9,6 +9,7 @@ import {
 } from "@/app/store/slices/wishlistSlice";
 import { addToCart, toggleCart } from "@/app/store/slices/cartSlice";
 import Link from "next/link";
+import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
 const Wishlist = () => {
   const dispatch = useDispatch();
@@ -37,7 +38,7 @@ const Wishlist = () => {
         variantId,
       })
     );
-
+    trackEvent("REMOVE_FROM_WISHLIST", { productId });
     dispatch(fetchWishlist());
   };
 

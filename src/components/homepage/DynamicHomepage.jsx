@@ -174,6 +174,16 @@ const DynamicHomepage = () => {
     }
   };
 
+  // Collect dynamic banners from content API
+  const bannerSections = [];
+  if (groupedContent?.sections?.banner) {
+    groupedContent.sections.banner.forEach((section) => {
+      if (section.isVisible) {
+        bannerSections.push(section);
+      }
+    });
+  }
+
   return (
     <main>
       {/* Hero Carousel - Render all hero sections as one carousel */}
@@ -183,6 +193,33 @@ const DynamicHomepage = () => {
           autoPlay={true}
           autoPlayInterval={5000}
         />
+      )}
+
+      {/* Dynamic Banners from content API */}
+      {bannerSections.length > 0 ? (
+        bannerSections.map((section) => {
+          // You can map to your banner components here, e.g. SeasonSaleBanner, TeaPartyBanner, etc.
+          // Example: If section.content.type === "seasonSale", render SeasonSaleBanner
+          switch (section.content?.type) {
+            case "seasonSale":
+              return (
+                <SeasonSaleBanner key={section._id} content={section.content} />
+              );
+            case "teaParty":
+              return (
+                <TeaPartyBanner key={section._id} content={section.content} />
+              );
+            // Add more banner types as needed
+            default:
+              return null;
+          }
+        })
+      ) : (
+        // Fallback to static banners if no dynamic banners
+        <>
+          <SeasonSaleBanner />
+          <TeaPartyBanner />
+        </>
       )}
 
       {/* Categories Section with Dynamic Content */}

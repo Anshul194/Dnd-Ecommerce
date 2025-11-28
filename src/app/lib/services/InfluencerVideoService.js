@@ -10,26 +10,26 @@ const __dirname = path.dirname(__filename);
 
 class InfluencerVideoService {
   async createInfluencerVideo(data, conn) {
-    console.log('[InfluencerVideoService.createInfluencerVideo] Creating influencer video:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
+    //console.log('[InfluencerVideoService.createInfluencerVideo] Creating influencer video:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
     await this.validateInfluencerVideoData(data, false, conn);
     return await influencerVideoRepository.createInfluencerVideo(data, conn);
   }
 
   async getInfluencerVideoById(id, conn) {
-    console.log('[InfluencerVideoService.getInfluencerVideoById] Fetching influencer video:', id, 'Connection:', conn.name || 'global mongoose');
+    //console.log('[InfluencerVideoService.getInfluencerVideoById] Fetching influencer video:', id, 'Connection:', conn.name || 'global mongoose');
     return await influencerVideoRepository.getInfluencerVideoById(id, conn);
   }
 
   async getAllInfluencerVideos(conn, { page = 1, limit = 10, search = '' }) {
-    console.log('[InfluencerVideoService.getAllInfluencerVideos] Fetching all influencer videos', 'Connection:', conn.name || 'global mongoose', 'Page:', page, 'Limit:', limit, 'Search:', search);
-    
+    //console.log('[InfluencerVideoService.getAllInfluencerVideos] Fetching all influencer videos', 'Connection:', conn.name || 'global mongoose', 'Page:', page, 'Limit:', limit, 'Search:', search);
+
     const query = {};
     if (search) {
       query.title = { $regex: search, $options: 'i' };
     }
 
     const InfluencerVideo = conn.models.InfluencerVideo || conn.model('InfluencerVideo', mongoose.model('InfluencerVideo').schema);
-    
+
     const skip = (page - 1) * limit;
     const [influencerVideos, totalItems] = await Promise.all([
       InfluencerVideo.find(query)
@@ -50,15 +50,15 @@ class InfluencerVideoService {
   }
 
   async updateInfluencerVideo(id, data, conn) {
-    console.log('[InfluencerVideoService.updateInfluencerVideo] Updating influencer video:', id, 'Data:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
+    //console.log('[InfluencerVideoService.updateInfluencerVideo] Updating influencer video:', id, 'Data:', JSON.stringify(data, null, 2), 'Connection:', conn.name || 'global mongoose');
     await this.validateInfluencerVideoData(data, true, conn);
-    
+
     const existingVideo = await this.getInfluencerVideoById(id, conn);
     if (data.videoUrl && existingVideo.videoUrl.startsWith('/uploads/')) {
       try {
         await fs.unlink(path.join(__dirname, '../../public', existingVideo.videoUrl));
       } catch (err) {
-        console.warn('Failed to delete old video file:', err.message);
+        //console.warn('Failed to delete old video file:', err.message);
       }
     }
 
@@ -66,14 +66,14 @@ class InfluencerVideoService {
   }
 
   async deleteInfluencerVideo(id, conn) {
-    console.log('[InfluencerVideoService.deleteInfluencerVideo] Deleting influencer video:', id, 'Connection:', conn.name || 'global mongoose');
+    //console.log('[InfluencerVideoService.deleteInfluencerVideo] Deleting influencer video:', id, 'Connection:', conn.name || 'global mongoose');
     const influencerVideo = await this.getInfluencerVideoById(id, conn);
-    
+
     if (influencerVideo.videoUrl.startsWith('/uploads/')) {
       try {
         await fs.unlink(path.join(__dirname, '../../public', influencerVideo.videoUrl));
       } catch (err) {
-        console.warn('Failed to delete video file:', err.message);
+        //console.warn('Failed to delete video file:', err.message);
       }
     }
 

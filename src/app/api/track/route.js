@@ -17,14 +17,16 @@ const METRIC_MAP = {
     await Product.findByIdAndUpdate(event.productId, { $inc: { cartCount: 1 } });
   },
   REMOVE_FROM_CART: async (event, conn) => {
-    // Optionally decrement cartCount
+    const Product = conn.models.Product || conn.model("Product", ProductSchema);
+    await Product.findByIdAndUpdate(event.productId, { $inc: { cartCount: -1 } });
   },
   ADD_TO_WISHLIST: async (event, conn) => {
     const Product = conn.models.Product || conn.model("Product", ProductSchema);
     await Product.findByIdAndUpdate(event.productId, { $inc: { wishlistCount: 1 } });
   },
   REMOVE_FROM_WISHLIST: async (event, conn) => {
-    // Optionally decrement wishlistCount
+    const Product = conn.models.Product || conn.model("Product", ProductSchema);
+    await Product.findByIdAndUpdate(event.productId, { $inc: { wishlistCount: -1 } });
   },
   ORDER_PLACED: async (event, conn) => {
     const Product = conn.models.Product || conn.model("Product", ProductSchema);
@@ -513,7 +515,9 @@ export async function GET(req) {
       user: userDoc,
       addresses,
       addressesByUser,
-      eventTotals // totals per event type for the whole matching set
+      eventTotals, // totals per event type for the whole matching set
+      currentWishlisted: (eventTotals["ADD_TO_WISHLIST"] || 0) - (eventTotals["REMOVE_FROM_WISHLIST"] || 0),
+      currentCartCount: (eventTotals["ADD_TO_CART"] || 0) - (eventTotals["REMOVE_FROM_CART"] || 0)
     });
   } catch (err) {
     console.error('API Error:', err);

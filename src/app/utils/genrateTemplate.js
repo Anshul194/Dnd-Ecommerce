@@ -1,5 +1,5 @@
 const generateWhatsAppTemplate = ({ templateName, data }) => {
-  console.log("data ===> ", data);
+  //console.log("data ===> ", data);
 
   const templates = {
     // 🛍️ ORDER SUCCESS MESSAGE
@@ -12,9 +12,8 @@ Your order *${orderId || "-"}* has been successfully placed.
 🛍️ Total Amount: ${amount || "-"}
 📦 Track your order status here: ${statusUrl || "https://yourstore.com/orders"}
 
-Need help? Chat with our support team: ${
-      supportUrl || "https://yourstore.com/support"
-    }
+Need help? Chat with our support team: ${supportUrl || "https://yourstore.com/support"
+      }
 
 Thank you for choosing us 💚
 `,

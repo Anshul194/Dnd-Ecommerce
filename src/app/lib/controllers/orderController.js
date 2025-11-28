@@ -212,6 +212,24 @@ class OrderController {
       };
     }
   }
+  //cancelOrder
+  async cancelOrder(request, conn, params) {
+    try {
+      const { id } = await params;
+      const userId = request.user?._id;
+
+      if (!id) return { success: false, message: "Order ID is required" };
+
+      const result = await this.orderService.cancelOrder(id, userId, conn);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
+    }
+  }
 }
 
 export default OrderController;

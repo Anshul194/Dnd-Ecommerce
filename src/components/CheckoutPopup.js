@@ -63,7 +63,7 @@ export default function CheckoutPopup() {
   const { cartItems, buyNowProduct } = useSelector((state) => state.cart);
   const { selectedCoupon } = useSelector((state) => state.coupon);
   const { settings } = useSelector((state) => state.setting);
-  console.log("Settings:", settings);
+  //console.log("Settings:", settings);
   const [couponCode, setCouponCode] = useState("");
   const [activeField, setActiveField] = useState(null);
   const [isLogged, setIsLogged] = useState(false);
@@ -105,8 +105,8 @@ export default function CheckoutPopup() {
     if (selectedIndex === "" || selectedIndex === "default") return;
 
     const selectedAddress = userAddresses[parseInt(selectedIndex)];
-    console.log("Selected Address:", JSON.stringify({ ...selectedAddress }));
-    console.log("Selected Address Phone:", selectedAddress.phone);
+    //console.log("Selected Address:", JSON.stringify({ ...selectedAddress }));
+    //console.log("Selected Address Phone:", selectedAddress.phone);
     setFormData({
       pincode: selectedAddress.pincode || "",
       firstName: selectedAddress.firstName || "",
@@ -184,7 +184,7 @@ export default function CheckoutPopup() {
   };
 
   const handleAddAddress = async () => {
-    console.log("Adding address:", formData);
+    //console.log("Adding address:", formData);
     if (
       formData.pincode === "" ||
       formData.firstName === "" ||
@@ -198,9 +198,9 @@ export default function CheckoutPopup() {
     const data =
       localStorage.getItem("address") &&
       JSON.parse(localStorage.getItem("address"));
-    console.log("checking addressData", data);
+    //console.log("checking addressData", data);
     if (data && data._id) {
-      console.log("Updating existing address:", data._id);
+      //console.log("Updating existing address:", data._id);
       await dispatch(
         updateUserAddress({
           addressId: data._id,
@@ -267,7 +267,7 @@ export default function CheckoutPopup() {
         const response = await dispatch(getuserAddresses(user._id));
         setUserAddresses(response.payload || []);
       } catch (error) {
-        console.error("Error fetching user addresses:", error);
+        //console.error("Error fetching user addresses:", error);
       }
     }
   };
@@ -286,20 +286,20 @@ export default function CheckoutPopup() {
         paymentMode: paymentMethod === "cod" ? "COD" : "Prepaid",
         items: buyNowProduct
           ? [
-              {
-                product:
-                  buyNowProduct.product?._id || buyNowProduct.product?.id,
-                quantity: buyNowProduct.quantity,
-                price: buyNowProduct.price,
-                variant: buyNowProduct.variant,
-              },
-            ]
+            {
+              product:
+                buyNowProduct.product?._id || buyNowProduct.product?.id,
+              quantity: buyNowProduct.quantity,
+              price: buyNowProduct.price,
+              variant: buyNowProduct.variant,
+            },
+          ]
           : cartItems.map((item) => ({
-              product: item.product?._id || item.product?.id,
-              quantity: item.quantity,
-              price: item.price,
-              variant: item.variant,
-            })),
+            product: item.product?._id || item.product?.id,
+            quantity: item.quantity,
+            price: item.price,
+            variant: item.variant,
+          })),
         total: buyNowProduct?.price || total,
         shippingAddress: {
           fullName: `${formData.firstName} ${formData.lastName}`,
@@ -326,12 +326,12 @@ export default function CheckoutPopup() {
       selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
       selectedCoupon && (payload.discount = selectedCoupon.discount);
       const response = await axiosInstance.post("/orders/check", payload);
-      console.log("check response");
-      console.log(response.data);
+      //console.log("check response");
+      //console.log(response.data);
 
       return response.data;
     } catch (error) {
-      console.log("Error checking payment status:", error);
+      //console.log("Error checking payment status:", error);
       toast.error(error.response.data.message);
     }
   };
@@ -350,11 +350,11 @@ export default function CheckoutPopup() {
           key: "rzp_test_1DP5mmOlF5G5ag",
           amount: buyNowProduct
             ? (buyNowProduct.price * buyNowProduct.quantity -
-                (selectedCoupon?.discount || 0) +
-                calculateShipping()) *
-              100
+              (selectedCoupon?.discount || 0) +
+              calculateShipping()) *
+            100
             : (total - (selectedCoupon?.discount || 0) + calculateShipping()) *
-              100, // Convert to paise
+            100, // Convert to paise
           currency: "INR",
           name: "Tea Box",
           description: "Slot Booking Fee",
@@ -366,21 +366,21 @@ export default function CheckoutPopup() {
 
                 items: buyNowProduct
                   ? [
-                      {
-                        product:
-                          buyNowProduct.product?._id ||
-                          buyNowProduct.product?.id,
-                        quantity: buyNowProduct.quantity,
-                        price: buyNowProduct.price,
-                        variant: buyNowProduct.variant,
-                      },
-                    ]
+                    {
+                      product:
+                        buyNowProduct.product?._id ||
+                        buyNowProduct.product?.id,
+                      quantity: buyNowProduct.quantity,
+                      price: buyNowProduct.price,
+                      variant: buyNowProduct.variant,
+                    },
+                  ]
                   : cartItems.map((item) => ({
-                      product: item.product?._id || item.product?.id,
-                      quantity: item.quantity,
-                      price: item.price,
-                      variant: item.variant,
-                    })),
+                    product: item.product?._id || item.product?.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    variant: item.variant,
+                  })),
                 total: buyNowProduct?.price || total,
                 paymentId: response.razorpay_payment_id,
                 shippingAddress: {
@@ -416,7 +416,7 @@ export default function CheckoutPopup() {
               dispatch(clearCart());
               router.push(location + "?Order_status=success");
             } catch (error) {
-              console.error("Error booking slot:", error);
+              //console.error("Error booking slot:", error);
               toast.error("Booking failed. Please contact support.");
               router.push(location + "?Order_status=failure");
             }
@@ -444,20 +444,20 @@ export default function CheckoutPopup() {
             paymentMode: paymentMethod === "cod" ? "COD" : "Prepaid",
             items: buyNowProduct
               ? [
-                  {
-                    product:
-                      buyNowProduct.product?._id || buyNowProduct.product?.id,
-                    quantity: buyNowProduct.quantity,
-                    price: buyNowProduct.price,
-                    variant: buyNowProduct.variant,
-                  },
-                ]
+                {
+                  product:
+                    buyNowProduct.product?._id || buyNowProduct.product?.id,
+                  quantity: buyNowProduct.quantity,
+                  price: buyNowProduct.price,
+                  variant: buyNowProduct.variant,
+                },
+              ]
               : cartItems.map((item) => ({
-                  product: item.product?._id || item.product?.id,
-                  quantity: item.quantity,
-                  price: item.price,
-                  variant: item.variant,
-                })),
+                product: item.product?._id || item.product?.id,
+                quantity: item.quantity,
+                price: item.price,
+                variant: item.variant,
+              })),
             total: buyNowProduct?.price || total,
             shippingAddress: {
               fullName: `${formData.firstName} ${formData.lastName}`,
@@ -491,13 +491,13 @@ export default function CheckoutPopup() {
           dispatch(clearCart());
           router.push(location + "?Order_status=success");
         } catch (error) {
-          console.error("Error placing order:", error);
+          //console.error("Error placing order:", error);
           toast.error("Order placement failed. Please try again.");
           router.push(location + "?Order_status=failure");
         }
       }
     } catch (error) {
-      console.error("Error initializing Razorpay:", error);
+      //console.error("Error initializing Razorpay:", error);
     }
   };
 
@@ -510,7 +510,7 @@ export default function CheckoutPopup() {
       });
 
       const data = await response.data;
-      console.log("checkPincode response:", data);
+      //console.log("checkPincode response:", data);
       if (data.success) {
         toast.success("Pincode is deliverable");
         setPinCodeVerified(data);
@@ -518,7 +518,7 @@ export default function CheckoutPopup() {
         toast.error("Pincode is not deliverable");
       }
     } catch (error) {
-      console.error("Error checking pincode:", error);
+      //console.error("Error checking pincode:", error);
     } finally {
       setPincodeChecking(false);
     }
@@ -559,11 +559,11 @@ export default function CheckoutPopup() {
       if (isAuthenticated && user?._id) {
         try {
           const response = await dispatch(getuserAddresses(user._id));
-          console.log("User addresses response:", response);
+          //console.log("User addresses response:", response);
 
           setUserAddresses(response.payload || []);
         } catch (error) {
-          console.error("Error fetching user addresses:", error);
+          //console.error("Error fetching user addresses:", error);
         }
       }
     };
@@ -572,9 +572,9 @@ export default function CheckoutPopup() {
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.async = true;
-      script.onload = () => console.log("Razorpay script loaded");
-      script.onerror = () => console.error("Failed to load Razorpay script");
-      document.body.appendChild(script);
+      script.onload = () => //console.log("Razorpay script loaded");
+        script.onerror = () => //console.error("Failed to load Razorpay script");
+          document.body.appendChild(script);
     };
 
     fetchUserAddresses();
@@ -675,7 +675,7 @@ export default function CheckoutPopup() {
         setAddressSuggestions([]);
       }
     } catch (err) {
-      console.error("Error fetching place details:", err);
+      //console.error("Error fetching place details:", err);
     }
   };
 
@@ -683,7 +683,7 @@ export default function CheckoutPopup() {
     const totalValue = buyNowProduct
       ? buyNowProduct.price * buyNowProduct.quantity
       : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    console?.log("totalValue", totalValue);
+    //console?.log("totalValue", totalValue);
     if (totalValue > 500) return 0;
 
     if (paymentMethod === "cod") {
@@ -728,7 +728,7 @@ export default function CheckoutPopup() {
         setLandmarkSuggestions([]);
       }
     } catch (err) {
-      console.error("Error fetching landmark suggestions:", err);
+      //console.error("Error fetching landmark suggestions:", err);
       setLandmarkSuggestions([]);
     }
     setLoadingLandmarks(false);
@@ -761,19 +761,19 @@ export default function CheckoutPopup() {
     if (checkoutOpen) {
       const cartData = buyNowProduct
         ? [
-            {
-              product: buyNowProduct.product.id,
-              quantity: buyNowProduct.quantity,
-              price: buyNowProduct.price,
-              variant: buyNowProduct.variant,
-            },
-          ]
+          {
+            product: buyNowProduct.product.id,
+            quantity: buyNowProduct.quantity,
+            price: buyNowProduct.price,
+            variant: buyNowProduct.variant,
+          },
+        ]
         : cartItems.map((item) => ({
-            product: item.product.id,
-            quantity: item.quantity,
-            price: item.price,
-            variant: item.variant,
-          }));
+          product: item.product.id,
+          quantity: item.quantity,
+          price: item.price,
+          variant: item.variant,
+        }));
       trackCheckout(cartData);
     }
   }, [checkoutOpen]);
@@ -797,11 +797,11 @@ export default function CheckoutPopup() {
           productIds,
           user: isAuthenticated
             ? {
-                _id: user?._id,
-                email: user?.email,
-                phone: user?.phone,
-                name: user?.name,
-              }
+              _id: user?._id,
+              email: user?.email,
+              phone: user?.phone,
+              name: user?.name,
+            }
             : null,
           timestamp: new Date().toISOString(),
         };
@@ -811,7 +811,7 @@ export default function CheckoutPopup() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(eventPayload),
         }).catch((err) => {
-          console.error("Failed to send checkout abandoned event:", err);
+          //console.error("Failed to send checkout abandoned event:", err);
         });
       }
       // prepare for next cycle
@@ -923,23 +923,23 @@ export default function CheckoutPopup() {
                     // Build cartItems payload expected by CouponService — prefer product._id
                     const itemsToSend = buyNowProduct
                       ? [
-                          {
-                            productId:
-                              buyNowProduct.product?._id ||
-                              buyNowProduct.product?.id,
-                            price: Number(buyNowProduct.price || 0),
-                            quantity: Number(buyNowProduct.quantity || 1),
-                          },
-                        ]
+                        {
+                          productId:
+                            buyNowProduct.product?._id ||
+                            buyNowProduct.product?.id,
+                          price: Number(buyNowProduct.price || 0),
+                          quantity: Number(buyNowProduct.quantity || 1),
+                        },
+                      ]
                       : (cartItems || []).map((item) => ({
-                          productId: item.product?._id || item.product?.id,
-                          price: Number(item.price || 0),
-                          quantity: Number(item.quantity || 1),
-                          actualPrice:
-                            item.actualPrice !== undefined
-                              ? Number(item.actualPrice)
-                              : undefined,
-                        }));
+                        productId: item.product?._id || item.product?.id,
+                        price: Number(item.price || 0),
+                        quantity: Number(item.quantity || 1),
+                        actualPrice:
+                          item.actualPrice !== undefined
+                            ? Number(item.actualPrice)
+                            : undefined,
+                      }));
 
                     try {
                       const action = await dispatch(
@@ -998,9 +998,8 @@ export default function CheckoutPopup() {
               {otpSended ? (
                 <div>
                   <div
-                    className={`${
-                      loading && "opacity-40"
-                    } mt-2 flex justify-center items-center gap-2`}
+                    className={`${loading && "opacity-40"
+                      } mt-2 flex justify-center items-center gap-2`}
                   >
                     <form id="otp-form" className="flex gap-4">
                       {otp.map((digit, index) => (
@@ -1058,16 +1057,14 @@ export default function CheckoutPopup() {
               ) : (
                 <div>
                   <div
-                    className={`relative  group w-full flex bg-white  py-0 h-11 border-[1px] ${
-                      activeField === "phone"
+                    className={`relative  group w-full flex bg-white  py-0 h-11 border-[1px] ${activeField === "phone"
                         ? "border-blue-600"
                         : "border-gray-300"
-                    } rounded-md`}
+                      } rounded-md`}
                   >
                     <div
-                      className={`${
-                        loading && "opacity-40"
-                      } border-r-[1px] w-fit px-4 h-full flex justify-center items-center border-gray-2400`}
+                      className={`${loading && "opacity-40"
+                        } border-r-[1px] w-fit px-4 h-full flex justify-center items-center border-gray-2400`}
                     >
                       +91
                     </div>
@@ -1081,9 +1078,8 @@ export default function CheckoutPopup() {
                       onChange={handleInputChange}
                       onFocus={() => setActiveField("phone")}
                       onBlur={() => setActiveField(null)}
-                      className={`${
-                        loading && "opacity-40"
-                      } outline-none text-md  px-4 w-full border-0 h-full `}
+                      className={`${loading && "opacity-40"
+                        } outline-none text-md  px-4 w-full border-0 h-full `}
                     />
                   </div>
                   {loading && (
@@ -1136,7 +1132,7 @@ export default function CheckoutPopup() {
                         key={index}
                         className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3"
                       >
-                        {console.log("cart items in checkout ==> ", cartItems)}
+
                         <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
                           <Image
                             src={
@@ -1266,18 +1262,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "firstName"
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "firstName"
                         ? "border-blue-600"
                         : "border-gray-300"
-                    } rounded-md`}
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "firstName" || formData.firstName !== ""
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "firstName" || formData.firstName !== ""
                           ? "-translate-y-6"
                           : "translate-y-0"
-                      }`}
+                        }`}
                     >
                       First Name{" "}
                       <span
@@ -1302,18 +1296,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "lastName"
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "lastName"
                         ? "border-blue-600"
                         : "border-gray-300"
-                    } rounded-md`}
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "lastName" || formData.lastName !== ""
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "lastName" || formData.lastName !== ""
                           ? "-translate-y-6"
                           : "translate-y-0"
-                      }`}
+                        }`}
                     >
                       Last Name{" "}
                       <span
@@ -1338,19 +1330,17 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "flatNumber"
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "flatNumber"
                         ? "border-blue-600"
                         : "border-gray-300"
-                    } rounded-md`}
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "flatNumber" ||
-                        formData.flatNumber !== ""
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "flatNumber" ||
+                          formData.flatNumber !== ""
                           ? "-translate-y-6"
                           : "translate-y-0"
-                      }`}
+                        }`}
                     >
                       Flat, house number, floor, building{" "}
                       <span
@@ -1375,18 +1365,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "area"
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "area"
                         ? "border-blue-600"
                         : "border-gray-300"
-                    } rounded-md`}
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "area" || addressSearch !== ""
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "area" || addressSearch !== ""
                           ? "-translate-y-6"
                           : "translate-y-0"
-                      }`}
+                        }`}
                     >
                       Search Full Address (Google Maps)
                       <span
@@ -1454,18 +1442,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "landmark"
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "landmark"
                         ? "border-blue-600"
                         : "border-gray-300"
-                    } rounded-md`}
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "landmark" || formData.landmark !== ""
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "landmark" || formData.landmark !== ""
                           ? "-translate-y-6"
                           : "translate-y-0"
-                      }`}
+                        }`}
                     >
                       Nearby Landmark
                       <span
@@ -1535,13 +1521,13 @@ export default function CheckoutPopup() {
                                   </p>
                                   {landmark.structured_formatting
                                     ?.secondary_text && (
-                                    <p className="text-xs text-gray-500">
-                                      {
-                                        landmark.structured_formatting
-                                          .secondary_text
-                                      }
-                                    </p>
-                                  )}
+                                      <p className="text-xs text-gray-500">
+                                        {
+                                          landmark.structured_formatting
+                                            .secondary_text
+                                        }
+                                      </p>
+                                    )}
                                 </div>
                               </div>
                             </li>
@@ -1552,18 +1538,16 @@ export default function CheckoutPopup() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div
-                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                        activeField === "city"
+                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "city"
                           ? "border-blue-600"
                           : "border-gray-300"
-                      } rounded-md`}
+                        } rounded-md`}
                     >
                       <h2
-                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                          activeField === "city" || formData.city !== ""
+                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "city" || formData.city !== ""
                             ? "-translate-y-6"
                             : "translate-y-0"
-                        }`}
+                          }`}
                       >
                         City{" "}
                         <span
@@ -1588,18 +1572,16 @@ export default function CheckoutPopup() {
                     </div>
 
                     <div
-                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                        activeField === "state"
+                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "state"
                           ? "border-blue-600"
                           : "border-gray-300"
-                      } rounded-md`}
+                        } rounded-md`}
                     >
                       <h2
-                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                          activeField === "state" || formData.state !== ""
+                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "state" || formData.state !== ""
                             ? "-translate-y-6"
                             : "translate-y-0"
-                        }`}
+                          }`}
                       >
                         State{" "}
                         <span
@@ -1623,18 +1605,16 @@ export default function CheckoutPopup() {
                       />
                     </div>
                     <div
-                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                        activeField === "pincode"
+                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "pincode"
                           ? "border-blue-600"
                           : "border-gray-300"
-                      } rounded-md`}
+                        } rounded-md`}
                     >
                       <h2
-                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                          activeField === "pincode" || formData.pincode !== ""
+                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "pincode" || formData.pincode !== ""
                             ? "-translate-y-6"
                             : "translate-y-0"
-                        }`}
+                          }`}
                       >
                         Pincode{" "}
                         <span
@@ -1660,18 +1640,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "email"
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "email"
                         ? "border-blue-600"
                         : "border-gray-300"
-                    } rounded-md`}
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "email" || formData.email !== ""
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "email" || formData.email !== ""
                           ? "-translate-y-6"
                           : "translate-y-0"
-                      }`}
+                        }`}
                     >
                       Email (optional){" "}
                     </h2>
@@ -1731,12 +1709,11 @@ export default function CheckoutPopup() {
                 </div>
                 <div>
                   <div
-                    className={`flex items-center gap-2 ${
-                      cartItems.reduce(
-                        (acc, item) => acc + item.price * item.quantity,
-                        0
-                      ) > settings?.codLimit && "opacity-50 cursor-not-allowed"
-                    }`}
+                    className={`flex items-center gap-2 ${cartItems.reduce(
+                      (acc, item) => acc + item.price * item.quantity,
+                      0
+                    ) > settings?.codLimit && "opacity-50 cursor-not-allowed"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -1759,10 +1736,10 @@ export default function CheckoutPopup() {
                     (acc, item) => acc + item.price * item.quantity,
                     0
                   ) > settings?.codLimit && (
-                    <h2 className="text-red-500 text-xs">
-                      COD not available for orders above ₹{settings.codLimit}
-                    </h2>
-                  )}
+                      <h2 className="text-red-500 text-xs">
+                        COD not available for orders above ₹{settings.codLimit}
+                      </h2>
+                    )}
                 </div>
               </div>
             </div>
@@ -1808,17 +1785,16 @@ export default function CheckoutPopup() {
           {isAuthenticated && addressAdded && (
             <button
               onClick={pinCodeVerified ? handelPayment : checkPincode}
-              className={`w-full mt-4  text-sm ${
-                pinCodeVerified?.success
+              className={`w-full mt-4  text-sm ${pinCodeVerified?.success
                   ? "bg-blue-600 hover:bg-blue-700"
                   : " bg-green-600 hover:bg-green-700"
-              } text-white py-3 rounded-md  transition-colors`}
+                } text-white py-3 rounded-md  transition-colors`}
             >
               {pincodeChecking
                 ? "Checking..."
                 : pinCodeVerified?.success
-                ? `  Place Order (₹${total})`
-                : "Check Pincode"}
+                  ? `  Place Order (₹${total})`
+                  : "Check Pincode"}
             </button>
           )}
 
@@ -1830,7 +1806,6 @@ export default function CheckoutPopup() {
                   <Phone size={12} className="m-2" />
                 </div>
                 <span className="text-sm">+91 {user?.phone}</span>
-                {console.log("user phone", user?.phone)}
               </div>
               <div
                 onClick={() => {
@@ -1847,9 +1822,8 @@ export default function CheckoutPopup() {
 
         {/* Footer */}
         <div
-          className={`px-8 pb-4 ${
-            !isAuthenticated && "mt-[32vh]"
-          } text-xs flex justify-between mb-4 text-gray-500 text-center`}
+          className={`px-8 pb-4 ${!isAuthenticated && "mt-[32vh]"
+            } text-xs flex justify-between mb-4 text-gray-500 text-center`}
         >
           T&C | Privacy Policy | IGAZC5
           <br />

@@ -5,30 +5,47 @@ import Link from "next/link";
 import React from "react";
 
 export default function TeaPartyBanner({ content }) {
-  console.log("secondaryBanner content:", content);
+  // console.log("secondaryBanner content:", content);
+
+  // Check if link exists
+  const hasLink = content?.cta?.link;
+
+  // Image component to reuse
+  const ImageContent = () => (
+    <>
+      {/* Desktop / large screens image  */}
+      <Image
+        src={content?.image || "/images/teabanner.jpg"}
+        alt="Tea Party Banner"
+        fill
+        style={{ objectFit: "cover" }}
+        className="rounded-2xl hidden md:block z-0"
+      />
+
+      {/* Mobile image (shown on small screens) */}
+      <Image
+        src={content?.mobileImage || "/images/teabanner-mobile.jpg"}
+        alt="Tea Party Banner Mobile"
+        fill
+        style={{ objectFit: "cover" }}
+        className="rounded-2xl block md:hidden z-0"
+      />
+    </>
+  );
+
   return (
     <div className="w-full max-w-full mx-auto  relative py-10 lg:py-20 px-4">
       {/* Main banner container */}
       <div className="relative rounded-2xl bg-gray-300 min-h-[450px] overflow-hidden">
-        {/* Desktop / large screens image  */}
-        <Link href={content?.cta?.link}>
-          <Image
-            src={content?.image || "/images/teabanner.jpg"}
-            alt="Tea Party Banner"
-            fill
-            style={{ objectFit: "cover" }}
-            className="rounded-2xl hidden md:block z-0"
-          />
-
-          {/* Mobile image (shown on small screens) */}
-          <Image
-            src={content?.mobileImage || "/images/teabanner-mobile.jpg"}
-            alt="Tea Party Banner Mobile"
-            fill
-            style={{ objectFit: "cover" }}
-            className="rounded-2xl block md:hidden z-0"
-          />
-        </Link>
+        {hasLink ? (
+          <Link href={content.cta.link}>
+            <ImageContent />
+          </Link>
+        ) : (
+          <div>
+            <ImageContent />
+          </div>
+        )}
 
         {/* New Launch Badge */}
         {/* <div

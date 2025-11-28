@@ -19,7 +19,7 @@ const globalRoleSchema = new mongoose.Schema({
     permissions: [{ type: String }]
   }],
   createdAt: { type: Date, default: Date.now },
-  deletedAt: { type: Date ,default: null },
+  deletedAt: { type: Date, default: null },
 });
 
 const globalTenantSchema = new mongoose.Schema({
@@ -92,7 +92,7 @@ async function seedTenantDBs() {
     }
 
     await tenantConn.close();
-    console.log(`✅ Seeded tenant DB: ${tenant.companyName}`);
+    // console.log(`✅ Seeded tenant DB: ${tenant.companyName}`);
   }
 
   await globalConn.close();
@@ -102,10 +102,10 @@ async function seedTenantDBs() {
 // Run seeding
 seedTenantDBs()
   .then(() => {
-    console.log('✅ Seeding complete.');
+    // console.log('✅ Seeding complete.');
     process.exit(0);
   })
   .catch(err => {
-    console.error('❌ Seeding error:', err);
+    // console.error('❌ Seeding error:', err);
     process.exit(1);
   });

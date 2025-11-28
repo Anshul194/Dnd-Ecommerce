@@ -8,7 +8,7 @@ const saveCartToLocalStorage = (cartData) => {
   try {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartData));
   } catch (error) {
-    console.error("Failed to save cart to localStorage:", error);
+    // console.error("Failed to save cart to localStorage:", error);
   }
 };
 
@@ -17,7 +17,7 @@ const getCartFromLocalStorage = () => {
     const cartData = localStorage.getItem(CART_STORAGE_KEY);
     return cartData ? JSON.parse(cartData) : null;
   } catch (error) {
-    console.error("Failed to get cart from localStorage:", error);
+    // console.error("Failed to get cart from localStorage:", error);
     return null;
   }
 };
@@ -26,7 +26,7 @@ const clearCartFromLocalStorage = () => {
   try {
     localStorage.removeItem(CART_STORAGE_KEY);
   } catch (error) {
-    console.error("Failed to clear cart from localStorage:", error);
+    // console.error("Failed to clear cart from localStorage:", error);
   }
 };
 
@@ -48,7 +48,7 @@ function mapServerCartToLocal(serverCart) {
       it.variant && (it.variant._id || it.variant)
         ? it.variant._id || it.variant
         : null;
-    console.log("product details : ", it.product);
+    // console.log("product details : ", it.product);
     const id = `${productId}:${variantId || ""}`;
     return {
       id,
@@ -113,7 +113,7 @@ export const addToCart = createAsyncThunk(
         if (serverCart && serverCart.userIsGestId) {
           try {
             localStorage.setItem("guestId", serverCart.userIsGestId);
-          } catch (e) {}
+          } catch (e) { }
         }
 
         const mapped = mapServerCartToLocal(serverCart);

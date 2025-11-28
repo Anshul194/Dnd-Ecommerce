@@ -20,8 +20,9 @@ import {
   Cross,
   Plus,
   Clipboard,
+  RefreshCw,
 } from "lucide-react";
-import { fetchOrderById, fetchOrders } from "@/app/store/slices/orderSlice";
+import { fetchOrderById, fetchOrders, cancelOrder } from "@/app/store/slices/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Loading from "@/components/Loading";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -29,6 +30,8 @@ import { addReview, fetchProducts } from "@/app/store/slices/productSlice";
 import { set } from "mongoose";
 import { LoadingSpinner } from "../common/Loading";
 import Link from "next/link";
+import ReturnRequestModal from "../orders/ReturnRequestModal";
+import ReturnStatusCard from "../orders/ReturnStatusCard";
 
 const Orders = () => {
   const { orders, loading, currentOrder } = useSelector((state) => state.order);
@@ -46,6 +49,32 @@ const Orders = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+
+  const canRequestReturn = () => {
+    if (!currentOrder) return false;
+    const eligibleStatuses = ['Pending', 'delivered', "pending"];
+    const hasReturnRequested = currentOrder.return_details?.is_return_requested;
+    return eligibleStatuses.includes(currentOrder.status) && !hasReturnRequested;
+  };
+
+  const canCancelOrder = () => {
+    if (!currentOrder) return false;
+    const eligibleStatuses = ['pending', 'processing'];
+    return eligibleStatuses.includes(currentOrder.status);
+  };
+
+  const handleCancelOrder = async () => {
+    if (window.confirm("Are you sure you want to cancel this order?")) {
+      await dispatch(cancelOrder(currentOrder._id));
+    }
+  };
+
+  const fetchOrderDetails = () => {
+    if (orderId) {
+      dispatch(fetchOrderById(orderId));
+    }
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
@@ -248,11 +277,10 @@ const Orders = () => {
                         className="focus:outline-none"
                       >
                         <Star
-                          className={`h-8 w-8 ${
-                            star <= rating
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
-                          }`}
+                          className={`h-8 w-8 ${star <= rating
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                            }`}
                         />
                       </button>
                     ))}
@@ -356,78 +384,108 @@ const Orders = () => {
               {console.log("check current order == > : ", currentOrder)}
               {(currentOrder?.shipping_details?.reference_number ||
                 currentOrder?.shipping_details?.platform) && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                    Shipping Details
-                  </h2>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                      Shipping Details
+                    </h2>
 
-                  <div className="flex justify-between">
-                    <div>
-                      <div className="flex  items-center gap-2">
-                        <h1 className="text-md font-semibold text-gray-900">
-                          Shipping Number
-                        </h1>
-                        {currentOrder?.shipping_details?.reference_number && (
-                          <Clipboard
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              const ref =
-                                currentOrder?.shipping_details
-                                  ?.reference_number || "";
-                              try {
-                                await navigator.clipboard.writeText(ref);
-                                // simple feedback; replace with your toast if available
-                                alert("Tracking number copied to clipboard");
-                              } catch (err) {
-                                console.error("Copy failed", err);
-                                alert("Failed to copy tracking number");
-                              }
-                            }}
-                            title="Copy tracking number"
-                            className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer inline-block ml-2"
-                          />
-                        )}
+                    <div className="flex justify-between">
+                      <div>
+                        <div className="flex  items-center gap-2">
+                          <h1 className="text-md font-semibold text-gray-900">
+                            Shipping Number
+                          </h1>
+                          {currentOrder?.shipping_details?.reference_number && (
+                            <Clipboard
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const ref =
+                                  currentOrder?.shipping_details
+                                    ?.reference_number || "";
+                                try {
+                                  await navigator.clipboard.writeText(ref);
+                                  // simple feedback; replace with your toast if available
+                                  alert("Tracking number copied to clipboard");
+                                } catch (err) {
+                                  console.error("Copy failed", err);
+                                  alert("Failed to copy tracking number");
+                                }
+                              }}
+                              title="Copy tracking number"
+                              className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer inline-block ml-2"
+                            />
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          {currentOrder?.shipping_details?.reference_number ||
+                            "N/A"}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-500">
-                        {currentOrder?.shipping_details?.reference_number ||
-                          "N/A"}
-                      </p>
+
+                      {currentOrder?.shipping_details?.platform === "dtdc" && (
+                        <a
+                          target="_blank"
+                          href="https://www.dtdc.com/track-your-shipment/"
+                          className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
+                        >
+                          Track here
+                        </a>
+                      )}
+
+                      {currentOrder?.shipping_details?.platform ===
+                        "bluedart" && (
+                          <a
+                            target="_blank"
+                            href={currentOrder?.shipping_details?.tracking_url}
+                            className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
+                          >
+                            Track here
+                          </a>
+                        )}
+
+                      {currentOrder?.shipping_details?.platform ===
+                        "delhivery" && (
+                          <a
+                            target="_blank"
+                            href={currentOrder?.shipping_details?.tracking_url}
+                            className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
+                          >
+                            Track here
+                          </a>
+                        )}
                     </div>
-
-                    {currentOrder?.shipping_details?.platform === "dtdc" && (
-                      <a
-                        target="_blank"
-                        href="https://www.dtdc.com/track-your-shipment/"
-                        className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
-                      >
-                        Track here
-                      </a>
-                    )}
-
-                    {currentOrder?.shipping_details?.platform ===
-                      "bluedart" && (
-                      <a
-                        target="_blank"
-                        href={currentOrder?.shipping_details?.tracking_url}
-                        className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
-                      >
-                        Track here
-                      </a>
-                    )}
-
-                    {currentOrder?.shipping_details?.platform ===
-                      "delhivery" && (
-                      <a
-                        target="_blank"
-                        href={currentOrder?.shipping_details?.tracking_url}
-                        className="bg-blue-500 px-6 py-1 h-fit rounded-full font-medium text-white cursor-pointer"
-                      >
-                        Track here
-                      </a>
-                    )}
                   </div>
+                )}
+
+              {/* Return Status Card */}
+              <ReturnStatusCard order={currentOrder} />
+
+              {/* Return Request Button */}
+              {canRequestReturn() && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                  <button
+                    onClick={() => setShowReturnModal(true)}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw size={20} />
+                    Request Return & Refund
+                  </button>
                 </div>
               )}
+
+              {/* Cancel Order Button */}
+              {canCancelOrder() && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                  <button
+                    onClick={handleCancelOrder}
+                    className="w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium flex items-center justify-center gap-2"
+                  >
+                    <XCircle size={20} />
+                    Cancel Order
+                  </button>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
@@ -756,7 +814,7 @@ const Orders = () => {
                             >
                               <div className="flex-1 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                                 {product?.thumbnail?.url ||
-                                product?.images?.[0]?.url ? (
+                                  product?.images?.[0]?.url ? (
                                   <img
                                     src={
                                       product?.thumbnail?.url ||
@@ -803,6 +861,14 @@ const Orders = () => {
                 </div>
               </div>
             </div>
+
+            {/* Return Request Modal */}
+            <ReturnRequestModal
+              order={currentOrder}
+              isOpen={showReturnModal}
+              onClose={() => setShowReturnModal(false)}
+              onSuccess={fetchOrderDetails}
+            />
           </div>
         ) : (
           <div>

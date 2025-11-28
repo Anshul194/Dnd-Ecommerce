@@ -119,18 +119,18 @@ export default function Footer() {
       response.data.data.map((item) => {
         footerData[item._id] = item.pages;
       });
-      console.log("Response from API: ==>", footerData);
+      //console.log("Response from API: ==>", footerData);
       setData(footerData);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      //console.error("Error fetching data:", error);
     }
   };
 
   useEffect(() => {
     getData();
   }, []);
-  
-  console.log("current path == > " , pathname)
+
+  //console.log("current path == > " , pathname)
 
   if (
     pathname.includes("/signup") ||

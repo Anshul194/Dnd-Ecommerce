@@ -1007,6 +1007,34 @@ class OrderService {
     }
   }
 
+  //cancelOrder
+  async cancelOrder(orderId, userId, conn) {
+    try {
+      const order = await this.orderRepository.findById(orderId);
+
+      if (userId && order.user.toString() !== userId.toString()) {
+        throw new Error("Unauthorized to cancel this order");
+      }
+
+      if (['delivered', 'cancelled', 'shipped'].includes(order.status)) {
+        throw new Error(`Cannot cancel order with status: ${order.status}`);
+      }
+
+      const updatedOrder = await this.orderRepository.updateOrder(orderId, {
+        status: 'cancelled',
+        cancelledAt: new Date()
+      });
+
+      return {
+        success: true,
+        message: "Order cancelled successfully",
+        data: updatedOrder
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getAllOrders(request, conn) {
     try {
       const searchParams = request.nextUrl.searchParams;
@@ -1390,8 +1418,8 @@ class OrderService {
     const latestStatus =
       header.strStatus || statusHistory.length
         ? statusHistory[statusHistory.length - 1]?.action ||
-          statusHistory[statusHistory.length - 1]?.raw?.strAction ||
-          null
+        statusHistory[statusHistory.length - 1]?.raw?.strAction ||
+        null
         : null;
 
     // ensure the response has a place where existing code expects statusDescription
@@ -1417,8 +1445,7 @@ class OrderService {
         null,
       tracking_url:
         order.shipping_details?.tracking_url ||
-        `https://www.dtdc.in/tracking?awb=${
-          header.strShipmentNo || header.strRefNo || ""
+        `https://www.dtdc.in/tracking?awb=${header.strShipmentNo || header.strRefNo || ""
         }`,
       status_history: statusHistory,
       current_status: latestStatus || order.status || "unknown",
@@ -1432,7 +1459,7 @@ class OrderService {
       shipping_details: shippingDetails,
     });
 
-    console.log("checking order for shipping method Dtdc", order);
+    ////console.log("checking order for shipping method Dtdc", order);
     const userService = new UserService(conn);
 
     let user = order.user;
@@ -1465,7 +1492,7 @@ class OrderService {
           .lean()
           .exec()
           .catch((err) => {
-            console.error("Failed to fetch product by id", item.product, err);
+            ////console.error("Failed to fetch product by id", item.product, err);
             return null;
           });
       } else if (item.product) {
@@ -1473,31 +1500,28 @@ class OrderService {
           .lean()
           .exec()
           .catch((err) => {
-            console.error("Failed to fetch product by name", item.product, err);
+            ////console.error("Failed to fetch product by name", item.product, err);
             return null;
           });
       } else {
-        console.warn(
-          "No productId or product name available for order item",
-          item
-        );
+
         return null;
       }
     });
     const products = await Promise.all(productPromises);
-    console.log("products ===> ", products);
+    ////console.log("products ===> ", products);
     products.forEach((product, index) => {
       const item = items[index];
       payload2.extraFields[`productName${index + 1}`] =
         product?.name || item?.product || "";
     });
 
-    console.log("payload is ===> ", payload2);
+    ////console.log("payload is ===> ", payload2);
     const response = await whatsappService.sendWebhookRequest({ ...payload2 });
-    console.log("api response ==> ", response);
+    ////console.log("api response ==> ", response);
 
     if (!response.success) {
-      console.log("failed to send message on whatsapp");
+      ////console.log("failed to send message on whatsapp");
       result.whatsappError = response.error;
     }
 
@@ -1533,10 +1557,10 @@ class OrderService {
         Array.isArray(respData.ShipmentData) && respData.ShipmentData.length
           ? respData.ShipmentData
           : respData.ShipmentData
-          ? [respData.ShipmentData]
-          : respData.Shipment
-          ? [{ Shipment: respData.Shipment }]
-          : [];
+            ? [respData.ShipmentData]
+            : respData.Shipment
+              ? [{ Shipment: respData.Shipment }]
+              : [];
 
       const firstEntry = shipmentArray[0];
       const shipment = firstEntry ? firstEntry.Shipment || firstEntry : null;
@@ -1655,7 +1679,7 @@ class OrderService {
             .lean()
             .exec()
             .catch((err) => {
-              console.error("Failed to fetch product by id", item.product, err);
+              ////console.error("Failed to fetch product by id", item.product, err);
               return null;
             });
         } else if (item.product) {
@@ -1663,37 +1687,30 @@ class OrderService {
             .lean()
             .exec()
             .catch((err) => {
-              console.error(
-                "Failed to fetch product by name",
-                item.product,
-                err
-              );
+
               return null;
             });
         } else {
-          console.warn(
-            "No productId or product name available for order item",
-            item
-          );
+
           return null;
         }
       });
       const products = await Promise.all(productPromises);
-      console.log("products ===> ", products);
+      ////console.log("products ===> ", products);
       products.forEach((product, index) => {
         const item = items[index];
         payload2.extraFields[`productName${index + 1}`] =
           product?.name || item?.product || "";
       });
 
-      console.log("payload is ===> ", payload2);
+      ////console.log("payload is ===> ", payload2);
       const response2 = await whatsappService.sendWebhookRequest({
         ...payload2,
       });
-      console.log("api response ==> ", response2);
+      ////console.log("api response ==> ", response2);
 
       if (!response2.success) {
-        console.log("filed to send message on whatsapp");
+        ////console.log("filed to send message on whatsapp");
         result.whatsappError = response2.error;
       }
 
@@ -1773,8 +1790,8 @@ class OrderService {
       const waybills = Array.isArray(waybillsResp)
         ? waybillsResp
         : typeof waybillsResp === "string"
-        ? waybillsResp.split(",").map((w) => w.trim())
-        : [];
+          ? waybillsResp.split(",").map((w) => w.trim())
+          : [];
 
       if (!waybills.length)
         throw new Error("Failed to get Delhivery waybill numbers");
@@ -1832,11 +1849,10 @@ class OrderService {
         seller_inv: order.paymentId || order._id.toString(),
         pin,
         products_desc: await this.buildProductDescription(order),
-        add: `${order.shippingAddress.addressLine1}${
-          order.shippingAddress.addressLine2
-            ? ", " + order.shippingAddress.addressLine2
-            : ""
-        }`,
+        add: `${order.shippingAddress.addressLine1}${order.shippingAddress.addressLine2
+          ? ", " + order.shippingAddress.addressLine2
+          : ""
+          }`,
         state: order.shippingAddress.state,
         city: order.shippingAddress.city,
         phone: order.shippingAddress.phoneNumber,
@@ -2487,9 +2503,8 @@ class OrderService {
 
         return {
           success: false,
-          message: `Bluedart waybill request failed: ${
-            err.response?.data?.title || err.message
-          }`,
+          message: `Bluedart waybill request failed: ${err.response?.data?.title || err.message
+            }`,
           error: {
             status: err.response?.status,
             data: err.response?.data,
@@ -2505,8 +2520,7 @@ class OrderService {
       // Step 4: Process response
       if (!waybillResp.data?.GenerateWayBillResult) {
         throw new Error(
-          `Bluedart waybill generation failed: ${
-            waybillResp.data?.ErrorMessage || "Unknown error"
+          `Bluedart waybill generation failed: ${waybillResp.data?.ErrorMessage || "Unknown error"
           }`
         );
       }
@@ -2543,8 +2557,7 @@ class OrderService {
         };
       } else {
         throw new Error(
-          `Bluedart waybill generation failed: ${
-            result.Status?.[0]?.StatusInformation || "Unknown error"
+          `Bluedart waybill generation failed: ${result.Status?.[0]?.StatusInformation || "Unknown error"
           }`
         );
       }
