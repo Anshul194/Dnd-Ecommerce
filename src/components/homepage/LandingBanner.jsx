@@ -49,7 +49,7 @@ function LandingBanner({ content }) {
   };
 
   return (
-    <div className="relative  h-fit max-h-[527px] overflow-hidden">
+    <div className="relative h-[527px] max-h-[527px] overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
