@@ -123,7 +123,7 @@ export default function TestimonialSlider({ content }) {
                   </div>
 
                   {/* Gray placeholder box */}
-                  <div className="w-full h-32 bg-gray-300 rounded-lg">
+                  <div className="w-full h-56 bg-gray-300 rounded-lg">
                     {/* Placeholder for image or additional content */}
                     <Image
                       src={

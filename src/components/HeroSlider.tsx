@@ -56,17 +56,17 @@ export function HeroSlider({ content }) {
           transition={{ duration: 0.7 }}
           className="absolute inset-0"
         >
-          <div
-            className="w-full h-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${
+          <div className="relative w-full h-full">
+            <img
+              src={
                 isMobile && content[currentSlide]?.content?.mobileImage
                   ? content[currentSlide]?.content?.mobileImage
                   : content[currentSlide]?.content?.image
-              })`,
-            }}
-          >
-            <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">
+              }
+              alt={content[currentSlide]?.content?.title || "Banner"}
+              className="w-full h-[200px] object-contain"
+            />
+            <div className="absolute inset-0 h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">
               <div className="container  max-w-7xl mx-auto px-4 text-center text-white">
                 <motion.h1
                   initial={{ opacity: 0, y: 30 }}
