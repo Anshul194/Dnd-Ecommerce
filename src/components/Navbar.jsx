@@ -21,7 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchCategories,
@@ -55,6 +55,8 @@ export default function Navbar({ initialCategories = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState([]);
   const [isClient, setIsClient] = useState(false);
+  const searchRef = useRef(null);
+  const searchToggleRef = useRef(null);
 
   const LikedProducts = useSelector(selectWishlistItems);
   const dispatch = useDispatch();
@@ -94,6 +96,25 @@ export default function Navbar({ initialCategories = [] }) {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Close search dropdown when clicking outside of it or the toggle button
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!showSearch) return;
+      const target = e.target;
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(target) &&
+        searchToggleRef.current &&
+        !searchToggleRef.current.contains(target)
+      ) {
+        setShowSearch(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showSearch]);
 
   // Ensure mobile menu subcategory is collapsed when sheet opens/closes
   useEffect(() => {
@@ -747,6 +768,7 @@ export default function Navbar({ initialCategories = [] }) {
             <div className="flex items-center gap-2 md:gap-4 ">
               {/* Search Icon */}
               <button
+                ref={searchToggleRef}
                 onClick={() => setShowSearch(!showSearch)}
                 className="hover:text-[#3C950D] max-sm:hidden text-black outline-none transition-all hover:scale-110"
               >
@@ -802,6 +824,7 @@ export default function Navbar({ initialCategories = [] }) {
 
         {/* Search Bar Dropdown */}
         <div
+          ref={searchRef}
           className={`overflow-hidden transition-all duration-300 ease-in-out ${
             showSearch ? "max-h-fit opacity-100" : "max-h-0 opacity-0"
           }`}

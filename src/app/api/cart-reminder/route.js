@@ -123,15 +123,9 @@ export async function GET(request) {
             phone,
             name,
             email,
-            productName1: productName,
-            time: humanPeriod,
             extraFields: {
-              cartId: String(cart._id),
-              productId: String(item.product || ""),
-              quantity: item.quantity,
-              price: item.price,
-              addedAt: item.addedAt,
-              which: "first",
+              status: "abandonment",
+              productName1: productName,
             },
           };
 
@@ -164,15 +158,9 @@ export async function GET(request) {
               phone,
               name,
               email,
-              productName1: productName,
-              time: "1 week",
               extraFields: {
-                cartId: String(cart._id),
-                productId: String(item.product || ""),
-                quantity: item.quantity,
-                price: item.price,
-                addedAt: item.addedAt,
-                which: "second",
+                status: "abandonment",
+                productName1: productName,
               },
             };
 

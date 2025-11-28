@@ -4,13 +4,29 @@ import {
 } from "@/app/store/slices/productSlice";
 import { Heart, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import React, { use, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import useAuthRedirect from "@/hooks/useAuthRedirect";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  selectWishlistItems,
+  fetchWishlist,
+} from "@/app/store/slices/wishlistSlice";
+import { toast } from "react-toastify";
 
 export default function RenderSliderVariant() {
-  const [products, setProducts] = React.useState([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [wishlistedIds, setWishlistedIds] = useState<Set<string>>(new Set());
   const selectedProducts = useSelector(selectSelectedProduct);
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector(
+    (state: any) => state.auth.isAuthenticated
+  );
+  const userId = useSelector((state: any) => state.auth.user?._id);
+  const { redirectToLogin } = useAuthRedirect();
+  const wishlistItems = useSelector((state: any) => selectWishlistItems(state));
+
   const scrollLeft = () => {
     const container = document.getElementById("products-slider");
     if (!container) return;
@@ -23,63 +39,156 @@ export default function RenderSliderVariant() {
     container.scrollBy({ left: container.clientWidth, behavior: "smooth" });
   };
 
-  // const products = [
-  //   {
-  //     id: 1,
-  //     name: "Glamorous Garnets",
-  //     rating: 5,
-  //     reviews: 238,
-  //     price: 563,
-  //     outOfStock: false,
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Luxury Limelight",
-  //     rating: 4,
-  //     reviews: 839,
-  //     price: 238,
-  //     outOfStock: true,
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Sumptuous Splendor",
-  //     rating: 4,
-  //     reviews: 435,
-  //     price: 183,
-  //     outOfStock: false,
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Enchanting Ensembles",
-  //     rating: 5,
-  //     reviews: 954,
-  //     price: 39,
-  //     outOfStock: false,
-  //   },
-  // ];
-
   const fetchProducts = async () => {
-    const res = await dispatch(
-      fetchFrequentlyPurchasedProducts({
-        frequentlyPurchased: true,
-        limit: 20,
-      })
-    );
-    console.log("frequently purchased products ====> ", res);
-    if (res.meta.requestStatus === "fulfilled") {
-      setProducts(res?.payload?.products || []);
-    } else {
-      console.error("Failed to fetch products");
+    try {
+      const res: any = await dispatch(
+        // @ts-ignore - thunk dispatch typing in this file
+        fetchFrequentlyPurchasedProducts({
+          frequentlyPurchased: true,
+          limit: 20,
+        })
+      );
+      console.log("frequently purchased products ====> ", res);
+      if (res?.meta?.requestStatus === "fulfilled") {
+        const prods = res?.payload?.products || [];
+        setProducts(prods);
+        if (userId) {
+          const initial = new Set<string>(
+            prods
+              .filter(
+                (p: any) =>
+                  Array.isArray(p.wishlist) && p.wishlist.includes(userId)
+              )
+              .map((p: any) => String(p._id))
+          );
+          setWishlistedIds(initial);
+        }
+      } else {
+        console.error("Failed to fetch frequently purchased products", res);
+      }
+    } catch (err) {
+      console.error("fetchProducts error", err);
     }
   };
 
-  console.log("products is ====> ", products);
-
   useEffect(() => {
     fetchProducts();
-  }, []);
+    // ensure wishlist is loaded so hearts reflect server state
+    if (isAuthenticated) dispatch(fetchWishlist());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
-  const StarRating = ({ rating, reviews }) => (
+  // sync wishlisted ids when products or user wishlist change
+  useEffect(() => {
+    if (
+      !userId &&
+      (!Array.isArray(wishlistItems) || wishlistItems.length === 0)
+    )
+      return;
+    const fromProducts = new Set<string>(
+      products
+        .filter(
+          (p: any) => Array.isArray(p.wishlist) && p.wishlist.includes(userId)
+        )
+        .map((p: any) => String(p._id))
+    );
+    const fromGlobal = new Set<string>(
+      (Array.isArray(wishlistItems) ? wishlistItems : []).map((it: any) =>
+        String(it.product?._id || it.productId || it._id)
+      )
+    );
+    const merged = new Set<string>([...fromProducts, ...fromGlobal]);
+    setWishlistedIds(merged);
+  }, [products, wishlistItems, userId]);
+
+  const toggleWishlist = async (e: React.MouseEvent, product: any) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (!isAuthenticated) {
+      redirectToLogin();
+      return;
+    }
+
+    const id = String(product._id);
+    const currently = wishlistedIds.has(id);
+
+    if (!currently) {
+      // optimistic add
+      setWishlistedIds((prev) => new Set(prev).add(id));
+      try {
+        // @ts-ignore
+        const resultAction: any = await dispatch(
+          addToWishlist({
+            product: product._id,
+            variant: product?.variants?.[0]?._id,
+          })
+        );
+        console.log("addToWishlist result:", resultAction);
+        if (resultAction?.meta?.requestStatus === "fulfilled") {
+          toast.success("Added to wishlist");
+          // refresh global wishlist
+          // @ts-ignore
+          dispatch(fetchWishlist());
+        } else {
+          throw (
+            resultAction?.payload ||
+            resultAction?.error ||
+            new Error("Add to wishlist failed")
+          );
+        }
+      } catch (err) {
+        console.error("addToWishlist error:", err);
+        setWishlistedIds((prev) => {
+          const n = new Set(prev);
+          n.delete(id);
+          return n;
+        });
+        toast.error("Failed to add to wishlist");
+      }
+    } else {
+      // optimistic remove
+      setWishlistedIds((prev) => {
+        const n = new Set(prev);
+        n.delete(id);
+        return n;
+      });
+      try {
+        // @ts-ignore
+        const resultAction: any = await dispatch(
+          removeFromWishlist({
+            productId: product._id,
+            variantId: product?.variants?.[0]?._id,
+          })
+        );
+        console.log("removeFromWishlist result:", resultAction);
+        if (resultAction?.meta?.requestStatus === "fulfilled") {
+          toast.success("Removed from wishlist");
+          // refresh global wishlist
+          // @ts-ignore
+          dispatch(fetchWishlist());
+        } else {
+          throw (
+            resultAction?.payload ||
+            resultAction?.error ||
+            new Error("Remove from wishlist failed")
+          );
+        }
+      } catch (err) {
+        console.error("removeFromWishlist error:", err);
+        setWishlistedIds((prev) => new Set(prev).add(id));
+        toast.error("Failed to remove from wishlist");
+      }
+    }
+  };
+
+  const StarRating = ({
+    rating,
+    reviews,
+  }: {
+    rating: number;
+    reviews: number;
+  }) => (
     <div className="flex items-center gap-1 mb-2">
       <div className="flex">
         {[...Array(5)].map((_, i) => (
@@ -135,72 +244,93 @@ export default function RenderSliderVariant() {
         >
           <div className="flex gap-3 pb-4 max-w-full">
             {products?.length > 0 &&
-              products?.map((product) => {
+              products.map((product) => {
                 if (product._id === selectedProducts?._id) return null;
                 const imgSrc =
                   product?.thumbnail?.url || product?.images?.[0]?.url || null;
+
                 return (
-                  <Link
+                  <div
                     key={product._id}
-                    href={`/product-detail/${product.slug}`}
+                    className="bg-white flex-shrink-0 snap-start w-52 h-64 px-1 relative"
                   >
-                    <div className="bg-white flex-shrink-0 snap-start w-52 h-64 px-1">
-                      {/* Product Image */}
-                      <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">
-                        {imgSrc ? (
-                          <img
-                            src={imgSrc}
-                            alt={
-                              product?.thumbnail?.alt ||
-                              product?.images?.[0]?.alt ||
-                              "Product"
-                            }
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : null}
+                    {/* Heart button positioned above the image but outside the Link to avoid navigation */}
+                    <div className="absolute right-2 top-2 z-20">
+                      <button
+                        type="button"
+                        onClick={(e) => toggleWishlist(e, product)}
+                        className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm"
+                        aria-label="Toggle wishlist"
+                      >
+                        <Heart
+                          size={16}
+                          fill={
+                            wishlistedIds.has(String(product._id))
+                              ? "currentColor"
+                              : "none"
+                          }
+                          className={
+                            wishlistedIds.has(String(product._id))
+                              ? "text-red-500"
+                              : "text-gray-400"
+                          }
+                        />
+                      </button>
+                    </div>
 
-                        {/* Heart Icon */}
-                        <div className="absolute top-3 right-3">
-                          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
-                            <Heart className="w-4 h-4 text-gray-400" />
-                          </div>
-                        </div>
-
-                        {/* Out of Stock Badge */}
-                        {product.outOfStock && (
-                          <div className="absolute top-3 left-3">
-                            <div className="bg-gray-600 text-white text-xs px-2 py-1 rounded">
-                              OUT OF STOCK
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Product Info */}
+                    <Link href={`/productDetail/${product.slug}`}>
                       <div>
-                        <h3 className="font-medium poppins text-black mb-2">
-                          {product.name}
-                        </h3>
-                        {product?.reviews > 0 && (
-                          <StarRating
-                            rating={product.rating}
-                            reviews={product.reviews}
-                          />
-                        )}
-                        <div className="text-lg poppins-medium font-bold text-black">
-                          $
-                          {product.variants?.[0]?.salePrice ||
-                            product.variants?.[0]?.price ||
-                            200}
-                          {product.variants?.[0]?.salePrice && (
-                            <span className="line-through ml-2 text-gray-500">
-                              ${product.variants?.[0]?.price}
-                            </span>
+                        {/* Product Image */}
+                        <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">
+                          {imgSrc ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={imgSrc}
+                              alt={
+                                product?.thumbnail?.alt ||
+                                product?.images?.[0]?.alt ||
+                                "Product"
+                              }
+                              className="w-full h-full object-cover rounded-lg"
+                            />
+                          ) : null}
+
+                          {/* Out of Stock Badge */}
+                          {product.outOfStock && (
+                            <div className="absolute top-3 left-3">
+                              <div className="bg-gray-600 text-white text-xs px-2 py-1 rounded">
+                                OUT OF STOCK
+                              </div>
+                            </div>
                           )}
                         </div>
+
+                        {/* Product Info */}
+                        <div>
+                          <h3 className="font-medium poppins text-black mb-2">
+                            {product.name}
+                          </h3>
+                          {product?.reviews > 0 && (
+                            <StarRating
+                              rating={product.rating}
+                              reviews={product.reviews}
+                            />
+                          )}
+                          <div className="text-lg poppins-medium font-bold text-black">
+                            <span className="mr-2">Rs</span>
+                            {product.variants?.[0]?.salePrice ||
+                              product.variants?.[0]?.price ||
+                              200}
+                            {product.variants?.[0]?.salePrice && (
+                              <span className="line-through ml-2 text-gray-500">
+                                <span className="mr-2">Rs</span>{product.variants?.[0]?.price}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 );
               })}
           </div>

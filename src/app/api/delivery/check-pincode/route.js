@@ -68,6 +68,7 @@ export async function POST(req) {
       let extraData = {};
       //console.log("Checking shipping method:", method.name);
       if (method.name === "DTDC") {
+        
         //console.log("DTDC method selected <<<<<>>>>>>>");
         // Call DTDC API
 
@@ -79,7 +80,7 @@ export async function POST(req) {
           body: JSON.stringify({ orgPincode, desPincode }),
         });
 
-        //console.log("DTDC API response status: ===========>", response);
+        console.log("DTDC API response status: ===========>", response);
 
         if (!response.ok) {
           throw new Error(`DTDC API responded with status: ${response.status}`);
@@ -123,7 +124,7 @@ export async function POST(req) {
             },
           });
 
-          //console.log("Delhivery API response status: ===========>", response);
+          console.log("Delhivery API response status: ===========>", response);
 
           if (!response.statusText.includes("OK")) {
             throw new Error(

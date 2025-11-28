@@ -49,7 +49,7 @@ function LandingBanner({ content }) {
   };
 
   return (
-    <div className="relative   h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
+    <div className="relative h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
@@ -60,7 +60,7 @@ function LandingBanner({ content }) {
           className="absolute inset-0"
         >
           <div
-            className="w-full h-full  bg-center"
+            className="w-full h-full bg-center"
             style={{
               backgroundImage: `url(${
                 isMobile && content?.[currentSlide]?.content?.mobileImage
