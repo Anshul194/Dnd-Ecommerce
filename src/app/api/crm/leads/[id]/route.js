@@ -1,67 +1,75 @@
-import { getSubdomain, getDbConnection } from '../../../../lib/tenantDb';
-import {
-  updateLeadController,
-  deleteLeadController,
-  getLeadByIdController,
-} from '../../../../lib/controllers/leadController';
 import { NextResponse } from 'next/server';
-import { verifyTokenAndUser } from '../../../../middleware/commonAuth';
+import { getSubdomain, getDbConnection } from '@/app/lib/tenantDb.js';
+import { getLeadByIdService, updateLeadService, deleteLeadService } from '@/app/lib/services/leadService.js';
 
-// GET /api/crm/leads/[id]
-export async function GET(request, context) {
-  try {
-    // Authenticate user first
-    const authResult = await verifyTokenAndUser(request);
-    if (authResult.error) return authResult.error;
-    
-    // Add user to request object for easy access
-    request.user = authResult.user;
+export async function GET(request, { params }) {
+    try {
+        const { id } = await params;
+        const subdomain = getSubdomain(request);
+        const conn = await getDbConnection(subdomain);
 
-    const subdomain = getSubdomain(request);
-    const conn = await getDbConnection(subdomain);
-    if (!conn) {
-      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+        const result = await getLeadByIdService(id, conn);
+        if (!result) {
+            return NextResponse.json({ message: "Lead not found" }, { status: 404 });
+        }
+        return NextResponse.json(result, { status: 200 });
+    } catch (error) {
+        console.error("Error fetching lead:", error);
+        return NextResponse.json({ message: error.message }, { status: 500 });
     }
-
-    const { id } = context.params;
-    return await getLeadByIdController(id, conn);
-  } catch (err) {
-    //console.error('GET /crm/leads/:id error:', err);
-    return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
-  }
 }
 
-// PUT /api/crm/leads/[id]
-export async function PUT(request, context) {
-  try {
-    const subdomain = getSubdomain(request);
-    const conn = await getDbConnection(subdomain);
-    if (!conn) {
-      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-    }
+export async function PUT(request, { params }) {
+    try {
+        const { id } = await params;
+        const subdomain = getSubdomain(request);
+        const conn = await getDbConnection(subdomain);
+        const body = await request.json();
 
-    const body = await request.json();
-    const { id } = context.params;
-    return await updateLeadController(body, id, conn);
-  } catch (err) {
-    //console.error('PUT /crm/leads/:id error:', err);
-    return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
-  }
+        // Ensure fullName is populated if firstName/lastName are provided
+        if (body.firstName || body.lastName) {
+            body.fullName = `${body.firstName || ''} ${body.lastName || ''}`.trim();
+        }
+
+        // Sanitize ObjectId fields - convert empty strings to null
+        const objectIdFields = ['assignedTo', 'convertedTo'];
+        objectIdFields.forEach(field => {
+            if (body[field] === '' || body[field] === null || body[field] === undefined) {
+                body[field] = null;
+            }
+        });
+
+        // Remove null values to avoid overwriting existing data with null
+        Object.keys(body).forEach(key => {
+            if (body[key] === null && !objectIdFields.includes(key)) {
+                delete body[key];
+            }
+        });
+
+        const result = await updateLeadService(id, body, conn);
+        if (!result) {
+            return NextResponse.json({ message: "Lead not found" }, { status: 404 });
+        }
+        return NextResponse.json(result, { status: 200 });
+    } catch (error) {
+        console.error("Error updating lead:", error);
+        return NextResponse.json({ message: error.message }, { status: 500 });
+    }
 }
 
-// DELETE /api/crm/leads/[id]
-export async function DELETE(request, context) {
-  try {
-    const subdomain = getSubdomain(request);
-    const conn = await getDbConnection(subdomain);
-    if (!conn) {
-      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
-    }
+export async function DELETE(request, { params }) {
+    try {
+        const { id } = await params;
+        const subdomain = getSubdomain(request);
+        const conn = await getDbConnection(subdomain);
 
-    const { id } = context.params;
-    return await deleteLeadController(id, conn);
-  } catch (err) {
-    //console.error('DELETE /crm/leads/:id error:', err);
-    return NextResponse.json({ success: false, message: err.message || 'Server error' }, { status: 500 });
-  }
+        const result = await deleteLeadService(id, conn);
+        if (!result) {
+            return NextResponse.json({ message: "Lead not found" }, { status: 404 });
+        }
+        return NextResponse.json({ message: "Lead deleted successfully" }, { status: 200 });
+    } catch (error) {
+        console.error("Error deleting lead:", error);
+        return NextResponse.json({ message: error.message }, { status: 500 });
+    }
 }
