@@ -207,7 +207,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               </button>
             </div>
             {/* Product Image */}
-            <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center">
+            <div className="flex h-56  max-sm:h-56 max-sm:w-fit max-sm:mx-auto justify-center items-center">
+            {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
               <Image
                 src={product?.thumbnail?.url || product.images?.[0]?.url}
                 alt={product?.thumbnail?.alt || product.images?.[0]?.alt}

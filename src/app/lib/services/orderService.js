@@ -312,7 +312,7 @@ class OrderService {
       //consolle.log("Checking order data: ===>");
       //consolle.log(
       //   userId,
-      //   items,
+      //   items, 
       //   items.length,
       //   shippingAddress,
       //   billingAddress,

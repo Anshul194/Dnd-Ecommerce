@@ -56,7 +56,7 @@ export default class NextelWhatsapp {
       return { success: false, error: err?.response?.data || err.message };
     }
   }
- 
+
   async sendWebhookRequest(data = {}) {
     try {
       // Expect a single object with keys: phone (required), name (required),
@@ -98,7 +98,7 @@ export default class NextelWhatsapp {
       for (const [key, value] of form.entries()) {
         entries.push(`${key}=${value}`);
       }
-      console.log("check form data:", entries.join("&"));
+      console.log("check form data:", entries.join(", "));
 
       // send URLSearchParams directly so axios sets proper content-length
       const res = await axios.post(webhookUrl || DEFAULT_WEBHOOK, form, {
@@ -106,9 +106,10 @@ export default class NextelWhatsapp {
           "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
         },
       });
-
+      console.log("Webhook response:", res.data);
       return { success: true, data: res.data };
     } catch (err) {
+      console.log("error in webhook call:", err.message);
       return { success: false, error: err?.response?.data || err.message };
     }
   }
