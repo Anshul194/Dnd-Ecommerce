@@ -195,33 +195,6 @@ const DynamicHomepage = () => {
         />
       )}
 
-      {/* Dynamic Banners from content API */}
-      {bannerSections.length > 0 ? (
-        bannerSections.map((section) => {
-          // You can map to your banner components here, e.g. SeasonSaleBanner, TeaPartyBanner, etc.
-          // Example: If section.content.type === "seasonSale", render SeasonSaleBanner
-          switch (section.content?.type) {
-            case "seasonSale":
-              return (
-                <SeasonSaleBanner key={section._id} content={section.content} />
-              );
-            case "teaParty":
-              return (
-                <TeaPartyBanner key={section._id} content={section.content} />
-              );
-            // Add more banner types as needed
-            default:
-              return null;
-          }
-        })
-      ) : (
-        // Fallback to static banners if no dynamic banners
-        <>
-          <SeasonSaleBanner />
-          <TeaPartyBanner />
-        </>
-      )}
-
       {/* Categories Section with Dynamic Content */}
       <div className="max-w-7xl mx-auto px-4">
         <Categories dynamicContent={categoryPickContent[0]?.content || null} />
