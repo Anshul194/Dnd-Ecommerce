@@ -62,13 +62,14 @@ function LandingBanner({ content }) {
           <div
             className="w-full h-full"
             style={{
-              backgroundImage: `url(${isMobile && content?.[currentSlide]?.content?.mobileImage
+              backgroundImage: `url(${
+                isMobile && content?.[currentSlide]?.content?.mobileImage
                   ? content?.[currentSlide]?.content?.mobileImage
                   : content?.[currentSlide]?.content?.image
-                })`,
-              backgroundSize: 'contain', // Changed from 'contain' to 'cover' for better full-screen fill
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
+              })`,
+              backgroundSize: "contain", // Changed from 'contain' to 'cover' for better full-screen fill
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center",
             }}
           >
             <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">
@@ -132,14 +133,15 @@ function LandingBanner({ content }) {
 
       {/* Dots */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
-        {content.map((_, index) => (
+        {content?.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`h-2 rounded-full transition-all ${index === currentSlide
+            className={`h-2 rounded-full transition-all ${
+              index === currentSlide
                 ? "bg-white w-10 shadow-lg"
                 : "bg-white/50 w-2 hover:bg-white/70"
-              }`}
+            }`}
           />
         ))}
       </div>
