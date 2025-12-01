@@ -58,7 +58,7 @@ export default function BlogSection() {
                 <div className="text-xs text-gray-500 mb-2">{post.date}</div>
 
                 {/* Title */}
-                <h3 className="text-base h-10  font-bold text-gray-800 mb-2 leading-tight">
+                <h3 className="text-base h-10 line-clamp-2  font-bold text-gray-800 mb-2 leading-tight">
                   {post.title}
                 </h3>
 

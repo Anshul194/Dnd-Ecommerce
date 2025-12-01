@@ -101,7 +101,7 @@ function DynamicHomepage2() {
       case "3V":
         return (
           <div key={_id} className="max-w-7xl mx-auto px-4">
-            <ValidatedSection2 content={content} />
+            <ValidatedSection2 content={content} /> 
           </div>
         );
 
