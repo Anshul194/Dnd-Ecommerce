@@ -33,13 +33,13 @@ const DynamicWhyUs = ({ content }) => {
         {/* Right content */}
         <div className="">
           <div className="mt-10 flex flex-col lg:flex-row gap-6 lg:gap-20">
-            <div className=" w-[45%] max-sm:w-full  bg-gray-400 rounded-lg flex-shrink-0">
+            <div className=" w-[45%] max-sm:w-full h-full sticky top-28 bg-gray-400 rounded-lg flex-shrink-0">
               <Image
                 src={imageToShow}
                 alt="Why Us"
                 width={400}
                 height={400}
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-contain rounded-lg"
               />
             </div>
             <div className="w-1/2 max-sm:w-full">
