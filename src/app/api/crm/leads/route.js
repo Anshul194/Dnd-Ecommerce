@@ -1,6 +1,9 @@
-import { NextResponse } from 'next/server';
-import { getSubdomain, getDbConnection } from '@/app/lib/tenantDb.js';
-import { getLeadsService, createLeadService } from '@/app/lib/services/leadService.js';
+import { NextResponse } from "next/server";
+import { getSubdomain, getDbConnection } from "@/app/lib/tenantDb.js";
+import {
+  getLeadsService,
+  createLeadService,
+} from "@/app/lib/services/leadService.js";
 
 export async function GET(request) {
   try {
@@ -10,24 +13,24 @@ export async function GET(request) {
 
     // Basic query params
     const query = {
-      search: searchParams.get('search'),
-      status: searchParams.get('status'),
-      source: searchParams.get('source'),
-      assignedTo: searchParams.get('assignedTo'),
-      page: searchParams.get('page') || 1,
-      limit: searchParams.get('limit') || 10,
+      search: searchParams.get("search"),
+      status: searchParams.get("status"),
+      source: searchParams.get("source"),
+      assignedTo: searchParams.get("assignedTo"),
+      page: searchParams.get("page") || 1,
+      limit: searchParams.get("limit") || 10,
     };
 
     // Accept a JSON `filters` parameter (URL-encoded JSON string)
     // Example: filters={"isDeleted":false,"assignedTo":"...","lastCallStatus":"interested"}
-    const filtersParam = searchParams.get('filters');
+    const filtersParam = searchParams.get("filters");
     if (filtersParam) {
       try {
         const parsed = JSON.parse(filtersParam);
         // Merge parsed filters into the query object so downstream service/repo can use them
         Object.assign(query, parsed);
       } catch (err) {
-        console.warn('Invalid filters JSON:', filtersParam, err);
+        console.warn("Invalid filters JSON:", filtersParam, err);
       }
     }
 
@@ -47,13 +50,17 @@ export async function POST(request) {
 
     // Ensure fullName is populated if firstName/lastName are provided
     if (body.firstName || body.lastName) {
-      body.fullName = `${body.firstName || ''} ${body.lastName || ''}`.trim();
+      body.fullName = `${body.firstName || ""} ${body.lastName || ""}`.trim();
     }
 
     // Sanitize ObjectId fields - convert empty strings to null
-    const objectIdFields = ['assignedTo', 'convertedTo'];
-    objectIdFields.forEach(field => {
-      if (body[field] === '' || body[field] === null || body[field] === undefined) {
+    const objectIdFields = ["assignedTo", "convertedTo"];
+    objectIdFields.forEach((field) => {
+      if (
+        body[field] === "" ||
+        body[field] === null ||
+        body[field] === undefined
+      ) {
         body[field] = null;
       }
     });

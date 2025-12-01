@@ -1,6 +1,6 @@
-import leadSchema from '../models/Lead.js';
-import userSchema from '../models/User.js';
-import roleSchema from '../models/role.js';
+import leadSchema from "../models/Lead.js";
+import userSchema from "../models/User.js";
+import roleSchema from "../models/role.js";
 
 const getModel = (conn, name, schema) => {
   return conn.models[name] || conn.model(name, schema);
@@ -9,7 +9,7 @@ const getModel = (conn, name, schema) => {
 // ✅ Create
 export const createLead = async (data, conn) => {
   try {
-    const Lead = getModel(conn, 'Lead', leadSchema);
+    const Lead = getModel(conn, "Lead", leadSchema);
     return await Lead.create(data);
   } catch (error) {
     //consolle.error('Error in createLead:', error);
@@ -20,10 +20,10 @@ export const createLead = async (data, conn) => {
 // ✅ Read All
 export const getLeads = async (query, conn) => {
   try {
-    const Lead = getModel(conn, 'Lead', leadSchema);
+    const Lead = getModel(conn, "Lead", leadSchema);
 
     const {
-      search = '',
+      search = "",
       status,
       source,
       assignedTo,
@@ -37,9 +37,9 @@ export const getLeads = async (query, conn) => {
 
     if (search) {
       filter.$or = [
-        { fullName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } },
+        { fullName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -54,9 +54,9 @@ export const getLeads = async (query, conn) => {
 
     const [leads, totalDocuments] = await Promise.all([
       Lead.find(filter)
-        .populate('assignedTo')
-        .populate('convertedTo')
-        .populate('notes.createdBy')
+        .populate("assignedTo")
+        .populate("convertedTo")
+        .populate("notes.createdBy")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit)),
@@ -75,16 +75,15 @@ export const getLeads = async (query, conn) => {
   }
 };
 
-
 // ✅ Read by ID
 export const getLeadById = async (id, conn) => {
   try {
-    const Lead = getModel(conn, 'Lead', leadSchema);
-    const User = getModel(conn, 'User', userSchema);
+    const Lead = getModel(conn, "Lead", leadSchema);
+    const User = getModel(conn, "User", userSchema);
     return await Lead.findById(id)
-      .populate('assignedTo')
-      .populate('convertedTo')
-      .populate('notes.createdBy');
+      .populate("assignedTo")
+      .populate("convertedTo")
+      .populate("notes.createdBy");
   } catch (error) {
     //consolle.error('Error in getLeadById:', error);
     throw error;
@@ -94,7 +93,7 @@ export const getLeadById = async (id, conn) => {
 // ✅ Update
 export const updateLead = async (id, data, conn) => {
   try {
-    const Lead = getModel(conn, 'Lead', leadSchema);
+    const Lead = getModel(conn, "Lead", leadSchema);
     return await Lead.findByIdAndUpdate(id, data, { new: true });
   } catch (error) {
     //consolle.error('Error in updateLead:', error);
@@ -105,7 +104,7 @@ export const updateLead = async (id, data, conn) => {
 // ✅ Delete
 export const deleteLead = async (id, conn) => {
   try {
-    const Lead = getModel(conn, 'Lead', leadSchema);
+    const Lead = getModel(conn, "Lead", leadSchema);
     return await Lead.findByIdAndDelete(id);
   } catch (error) {
     //consolle.error('Error in deleteLead:', error);
@@ -116,10 +115,10 @@ export const deleteLead = async (id, conn) => {
 export const bulkAssignLeads = async (leadIds, assignedTo, conn) => {
   try {
     await validateStaffRole(assignedTo, conn);
-    const Lead = getModel(conn, 'Lead', leadSchema);
+    const Lead = getModel(conn, "Lead", leadSchema);
     const result = await Lead.updateMany(
       { _id: { $in: leadIds } },
-      { $set: { assignedTo, status: 'assigned'} },
+      { $set: { assignedTo, status: "assigned" } },
       { new: true }
     );
     //consolle.log('Bulk assign result:', result);
@@ -133,12 +132,12 @@ export const bulkAssignLeads = async (leadIds, assignedTo, conn) => {
 export const validateStaffRole = async (userId, conn) => {
   try {
     //consolle.log('Validating staff role for user:', userId);
-    const User = getModel(conn, 'User', userSchema);
-    const Role = getModel(conn, 'Role', roleSchema);
-    const user = await User.findById(userId).populate('role').exec();
+    const User = getModel(conn, "User", userSchema);
+    const Role = getModel(conn, "Role", roleSchema);
+    const user = await User.findById(userId).populate("role").exec();
     //consolle.log('User found:', user ? { id: user._id, role: user.role } : 'null');
     if (!user) {
-      throw new Error('Assigned user not found');
+      throw new Error("Assigned user not found");
     }
     //consolle.log('User role:', user.role);
 
