@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { getSubdomain, getDbConnection } from '@/app/lib/tenantDb.js';
 import leadSchema from '@/app/lib/models/Lead.js';
 import userSchema from '@/app/lib/models/User.js';
@@ -28,14 +29,29 @@ export async function GET(request) {
         let dateFilter = {};
         if (startDate || endDate) {
             dateFilter.createdAt = {};
-            if (startDate) dateFilter.createdAt.$gte = new Date(startDate);
-            if (endDate) dateFilter.createdAt.$lte = new Date(endDate);
+            if (startDate) {
+                const start = new Date(startDate);
+                start.setHours(0, 0, 0, 0);
+                dateFilter.createdAt.$gte = start;
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                dateFilter.createdAt.$lte = end;
+            }
         }
 
         // Additional filters
         let additionalFilter = {};
         if (assignedTo) {
-            additionalFilter.assignedTo = assignedTo;
+            // Check if assignedTo is a valid ObjectId string
+            if (mongoose.Types.ObjectId.isValid(assignedTo)) {
+                additionalFilter.assignedTo = new mongoose.Types.ObjectId(assignedTo);
+            } else {
+                // If not a valid ObjectId, maybe it's a string match or we should ignore it/return empty
+                // For now, let's keep it as string if it's not a valid ObjectId, though likely it won't match
+                additionalFilter.assignedTo = assignedTo;
+            }
         }
 
         const combinedFilter = { ...dateFilter, ...additionalFilter };

@@ -61,7 +61,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "paid", "shipped", "completed", "cancelled", "return_requested", "returned", "refunded"],
+      enum: ["pending", "paid", "shipped", "completed", "cancelled", "return_requested", "returned", "refunded", "confirmed"], // Added "confirmed"
       default: "pending",
     },
     placedAt: {

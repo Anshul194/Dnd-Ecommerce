@@ -14,6 +14,8 @@ import path from "path";
 import fs from "fs";
 import { current } from "@reduxjs/toolkit";
 import { ProductSchema } from "../models/Product.js";
+import * as xlsx from "xlsx"; // Fixed import for ESM
+import multer from "multer"; // Already in dependencies
 
 const UserSchema = new mongoose.Schema(
   {
@@ -981,7 +983,7 @@ class OrderService {
     return services;
   }
 
-  //getOrderForTracking
+  //getAllOrdersForTracking
   async getAllOrdersForTracking(request, conn) {
     try {
       // Ensure User model is registered on this connection so populate('user') works
@@ -2574,6 +2576,271 @@ class OrderService {
         },
         courier: "BLUEDART",
         orderId: order._id.toString(),
+      };
+    }
+  }
+
+  // New method: Export orders to Excel
+  async exportOrdersToExcel(filterConditions = { status: 'pending' }, conn) {
+    try {
+      const orders = await this.orderRepository.getAllOrders(filterConditions, {}, null, null, ['user'], ['_id', 'user', 'total', 'status', 'createdAt']);
+      if (!orders.results || orders.results.length === 0) {
+        throw new Error('No orders found to export');
+      }
+
+      // Prepare data for Excel
+      const data = orders.results.map(order => ({
+        OrderID: order._id.toString(),
+        UserID: order.user?._id?.toString() || '',
+        UserEmail: order.user?.email || '',
+        Total: order.total,
+        Status: order.status,
+        CreatedAt: order.createdAt,
+      }));
+
+      // Create workbook and worksheet
+      const ws = xlsx.utils.json_to_sheet(data);
+      const wb = xlsx.utils.book_new();
+      xlsx.utils.book_append_sheet(wb, ws, 'Orders');
+
+      // Generate buffer
+      const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+      return {
+        success: true,
+        message: 'Orders exported successfully',
+        data: buffer,
+        filename: `orders_export_${new Date().toISOString().split('T')[0]}.xlsx`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Export failed: ${error.message}`,
+      };
+    }
+  }
+
+  // New method: Confirm orders from uploaded Excel
+  async confirmOrdersFromExcel(fileBuffer, conn) {
+    try {
+      // Parse Excel
+      const workbook = xlsx.read(fileBuffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(worksheet);
+
+      if (!data || data.length === 0) {
+        throw new Error('Excel file is empty or invalid');
+      }
+
+      const results = [];
+      for (const row of data) {
+        const orderId = row.OrderID;
+        if (!orderId) continue; // Skip rows without OrderID
+
+        try {
+          const order = await this.orderRepository.findById(orderId);
+          if (!order) {
+            results.push({ orderId, status: 'failed', reason: 'Order not found' });
+            continue;
+          }
+          if (order.status !== 'pending') {
+            results.push({ orderId, status: 'skipped', reason: 'Order not pending' });
+            continue;
+          }
+
+          // Update status to confirmed
+          await this.orderRepository.updateOrder(orderId, { status: 'completed' });
+          results.push({ orderId, status: 'completed' });
+        } catch (err) {
+          results.push({ orderId, status: 'failed', reason: err.message });
+        }
+      }
+
+      return {
+        success: true,
+        message: 'Order confirmation processed',
+        data: results,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Confirmation failed: ${error.message}`,
+      };
+    }
+  }
+  // New method: Create manual orders from Excel
+  async createManualOrdersFromExcel(fileBuffer, conn, tenant) {
+    try {
+      // Parse Excel
+      const workbook = xlsx.read(fileBuffer, { type: "buffer" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(worksheet);
+
+      if (!data || data.length === 0) {
+        throw new Error("Excel file is empty or invalid");
+      }
+
+      const results = [];
+      const userService = new UserService(conn);
+      const Product = conn.models.Product || conn.model("Product", ProductSchema);
+      const Variant = conn.models.Variant || conn.model("Variant", VariantSchema);
+      const Shipping = conn.models.Shipping || conn.model("Shipping", ShippingSchema);
+
+      // Fetch a default active shipping method (e.g., highest priority or first found)
+      const defaultShipping = await Shipping.findOne({ status: "active" }).sort({ priority: -1 }).lean();
+
+      for (const [index, row] of data.entries()) {
+        try {
+          // 1. User Handling
+          const phone = row.Phone ? String(row.Phone).trim() : null;
+          const email = row.Email ? String(row.Email).trim() : null;
+          const name = row.Username || row.Name || "Unknown User";
+
+          if (!phone) {
+            results.push({ row: index + 1, status: "failed", reason: "Phone number is missing" });
+            continue;
+          }
+
+          let user = await userService.findByPhone(phone);
+          if (!user) {
+            // Create new user
+            const userData = {
+              name,
+              phone,
+              email,
+              tenant: tenant || null,
+              role: null // Default role
+            };
+
+            try {
+              user = await userService.createUser(userData);
+            } catch (uErr) {
+              // If create fails, check if it's due to existing email
+              if (email) {
+                const emailUser = await userService.findByEmail(email);
+                if (emailUser) {
+                  user = emailUser;
+                } else {
+                  throw uErr;
+                }
+              } else {
+                throw uErr;
+              }
+            }
+          }
+
+          // 2. Product & Variant Handling
+          const productName = row.ProductName;
+          const variantName = row.VariantName || row.Variant || null;
+          const quantity = parseInt(row.Quantity) || 1;
+          const price = parseFloat(row.Price) || 0;
+
+          if (!productName) {
+            results.push({ row: index + 1, status: "failed", reason: "Product Name is missing" });
+            continue;
+          }
+
+          console.log("Product Name:", productName);
+          console.log("Connection name:", conn.name);
+          console.log("Database name:", conn.db?.databaseName);
+
+          // Find product by name (case insensitive)
+          const product = await Product.findOne({
+            name: { $regex: new RegExp(`^${productName}$`, "i") }
+          });
+
+          console.log("Product found:", product ? product.name : "NULL");
+
+          if (!product) {
+            results.push({ row: index + 1, status: "failed", reason: `Product '${productName}' not found` });
+            continue;
+          }
+
+          let variant = null;
+          let finalPrice = price || product.price;
+
+          if (variantName) {
+            // Find variant by title/sku if provided
+            variant = await Variant.findOne({
+              productId: product._id,
+              $or: [
+                { title: { $regex: new RegExp(`^${variantName}$`, "i") } },
+                { sku: { $regex: new RegExp(`^${variantName}$`, "i") } }
+              ]
+            });
+
+            if (variant) {
+              finalPrice = price || variant.price;
+            } else {
+              results.push({ row: index + 1, status: "failed", reason: `Variant '${variantName}' not found for product '${productName}'` });
+              continue;
+            }
+          }
+
+          // 3. Order Creation
+          const address = {
+            fullName: name,
+            addressLine1: row.AddressLine1 || "Manual Order Address",
+            addressLine2: row.AddressLine2 || "",
+            city: row.City || "Unknown",
+            state: row.State || "Unknown",
+            postalCode: row.PostalCode ? String(row.PostalCode) : "000000",
+            country: row.Country || "India",
+            phoneNumber: phone,
+          };
+
+          const orderPayload = {
+            user: user._id,
+            items: [{
+              product: product._id,
+              variant: variant ? variant._id : null,
+              quantity,
+              price: finalPrice
+            }],
+            total: finalPrice * quantity,
+            shippingAddress: address,
+            billingAddress: address,
+            paymentId: row.PaymentId || `MANUAL-${Date.now()}-${index}`,
+            deliveryOption: row.DeliveryOption || "standard_delivery",
+            paymentMode: row.PaymentMode || "COD",
+            status: "completed",
+            placedAt: new Date(),
+            shippingCharge: 0,
+            discount: 0,
+            // Auto-populate shipping method details
+            shippingMethod: defaultShipping ? defaultShipping.shippingMethod : "standard",
+            shippingId: defaultShipping ? defaultShipping._id : null,
+            shippingName: defaultShipping ? defaultShipping.name : "Manual Shipping",
+            shippingPriority: defaultShipping ? defaultShipping.priority : 0,
+            shipping_details: {
+              platform: null,
+              reference_number: null,
+              tracking_url: null,
+              raw_response: null,
+              labelUrl: null
+            }
+          };
+
+          const newOrder = await this.orderRepository.create(orderPayload);
+          results.push({ row: index + 1, status: "success", orderId: newOrder._id });
+
+        } catch (err) {
+          results.push({ row: index + 1, status: "failed", reason: err.message });
+        }
+      }
+
+      return {
+        success: true,
+        message: "Manual orders processed",
+        data: results,
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        message: `Processing failed: ${error.message}`,
       };
     }
   }
