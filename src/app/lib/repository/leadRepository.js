@@ -27,6 +27,8 @@ export const getLeads = async (query, conn) => {
       status,
       source,
       assignedTo,
+      lastCallStatus,
+      isDeleted,
       page = 1,
       limit = 10,
     } = query;
@@ -44,6 +46,9 @@ export const getLeads = async (query, conn) => {
     if (status) filter.status = status;
     if (source) filter.source = source;
     if (assignedTo) filter.assignedTo = assignedTo;
+    if (lastCallStatus) filter.lastCallStatus = lastCallStatus;
+    // Support soft-delete flag if provided by front-end filters
+    // if (typeof isDeleted !== 'undefined') filter.isDeleted = isDeleted;
 
     const skip = (Number(page) - 1) * Number(limit);
 

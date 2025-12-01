@@ -8,6 +8,7 @@ export async function GET(request) {
     const conn = await getDbConnection(subdomain);
     const { searchParams } = new URL(request.url);
 
+    // Basic query params
     const query = {
       search: searchParams.get('search'),
       status: searchParams.get('status'),
@@ -16,6 +17,19 @@ export async function GET(request) {
       page: searchParams.get('page') || 1,
       limit: searchParams.get('limit') || 10,
     };
+
+    // Accept a JSON `filters` parameter (URL-encoded JSON string)
+    // Example: filters={"isDeleted":false,"assignedTo":"...","lastCallStatus":"interested"}
+    const filtersParam = searchParams.get('filters');
+    if (filtersParam) {
+      try {
+        const parsed = JSON.parse(filtersParam);
+        // Merge parsed filters into the query object so downstream service/repo can use them
+        Object.assign(query, parsed);
+      } catch (err) {
+        console.warn('Invalid filters JSON:', filtersParam, err);
+      }
+    }
 
     const result = await getLeadsService(query, conn);
     return NextResponse.json(result, { status: 200 });
