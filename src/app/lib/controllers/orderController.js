@@ -1,4 +1,5 @@
 import OrderService from "../services/orderService.js";
+import multer from "multer"; // Already in dependencies
 
 class OrderController {
   constructor(orderService) {
@@ -228,6 +229,72 @@ class OrderController {
         message: error.message,
         data: null,
       };
+    }
+  }
+
+  // New method: Export orders to Excel
+  async exportOrders(request, conn) {
+    try {
+      const searchParams = request.nextUrl?.searchParams;
+      const filters = searchParams?.get("filters")
+        ? JSON.parse(searchParams.get("filters"))
+        : { status: "pending" };
+
+      const result = await this.orderService.exportOrdersToExcel(filters, conn);
+      if (!result.success) {
+        return { success: false, message: result.message };
+      }
+
+      // Return file as response (in Next.js, you'd set headers for download)
+      return {
+        success: true,
+        message: result.message,
+        data: result.data, // Buffer
+        filename: result.filename,
+      };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // New method: Confirm orders from Excel upload
+  async confirmOrders(request, conn) {
+    try {
+      // Use memory storage so request.file.buffer is populated
+      const upload = multer({
+        storage: multer.memoryStorage(),
+        limits: { fileSize: 10 * 1024 * 1024 },
+      }); // 10MB
+
+      // Note: actual middleware invocation must happen in route layer.
+      // Here controller expects request.file to already be populated.
+      if (!request.file || !request.file.buffer) {
+        return { success: false, message: "No file uploaded or middleware not applied (expect form-data with field 'excelFile')" };
+      }
+
+      const result = await this.orderService.confirmOrdersFromExcel(request.file.buffer, conn);
+      return result;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+  // New method: Upload manual orders from Excel
+  async uploadManualOrders(request, conn, tenant) {
+    try {
+      // Use memory storage so request.file.buffer is populated
+      const upload = multer({
+        storage: multer.memoryStorage(),
+        limits: { fileSize: 10 * 1024 * 1024 },
+      }); // 10MB
+
+      if (!request.file || !request.file.buffer) {
+        return { success: false, message: "No file uploaded or middleware not applied (expect form-data with field 'excelFile')" };
+      }
+
+      const result = await this.orderService.createManualOrdersFromExcel(request.file.buffer, conn, tenant);
+      return result;
+    } catch (error) {
+      return { success: false, message: error.message };
     }
   }
 }
