@@ -43,6 +43,8 @@ const settingSlice = createSlice({
       codBlockOnRTOAddress: true,
       highRTOOrderCount: 3,
       activeHomepageLayout: null,
+      codAllowed: true, // new field
+      categoryPaymentSettings: [], // <-- add this line
     },
     loading: false,
     error: null,

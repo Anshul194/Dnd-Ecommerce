@@ -7,6 +7,12 @@ import {
   categoryUpdateValidator,
 } from "../../validators/categoryValidator.js";
 import { successResponse, errorResponse } from "../../utils/response.js";
+import SettingModel from "../models/Setting.js"; // already imported
+
+// Helper to get Setting model safely
+function getSettingModel(conn) {
+  return conn.models.Setting || conn.model("Setting", SettingModel.schema);
+}
 
 // Helper to refresh allCategories cache
 async function refreshCategoriesCache(conn) {
@@ -26,6 +32,45 @@ async function refreshCategoriesCache(conn) {
   }
 }
 
+// Helper to update codAllowed in Setting model based on all categories
+async function updateGlobalCodAllowed(conn) {
+  const CategoryModel = conn.models.Category || conn.model("Category");
+  const Setting = getSettingModel(conn);
+  // If any category disables COD or is prepaid only, disable COD globally
+  const codRestricted = await CategoryModel.findOne({
+    $or: [{ allowPrepaidOnly: true }, { disableCOD: true }],
+    deletedAt: null,
+  });
+  await Setting.updateMany(
+    {},
+    { codAllowed: !codRestricted }
+  );
+}
+
+// Helper to update category-wise payment settings in Setting model
+async function updateCategoryPaymentSetting(conn, categoryId, allowPrepaidOnly, disableCOD) {
+  const Setting = getSettingModel(conn);
+  // Update or insert the category's payment settings
+  await Setting.updateMany(
+    {},
+    {
+      $pull: { categoryPaymentSettings: { categoryId } }
+    }
+  );
+  await Setting.updateMany(
+    {},
+    {
+      $push: {
+        categoryPaymentSettings: {
+          categoryId,
+          allowPrepaidOnly: !!allowPrepaidOnly,
+          disableCOD: !!disableCOD,
+        }
+      }
+    }
+  );
+}
+
 export async function createCategory(form, conn) {
   try {
     let imageUrl = "";
@@ -43,6 +88,8 @@ export async function createCategory(form, conn) {
     const status = form.get("status");
     const sortOrder = form.get("sortOrder");
     const isFeatured = form.get("isFeatured");
+    const allowPrepaidOnly = form.get("allowPrepaidOnly"); // new
+    const disableCOD = form.get("disableCOD"); // new
 
     const existing = await categoryService.findByName(name);
     //consolle.log("Existing Category:", existing?.status);
@@ -99,6 +146,14 @@ export async function createCategory(form, conn) {
         isFeatured !== undefined
           ? isFeatured === "true" || isFeatured === true
           : undefined,
+      allowPrepaidOnly:
+        allowPrepaidOnly !== undefined
+          ? allowPrepaidOnly === "true" || allowPrepaidOnly === true
+          : undefined,
+      disableCOD:
+        disableCOD !== undefined
+          ? disableCOD === "true" || disableCOD === true
+          : undefined,
     });
 
     if (error) {
@@ -108,19 +163,35 @@ export async function createCategory(form, conn) {
       };
     }
 
-    const newCategory = await categoryService.createCategory(value);
+    const newCategoryResp = await categoryService.createCategory(value);
+    // Use the correct status and body from the service response
+    const respStatus = newCategoryResp?.status || 201;
+    const respBody = newCategoryResp?.body || newCategoryResp;
+
     await refreshCategoriesCache(conn);
-    //consolle.log("New Category created:", newCategory);
+
+    // Update category-wise payment settings in Setting model
+    if (respBody?.data && respBody.data._id) {
+      await updateCategoryPaymentSetting(
+        conn,
+        respBody.data._id,
+        value.allowPrepaidOnly,
+        value.disableCOD
+      );
+    }
+
+    // Update global COD allowed in Setting model
+    await updateGlobalCodAllowed(conn);
 
     return {
-      status: 201,
-      body: successResponse("Category created", newCategory),
+      status: respStatus,
+      body: respBody,
     };
   } catch (err) {
-    //consolle.error("Create Category error:", err.message);
+    console.error("Create Category error:", err.message, err);
     return {
       status: 500,
-      body: errorResponse("Server error", 500),
+      body: errorResponse("Server error", 500, err.message),
     };
   }
 }
@@ -254,8 +325,12 @@ export async function updateCategory(id, data, conn) {
       };
     }
 
-    const updated = await categoryService.updateCategory(id, value);
-    if (!updated) {
+    const updatedResp = await categoryService.updateCategory(id, value);
+    // Use the correct status and body from the service response
+    const respStatus = updatedResp?.status || 200;
+    const respBody = updatedResp?.body || updatedResp;
+
+    if (!respBody?.data) {
       return {
         status: 404,
         body: { success: false, message: "Category not found", data: null },
@@ -265,15 +340,23 @@ export async function updateCategory(id, data, conn) {
     // Invalidate and refresh cache
     await refreshCategoriesCache(conn);
 
+    // Update category-wise payment settings in Setting model
+    await updateCategoryPaymentSetting(
+      conn,
+      id,
+      value.allowPrepaidOnly,
+      value.disableCOD
+    );
+
     return {
-      status: 200,
-      body: { success: true, message: "Category updated", data: updated },
+      status: respStatus,
+      body: respBody,
     };
   } catch (err) {
-    //consolle.error("Update Category error:", err.message);
+    console.error("Update Category error:", err.message, err);
     return {
       status: 500,
-      body: { success: false, message: "Server error", data: null },
+      body: { success: false, message: "Server error", data: err.message },
     };
   }
 }

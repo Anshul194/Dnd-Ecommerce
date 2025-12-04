@@ -27,7 +27,11 @@ const baseCategorySchema = {
 
   sortOrder: Joi.number().integer().min(0).default(0),
 
-  isFeatured: Joi.boolean().default(false)
+  isFeatured: Joi.boolean().default(false),
+
+  allowPrepaidOnly: Joi.boolean().optional(),
+
+  disableCOD: Joi.boolean().optional()
 };
 
 // ✅ Create Validator
@@ -41,7 +45,9 @@ export const categoryCreateValidator = Joi.object({
   seoDescription: baseCategorySchema.seoDescription.optional(),
   status: baseCategorySchema.status.optional(),
   sortOrder: baseCategorySchema.sortOrder.optional(),
-  isFeatured: baseCategorySchema.isFeatured.optional()
+  isFeatured: baseCategorySchema.isFeatured.optional(),
+  allowPrepaidOnly: baseCategorySchema.allowPrepaidOnly.optional(),
+  disableCOD: baseCategorySchema.disableCOD.optional()
 });
 
 // ✅ Update Validator
@@ -55,5 +61,7 @@ export const categoryUpdateValidator = Joi.object({
   seoDescription: baseCategorySchema.seoDescription.optional(),
   status: baseCategorySchema.status.optional(),
   sortOrder: baseCategorySchema.sortOrder.optional(),
-  isFeatured: baseCategorySchema.isFeatured.optional()
+  isFeatured: baseCategorySchema.isFeatured.optional(),
+  allowPrepaidOnly: baseCategorySchema.allowPrepaidOnly.optional(),
+  disableCOD: baseCategorySchema.disableCOD.optional()
 });

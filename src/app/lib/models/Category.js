@@ -14,6 +14,8 @@ const categorySchema = new mongoose.Schema(
     isFeatured: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    allowPrepaidOnly: { type: Boolean, default: false }, // Only prepaid allowed
+    disableCOD: { type: Boolean, default: false }, // Disable COD for this category
   },
   { timestamps: true }
 );
