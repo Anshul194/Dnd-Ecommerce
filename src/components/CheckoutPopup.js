@@ -786,27 +786,28 @@ export default function CheckoutPopup() {
   const subtotal = itemsTotal + shipping - couponDiscount;
   const total = subtotal;
 
-  useEffect(() => {
-    // Track checkout start when popup opens
-    if (checkoutOpen) {
-      const cartData = buyNowProduct
-        ? [
-            {
-              product: buyNowProduct.product.id,
-              quantity: buyNowProduct.quantity,
-              price: buyNowProduct.price,
-              variant: buyNowProduct.variant,
-            },
-          ]
-        : cartItems.map((item) => ({
-            product: item.product.id,
-            quantity: item.quantity,
-            price: item.price,
-            variant: item.variant,
-          }));
-      trackCheckout(cartData);
+  // --- COD disable logic based on category ---
+  // Helper to get all category IDs from cart/buyNowProduct
+  const getCartCategoryIds = () => {
+    if (buyNowProduct) {
+      return [buyNowProduct.product?.category?._id || buyNowProduct.product?.category];
     }
-  }, [checkoutOpen]);
+    return (cartItems || []).map(
+      (item) => item.product?.category?._id || item.product?.category
+    );
+  };
+
+  // Check if any category in cart is disabled for COD
+  const isCODDisabledForCart = (() => {
+    if (!settings?.categoryPaymentSettings?.length) return false;
+    const cartCategoryIds = getCartCategoryIds().filter(Boolean);
+    return cartCategoryIds.some((catId) =>
+      settings.categoryPaymentSettings.some(
+        (cps) =>
+          cps.categoryId?.toString() === catId?.toString() && cps.disableCOD
+      )
+    );
+  })();
 
   // Only run when checkoutOpen changes so we don't accidentally send on unrelated updates
   useEffect(() => {
@@ -1758,7 +1759,8 @@ export default function CheckoutPopup() {
                   />
                   <label htmlFor="payment-method-2">Prepaid</label>
                 </div>
-                <div>
+                {/* Only show COD if not disabled for any cart category */}
+                {!isCODDisabledForCart && (
                   <div
                     className={`flex items-center gap-2 ${
                       cartItems.reduce(
@@ -1784,7 +1786,15 @@ export default function CheckoutPopup() {
                     />
                     <label htmlFor="payment-method-1">Cash on delivery</label>
                   </div>
-                  {cartItems.reduce(
+                )}
+                {/* Show message if COD is disabled for category */}
+                {isCODDisabledForCart && (
+                  <h2 className="text-red-500 text-xs">
+                    Cash on delivery is not available for one or more items in your cart.
+                  </h2>
+                )}
+                {!isCODDisabledForCart &&
+                  cartItems.reduce(
                     (acc, item) => acc + item.price * item.quantity,
                     0
                   ) > settings?.codLimit && (
@@ -1792,7 +1802,6 @@ export default function CheckoutPopup() {
                       COD not available for orders above ₹{settings.codLimit}
                     </h2>
                   )}
-                </div>
               </div>
             </div>
           )}
