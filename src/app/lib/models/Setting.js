@@ -28,7 +28,19 @@ const settingSchema = new mongoose.Schema(
     codBlockOnRTOAddress: { type: Boolean, default: true },
     highRTOOrderCount: { type: Number, default: 3 },
     codAllowed: { type: Boolean, default: true }, // New field to allow/disallow COD globally
-    categoryPaymentSettings: [categoryPaymentSettingSchema], // <-- add this line
+    categoryPaymentSettings: [categoryPaymentSettingSchema],
+
+    // Meta (Facebook) CRM/Ads Integration
+    metaIntegration: {
+      adAccountId: { type: String, default: null }, // e.g., "123456789"
+      pixelId: { type: String, default: null }, // e.g., "987654321"
+      accessToken: { type: String, default: null }, // Long-lived user access token
+      appId: { type: String, default: null }, // Meta App ID
+      appSecret: { type: String, default: null }, // Meta App Secret
+      isConnected: { type: Boolean, default: false },
+      connectedAt: { type: Date, default: null },
+      tokenExpiresAt: { type: Date, default: null }, // Track token expiration
+    },
   },
   { timestamps: true }
 );
