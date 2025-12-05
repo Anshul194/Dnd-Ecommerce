@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
     getAdAccounts,
     getPixels,
+    getPages,
 } from "@/app/lib/services/metaService";
 
 /**
@@ -54,6 +55,19 @@ export async function GET(request) {
             }
 
             response.data.pixels = pixelsResult.pixels;
+        }
+
+        // Fetch pages (always fetch for lead forms)
+        if (type === "pages" || type === "both") {
+            const pagesResult = await getPages(accessToken);
+
+            if (!pagesResult.success) {
+                // Don't fail if pages can't be fetched, just log it
+                console.warn("Failed to fetch pages:", pagesResult.error);
+                response.data.pages = [];
+            } else {
+                response.data.pages = pagesResult.pages;
+            }
         }
 
         return NextResponse.json(response);

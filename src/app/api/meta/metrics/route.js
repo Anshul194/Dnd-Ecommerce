@@ -35,7 +35,17 @@ export async function GET(request) {
         }
 
         const { metaIntegration } = settingsResult;
-        const { adAccountId, pixelId, accessToken, isConnected } = settingsResult.data;
+        const { adAccountId, pixelId, pageId, accessToken, isConnected } = settingsResult.data;
+
+        console.log("About to fetch metrics with:", {
+            adAccountId,
+            pixelId,
+            pageId,
+            hasAccessToken: !!accessToken,
+            accessTokenLength: accessToken?.length,
+            accessTokenType: typeof accessToken,
+            accessTokenPreview: accessToken?.substring(0, 30) + "..."
+        });
 
         if (!isConnected || !accessToken) {
             return NextResponse.json(
@@ -56,10 +66,11 @@ export async function GET(request) {
             );
         }
 
-        // Fetch metrics
+        // Fetch metrics (pageId from stored settings)
         const metricsResult = await fetchMetaMetrics(
             adAccountId,
             pixelId,
+            pageId || null,
             accessToken,
             since,
             until

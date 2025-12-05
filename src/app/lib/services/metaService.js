@@ -148,14 +148,13 @@ export async function validatePixel(pixelId, accessToken) {
  * @param {string} until - End date (YYYY-MM-DD)
  * @returns {Promise<Object>} Metrics data
  */
-export async function fetchMetaMetrics(adAccountId, pixelId, accessToken, since, until) {
+export async function fetchMetaMetrics(adAccountId, pixelId, pageId, accessToken, since, until) {
     try {
-        // Handle both 'act_123' and '123' formats
-        const accountId = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`;
+        const accountId = adAccountId.replace(/^act_/, "");
 
-        // 1) Fetch Ad Account Insights (Spend, Clicks, Purchases)
+        // 1️⃣ BASE INSIGHTS (Spend, Clicks, Purchases, Value)
         const insightsRes = await axios.get(
-            `${META_GRAPH_API_BASE}/${accountId}/insights`,
+            `${META_GRAPH_API_BASE}/act_${accountId}/insights`,
             {
                 params: {
                     fields: "spend,clicks,actions,action_values,impressions,ctr,cpc,cpm",
@@ -166,7 +165,7 @@ export async function fetchMetaMetrics(adAccountId, pixelId, accessToken, since,
             }
         );
 
-        const insights = insightsRes.data.data[0] || {};
+        const insights = insightsRes.data?.data?.[0] || {};
 
         const spend = Number(insights.spend || 0);
         const clicks = Number(insights.clicks || 0);
@@ -175,42 +174,83 @@ export async function fetchMetaMetrics(adAccountId, pixelId, accessToken, since,
         const cpc = Number(insights.cpc || 0);
         const cpm = Number(insights.cpm || 0);
 
-        // Purchases & Value
+        // Purchases & Values
         let purchases = 0;
         let purchaseValue = 0;
 
-        if (insights.action_values) {
-            const purchaseData = insights.action_values.find(a => a.action_type === "purchase");
-            purchaseValue = purchaseData ? Number(purchaseData.value) : 0;
+        if (Array.isArray(insights.actions)) {
+            const p = insights.actions.find(a => a.action_type === "purchase");
+            purchases = p ? Number(p.value) : 0;
         }
 
-        if (insights.actions) {
-            const purchaseAction = insights.actions.find(a => a.action_type === "purchase");
-            purchases = purchaseAction ? Number(purchaseAction.value) : 0;
+        if (Array.isArray(insights.action_values)) {
+            const pv = insights.action_values.find(a => a.action_type === "purchase");
+            purchaseValue = pv ? Number(pv.value) : 0;
         }
 
-        // 2) Fetch Leads from Pixel (Optional - may not be available for all pixels)
+        // 2️⃣ FETCH LEADS
         let totalLeads = 0;
-        try {
-            const leadsRes = await axios.get(
-                `${META_GRAPH_API_BASE}/${pixelId}/events`,
-                {
-                    params: {
-                        event_name: "Lead",
-                        access_token: accessToken,
+
+        // Try to get leads from insights.actions first (most reliable)
+        if (Array.isArray(insights.actions)) {
+            const leadAction = insights.actions.find(a => a.action_type === "lead");
+            if (leadAction) {
+                totalLeads = Number(leadAction.value);
+                console.log(`Leads from insights.actions: ${totalLeads}`);
+            }
+        }
+
+        // If no leads found in actions and pageId is provided, try page lead forms as backup
+        if (totalLeads === 0 && pageId) {
+            try {
+                const formsRes = await axios.get(
+                    `${META_GRAPH_API_BASE}/${pageId}/leadgen_forms`,
+                    {
+                        params: {
+                            access_token: accessToken,
+                            fields: "id,name,leads_count"
+                        }
+                    }
+                );
+
+                const forms = formsRes.data?.data || [];
+                console.log(`Found ${forms.length} lead forms on page ${pageId}`);
+
+                // Sum up leads_count from all forms
+                for (const form of forms) {
+                    if (form.leads_count) {
+                        totalLeads += Number(form.leads_count);
                     }
                 }
-            );
-            totalLeads = leadsRes.data.data ? leadsRes.data.data.length : 0;
-        } catch (error) {
-            console.warn("Could not fetch pixel events (this may be normal):", error.message);
+
+                console.log(`Total leads from page forms: ${totalLeads}`);
+            } catch (err) {
+                console.warn("Lead form retrieval failed:", {
+                    message: err.message,
+                    status: err.response?.status,
+                    error: err.response?.data?.error?.message,
+                    pageId
+                });
+            }
+        } else if (!pageId) {
+            console.log("Skipping page lead forms (pageId not provided)");
+        } else {
+            console.log(`Leads already found in insights: ${totalLeads}`);
         }
 
-        // CALCULATIONS
+        // 3️⃣ BASIC CALCULATIONS
         const ROAS = spend > 0 ? purchaseValue / spend : 0;
         const RPV = clicks > 0 ? purchaseValue / clicks : 0;
         const conversionRate = clicks > 0 ? (totalLeads / clicks) * 100 : 0;
         const CPL = totalLeads > 0 ? spend / totalLeads : 0;
+
+        // 4️⃣ ADVANCED CALCULATIONS
+        const MER = spend > 0 ? purchaseValue / spend : 0;       // Similar to total ROAS
+        const CPP = purchases > 0 ? spend / purchases : 0;       // Cost per purchase
+        const PCR = clicks > 0 ? (purchases / clicks) * 100 : 0; // Purchase conversion rate
+        const RPI = impressions > 0 ? purchaseValue / impressions : 0;  // Revenue per impression
+        const RPL = totalLeads > 0 ? purchaseValue / totalLeads : 0;    // Revenue per lead
+        const CPML = totalLeads > 0 ? spend / (totalLeads / 1000) : 0;  // Cost per 1000 leads
 
         return {
             success: true,
@@ -221,13 +261,23 @@ export async function fetchMetaMetrics(adAccountId, pixelId, accessToken, since,
                 ctr,
                 cpc,
                 cpm,
-                totalLeads,
                 purchases,
                 purchaseValue,
+                totalLeads,
+
+                // Basic
                 ROAS: ROAS.toFixed(2),
                 RPV: RPV.toFixed(2),
                 conversionRate: conversionRate.toFixed(2),
                 CPL: CPL.toFixed(2),
+
+                // Advanced
+                MER: MER.toFixed(2),
+                CPP: CPP.toFixed(2),
+                PCR: PCR.toFixed(2),
+                RPI: RPI.toFixed(6),
+                RPL: RPL.toFixed(2),
+                CPML: CPML.toFixed(2),
             }
         };
 
@@ -239,6 +289,7 @@ export async function fetchMetaMetrics(adAccountId, pixelId, accessToken, since,
         };
     }
 }
+
 
 /**
  * Get Ad Accounts accessible by the user
@@ -315,4 +366,35 @@ export async function getPixels(accessToken) {
         };
     }
 }
+
+/**
+ * Get Facebook Pages accessible by the user
+ * @param {string} accessToken - Meta access token
+ * @returns {Promise<Object>} List of pages
+ */
+export async function getPages(accessToken) {
+    try {
+        const response = await axios.get(
+            `${META_GRAPH_API_BASE}/me/accounts`,
+            {
+                params: {
+                    fields: "id,name,access_token",
+                    access_token: accessToken,
+                },
+            }
+        );
+
+        return {
+            success: true,
+            pages: response.data.data || [],
+        };
+    } catch (error) {
+        console.error("Error fetching pages:", error.response?.data || error.message);
+        return {
+            success: false,
+            error: error.response?.data?.error?.message || "Failed to fetch pages",
+        };
+    }
+}
+
 

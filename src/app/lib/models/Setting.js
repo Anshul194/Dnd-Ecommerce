@@ -34,6 +34,7 @@ const settingSchema = new mongoose.Schema(
     metaIntegration: {
       adAccountId: { type: String, default: null }, // e.g., "123456789"
       pixelId: { type: String, default: null }, // e.g., "987654321"
+      pageId: { type: String, default: null }, // Facebook Page ID for lead forms
       accessToken: { type: String, default: null }, // Long-lived user access token
       appId: { type: String, default: null }, // Meta App ID
       appSecret: { type: String, default: null }, // Meta App Secret

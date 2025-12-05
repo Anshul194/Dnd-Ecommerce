@@ -23,7 +23,18 @@ export async function getMetaSettings(tenant) {
         const SettingModel = conn.models.Setting || conn.model("Setting", SettingSchema);
 
         const settings = await SettingModel.findOne({ tenant }).lean();
-        console.log("settings", settings);
+        console.log("settings found:", !!settings);
+
+        if (settings?.metaIntegration) {
+            console.log("metaIntegration:", {
+                hasAdAccountId: !!settings.metaIntegration.adAccountId,
+                hasPixelId: !!settings.metaIntegration.pixelId,
+                hasAccessToken: !!settings.metaIntegration.accessToken,
+                accessTokenLength: settings.metaIntegration.accessToken?.length,
+                accessTokenPreview: settings.metaIntegration.accessToken?.substring(0, 20) + "...",
+                isConnected: settings.metaIntegration.isConnected
+            });
+        }
 
         if (!settings) {
             throw new Error("Settings not found for tenant");
@@ -54,6 +65,7 @@ export async function saveMetaSettings(tenant, metaData) {
         const {
             adAccountId,
             pixelId,
+            pageId,
             accessToken,
             appId,
             appSecret,
@@ -76,7 +88,10 @@ export async function saveMetaSettings(tenant, metaData) {
             "metaIntegration.tokenExpiresAt": expiresAt,
         };
 
-        // Only update app credentials if provided
+        // Only update optional fields if provided
+        if (pageId) {
+            updateData["metaIntegration.pageId"] = pageId;
+        }
         if (appId) {
             updateData["metaIntegration.appId"] = appId;
         }
