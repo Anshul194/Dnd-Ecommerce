@@ -89,6 +89,10 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    gstRate: { type: Number, default: 0 },
+    paymentGatewayRate: { type: Number, default: 0 },
+    gstAmount: { type: Number, default: 0 },
+    paymentGatewayAmount: { type: Number, default: 0 },
     paymentMode: {
       type: String,
       enum: ["COD", "Prepaid"],

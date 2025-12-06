@@ -28,6 +28,8 @@ const settingSchema = new mongoose.Schema(
     codBlockOnRTOAddress: { type: Boolean, default: true },
     highRTOOrderCount: { type: Number, default: 3 },
     codAllowed: { type: Boolean, default: true }, // New field to allow/disallow COD globally
+    gstCharge: { type: Number, default: 0 },
+    paymentGatewayCharge: { type: Number, default: 0 },
     categoryPaymentSettings: [categoryPaymentSettingSchema],
 
     // Meta (Facebook) CRM/Ads Integration

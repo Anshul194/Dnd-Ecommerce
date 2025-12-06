@@ -273,6 +273,19 @@ class OrderService {
         }
       }
 
+      // --- GST & Payment Gateway Charges ---
+      const gstRate = settings.gstCharge || 0;
+      const pgRate = settings.paymentGatewayCharge || 0;
+
+      const taxableAmount = Math.max(0, order_total);
+      const gstAmount = (taxableAmount * gstRate) / 100;
+
+      let paymentGatewayAmount = 0;
+      if (paymentMode !== "COD") {
+        paymentGatewayAmount =
+          ((taxableAmount + shippingCharge + gstAmount) * pgRate) / 100;
+      }
+
       // If all checks pass, return success and calculated charges
       return {
         success: true,
@@ -280,6 +293,11 @@ class OrderService {
         data: {
           order_total,
           shippingCharge,
+          discount,
+          gstAmount,
+          paymentGatewayAmount,
+          gstRate,
+          paymentGatewayRate: pgRate,
           discount,
           shippingMethod: selectedShipping.shippingMethod,
           shippingId: selectedShipping._id,
@@ -549,11 +567,24 @@ class OrderService {
         }
       }
 
+      // --- GST & Payment Gateway Charges ---
+      const gstRate = settings.gstCharge || 0;
+      const pgRate = settings.paymentGatewayCharge || 0;
+
+      const taxableAmount = Math.max(0, order_total);
+      const gstAmount = (taxableAmount * gstRate) / 100;
+
+      let paymentGatewayAmount = 0;
+      if (paymentMode !== "COD") {
+        paymentGatewayAmount =
+          ((taxableAmount + shippingCharge + gstAmount) * pgRate) / 100;
+      }
+
       // --- Create order ---
       const orderData = {
         user: userId,
         items: orderItems,
-        total: order_total + shippingCharge,
+        total: order_total + shippingCharge + gstAmount,
         coupon: couponId,
         discount,
         shippingAddress,
@@ -562,6 +593,10 @@ class OrderService {
         deliveryOption,
         status: "pending",
         shippingCharge,
+        gstRate,
+        paymentGatewayRate: pgRate,
+        gstAmount,
+        paymentGatewayAmount,
         paymentMode,
         codBlockedReason,
         // --- Save shipping method details ---

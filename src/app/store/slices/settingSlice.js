@@ -44,6 +44,8 @@ const settingSlice = createSlice({
       highRTOOrderCount: 3,
       activeHomepageLayout: null,
       codAllowed: true, // new field
+      gstCharge: 0,
+      paymentGatewayCharge: 0,
       categoryPaymentSettings: [], // <-- add this line
     },
     loading: false,
