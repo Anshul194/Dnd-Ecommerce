@@ -1072,6 +1072,10 @@ class OrderService {
     }
   }
 
+  async getOrders(query = {}, conn, options = {}) {
+    return await this.orderRepository.findOrders(query, conn, options);
+  }
+
   async getAllOrders(request, conn) {
     try {
       const searchParams = request.nextUrl.searchParams;
@@ -1997,7 +2001,7 @@ class OrderService {
     }
   }
 
-  // 🔢 Get Delhivery Waybill Numbers
+  //🔢 Get Delhivery Waybill Numbers
   async getDelhiveryWaybill(count = 1) {
     try {
       const response = await axios.get(
@@ -2159,6 +2163,7 @@ class OrderService {
   //           'ClientID': process.env.BLUEDART_CLIENT_ID,
   //           'clientSecret': process.env.BLUEDART_CLIENT_SECRET,
   //           'Content-Type': 'application/json'
+ 
   //         }
   //       }
   //     );

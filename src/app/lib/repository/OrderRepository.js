@@ -401,6 +401,10 @@ class OrderRepository extends CrudRepository {
       throw error;
     }
   }
+
+  async findOrders(query = {}, conn) {
+    return await this.Order.find(query).exec();
+  }
 }
 
 export default OrderRepository;
