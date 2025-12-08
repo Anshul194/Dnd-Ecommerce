@@ -45,10 +45,38 @@ export const GET = withUserAuth(async function (request) {
 
         const { searchParams } = new URL(request.url);
         const targetUserId = searchParams.get("userId");
+        const startDate = searchParams.get("startDate");
+        const endDate = searchParams.get("endDate");
+
+        // Build date filter
+        let dateFilter = {};
+        if (startDate || endDate) {
+            dateFilter.createdAt = {};
+            if (startDate) {
+                dateFilter.createdAt.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                // Set to end of day
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                dateFilter.createdAt.$lte = end;
+            }
+        }
 
         let userQuery = { isDeleted: { $ne: true } };
         if (targetUserId) {
             userQuery._id = targetUserId;
+        } else if (startDate || endDate) {
+            // Apply date filter to users when no specific user is targeted
+            userQuery.createdAt = {};
+            if (startDate) {
+                userQuery.createdAt.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                userQuery.createdAt.$lte = end;
+            }
         }
 
         // Fetch Users
@@ -63,20 +91,41 @@ export const GET = withUserAuth(async function (request) {
 
         const userIds = users.map(u => u._id);
 
+        // Build queries for related data
+        let orderQuery = { user: { $in: userIds } };
+        let ticketQuery = { customer: { $in: userIds }, isDeleted: { $ne: true } };
+        let reviewQuery = { userId: { $in: userIds } };
+
+        // Apply date filter to related data
+        if (startDate || endDate) {
+            const dateRangeFilter = {};
+            if (startDate) {
+                dateRangeFilter.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                dateRangeFilter.$lte = end;
+            }
+            orderQuery.createdAt = dateRangeFilter;
+            ticketQuery.createdAt = dateRangeFilter;
+            reviewQuery.createdAt = dateRangeFilter;
+        }
+
         // Fetch Related Data with Population
         const [orders, tickets, reviews] = await Promise.all([
-            Order.find({ user: { $in: userIds } })
+            Order.find(orderQuery)
                 .populate("user", "name email phone")
                 .populate("items.product", "name")
                 .populate("items.variant", "title")
                 .sort({ createdAt: -1 })
                 .lean(),
-            Ticket.find({ customer: { $in: userIds }, isDeleted: { $ne: true } })
+            Ticket.find(ticketQuery)
                 .populate("customer", "name email")
                 .populate("assignedTo", "name email")
                 .sort({ createdAt: -1 })
                 .lean(),
-            Review.find({ userId: { $in: userIds } })
+            Review.find(reviewQuery)
                 .populate("userId", "name email")
                 .populate("productId", "name")
                 .sort({ createdAt: -1 })
@@ -200,10 +249,11 @@ export const GET = withUserAuth(async function (request) {
         const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
         // Return Response
+        const dateRangeSuffix = startDate || endDate ? `_${startDate || 'start'}_to_${endDate || 'end'}` : '';
         return new NextResponse(buf, {
             status: 200,
             headers: {
-                "Content-Disposition": `attachment; filename="user_data_export_${new Date().toISOString().split('T')[0]}.xlsx"`,
+                "Content-Disposition": `attachment; filename="user_data_export${dateRangeSuffix}_${new Date().toISOString().split('T')[0]}.xlsx"`,
                 "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             },
         });
