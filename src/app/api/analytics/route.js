@@ -55,22 +55,28 @@ export const GET = withUserAuth(async function (request) {
     const endDate = searchParams.get("endDate");
 
     let dateFilter = {};
-    if (startDate || endDate) {
+    let start, end;
+
+    if (startDate) start = new Date(startDate);
+    if (endDate) {
+      end = new Date(endDate);
+      end.setUTCHours(23, 59, 59, 999);
+    }
+
+    if (start || end) {
       dateFilter.createdAt = {};
-      if (startDate) dateFilter.createdAt.$gte = new Date(startDate);
-      if (endDate) dateFilter.createdAt.$lte = new Date(endDate);
+      if (start) dateFilter.createdAt.$gte = start;
+      if (end) dateFilter.createdAt.$lte = end;
     }
 
     // Previous Period for RoC
     let prevDateFilter = {};
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      const diff = end - start;
+    if (start && end) {
+      const diff = end.getTime() - start.getTime();
 
       prevDateFilter.createdAt = {
-        $gte: new Date(start - diff - 1),
-        $lte: new Date(start - 1),
+        $gte: new Date(start.getTime() - diff - 1),
+        $lte: new Date(start.getTime() - 1),
       };
     }
 
@@ -113,6 +119,7 @@ export const GET = withUserAuth(async function (request) {
       totalRevenueAgg,
       prevRevenueAgg,
       discountStats,
+      chargesStats,
 
       newCustomersCount
     ] = await Promise.all([
@@ -152,6 +159,18 @@ export const GET = withUserAuth(async function (request) {
             couponCount: {
               $sum: { $cond: [{ $ne: ["$coupon", null] }, 1, 0] },
             },
+          },
+        },
+      ]),
+
+      // GST and Payment Gateway Charges
+      Order.aggregate([
+        { $match: { ...dateFilter, status: { $ne: "cancelled" } } },
+        {
+          $group: {
+            _id: null,
+            totalGst: { $sum: "$gstAmount" },
+            totalPaymentGatewayCharges: { $sum: "$paymentGatewayAmount" },
           },
         },
       ]),
@@ -238,6 +257,8 @@ export const GET = withUserAuth(async function (request) {
 
     const totalDiscount = discountStats?.[0]?.totalDiscount || 0;
     const totalCoupons = discountStats?.[0]?.couponCount || 0;
+    const totalGst = chargesStats?.[0]?.totalGst || 0;
+    const totalPaymentGatewayCharges = chargesStats?.[0]?.totalPaymentGatewayCharges || 0;
     const newCustomers = newCustomersCount?.[0]?.count || 0;
 
     // Total Buyers
@@ -317,6 +338,8 @@ export const GET = withUserAuth(async function (request) {
         prepaidCount,
         totalDiscount,
         totalCoupons,
+        totalGst,
+        totalPaymentGatewayCharges,
       },
 
       operationsDashboard: {
