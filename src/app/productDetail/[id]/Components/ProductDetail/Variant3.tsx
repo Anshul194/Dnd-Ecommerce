@@ -26,12 +26,17 @@ function Variant3() {
   const productData = useSelector(selectSelectedProduct);
   const dispatch = useDispatch();
   const [selectedVariant, setSelectedVariant] = React.useState<number>(
-    productData?.variants[0]?._id || 0
+    productData?.variants?.[0]?._id || 0
   );
   const [showFixedBar, setShowFixedBar] = React.useState<boolean>(false);
   const actionButtonsRef = React.useRef<HTMLDivElement>(null);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const userId = useSelector((state) => state.auth.user?._id);
+
+  // Add early return if productData is not available
+  if (!productData || !productData.variants || productData.variants.length === 0) {
+    return <div className="lg:col-span-6 p-6">Loading product details...</div>;
+  }
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);

@@ -5,6 +5,8 @@ import ProductService from "../../../lib/services/productService.js";
 import ProductController from "../../../lib/controllers/productController.js";
 import ProductModel from "../../../lib/models/Product.js";
 import { saveFile } from "../../../config/fileUpload";
+import { ReviewSchema } from "../../../lib/models/Review.js";
+import mongoose from "mongoose";
 
 // GET /api/product/:id
 export async function GET(req, { params }) {
@@ -20,19 +22,46 @@ export async function GET(req, { params }) {
     }
     const Product =
       conn.models.Product || conn.model("Product", ProductModel.schema);
+    const Review = conn.models.Review || conn.model("Review", ReviewSchema);
     const productRepo = new ProductRepository(Product);
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
-    //consolle.log("Fetching product with ID:", id);
-    const response = await productController.getById(id, conn);
+
+    // Check if id is a valid ObjectId or a slug
+    let product;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      const response = await productController.getById(id, conn);
+      product = response.success ? response.data : null;
+    } else {
+      // Try to find by slug
+      product = await Product.findOne({ slug: id }).lean();
+    }
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, message: "Product not found" },
+        { status: 404 }
+      );
+    }
+
+    // Populate reviews using the actual _id
+    const reviews = await Review.find({ productId: product._id.toString() })
+      .populate("userId", "name email")
+      .lean();
+    product.reviews = reviews;
+    product.rating =
+      reviews.length > 0
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+        : 0;
+    product.reviewCount = reviews.length;
 
     return NextResponse.json(
       {
-        success: response.success,
-        message: response.message,
-        product: response.data,
+        success: true,
+        message: "Product fetched successfully",
+        product: product,
       },
-      { status: response.success ? 200 : 404 }
+      { status: 200 }
     );
   } catch (error) {
     return NextResponse.json(
