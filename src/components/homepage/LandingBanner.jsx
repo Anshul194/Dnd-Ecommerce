@@ -48,6 +48,50 @@ function LandingBanner({ content }) {
     setCurrentSlide((prev) => (prev - 1 + content.length) % content.length);
   };
 
+  const currentContent = content?.[currentSlide]?.content;
+  const hasCtaLink = currentContent?.cta?.link;
+  const hasCtaTitle = currentContent?.cta?.title;
+  const ctaLinkHref = hasCtaLink?.includes("about")
+    ? "/pages/68fb0ce58b4cf00083b826d2"
+    : hasCtaLink || "/search";
+
+  const BannerContent = () => (
+    <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">
+      <div className="container max-w-7xl mx-auto px-4 text-center text-white">
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-4xl  max-sm:w-full w-2/3 text-start  md:text-6xl lg:text-7xl mb-6 drop-shadow-2xl"
+        >
+          {currentContent?.title}
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-lg  max-sm:w-full w-2/3 text-start  md:text-xl lg:text-2xl mb-10 text-white/90 drop-shadow-lg"
+        >
+          {currentContent?.description}
+        </motion.p>
+        {hasCtaTitle && (
+          <motion.div
+            className="w-2/3 max-sm:w-full text-start"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <Link href={ctaLinkHref}>
+              <Button className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] px-8 py-6 text-lg shadow-2xl hover:shadow-[#3C950D]/50 hover:scale-105 transition-all">
+                {hasCtaTitle}
+              </Button>
+            </Link>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="relative h-[527px] max-h-[527px] overflow-hidden">
       <AnimatePresence mode="wait">
@@ -63,56 +107,22 @@ function LandingBanner({ content }) {
             className="w-full h-full"
             style={{
               backgroundImage: `url(${
-                isMobile && content?.[currentSlide]?.content?.mobileImage
-                  ? content?.[currentSlide]?.content?.mobileImage
-                  : content?.[currentSlide]?.content?.image
+                isMobile && currentContent?.mobileImage
+                  ? currentContent?.mobileImage
+                  : currentContent?.image
               })`,
               backgroundSize: "contain", // Changed from 'contain' to 'cover' for better full-screen fill
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
             }}
           >
-            <div className=" h-full bg-gradient-to-b from-black/50 via-black/40 to-black/60 flex items-center justify-center">
-              <div className="container max-w-7xl mx-auto px-4 text-center text-white">
-                <motion.h1
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  className="text-4xl  max-sm:w-full w-2/3 text-start  md:text-6xl lg:text-7xl mb-6 drop-shadow-2xl"
-                >
-                  {content?.[currentSlide]?.content?.title}
-                </motion.h1>
-                <motion.p
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  className="text-lg  max-sm:w-full w-2/3 text-start  md:text-xl lg:text-2xl mb-10 text-white/90 drop-shadow-lg"
-                >
-                  {content?.[currentSlide]?.content?.description}
-                </motion.p>
-                <motion.div
-                  className="w-2/3 max-sm:w-full text-start"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, delay: 0.6 }}
-                >
-                  <Link
-                    href={
-                      content?.[currentSlide]?.content?.cta?.link?.includes(
-                        "about"
-                      )
-                        ? "/pages/68fb0ce58b4cf00083b826d2"
-                        : "/search"
-                    }
-                  >
-                    <Button className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] px-8 py-6 text-lg shadow-2xl hover:shadow-[#3C950D]/50 hover:scale-105 transition-all">
-                      {content?.[currentSlide]?.content?.cta?.title ||
-                        "Shop Now"}
-                    </Button>
-                  </Link>
-                </motion.div>
-              </div>
-            </div>
+            {hasCtaLink && !hasCtaTitle ? (
+              <Link href={ctaLinkHref} className="block h-full cursor-pointer">
+                <BannerContent />
+              </Link>
+            ) : (
+              <BannerContent />
+            )}
           </div>
         </motion.div>
       </AnimatePresence>
