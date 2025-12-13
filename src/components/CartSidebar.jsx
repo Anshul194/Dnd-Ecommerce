@@ -95,7 +95,7 @@ const CartSidebar = () => {
     );
   }, []);
 
-  if (!loading && !isCartOpen) {
+  if (!isCartOpen) {
     return null;
   }
 
@@ -147,7 +147,7 @@ const CartSidebar = () => {
                   >
                     <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
                       <div className="w-12 h-16 bg-white rounded-sm overflow-hidden shadow-sm flex items-center justify-center">
-                        {item?.product ? (
+                        {item?.product?.image?.url ? (
                           <Image
                             src={item?.product?.image?.url}
                             alt={
@@ -236,13 +236,15 @@ const CartSidebar = () => {
                   <Link href={`/product-detail/${item?.slug}`} key={index}>
                     <div className="relative w-fit flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
                       <div className="h-20 aspect-square   rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                        <Image
-                          src={item?.thumbnail?.url || item?.images?.[0]?.url}
-                          alt={item?.thumbnail?.alt || "Product"}
-                          width={56}
-                          height={64}
-                          className="object-cover h-full w-full"
-                        />
+                        {(item?.thumbnail?.url || item?.images?.[0]?.url) && (
+                          <Image
+                            src={item?.thumbnail?.url || item?.images?.[0]?.url}
+                            alt={item?.thumbnail?.alt || "Product"}
+                            width={56}
+                            height={64}
+                            className="object-cover h-full w-full"
+                          />
+                        )}
                       </div>
                       <div className="w-fit h-fit">
                         <div className="text-xs w-40  min-h-7 text-gray-600 mb-1">
