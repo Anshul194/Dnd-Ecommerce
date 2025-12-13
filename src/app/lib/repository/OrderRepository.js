@@ -24,7 +24,8 @@ class OrderRepository extends CrudRepository {
       try {
         if (
           !this.model.schema.path("shippingAddress") ||
-          !this.model.schema.path("billingAddress")
+          !this.model.schema.path("billingAddress") ||
+          !this.model.schema.path("gstRate")
         ) {
           //consolle.warn(
           //   "Order model on connection is missing address fields. Re-registering Order model with canonical OrderSchema."
@@ -334,11 +335,11 @@ class OrderRepository extends CrudRepository {
   //updateOrder
   async updateOrder(orderId, updateData) {
     try {
-        // //consolle.log('Updating order:', orderId, 'with data:', updateData);
+      // //consolle.log('Updating order:', orderId, 'with data:', updateData);
       if (!mongoose.Types.ObjectId.isValid(orderId)) {
         throw new Error(`Invalid orderId: ${orderId}`);
       }
-      
+
       const updatedOrder = await this.model.findByIdAndUpdate(
         orderId,
         updateData,
@@ -399,6 +400,10 @@ class OrderRepository extends CrudRepository {
       //consolle.error("OrderRepository getAllOrders Error:", error.message);
       throw error;
     }
+  }
+
+  async findOrders(query = {}, conn) {
+    return await this.Order.find(query).exec();
   }
 }
 

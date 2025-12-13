@@ -22,8 +22,6 @@ export async function GET(request) {
       );
     }
 
-    //console.log("Connection name in route:", conn.name);
-
     // Initialize models
     const Order = conn.models.Order || conn.model("Order", OrderSchema);
     const Coupon = conn.models.Coupon || conn.model("Coupon", CouponSchema);
@@ -37,8 +35,29 @@ export async function GET(request) {
     const orderService = new OrderService(orderRepo, couponService);
     const orderController = new OrderController(orderService);
 
-    // Call the getAllOrders method
-    const result = await orderController.getAllOrders(request, conn);
+    // Parse query params
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status");
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const sortByRaw = searchParams.get("sortBy");
+    const sortOrder = searchParams.get("sortOrder") || "desc";
+
+    let sortBy = { createdAt: -1 };
+    if (sortByRaw) {
+      try {
+        sortBy = JSON.parse(sortByRaw);
+      } catch (e) {
+        // fallback to default
+      }
+    }
+
+    // Pass all filters and options to controller
+    const result = await orderController.getAllOrders(
+      request,
+      conn,
+      { status, page, limit, sortBy, sortOrder }
+    );
 
     return NextResponse.json(
       {
@@ -52,7 +71,7 @@ export async function GET(request) {
       { status: result.success ? 200 : 400 }
     );
   } catch (error) {
-    //console.error("GET /orders error:", error.message, error.stack);
+    console.log("Error in GET /api/orders:", error?.message);
     return NextResponse.json(
       {
         success: false,

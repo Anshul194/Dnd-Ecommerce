@@ -75,11 +75,40 @@ class OrderController {
     }
   }
 
-  async getAllOrders(request, conn) {
-    //consolle.log("Controller received get all orders request");
+  async getAllOrders(request, conn, filters = {}) {
     try {
-      const result = await this.orderService.getAllOrders(request, conn);
-      return result;
+      // Build filter conditions
+      const filterConditions = {};
+      if (filters.status) {
+        filterConditions.status = filters.status;
+      }
+
+      // Parse pagination and sorting
+      const page = parseInt(filters.page) || 1;
+      const limit = parseInt(filters.limit) || 10;
+      const sortConditions = filters.sortBy || { createdAt: -1 };
+
+      // Call repository method directly with all parameters
+      const { results, totalCount, currentPage, pageSize } =
+        await this.orderService.orderRepository.getAllOrders(
+          filterConditions,
+          sortConditions,
+          page,
+          limit,
+          ["items.product", "items.variant", "coupon", "user"],
+          {}
+        );
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+        success: true,
+        message: "All orders fetched successfully",
+        data: results,
+        currentPage,
+        totalPages,
+        totalCount,
+      };
     } catch (error) {
       return {
         success: false,

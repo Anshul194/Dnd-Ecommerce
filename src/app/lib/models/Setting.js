@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+const categoryPaymentSettingSchema = new mongoose.Schema(
+  {
+    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },
+    allowPrepaidOnly: { type: Boolean, default: false },
+    disableCOD: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
 const settingSchema = new mongoose.Schema(
   {
     tenant: { type: String, required: true, index: true }, // subdomain or tenant id
@@ -18,6 +27,23 @@ const settingSchema = new mongoose.Schema(
     codDisableForHighRTO: { type: Boolean, default: true },
     codBlockOnRTOAddress: { type: Boolean, default: true },
     highRTOOrderCount: { type: Number, default: 3 },
+    codAllowed: { type: Boolean, default: true }, // New field to allow/disallow COD globally
+    gstCharge: { type: Number, default: 0 },
+    paymentGatewayCharge: { type: Number, default: 0 },
+    categoryPaymentSettings: [categoryPaymentSettingSchema],
+
+    // Meta (Facebook) CRM/Ads Integration
+    metaIntegration: {
+      adAccountId: { type: String, default: null }, // e.g., "123456789"
+      pixelId: { type: String, default: null }, // e.g., "987654321"
+      pageId: { type: String, default: null }, // Facebook Page ID for lead forms
+      accessToken: { type: String, default: null }, // Long-lived user access token
+      appId: { type: String, default: null }, // Meta App ID
+      appSecret: { type: String, default: null }, // Meta App Secret
+      isConnected: { type: Boolean, default: false },
+      connectedAt: { type: Date, default: null },
+      tokenExpiresAt: { type: Date, default: null }, // Track token expiration
+    },
   },
   { timestamps: true }
 );

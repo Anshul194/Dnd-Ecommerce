@@ -5,6 +5,7 @@ import ProductService from "../../lib/services/productService";
 import ProductController from "../../lib/controllers/productController";
 import ProductModel from "../../lib/models/Product";
 import { saveFile, validateImageFile } from "../../config/fileUpload";
+import { ReviewSchema } from "../../lib/models/Review.js";
 
 // GET /api/product
 export async function GET(req) {
@@ -23,10 +24,26 @@ export async function GET(req) {
     }
     const Product =
       conn.models.Product || conn.model("Product", ProductModel.schema);
+    const Review = conn.models.Review || conn.model("Review", ReviewSchema);
     const productRepo = new ProductRepository(Product);
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
     const productsResult = await productController.getAll(query, conn);
+
+    // Populate reviews for each product using actual _id
+    if (productsResult?.data?.products && Array.isArray(productsResult.data.products)) {
+      for (let product of productsResult.data.products) {
+        const reviews = await Review.find({ productId: product._id.toString() })
+          .populate("userId", "name email")
+          .lean();
+        product.reviews = reviews;
+        product.rating =
+          reviews.length > 0
+            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+            : 0;
+        product.reviewCount = reviews.length;
+      }
+    }
 
     return NextResponse.json({ success: true, products: productsResult });
   } catch (error) {

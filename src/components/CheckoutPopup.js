@@ -286,20 +286,20 @@ export default function CheckoutPopup() {
         paymentMode: paymentMethod === "cod" ? "COD" : "Prepaid",
         items: buyNowProduct
           ? [
-              {
-                product:
-                  buyNowProduct.product?._id || buyNowProduct.product?.id,
-                quantity: buyNowProduct.quantity,
-                price: buyNowProduct.price,
-                variant: buyNowProduct.variant,
-              },
-            ]
+            {
+              product:
+                buyNowProduct.product?._id || buyNowProduct.product?.id,
+              quantity: buyNowProduct.quantity,
+              price: buyNowProduct.price,
+              variant: buyNowProduct.variant,
+            },
+          ]
           : cartItems.map((item) => ({
-              product: item.product?._id || item.product?.id,
-              quantity: item.quantity,
-              price: item.price,
-              variant: item.variant,
-            })),
+            product: item.product?._id || item.product?.id,
+            quantity: item.quantity,
+            price: item.price,
+            variant: item.variant,
+          })),
         total: buyNowProduct?.price || total,
         shippingAddress: {
           fullName: `${formData.firstName} ${formData.lastName}`,
@@ -323,6 +323,13 @@ export default function CheckoutPopup() {
         },
         deliveryOption: "standard_delivery",
       };
+
+      // Calculate items total for backend (which expects 'total' as subtotal/itemsTotal)
+      const currentItemsTotal = buyNowProduct
+        ? buyNowProduct.price * buyNowProduct.quantity
+        : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+      payload.total = currentItemsTotal;
+
       selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
       selectedCoupon && (payload.discount = selectedCoupon.discount);
       const response = await axiosInstance.post("/orders/check", payload);
@@ -351,13 +358,8 @@ export default function CheckoutPopup() {
       if (paymentMethod === "prepaid") {
         const options = {
           key: "rzp_test_1DP5mmOlF5G5ag",
-          amount: buyNowProduct
-            ? (buyNowProduct.price * buyNowProduct.quantity -
-                (selectedCoupon?.discount || 0) +
-                calculateShipping()) *
-              100
-            : (total - (selectedCoupon?.discount || 0) + calculateShipping()) *
-              100, // Convert to paise
+          amount: Math.round(total * 100), // Use the calculated total which includes everything
+          currency: "INR",
           currency: "INR",
           name: "Tea Box",
           description: "Slot Booking Fee",
@@ -369,21 +371,21 @@ export default function CheckoutPopup() {
 
                 items: buyNowProduct
                   ? [
-                      {
-                        product:
-                          buyNowProduct.product?._id ||
-                          buyNowProduct.product?.id,
-                        quantity: buyNowProduct.quantity,
-                        price: buyNowProduct.price,
-                        variant: buyNowProduct.variant,
-                      },
-                    ]
+                    {
+                      product:
+                        buyNowProduct.product?._id ||
+                        buyNowProduct.product?.id,
+                      quantity: buyNowProduct.quantity,
+                      price: buyNowProduct.price,
+                      variant: buyNowProduct.variant,
+                    },
+                  ]
                   : cartItems.map((item) => ({
-                      product: item.product?._id || item.product?.id,
-                      quantity: item.quantity,
-                      price: item.price,
-                      variant: item.variant,
-                    })),
+                    product: item.product?._id || item.product?.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    variant: item.variant,
+                  })),
                 total: buyNowProduct?.price || total,
                 paymentId: response.razorpay_payment_id,
                 shippingAddress: {
@@ -409,6 +411,13 @@ export default function CheckoutPopup() {
                 paymentDetails: response.razorpay_payment_id,
                 deliveryOption: "standard_delivery",
               };
+
+              // Calculate items total for backend
+              const currentItemsTotal = buyNowProduct
+                ? buyNowProduct.price * buyNowProduct.quantity
+                : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+              payload.total = currentItemsTotal;
+
               selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
               selectedCoupon && (payload.discount = selectedCoupon.discount);
 
@@ -462,20 +471,20 @@ export default function CheckoutPopup() {
             paymentMode: paymentMethod === "cod" ? "COD" : "Prepaid",
             items: buyNowProduct
               ? [
-                  {
-                    product:
-                      buyNowProduct.product?._id || buyNowProduct.product?.id,
-                    quantity: buyNowProduct.quantity,
-                    price: buyNowProduct.price,
-                    variant: buyNowProduct.variant,
-                  },
-                ]
+                {
+                  product:
+                    buyNowProduct.product?._id || buyNowProduct.product?.id,
+                  quantity: buyNowProduct.quantity,
+                  price: buyNowProduct.price,
+                  variant: buyNowProduct.variant,
+                },
+              ]
               : cartItems.map((item) => ({
-                  product: item.product?._id || item.product?.id,
-                  quantity: item.quantity,
-                  price: item.price,
-                  variant: item.variant,
-                })),
+                product: item.product?._id || item.product?.id,
+                quantity: item.quantity,
+                price: item.price,
+                variant: item.variant,
+              })),
             total: buyNowProduct?.price || total,
             shippingAddress: {
               fullName: `${formData.firstName} ${formData.lastName}`,
@@ -499,6 +508,13 @@ export default function CheckoutPopup() {
             },
             deliveryOption: "standard_delivery",
           };
+
+          // Calculate items total for backend
+          const currentItemsTotal = buyNowProduct
+            ? buyNowProduct.price * buyNowProduct.quantity
+            : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+          payload.total = currentItemsTotal;
+
           selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
           selectedCoupon && (payload.discount = selectedCoupon.discount);
 
@@ -783,30 +799,44 @@ export default function CheckoutPopup() {
 
   const shipping = calculateShipping();
   const couponDiscount = selectedCoupon?.discount || 0;
-  const subtotal = itemsTotal + shipping - couponDiscount;
-  const total = subtotal;
 
-  useEffect(() => {
-    // Track checkout start when popup opens
-    if (checkoutOpen) {
-      const cartData = buyNowProduct
-        ? [
-            {
-              product: buyNowProduct.product.id,
-              quantity: buyNowProduct.quantity,
-              price: buyNowProduct.price,
-              variant: buyNowProduct.variant,
-            },
-          ]
-        : cartItems.map((item) => ({
-            product: item.product.id,
-            quantity: item.quantity,
-            price: item.price,
-            variant: item.variant,
-          }));
-      trackCheckout(cartData);
+  // GST & PG
+  const gstPercent = settings?.gstCharge || 0;
+  const pgPercent = settings?.paymentGatewayCharge || 0;
+
+  const taxableAmount = Math.max(0, itemsTotal - couponDiscount);
+  const gstAmount = (taxableAmount * gstPercent) / 100;
+
+  let pgAmount = 0;
+  if (paymentMethod === 'prepaid') {
+    pgAmount = ((taxableAmount + shipping + gstAmount) * pgPercent) / 100;
+  }
+
+  const subtotal = itemsTotal - couponDiscount;
+  const total = taxableAmount + shipping + gstAmount;
+
+  // --- COD disable logic based on category ---
+  // Helper to get all category IDs from cart/buyNowProduct
+  const getCartCategoryIds = () => {
+    if (buyNowProduct) {
+      return [buyNowProduct.product?.category?._id || buyNowProduct.product?.category];
     }
-  }, [checkoutOpen]);
+    return (cartItems || []).map(
+      (item) => item.product?.category?._id || item.product?.category
+    );
+  };
+
+  // Check if any category in cart is disabled for COD
+  const isCODDisabledForCart = (() => {
+    if (!settings?.categoryPaymentSettings?.length) return false;
+    const cartCategoryIds = getCartCategoryIds().filter(Boolean);
+    return cartCategoryIds.some((catId) =>
+      settings.categoryPaymentSettings.some(
+        (cps) =>
+          cps.categoryId?.toString() === catId?.toString() && cps.disableCOD
+      )
+    );
+  })();
 
   // Only run when checkoutOpen changes so we don't accidentally send on unrelated updates
   useEffect(() => {
@@ -827,11 +857,11 @@ export default function CheckoutPopup() {
           productIds,
           user: isAuthenticated
             ? {
-                _id: user?._id,
-                email: user?.email,
-                phone: user?.phone,
-                name: user?.name,
-              }
+              _id: user?._id,
+              email: user?.email,
+              phone: user?.phone,
+              name: user?.name,
+            }
             : null,
           timestamp: new Date().toISOString(),
         };
@@ -953,23 +983,23 @@ export default function CheckoutPopup() {
                     // Build cartItems payload expected by CouponService — prefer product._id
                     const itemsToSend = buyNowProduct
                       ? [
-                          {
-                            productId:
-                              buyNowProduct.product?._id ||
-                              buyNowProduct.product?.id,
-                            price: Number(buyNowProduct.price || 0),
-                            quantity: Number(buyNowProduct.quantity || 1),
-                          },
-                        ]
+                        {
+                          productId:
+                            buyNowProduct.product?._id ||
+                            buyNowProduct.product?.id,
+                          price: Number(buyNowProduct.price || 0),
+                          quantity: Number(buyNowProduct.quantity || 1),
+                        },
+                      ]
                       : (cartItems || []).map((item) => ({
-                          productId: item.product?._id || item.product?.id,
-                          price: Number(item.price || 0),
-                          quantity: Number(item.quantity || 1),
-                          actualPrice:
-                            item.actualPrice !== undefined
-                              ? Number(item.actualPrice)
-                              : undefined,
-                        }));
+                        productId: item.product?._id || item.product?.id,
+                        price: Number(item.price || 0),
+                        quantity: Number(item.quantity || 1),
+                        actualPrice:
+                          item.actualPrice !== undefined
+                            ? Number(item.actualPrice)
+                            : undefined,
+                      }));
 
                     try {
                       const action = await dispatch(
@@ -1028,9 +1058,8 @@ export default function CheckoutPopup() {
               {otpSended ? (
                 <div>
                   <div
-                    className={`${
-                      loading && "opacity-40"
-                    } mt-2 flex justify-center items-center gap-2`}
+                    className={`${loading && "opacity-40"
+                      } mt-2 flex justify-center items-center gap-2`}
                   >
                     <form id="otp-form" className="flex gap-4">
                       {otp.map((digit, index) => (
@@ -1088,16 +1117,14 @@ export default function CheckoutPopup() {
               ) : (
                 <div>
                   <div
-                    className={`relative  group w-full flex bg-white  py-0 h-11 border-[1px] ${
-                      activeField === "phone"
-                        ? "border-blue-600"
-                        : "border-gray-300"
-                    } rounded-md`}
+                    className={`relative  group w-full flex bg-white  py-0 h-11 border-[1px] ${activeField === "phone"
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                      } rounded-md`}
                   >
                     <div
-                      className={`${
-                        loading && "opacity-40"
-                      } border-r-[1px] w-fit px-4 h-full flex justify-center items-center border-gray-2400`}
+                      className={`${loading && "opacity-40"
+                        } border-r-[1px] w-fit px-4 h-full flex justify-center items-center border-gray-2400`}
                     >
                       +91
                     </div>
@@ -1111,9 +1138,8 @@ export default function CheckoutPopup() {
                       onChange={handleInputChange}
                       onFocus={() => setActiveField("phone")}
                       onBlur={() => setActiveField(null)}
-                      className={`${
-                        loading && "opacity-40"
-                      } outline-none text-md  px-4 w-full border-0 h-full `}
+                      className={`${loading && "opacity-40"
+                        } outline-none text-md  px-4 w-full border-0 h-full `}
                     />
                   </div>
                   {loading && (
@@ -1295,18 +1321,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "firstName"
-                        ? "border-blue-600"
-                        : "border-gray-300"
-                    } rounded-md`}
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "firstName"
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "firstName" || formData.firstName !== ""
-                          ? "-translate-y-6"
-                          : "translate-y-0"
-                      }`}
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "firstName" || formData.firstName !== ""
+                        ? "-translate-y-6"
+                        : "translate-y-0"
+                        }`}
                     >
                       First Name{" "}
                       <span
@@ -1331,18 +1355,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "lastName"
-                        ? "border-blue-600"
-                        : "border-gray-300"
-                    } rounded-md`}
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "lastName"
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "lastName" || formData.lastName !== ""
-                          ? "-translate-y-6"
-                          : "translate-y-0"
-                      }`}
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "lastName" || formData.lastName !== ""
+                        ? "-translate-y-6"
+                        : "translate-y-0"
+                        }`}
                     >
                       Last Name{" "}
                       <span
@@ -1367,19 +1389,17 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "flatNumber"
-                        ? "border-blue-600"
-                        : "border-gray-300"
-                    } rounded-md`}
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "flatNumber"
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "flatNumber" ||
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "flatNumber" ||
                         formData.flatNumber !== ""
-                          ? "-translate-y-6"
-                          : "translate-y-0"
-                      }`}
+                        ? "-translate-y-6"
+                        : "translate-y-0"
+                        }`}
                     >
                       Flat, house number, floor, building{" "}
                       <span
@@ -1404,18 +1424,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "area"
-                        ? "border-blue-600"
-                        : "border-gray-300"
-                    } rounded-md`}
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "area"
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "area" || addressSearch !== ""
-                          ? "-translate-y-6"
-                          : "translate-y-0"
-                      }`}
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "area" || addressSearch !== ""
+                        ? "-translate-y-6"
+                        : "translate-y-0"
+                        }`}
                     >
                       Search Full Address (Google Maps)
                       <span
@@ -1483,18 +1501,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "landmark"
-                        ? "border-blue-600"
-                        : "border-gray-300"
-                    } rounded-md`}
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "landmark"
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "landmark" || formData.landmark !== ""
-                          ? "-translate-y-6"
-                          : "translate-y-0"
-                      }`}
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "landmark" || formData.landmark !== ""
+                        ? "-translate-y-6"
+                        : "translate-y-0"
+                        }`}
                     >
                       Nearby Landmark
                       <span
@@ -1564,13 +1580,13 @@ export default function CheckoutPopup() {
                                   </p>
                                   {landmark.structured_formatting
                                     ?.secondary_text && (
-                                    <p className="text-xs text-gray-500">
-                                      {
-                                        landmark.structured_formatting
-                                          .secondary_text
-                                      }
-                                    </p>
-                                  )}
+                                      <p className="text-xs text-gray-500">
+                                        {
+                                          landmark.structured_formatting
+                                            .secondary_text
+                                        }
+                                      </p>
+                                    )}
                                 </div>
                               </div>
                             </li>
@@ -1581,18 +1597,16 @@ export default function CheckoutPopup() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div
-                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                        activeField === "city"
-                          ? "border-blue-600"
-                          : "border-gray-300"
-                      } rounded-md`}
+                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "city"
+                        ? "border-blue-600"
+                        : "border-gray-300"
+                        } rounded-md`}
                     >
                       <h2
-                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                          activeField === "city" || formData.city !== ""
-                            ? "-translate-y-6"
-                            : "translate-y-0"
-                        }`}
+                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "city" || formData.city !== ""
+                          ? "-translate-y-6"
+                          : "translate-y-0"
+                          }`}
                       >
                         City{" "}
                         <span
@@ -1617,18 +1631,16 @@ export default function CheckoutPopup() {
                     </div>
 
                     <div
-                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                        activeField === "state"
-                          ? "border-blue-600"
-                          : "border-gray-300"
-                      } rounded-md`}
+                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "state"
+                        ? "border-blue-600"
+                        : "border-gray-300"
+                        } rounded-md`}
                     >
                       <h2
-                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                          activeField === "state" || formData.state !== ""
-                            ? "-translate-y-6"
-                            : "translate-y-0"
-                        }`}
+                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "state" || formData.state !== ""
+                          ? "-translate-y-6"
+                          : "translate-y-0"
+                          }`}
                       >
                         State{" "}
                         <span
@@ -1652,18 +1664,16 @@ export default function CheckoutPopup() {
                       />
                     </div>
                     <div
-                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                        activeField === "pincode"
-                          ? "border-blue-600"
-                          : "border-gray-300"
-                      } rounded-md`}
+                      className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "pincode"
+                        ? "border-blue-600"
+                        : "border-gray-300"
+                        } rounded-md`}
                     >
                       <h2
-                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                          activeField === "pincode" || formData.pincode !== ""
-                            ? "-translate-y-6"
-                            : "translate-y-0"
-                        }`}
+                        className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "pincode" || formData.pincode !== ""
+                          ? "-translate-y-6"
+                          : "translate-y-0"
+                          }`}
                       >
                         Pincode{" "}
                         <span
@@ -1689,18 +1699,16 @@ export default function CheckoutPopup() {
                   </div>
 
                   <div
-                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${
-                      activeField === "email"
-                        ? "border-blue-600"
-                        : "border-gray-300"
-                    } rounded-md`}
+                    className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "email"
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                      } rounded-md`}
                   >
                     <h2
-                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${
-                        activeField === "email" || formData.email !== ""
-                          ? "-translate-y-6"
-                          : "translate-y-0"
-                      }`}
+                      className={`absolute top-3 text-[14px]  transition-all duration-200 bg-white px-2 ${activeField === "email" || formData.email !== ""
+                        ? "-translate-y-6"
+                        : "translate-y-0"
+                        }`}
                     >
                       Email (optional){" "}
                     </h2>
@@ -1758,14 +1766,14 @@ export default function CheckoutPopup() {
                   />
                   <label htmlFor="payment-method-2">Prepaid</label>
                 </div>
-                <div>
+                {/* Only show COD if not disabled for any cart category */}
+                {!isCODDisabledForCart && (
                   <div
-                    className={`flex items-center gap-2 ${
-                      cartItems.reduce(
-                        (acc, item) => acc + item.price * item.quantity,
-                        0
-                      ) > settings?.codLimit && "opacity-50 cursor-not-allowed"
-                    }`}
+                    className={`flex items-center gap-2 ${cartItems.reduce(
+                      (acc, item) => acc + item.price * item.quantity,
+                      0
+                    ) > settings?.codLimit && "opacity-50 cursor-not-allowed"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -1784,7 +1792,15 @@ export default function CheckoutPopup() {
                     />
                     <label htmlFor="payment-method-1">Cash on delivery</label>
                   </div>
-                  {cartItems.reduce(
+                )}
+                {/* Show message if COD is disabled for category */}
+                {isCODDisabledForCart && (
+                  <h2 className="text-red-500 text-xs">
+                    Cash on delivery is not available for one or more items in your cart.
+                  </h2>
+                )}
+                {!isCODDisabledForCart &&
+                  cartItems.reduce(
                     (acc, item) => acc + item.price * item.quantity,
                     0
                   ) > settings?.codLimit && (
@@ -1792,7 +1808,6 @@ export default function CheckoutPopup() {
                       COD not available for orders above ₹{settings.codLimit}
                     </h2>
                   )}
-                </div>
               </div>
             </div>
           )}
@@ -1824,11 +1839,17 @@ export default function CheckoutPopup() {
                 )}
                 <div className="flex justify-between text-sm">
                   <h2>Subtotal</h2>
-                  <h2>₹{subtotal}</h2>
+                  <h2>₹{subtotal.toFixed(2)}</h2>
                 </div>
+                {gstAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <h2>GST ({settings?.gstCharge}%)</h2>
+                    <h2>₹{gstAmount.toFixed(2)}</h2>
+                  </div>
+                )}
                 <div className="flex justify-between font-semibold border-t-[1.5px] border-black pt-1">
                   <h2>Total</h2>
-                  <h2>₹{total}</h2>
+                  <h2>₹{total.toFixed(2)}</h2>
                 </div>
               </div>
             </div>
@@ -1837,17 +1858,16 @@ export default function CheckoutPopup() {
           {isAuthenticated && addressAdded && (
             <button
               onClick={pinCodeVerified?.success ? handelPayment : checkPincode}
-              className={`w-full mt-4  text-sm ${
-                pinCodeVerified?.success
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : " bg-green-600 hover:bg-green-700"
-              } text-white py-3 rounded-md  transition-colors`}
+              className={`w-full mt-4  text-sm ${pinCodeVerified?.success
+                ? "bg-blue-600 hover:bg-blue-700"
+                : " bg-green-600 hover:bg-green-700"
+                } text-white py-3 rounded-md  transition-colors`}
             >
               {pincodeChecking
                 ? "Checking..."
                 : pinCodeVerified?.success
-                ? `  Place Order (₹${total})`
-                : "Check Pincode"}
+                  ? `  Place Order (₹${total})`
+                  : "Check Pincode"}
             </button>
           )}
 
@@ -1875,9 +1895,8 @@ export default function CheckoutPopup() {
 
         {/* Footer */}
         <div
-          className={`px-8 pb-4 ${
-            !isAuthenticated && "mt-[32vh]"
-          } text-xs flex justify-between mb-4 text-gray-500 text-center`}
+          className={`px-8 pb-4 ${!isAuthenticated && "mt-[32vh]"
+            } text-xs flex justify-between mb-4 text-gray-500 text-center`}
         >
           T&C | Privacy Policy | IGAZC5
           <br />

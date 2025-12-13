@@ -17,7 +17,7 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "../store/slices/wishlistSlice";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Star } from "lucide-react";
 import { toast } from "react-toastify";
 
 import { trackEvent } from "../lib/tracking/trackEvent";
@@ -226,6 +226,23 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               {""}
               {product?.name?.length > 18 ? "..." : ""}
             </h3>
+
+            {/* Rating - Only show if rating > 0 */}
+            {product?.rating > 0 && (
+              <div className="flex items-center gap-1 mb-2">
+                <div className="flex items-center">
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <span className="text-xs font-medium text-gray-700 ml-1">
+                    {product.rating.toFixed(1)}
+                  </span>
+                </div>
+                {product?.reviewCount > 0 && (
+                  <span className="text-xs text-gray-500">
+                    ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'})
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Description */}
             {showDes && (
