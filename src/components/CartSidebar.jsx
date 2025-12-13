@@ -12,7 +12,6 @@ import {
 } from "@/app/store/slices/cartSlice";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import Link from "next/link";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
@@ -383,7 +382,7 @@ const CartSidebar = () => {
 
                 dispatch(toggleCart());
                 dispatch(removeBuyNowProduct());
-                dispatch(setCheckoutOpen(true));
+                route.push("/checkout");
               }
             }}
             className="w-full bg-green-500 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors"

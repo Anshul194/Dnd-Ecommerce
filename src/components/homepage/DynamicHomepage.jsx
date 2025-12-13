@@ -23,6 +23,7 @@ import DynamicOfferBanner from "./sections/DynamicOfferBanner";
 import DynamicProductSlider from "./sections/DynamicProductSlider";
 import DynamicWhyUs from "./sections/DynamicWhyUs";
 import DynamicUniqueSellingPoints from "./sections/DynamicUniqueSellingPoints";
+import ProductGrid from "./sections/ProductGrid";
 import { LoadingSpinner, LoadingSection } from "../common/Loading";
 
 const DynamicHomepage = () => {
@@ -115,9 +116,14 @@ const DynamicHomepage = () => {
 
       case "productSlider":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
-            <DynamicProductSlider content={content} />
-          </div>
+          <>
+            <div key={_id} className="max-w-7xl mx-auto px-4">
+              <DynamicProductSlider content={content} />
+            </div>
+            <div key={`${_id}-grid`} className="max-w-7xl mx-auto px-4">
+              <ProductGrid />
+            </div>
+          </>
         );
 
       case "whyUs":

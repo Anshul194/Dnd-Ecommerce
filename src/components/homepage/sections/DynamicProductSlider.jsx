@@ -13,11 +13,12 @@ import {
   setBuyNowProduct,
   toggleCart,
 } from "@/app/store/slices/cartSlice";
-import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
+
 import { toast } from "react-toastify";
 import ProductCard from "@/app/search/ProductCard";
 import { useTrack } from "@/app/lib/tracking/useTrack";
 import AnimatedGradientBorder from "@/components/ui/AnimatedGradientBorder";
+import { useRouter } from "next/navigation";
 
 const DynamicProductSlider = ({ content }) => {
   const { title, description, image } = content;
@@ -31,6 +32,7 @@ const DynamicProductSlider = ({ content }) => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const dispatch = useDispatch();
+  const router = useRouter();
   const { trackAddToCart, trackView } = useTrack();
 
   const nextSlide = () => {
@@ -90,83 +92,7 @@ const DynamicProductSlider = ({ content }) => {
     handleScroll.timeout = setTimeout(updateScrollButtons, 50);
   };
 
-  // Auto-scroll slider on small screens (mobile)
-  useEffect(() => {
-    const container = sliderRef.current;
-    if (!container) return;
 
-    let intervalId = null;
-    let resumeTimeout = null;
-    const gap = 16; // tailwind space-x-4 => 1rem (16px)
-    const intervalMs = 3500;
-
-    const startAutoScroll = () => {
-      if (intervalId) return;
-      intervalId = setInterval(() => {
-        if (!container) return;
-        const card = container.firstElementChild;
-        if (!card) return;
-        const cardWidth = Math.ceil(card.getBoundingClientRect().width) + gap;
-        const { scrollLeft, scrollWidth, clientWidth } = container;
-
-        // If we're at (or very near) the end, go back to start
-        if (scrollLeft + clientWidth >= scrollWidth - 5) {
-          container.scrollTo({ left: 0, behavior: "smooth" });
-        } else {
-          container.scrollBy({ left: cardWidth, behavior: "smooth" });
-        }
-      }, intervalMs);
-    };
-
-    const stopAutoScroll = () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-      if (resumeTimeout) {
-        clearTimeout(resumeTimeout);
-        resumeTimeout = null;
-      }
-    };
-
-    // When user interacts, pause and resume after inactivity
-    const pauseAndScheduleResume = () => {
-      stopAutoScroll();
-      // resume after short inactivity
-      resumeTimeout = setTimeout(() => {
-        // only start if still on mobile width
-        if (window.innerWidth < 640) startAutoScroll();
-      }, 4000);
-    };
-
-    const onUserInteract = () => pauseAndScheduleResume();
-
-    const onResize = () => {
-      stopAutoScroll();
-      if (window.innerWidth < 640) startAutoScroll();
-    };
-
-    // Only enable on mobile widths
-    if (typeof window !== "undefined" && window.innerWidth < 640) {
-      startAutoScroll();
-    }
-
-    // Pause on touch/drag or pointerdown; also pause on mouseenter to be safe
-    container.addEventListener("touchstart", onUserInteract, { passive: true });
-    container.addEventListener("pointerdown", onUserInteract);
-    container.addEventListener("mouseenter", onUserInteract);
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      stopAutoScroll();
-      try {
-        container.removeEventListener("touchstart", onUserInteract);
-        container.removeEventListener("pointerdown", onUserInteract);
-        container.removeEventListener("mouseenter", onUserInteract);
-      } catch (e) {}
-      window.removeEventListener("resize", onResize);
-    };
-  }, [products?.products]);
 
   const handleAddToCart = (e, product) => {
     e.stopPropagation();
@@ -235,7 +161,7 @@ const DynamicProductSlider = ({ content }) => {
       }
       await dispatch(getCartItems());
       setOverlayProduct(null);
-      dispatch(setCheckoutOpen(true));
+      router.push("/checkout");
 
       // track buy now (best-effort)
       try {
@@ -315,7 +241,7 @@ const DynamicProductSlider = ({ content }) => {
   }, [itemsPerPage, products?.products]);
 
   return (
-    <div className="flex relative flex-col gap-4 justify-between w-full h-fit py-20 px-4 lg:px-0">
+    <div className="flex relative flex-col gap-4 justify-between w-full h-fit py-20 lg:px-0">
       {/* Left Content - Dynamic from API */}
       <div className="flex-1 relative mb-8 lg:mb-0 lg:mr-8 z-20 text-center">
         <h1 className="text-4xl w-full font-black text-gray-800 leading-tight mb-2">
@@ -335,7 +261,7 @@ const DynamicProductSlider = ({ content }) => {
           <button
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
-            className={`absolute -left-4 md:-left-5 top-1/2 border border-black/20 transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-200 ${
+            className={`hidden sm:flex absolute -left-4 md:-left-5 top-1/2 border border-black/20 transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg items-center justify-center transition-all duration-200 ${
               canScrollLeft
                 ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
                 : "text-gray-300 cursor-not-allowed opacity-0"
@@ -362,7 +288,7 @@ const DynamicProductSlider = ({ content }) => {
           <button
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
-            className={`absolute -right-2 md:-right-5 top-1/2 border transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-200 ${
+            className={`hidden sm:flex absolute -right-2 md:-right-5 top-1/2 border transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg items-center justify-center transition-all duration-200 ${
               canScrollRight
                 ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
                 : "text-gray-300 cursor-not-allowed opacity-0"
@@ -389,7 +315,7 @@ const DynamicProductSlider = ({ content }) => {
           <div
             ref={sliderRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto scrollbar-hide space-x-4  py-4 scroll-smooth"
+            className="grid grid-cols-2 gap-4 sm:flex sm:overflow-x-auto scrollbar-hide sm:space-x-4 py-4 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {products?.products?.length > 0
@@ -477,7 +403,7 @@ const DynamicProductSlider = ({ content }) => {
                           minWidth: 0,
                         }}
                       >
-                        <div className=" border border-gray-200 overflow-hidden rounded-2xl h-96  flex flex-col group">
+                        <div className="border border-gray-200 overflow-hidden rounded-2xl h-[307px] flex flex-col group">
                           {/* Name with green icon */}
                           <div className="absolute top-4 right-6 flex items-center justify-between mb-6 z-50">
                             <h3 className="text-md font-bold text-black uppercase tracking-wide">
@@ -492,13 +418,13 @@ const DynamicProductSlider = ({ content }) => {
                             />
                           </div>
 
-                          {/* Gray placeholder box */}
-                          <div className="relative w-full h-full  rounded-lg">
+                          {/* Gray placeholder box - Fixed height */}
+                          <div className="relative w-full h-[307px] rounded-lg">
                             {/* Placeholder for image or additional content */}
                             {product?.storyVideoUrl.includes(".mp4") ? (
                               <video
                                 src={product?.storyVideoUrl}
-                                className="w-full h-full object-cover "
+                                className="w-full h-full object-cover"
                                 // controls
                                 autoPlay
                                 muted
@@ -507,7 +433,7 @@ const DynamicProductSlider = ({ content }) => {
                               <img
                                 src={product?.storyVideoUrl}
                                 alt="Story Visual"
-                                className="w-full h-full object-cover "
+                                className="w-full h-full object-cover"
                               />
                             )}
                             {/* Hover Overlay */}
@@ -561,7 +487,7 @@ const DynamicProductSlider = ({ content }) => {
                           minWidth: 0,
                         }}
                       >
-                        <div className="bg-white border border-gray-200 rounded-2xl h-96 flex flex-col group">
+                        <div className="bg-white border border-gray-200 rounded-2xl h-[307px] flex flex-col group">
                           {/* Name with green icon */}
                           <div className="absolute top-4 right-6 flex items-center justify-between mb-6 z-50">
                             <h3 className="text-md font-bold text-black uppercase tracking-wide">
@@ -576,8 +502,8 @@ const DynamicProductSlider = ({ content }) => {
                             />
                           </div>
 
-                          {/* Gray placeholder box */}
-                          <div className="relative w-full h-full bg-gray-300 rounded-lg">
+                          {/* Gray placeholder box - Fixed height */}
+                          <div className="relative w-full h-[307px] bg-gray-300 rounded-lg">
                             {/* Placeholder for image or additional content */}
                             {product?.storyVideoUrl.includes(".mp4") ? (
                               <video

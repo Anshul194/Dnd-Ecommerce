@@ -19,7 +19,7 @@ import {
 } from "../store/slices/wishlistSlice";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "react-toastify";
-import { setCheckoutOpen } from "../store/slices/checkOutSlice";
+
 import { trackEvent } from "../lib/tracking/trackEvent";
 import { useTrack } from "../lib/tracking/useTrack";
 
@@ -84,7 +84,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
       }
       await dispatch(getCartItems());
       setOverlayProduct(null);
-      dispatch(setCheckoutOpen(true));
+      router.push("/checkout");
       // dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -142,8 +142,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
       >
         <div
           className={`${
-            showDes ? "h-96  max-sm:h-80" : "h-fit max-sm:h-80"
-          } bg-white flex max-sm:w-full max-sm:min-w-[200px] max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
+            showDes ? "h-96 max-sm:h-[320px]" : "h-fit max-sm:h-[320px]"
+          } bg-white flex max-sm:w-full max-sm:min-w-[100px] max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
         >
           {/* Product Header */}
           <div className="relative bg-white rounded-t-2xl">
@@ -207,7 +207,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               </button>
             </div>
             {/* Product Image */}
-            <div className="flex h-56  max-sm:h-56 max-sm:w-fit max-sm:mx-auto justify-center items-center">
+            <div className="flex h-56 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
             {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
               <Image
                 src={product?.thumbnail?.url || product.images?.[0]?.url}
@@ -222,9 +222,9 @@ const ProductCard = ({ product, showDes, buyNow }) => {
           <div className="p-2">
             {/* Title */}
             <h3 className="text-xs  bg-[#F1FAEE] w-fit p-1 px-3 text poppins-medium  mb-1">
-              {product?.name?.slice(0, 27)}
+              {product?.name?.slice(0, 15)}
               {""}
-              {product?.name?.length > 29 ? "..." : ""}
+              {product?.name?.length > 18 ? "..." : ""}
             </h3>
 
             {/* Description */}
@@ -242,23 +242,23 @@ const ProductCard = ({ product, showDes, buyNow }) => {
           <div className="p-2">
             <div>
               {/* Price and Rating */}
-              <div className="flex max-sm:flex-col justify-between items-start mb-4">
-                <div className="flex flex-col">
+              <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-4">
+                <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
                   {product?.variants?.[0]?.price ? (
                     <>
                       {product?.variants[0]?.salePrice && (
-                        <span className="text-lg  max-sm:text-md font-bold text-gray-800">
+                        <span className="text-lg  max-sm:text-base font-bold text-gray-800">
                           Rs {product?.variants[0]?.salePrice}
                         </span>
                       )}
-                      <span className="text-xs  max-sm:text-md text-gray-400 h-5  line-through">
+                      <span className="text-xs  max-sm:text-xs text-gray-400 h-5  line-through">
                         Rs {product?.variants[0]?.price}
                       </span>
                     </>
                   ) : (
                     <>
                       {product?.salePrice && (
-                        <span className="text-lg max-sm:text-md font-bold text-gray-800">
+                        <span className="text-lg max-sm:text-base font-bold text-gray-800">
                           Rs {product?.salePrice}
                         </span>
                       )}
@@ -280,14 +280,14 @@ const ProductCard = ({ product, showDes, buyNow }) => {
                 <div className="flex gap-2">
                   <button
                     onClick={(e) => handleBuyNow(e)}
-                    className="w-4/3 h-10 mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                    className="w-4/3 h-10 max-sm:h-9 mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                   >
                     Buy Now
                   </button>
 
                   <button
                     onClick={handleAddToCart}
-                    className="h-10 w-3/5 flex justify-center group/group2 items-center border hover:bg-[#3C950D]  rounded-lg"
+                    className="h-10 max-sm:h-9 w-3/5 flex justify-center group/group2 items-center border hover:bg-[#3C950D]  rounded-lg"
                   >
                     <ShoppingCart className="w-4 h-4 text-[#3C950D] group-hover/group2:text-white" />
                   </button>
@@ -295,7 +295,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               ) : (
                 <button
                   onClick={handleAddToCart}
-                  className="w-full bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                  className="w-full bg text-white py-2.5 max-sm:py-2 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                 >
                   Add to cart
                 </button>
