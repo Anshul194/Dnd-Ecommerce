@@ -12,6 +12,7 @@ import {
 } from "@/app/store/slices/cartSlice";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import Link from "next/link";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
@@ -94,7 +95,7 @@ const CartSidebar = () => {
     );
   }, []);
 
-  if (!isCartOpen) {
+  if (!loading && !isCartOpen) {
     return null;
   }
 
@@ -146,7 +147,7 @@ const CartSidebar = () => {
                   >
                     <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
                       <div className="w-12 h-16 bg-white rounded-sm overflow-hidden shadow-sm flex items-center justify-center">
-                        {item?.product?.image?.url ? (
+                        {item?.product ? (
                           <Image
                             src={item?.product?.image?.url}
                             alt={
@@ -235,15 +236,13 @@ const CartSidebar = () => {
                   <Link href={`/product-detail/${item?.slug}`} key={index}>
                     <div className="relative w-fit flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
                       <div className="h-20 aspect-square   rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                        {(item?.thumbnail?.url || item?.images?.[0]?.url) && (
-                          <Image
-                            src={item?.thumbnail?.url || item?.images?.[0]?.url}
-                            alt={item?.thumbnail?.alt || "Product"}
-                            width={56}
-                            height={64}
-                            className="object-cover h-full w-full"
-                          />
-                        )}
+                        <Image
+                          src={item?.thumbnail?.url || item?.images?.[0]?.url}
+                          alt={item?.thumbnail?.alt || "Product"}
+                          width={56}
+                          height={64}
+                          className="object-cover h-full w-full"
+                        />
                       </div>
                       <div className="w-fit h-fit">
                         <div className="text-xs w-40  min-h-7 text-gray-600 mb-1">
@@ -384,7 +383,7 @@ const CartSidebar = () => {
 
                 dispatch(toggleCart());
                 dispatch(removeBuyNowProduct());
-                route.push("/checkout");
+                dispatch(setCheckoutOpen(true));
               }
             }}
             className="w-full bg-green-500 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors"

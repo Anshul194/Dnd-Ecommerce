@@ -426,7 +426,7 @@ export default function CheckoutPopup() {
               orderPlacedRef.current = true;
               dispatch(setCheckoutClose());
               dispatch(clearCart());
-              router.push("/order-success?Order_status=success");
+              router.push(location + "?Order_status=success");
             } catch (error) {
               //console.error("Error booking slot:", error);
               toast.error("Booking failed. Please contact support.");
@@ -523,7 +523,7 @@ export default function CheckoutPopup() {
           orderPlacedRef.current = true;
           dispatch(setCheckoutClose());
           dispatch(clearCart());
-          router.push("/order-success?Order_status=success");
+          router.push(location + "?Order_status=success");
         } catch (error) {
           //console.error("Error placing order:", error);
           toast.error("Order placement failed. Please try again.");
