@@ -411,7 +411,7 @@ const DynamicProductSlider = ({ content }) => {
                             </h3>
                             <Image
                               className="h-6 w-6"
-                              src={"/images/heart.png"}
+                              src={"/images/heart.webp"}
                               width={40}
                               height={40}
                               alt="heart-icon"
@@ -495,7 +495,7 @@ const DynamicProductSlider = ({ content }) => {
                             </h3>
                             <Image
                               className="h-6 w-6"
-                              src={"/images/heart.png"}
+                              src={"/images/heart.webp"}
                               width={40}
                               height={40}
                               alt="heart-icon"

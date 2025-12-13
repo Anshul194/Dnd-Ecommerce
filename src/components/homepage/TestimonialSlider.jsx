@@ -129,7 +129,7 @@ export default function TestimonialSlider({ content }) {
                       src={
                         testimonial?.images[0] ||
                         testimonial?.productId?.images[0]?.url ||
-                        "/images/testimonial-placeholder.jpg"
+                        "/images/testimonial-placeholder.webp"
                       }
                       alt="Testimonial Placeholder"
                       width={400}

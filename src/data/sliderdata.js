@@ -16,7 +16,7 @@ export const ringStyles = [
   {
     id: 3,
     name: "TRILOGY",
-    image: "/images/home-slide-one/three.jpg",
+    image: "/images/home-slide-one/three.webp",
     backgroundPosition: "66.66% 0%"
   },
   {
@@ -28,7 +28,7 @@ export const ringStyles = [
   {
     id: 5,
     name: "TOI ET MOI",
-    image: "/images/home-slide-one/five.jpg"
+    image: "/images/home-slide-one/five.webp"
   }
 ];
 
@@ -57,7 +57,7 @@ export const ringStylesTwo = [
   {
     id: 5,
     name: "TOI ET MOI",
-    image: "/images/home-slide-two/five.jpg"
+    image: "/images/home-slide-two/five.webp"
   }
 ];
 

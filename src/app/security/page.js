@@ -84,7 +84,7 @@ export default function LoginSecurity() {
                   onClick={() => handleEdit('name')}
                   className="text-gray-600 hover:text-black"
                 >
-                  <Image src="/images/edit.png" alt="Edit" width={16} height={16} />
+                  <Image src="/images/edit.webp" alt="Edit" width={16} height={16} />
                 </button>
               </div>
             )}
@@ -124,7 +124,7 @@ export default function LoginSecurity() {
                   onClick={() => handleEdit('email')}
                   className="text-gray-600 hover:text-black"
                 >
-                  <Image src="/images/edit.png" alt="Edit" width={16} height={16} />
+                  <Image src="/images/edit.webp" alt="Edit" width={16} height={16} />
                 </button>
               </div>
             )}
@@ -164,7 +164,7 @@ export default function LoginSecurity() {
                   onClick={() => handleEdit('phone')}
                   className="text-gray-600 hover:text-black"
                 >
-                  <Image src="/images/edit.png" alt="Edit" width={16} height={16} />
+                  <Image src="/images/edit.webp" alt="Edit" width={16} height={16} />
                 </button>
               </div>
             )}
@@ -205,7 +205,7 @@ export default function LoginSecurity() {
                   onClick={() => handleEdit('password')}
                   className="text-gray-600 hover:text-black"
                 >
-                  <Image src="/images/edit.png" alt="Edit" width={16} height={16} />
+                  <Image src="/images/edit.webp" alt="Edit" width={16} height={16} />
                 </button>
               </div>
             )}

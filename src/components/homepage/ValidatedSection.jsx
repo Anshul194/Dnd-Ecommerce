@@ -59,7 +59,7 @@ export default function ValidatedSection({ content }) {
                 {content?.description}
                 <span className="relative">
                   <img
-                    src="/images/smile.png"
+                    src="/images/smile.webp"
                     alt="smiley face"
                     className="w-12 h-12 absolute -right-10 -bottom-10"
                   />

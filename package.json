@@ -10,7 +10,10 @@
     "dev:tenant1": "cross-env PORT=3001 next dev --hostname tenant1.localhost",
     "dev:bharat": "cross-env PORT=3001 next dev --hostname bharat.localhost",
     "lint": "next lint",
-    "test": "jest"
+    "test": "jest",
+    "optimize:images": "node scripts/optimize-images.js",
+    "update:webp": "node scripts/update-image-refs.js",
+    "analyze": "cross-env ANALYZE=true npm run build"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -63,6 +66,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@next/bundle-analyzer": "^16.0.10",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^24.1.0",
     "@types/react": "^19.1.8",
@@ -75,6 +79,7 @@
     "jest-environment-jsdom": "^30.0.4",
     "node-mocks-http": "^1.17.2",
     "npm": "^11.5.1",
+    "sharp": "^0.34.5",
     "supertest": "^7.1.3",
     "tailwindcss": "^4",
     "typescript": "^5.9.2"

@@ -157,7 +157,7 @@ export default function RenderCardsVariant() {
                   </div>
                 </div>
                 <img
-                  src="/images/verified.png"
+                  src="/images/verified.webp"
                   alt="Verified"
                   width={18}
                   height={18}
