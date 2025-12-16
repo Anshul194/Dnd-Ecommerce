@@ -14,7 +14,7 @@ const leadSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['new', 'contacted', 'assigned', 'qualified', 'converted', 'lost'], default: 'new',
+      enum: ['new', 'contacted', 'assigned', 'qualified', 'converted', 'lost','attempted'], default: 'new',
     },
     description: { type: String, default: '' },
     category: { type: String, default: '' },
@@ -50,6 +50,8 @@ const leadSchema = new mongoose.Schema(
         'missed_call',
         'busy',
         'no_response',
+        'initiated',
+        'attempted',
         'other'
       ],
       default: null
@@ -58,7 +60,5 @@ const leadSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-leadSchema.index({ _id: 1 });
 
 export default leadSchema;
