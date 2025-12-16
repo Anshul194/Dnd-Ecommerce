@@ -144,9 +144,9 @@ const Categories = ({ dynamicContent = null }) => {
               >
                 {categories.map((item, index) => (
                   <SwiperSlide key={index}>
-                    <div
+                    <Link
+                      href={`/search?category=${item._id}`}
                       className="block cursor-pointer"
-                      onClick={() => router.push(`/search?category=${item._id}`)}
                     >
                       <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-lg flex flex-col overflow-hidden hover:shadow-md transition-shadow  h-72">
                         <Image
@@ -163,7 +163,7 @@ const Categories = ({ dynamicContent = null }) => {
                           {item?.name}
                         </div> */}
                       </div>
-                    </div>
+                    </Link>
                   </SwiperSlide>
                 ))}
               </Swiper>

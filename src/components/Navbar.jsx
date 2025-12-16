@@ -272,24 +272,20 @@ export default function Navbar({ initialCategories = [] }) {
                       {displayName ?? "User"}
                     </span>
                   </div>
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      router.push("/");
-                    }}
-                    className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
+                  <Link
+                    href="/"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold block"
                   >
                     Home
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      router.push("/search");
-                    }}
-                    className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold"
+                  </Link>
+                  <Link
+                    href="/search"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full text-left px-4 py-1 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors font-semibold block"
                   >
                     All Products
-                  </button>
+                  </Link>
 
                   <div className="border-t border-gray-200 my-2"></div>
 
@@ -299,15 +295,14 @@ export default function Navbar({ initialCategories = [] }) {
                   {categories?.map((category, index) => (
                     <div key={index}>
                       <div className="flex items-center justify-between">
-                        <button
-                          onClick={() => {
-                            setIsOpen(false);
-                            router.push(`/search?category=${category._id}`);
-                          }}
-                          className="w-full text-left px-4 py-2 text-gray-500 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
+                        <Link
+                          href={`/search?category=${category._id}`}
+                          prefetch={true}
+                          onClick={() => setIsOpen(false)}
+                          className="w-full text-left px-4 py-2 text-gray-500 hover:bg-[#3C950D]/10 rounded-lg transition-colors block"
                         >
                           {category?.name}
-                        </button>
+                        </Link>
 
                         {/* Toggle button for subcategories */}
                         {category.subcategories?.length > 0 && (
@@ -334,16 +329,15 @@ export default function Navbar({ initialCategories = [] }) {
                             }`}
                         >
                           {category?.subcategories?.map((sub) => (
-                            <button
+                            <Link
                               key={sub._id}
-                              onClick={() => {
-                                setIsOpen(false);
-                                router.push(`/search?subcategory=${sub._id}`);
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-[#3C950D]/5 rounded-lg transition-colors"
+                              href={`/search?subcategory=${sub._id}`}
+                              prefetch={true}
+                              onClick={() => setIsOpen(false)}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-[#3C950D]/5 rounded-lg transition-colors block"
                             >
                               • {sub.name}
-                            </button>
+                            </Link>
                           ))}
                         </div>
                       )}
@@ -352,25 +346,21 @@ export default function Navbar({ initialCategories = [] }) {
 
                   <div className="border-t border-gray-200 my-2"></div>
 
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      router.push("/pages/68fb0ce58b4cf00083b826d2");
-                    }}
-                    className="w-full text-left px-4 py-2 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
+                  <Link
+                    href="/pages/68fb0ce58b4cf00083b826d2"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full text-left px-4 py-2 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors block"
                   >
                     About Us
-                  </button>
+                  </Link>
 
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      router.push("/contact");
-                    }}
-                    className="w-full text-left px-4 py-2 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
+                  <Link
+                    href="/contact"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full text-left px-4 py-2 text-gray-800 hover:bg-[#3C950D]/10 rounded-lg transition-colors block"
                   >
                     Contact Us
-                  </button>
+                  </Link>
                 </div>
               </SheetContent>
             </Sheet>
@@ -392,12 +382,12 @@ export default function Navbar({ initialCategories = [] }) {
             <div className="hidden md:flex items-center  gap-6 ml-1/2">
               {/* Categories with Mega Menu - LEFT/RIGHT LAYOUT */}
 
-              <button
-                onClick={() => router.push("/")}
+              <Link
+                href="/"
                 className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium"
               >
                 Home
-              </button>
+              </Link>
               <div
                 className="relative"
                 onMouseEnter={() => setShowCategoryMenu(true)}
@@ -440,13 +430,12 @@ export default function Navbar({ initialCategories = [] }) {
                                       : "hover:bg-white/50"
                                       }`}
                                   >
-                                    <div
+                                    <Link
+                                      href={`/search?category=${category._id}`}
+                                      prefetch={true}
                                       onClick={() => {
                                         setShowCategoryMenu(false);
                                         setHoveredCategory(null);
-                                        router.push(
-                                          `/search?category=${category._id}`
-                                        );
                                       }}
                                       className="flex items-center gap-3 p-3"
                                       style={{ cursor: "pointer" }}
@@ -486,7 +475,7 @@ export default function Navbar({ initialCategories = [] }) {
                                             }`}
                                         />
                                       )}
-                                    </div>
+                                    </Link>
                                   </div>
                                 );
                               })}
@@ -697,19 +686,19 @@ export default function Navbar({ initialCategories = [] }) {
                 )}
               </div>
 
-              <button
-                onClick={() => router.push("/pages/68fb0ce58b4cf00083b826d2")}
+              <Link
+                href="/pages/68fb0ce58b4cf00083b826d2"
                 className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium"
               >
                 About Us
-              </button>
+              </Link>
 
-              <button
-                onClick={() => router.push("/contact")}
+              <Link
+                href="/contact"
                 className="text-gray-700 hover:text-[#3C950D] transition-colors font-medium"
               >
                 Contact Us
-              </button>
+              </Link>
             </div>
             {/* </div> */}
 

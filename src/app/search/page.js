@@ -21,7 +21,7 @@ const SearchPage = () => {
   const [sortBy, setSortBy] = useState("High Price");
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const { products } = useSelector((state) => state.product);
+  const { products, loading } = useSelector((state) => state.product);
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
@@ -56,7 +56,12 @@ const SearchPage = () => {
     payload.sortBy = sortBy;
     payload.limit = 20; // Adjust as needed
 
-    dispatch(fetchProducts(payload));
+    // Fetch in background without blocking render
+    const timer = setTimeout(() => {
+      dispatch(fetchProducts(payload));
+    }, 0);
+    
+    return () => clearTimeout(timer);
   }, [
     paramCategories,
     paramSubcategories,
@@ -86,7 +91,7 @@ const SearchPage = () => {
                 <p className="text-gray-600 text-sm">
                   Results for
                   <span className="font-semibold ml-2 text-black">
-                    ({products?.products?.length || products?.length}) products
+                    {loading ? "Loading..." : `(${products?.products?.length || products?.length}) products`}
                   </span>
                 </p>
               </div>
@@ -105,20 +110,28 @@ const SearchPage = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-2 max-sm:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 mb-8">
-              {products?.products?.length > 0 &&
-                products.products.map((product) => (
-                  <ProductCard key={product._id} product={product} showDes/>
-                ))}
-            </div>
-
-            {/* No Results */}
-            {products?.products?.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">
-                  No products found matching your criteria.
-                </p>
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <LoadingSpinner />
               </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 max-sm:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 mb-8">
+                  {products?.products?.length > 0 &&
+                    products.products.map((product) => (
+                      <ProductCard key={product._id} product={product} showDes/>
+                    ))}
+                </div>
+
+                {/* No Results */}
+                {products?.products?.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 text-lg">
+                      No products found matching your criteria.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Load More Button */}

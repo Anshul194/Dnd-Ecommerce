@@ -35,20 +35,18 @@ axiosInstance.interceptors.request.use(
       }
     }
 
-    // Deduplicate GET requests only
+    // Deduplicate GET requests only (but don't block, just skip duplicates)
     if (config.method === 'get') {
       const requestKey = getRequestKey(config);
       
-      // If same request is pending, cancel this one
+      // If same request is pending, cancel this one silently
       if (pendingRequests.has(requestKey)) {
         const controller = new AbortController();
         config.signal = controller.signal;
         controller.abort(); // Cancel this duplicate request
-        console.log('🚫 Blocked duplicate request:', requestKey);
       } else {
         // Mark this request as pending
         pendingRequests.set(requestKey, true);
-        console.log('✅ Allowing request:', requestKey);
       }
     }
 
@@ -66,7 +64,6 @@ axiosInstance.interceptors.response.use(
     if (response.config.method === 'get') {
       const requestKey = getRequestKey(response.config);
       pendingRequests.delete(requestKey);
-      console.log('✅ Request completed:', requestKey);
     }
     return response;
   },

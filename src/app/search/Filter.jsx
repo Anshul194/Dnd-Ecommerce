@@ -5,7 +5,7 @@ import {
   fetchCategoryWithSubcategories,
 } from "../store/slices/categorySlice";
 import { useDispatch, useSelector } from "react-redux";
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense, startTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { LoadingSpinner } from "@/components/common/Loading";
@@ -45,7 +45,9 @@ const Filter = ({ onFilterChange = () => {} }) => {
     if (e.target.value.trim() === "") {
       newParams.delete("search");
       setSearchTerm("");
-      router.push(`/search?${newParams.toString()}`);
+      startTransition(() => {
+        router.push(`/search?${newParams.toString()}`);
+      });
       onFilterChange({
         searchTerm: "",
         category: selectedCategory,
@@ -55,7 +57,9 @@ const Filter = ({ onFilterChange = () => {} }) => {
       return;
     }
     newParams.set("search", e.target.value);
-    router.push(`/search?${newParams.toString()}`);
+    startTransition(() => {
+      router.push(`/search?${newParams.toString()}`);
+    });
     onFilterChange({
       searchTerm: e.target.value,
       category: selectedCategory,
@@ -70,7 +74,9 @@ const Filter = ({ onFilterChange = () => {} }) => {
     setSelectedSubcategory("");
     newParams.set("category", category);
     newParams.delete("subcategory");
-    router.push(`/search?${newParams.toString()}`);
+    startTransition(() => {
+      router.push(`/search?${newParams.toString()}`);
+    });
     onFilterChange({
       searchTerm,
       category,
@@ -83,7 +89,9 @@ const Filter = ({ onFilterChange = () => {} }) => {
   const handleSubcategoryChange = (subcategory) => {
     setSelectedSubcategory(subcategory);
     newParams.set("subcategory", subcategory);
-    router.push(`/search?${newParams.toString()}`);
+    startTransition(() => {
+      router.push(`/search?${newParams.toString()}`);
+    });
     onFilterChange({
       searchTerm,
       category: selectedCategory,
@@ -109,11 +117,15 @@ const Filter = ({ onFilterChange = () => {} }) => {
     }));
     if (value === "") {
       newParams.delete(name);
-      router.push(`/search?${newParams.toString()}`);
+      startTransition(() => {
+        router.push(`/search?${newParams.toString()}`);
+      });
       return;
     }
     newParams.set(name, value);
-    router.push(`/search?${newParams.toString()}`);
+    startTransition(() => {
+      router.push(`/search?${newParams.toString()}`);
+    });
     onFilterChange({
       searchTerm,
       category: selectedCategory,
@@ -137,7 +149,9 @@ const Filter = ({ onFilterChange = () => {} }) => {
     setPriceRange({ min: "", max: "" });
     newParams.delete("min");
     newParams.delete("max");
-    router.push(`/search?${newParams.toString()}`);
+    startTransition(() => {
+      router.push(`/search?${newParams.toString()}`);
+    });
     onFilterChange({
       searchTerm,
       category: selectedCategory,
@@ -151,7 +165,9 @@ const Filter = ({ onFilterChange = () => {} }) => {
     setSelectedSubcategory("");
     newParams.delete("category");
     newParams.delete("subcategory");
-    router.push(`/search?${newParams.toString()}`);
+    startTransition(() => {
+      router.push(`/search?${newParams.toString()}`);
+    });
     onFilterChange({
       searchTerm,
       category: "",
