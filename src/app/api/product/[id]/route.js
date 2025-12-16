@@ -28,14 +28,9 @@ export async function GET(req, { params }) {
     const productController = new ProductController(productService);
 
     // Check if id is a valid ObjectId or a slug
-    let product;
-    if (mongoose.Types.ObjectId.isValid(id)) {
-      const response = await productController.getById(id, conn);
-      product = response.success ? response.data : null;
-    } else {
-      // Try to find by slug
-      product = await Product.findOne({ slug: id }).lean();
-    }
+    // Use controller to fetch product by ID or slug (controller/repository handles variants population)
+    const response = await productController.getById(id, conn);
+    const product = response.success ? response.data : null;
 
     if (!product) {
       return NextResponse.json(
