@@ -59,6 +59,10 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    prepaidDiscount: {
+      type: Number,
+      default: 0,
+    },
     status: {
       type: String,
       enum: ["pending", "paid", "shipped", "completed", "cancelled", "return_requested", "returned", "refunded", "confirmed"], // Added "confirmed"

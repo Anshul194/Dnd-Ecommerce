@@ -804,7 +804,17 @@ export default function CheckoutPopup() {
   const gstPercent = settings?.gstCharge || 0;
   const pgPercent = settings?.paymentGatewayCharge || 0;
 
-  const taxableAmount = Math.max(0, itemsTotal - couponDiscount);
+  // Calculate Prepaid Discount
+  let prepaidDiscount = 0;
+  if (paymentMethod === 'prepaid' && settings?.prepaidDiscountEnabled) {
+    if (settings.prepaidDiscountType === 'percentage') {
+      prepaidDiscount = (itemsTotal * settings.prepaidDiscountValue) / 100;
+    } else if (settings.prepaidDiscountType === 'amount') {
+      prepaidDiscount = settings.prepaidDiscountValue;
+    }
+  }
+
+  const taxableAmount = Math.max(0, itemsTotal - couponDiscount - prepaidDiscount);
   const gstAmount = (taxableAmount * gstPercent) / 100;
 
   let pgAmount = 0;
@@ -812,7 +822,7 @@ export default function CheckoutPopup() {
     pgAmount = ((taxableAmount + shipping + gstAmount) * pgPercent) / 100;
   }
 
-  const subtotal = itemsTotal - couponDiscount;
+  const subtotal = itemsTotal - couponDiscount - prepaidDiscount;
   const total = taxableAmount + shipping + gstAmount;
 
   // --- COD disable logic based on category ---
@@ -1768,8 +1778,30 @@ export default function CheckoutPopup() {
                   <div className="text-xs text-gray-600 leading-tight mb-2">
                     Pay securely with UPI, Credit/Debit Card, or Netbanking
                   </div>
-                  <div className="text-lg font-bold text-green-600 mt-2">
-                    ₹{total.toFixed(2)}
+                  {settings?.prepaidDiscountEnabled && settings?.prepaidDiscountValue > 0 && (
+                    <div className="bg-gradient-to-r from-green-100 to-green-50 border border-green-300 text-green-800 text-xs px-2 py-1.5 rounded mb-2 font-semibold flex items-center gap-1">
+                      <span className="text-base">🎉</span>
+                      <span>Save ₹{(settings.prepaidDiscountType === 'percentage' 
+                        ? ((itemsTotal * settings.prepaidDiscountValue) / 100)
+                        : settings.prepaidDiscountValue
+                      ).toFixed(0)} ({settings.prepaidDiscountType === 'percentage' ? `${settings.prepaidDiscountValue}% OFF` : 'Flat OFF'})</span>
+                    </div>
+                  )}
+                  <div className="mt-2">
+                    {settings?.prepaidDiscountEnabled && settings?.prepaidDiscountValue > 0 ? (
+                      <div>
+                        <div className="text-xs text-gray-500 line-through">
+                          ₹{(itemsTotal - couponDiscount + shipping + gstAmount).toFixed(2)}
+                        </div>
+                        <div className="text-lg font-bold text-green-600">
+                          ₹{total.toFixed(2)}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-lg font-bold text-green-600">
+                        ₹{total.toFixed(2)}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1795,8 +1827,7 @@ export default function CheckoutPopup() {
                       Pay with cash when your order is delivered to you
                     </div>
                     <div className="text-lg font-bold text-gray-900 mt-2">
-                      ₹{(total + 50).toFixed(2)}
-                      <span className="text-xs text-gray-500 font-normal ml-1">(+₹50 fee)</span>
+                      ₹{(itemsTotal - couponDiscount + shipping + gstAmount).toFixed(2)}
                     </div>
                   </div>
                 )}
@@ -1839,7 +1870,18 @@ export default function CheckoutPopup() {
                       Coupon{" "}
                       {selectedCoupon?.code ? `(${selectedCoupon.code})` : ""}
                     </h2>
-                    <h2 className="font-semibold">-₹{couponDiscount}</h2>
+                    <h2 className="font-semibold text-green-600">-₹{couponDiscount}</h2>
+                  </div>
+                )}
+                {prepaidDiscount > 0 && paymentMethod === 'prepaid' && (
+                  <div className="flex justify-between text-sm">
+                    <h2 className="flex items-center gap-1">
+                      Prepaid Discount 
+                      {settings?.prepaidDiscountType === 'percentage' && (
+                        <span className="text-green-600 font-medium">({settings.prepaidDiscountValue}%)</span>
+                      )}
+                    </h2>
+                    <h2 className="font-semibold text-green-600">-₹{prepaidDiscount.toFixed(2)}</h2>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">

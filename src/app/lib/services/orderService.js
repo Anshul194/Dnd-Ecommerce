@@ -220,8 +220,18 @@ class OrderService {
         discount = couponResult.data.discount;
       }
 
+      // Apply prepaid discount if applicable
+      let prepaidDiscount = 0;
+      if (paymentMode !== "COD" && settings?.prepaidDiscountEnabled) {
+        if (settings.prepaidDiscountType === 'percentage') {
+          prepaidDiscount = (subtotal * settings.prepaidDiscountValue) / 100;
+        } else if (settings.prepaidDiscountType === 'amount') {
+          prepaidDiscount = settings.prepaidDiscountValue;
+        }
+      }
+
       // Calculate order total after discount
-      const order_total = subtotal - discount;
+      const order_total = subtotal - discount - prepaidDiscount;
 
       // --- COD Order Limit ---
       if (paymentMode === "COD" && order_total > (settings.codLimit ?? 1500)) {
@@ -294,11 +304,11 @@ class OrderService {
           order_total,
           shippingCharge,
           discount,
+          prepaidDiscount,
           gstAmount,
           paymentGatewayAmount,
           gstRate,
           paymentGatewayRate: pgRate,
-          discount,
           shippingMethod: selectedShipping.shippingMethod,
           shippingId: selectedShipping._id,
           shippingName: selectedShipping.name,
@@ -514,8 +524,18 @@ class OrderService {
         couponId = couponResult.data.coupon._id;
       }
 
+      // Apply prepaid discount if applicable
+      let prepaidDiscount = 0;
+      if (paymentMode !== "COD" && settings?.prepaidDiscountEnabled) {
+        if (settings.prepaidDiscountType === 'percentage') {
+          prepaidDiscount = (subtotal * settings.prepaidDiscountValue) / 100;
+        } else if (settings.prepaidDiscountType === 'amount') {
+          prepaidDiscount = settings.prepaidDiscountValue;
+        }
+      }
+
       // Calculate order total after discount
-      const order_total = subtotal - discount;
+      const order_total = subtotal - discount - prepaidDiscount;
 
       // --- COD Order Limit ---
       if (paymentMode === "COD" && order_total > (settings.codLimit ?? 1500)) {
@@ -587,6 +607,7 @@ class OrderService {
         total: order_total + shippingCharge + gstAmount,
         coupon: couponId,
         discount,
+        prepaidDiscount,
         shippingAddress,
         billingAddress,
         paymentId: finalPaymentId,

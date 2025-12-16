@@ -30,6 +30,16 @@ const settingSchema = new mongoose.Schema(
     codAllowed: { type: Boolean, default: true }, // New field to allow/disallow COD globally
     gstCharge: { type: Number, default: 0 },
     paymentGatewayCharge: { type: Number, default: 0 },
+    
+    // Prepaid Discount Settings
+    prepaidDiscountEnabled: { type: Boolean, default: false },
+    prepaidDiscountType: { 
+      type: String, 
+      enum: ["percentage", "amount"], 
+      default: "percentage" 
+    },
+    prepaidDiscountValue: { type: Number, default: 0 }, // Percentage (e.g., 20 for 20%) or fixed amount
+    
     categoryPaymentSettings: [categoryPaymentSettingSchema],
 
     // Meta (Facebook) CRM/Ads Integration
