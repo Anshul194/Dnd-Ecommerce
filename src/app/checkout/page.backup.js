@@ -19,8 +19,6 @@ import {
   placeOrder,
   resetAddress,
   setAddress,
-  setCheckoutClose,
-  setCheckoutOpen,
 } from "@/app/store/slices/checkOutSlice";
 import {
   createUserAddress,
@@ -43,11 +41,11 @@ import { fetchProducts } from "@/app/store/slices/productSlice";
 import { toast } from "react-toastify";
 import { fetchSettings } from "@/app/store/slices/settingSlice";
 import axiosInstance from "@/axiosConfig/axiosInstance";
-import { LoadingSpinner } from "./common/Loading";
+import { LoadingSpinner } from "@/components/common/Loading";
 import { useTrack } from "@/app/lib/tracking/useTrack";
 
-export default function CheckoutPopup() {
-  const checkoutOpen = useSelector((state) => state.checkout.checkoutOpen);
+export default function CheckoutPage() {
+  // Removed checkoutOpen check - this is now a dedicated page
   const { addressData, addressAdded } = useSelector((state) => state.checkout);
   const { products } = useSelector((state) => state.product);
   const [paymentMethod, setPaymentMethod] = useState("prepaid");
@@ -72,10 +70,8 @@ export default function CheckoutPopup() {
   const dispatch = useDispatch();
   const { trackCheckout } = useTrack();
 
-  // Track whether an order was placed while checkout was open
+  // Track whether an order was placed
   const orderPlacedRef = useRef(false);
-  // initialize prev as false so we only detect actual true->false transitions
-  const prevCheckoutOpen = useRef(false);
 
   const [formData, setFormData] = useState({
     pincode: "",
@@ -424,13 +420,12 @@ export default function CheckoutPopup() {
               await dispatch(placeOrder(payload));
               // Mark that order was placed to avoid sending abandonment event
               orderPlacedRef.current = true;
-              dispatch(setCheckoutClose());
               dispatch(clearCart());
-              router.push(location + "?Order_status=success");
+              router.push("/order-success");
             } catch (error) {
               //console.error("Error booking slot:", error);
               toast.error("Booking failed. Please contact support.");
-              router.push(location + "?Order_status=failure");
+              router.push("/");
             }
           },
           prefill: {
@@ -521,13 +516,12 @@ export default function CheckoutPopup() {
           await dispatch(placeOrder(payload));
           // Mark that order was placed to avoid sending abandonment event
           orderPlacedRef.current = true;
-          dispatch(setCheckoutClose());
           dispatch(clearCart());
-          router.push(location + "?Order_status=success");
+          router.push("/order-success");
         } catch (error) {
           //console.error("Error placing order:", error);
           toast.error("Order placement failed. Please try again.");
-          router.push(location + "?Order_status=failure");
+          router.push("/");
         }
       }
     } catch (error) {
@@ -838,49 +832,6 @@ export default function CheckoutPopup() {
     );
   })();
 
-  // Only run when checkoutOpen changes so we don't accidentally send on unrelated updates
-  useEffect(() => {
-    // If popup just opened, reset the placed flag for the new session
-    if (checkoutOpen) {
-      orderPlacedRef.current = false;
-    }
-
-    // detect true -> false transition
-    if (prevCheckoutOpen.current && !checkoutOpen) {
-      if (!orderPlacedRef.current) {
-        const productIds = buyNowProduct
-          ? [buyNowProduct.product.id]
-          : (cartItems || []).map((it) => it.product.id);
-
-        const eventPayload = {
-          type: "CHECKOUT_ABANDONED",
-          productIds,
-          user: isAuthenticated
-            ? {
-              _id: user?._id,
-              email: user?.email,
-              phone: user?.phone,
-              name: user?.name,
-            }
-            : null,
-          timestamp: new Date().toISOString(),
-        };
-
-        fetch("/api/track", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(eventPayload),
-        }).catch((err) => {
-          //console.error("Failed to send checkout abandoned event:", err);
-        });
-      }
-      // prepare for next cycle
-      orderPlacedRef.current = false;
-    }
-
-    prevCheckoutOpen.current = checkoutOpen;
-  }, [checkoutOpen]);
-
   // Helper to extract error message from rejectWithValue / thrown Error
   const extractErrorMessage = (err) => {
     if (!err) return "Something went wrong";
@@ -891,16 +842,21 @@ export default function CheckoutPopup() {
     return JSON.stringify(err);
   };
 
-  if (!checkoutOpen) return null;
+  // Redirect if no cart items and no buyNowProduct
+  useEffect(() => {
+    if (!buyNowProduct && (!cartItems || cartItems.length === 0)) {
+      router.push('/');
+    }
+  }, [buyNowProduct, cartItems, router]);
 
   return (
-    <div className="fixed inset-0 text-black bg-black/10 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-[999] p-4">
-      <div className="bg-[#f5f6fb]  shadow-xl w-full max-w-lg h-screen overflow-y-auto">
+    <div className="min-h-screen bg-gray-50 text-black">
+      <div className="bg-[#f5f6fb] max-w-full mx-auto min-h-screen">
         {/* Header */}
-        <div className="px-4 py-3 bg-white rounded-t-lg relative">
+        <div className="px-4 py-3 bg-white sticky top-0 z-50 shadow-sm">
           <button
-            onClick={() => dispatch(setCheckoutClose())}
-            className="absolute left-4 top-4 text-black rounded-full p-1"
+            onClick={() => router.back()}
+            className="absolute left-4 top-4 text-black rounded-full p-1 hover:bg-gray-100 transition-colors"
           >
             <ArrowLeft size={20} />
           </button>
@@ -1753,67 +1709,62 @@ export default function CheckoutPopup() {
           {isAuthenticated && (
             <div className="space-y-4 rounded-xl bg-white py-3 px-4">
               <h3 className="font-semibold mb-3">Payment Method</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {/* UPI/Card Option */}
-                <div 
-                  onClick={() => setPaymentMethod("prepaid")}
-                  className={`border-2 ${paymentMethod === "prepaid" ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"} rounded-lg p-3 cursor-pointer relative transition-all hover:border-gray-300`}
-                >
-                  <div className={`absolute top-2 right-2 w-5 h-5 rounded-full border-2 ${paymentMethod === "prepaid" ? "border-green-500" : "border-gray-300"} bg-white flex items-center justify-center`}>
-                    {paymentMethod === "prepaid" && <div className="w-3 h-3 rounded-full bg-green-500"></div>}
-                  </div>
-                  <div className="text-sm font-semibold text-gray-900 mb-1">
-                    ⚡ UPI / Card
-                  </div>
-                  <div className="text-xs text-gray-600 leading-tight mb-2">
-                    Pay securely with UPI, Credit/Debit Card, or Netbanking
-                  </div>
-                  <div className="text-lg font-bold text-green-600 mt-2">
-                    ₹{total.toFixed(2)}
-                  </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    id="payment-method-2"
+                    name="payment-method"
+                    value="method2"
+                    checked={paymentMethod === "prepaid"}
+                    onChange={() => setPaymentMethod("prepaid")}
+                    className="checked:bg-green-600 h-4 w-4"
+                  />
+                  <label htmlFor="payment-method-2">Prepaid</label>
                 </div>
-
-                {/* Cash on Delivery Option */}
+                {/* Only show COD if not disabled for any cart category */}
                 {!isCODDisabledForCart && (
-                  <div 
-                    onClick={() => {
-                      if (cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) <= settings?.codLimit) {
-                        setPaymentMethod("cod");
-                      }
-                    }}
-                    className={`border-2 ${paymentMethod === "cod" ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"} rounded-lg p-3 cursor-pointer relative transition-all hover:border-gray-300 ${
-                      cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) > settings?.codLimit && "opacity-50 cursor-not-allowed"
-                    }`}
+                  <div
+                    className={`flex items-center gap-2 ${cartItems.reduce(
+                      (acc, item) => acc + item.price * item.quantity,
+                      0
+                    ) > settings?.codLimit && "opacity-50 cursor-not-allowed"
+                      }`}
                   >
-                    <div className={`absolute top-2 right-2 w-5 h-5 rounded-full border-2 ${paymentMethod === "cod" ? "border-green-500" : "border-gray-300"} bg-white flex items-center justify-center`}>
-                      {paymentMethod === "cod" && <div className="w-3 h-3 rounded-full bg-green-500"></div>}
-                    </div>
-                    <div className="text-sm font-semibold text-gray-900 mb-1">
-                      💵 Cash on Delivery
-                    </div>
-                    <div className="text-xs text-gray-600 leading-tight mb-2">
-                      Pay with cash when your order is delivered to you
-                    </div>
-                    <div className="text-lg font-bold text-gray-900 mt-2">
-                      ₹{(total + 50).toFixed(2)}
-                      <span className="text-xs text-gray-500 font-normal ml-1">(+₹50 fee)</span>
-                    </div>
+                    <input
+                      type="radio"
+                      id="payment-method-1"
+                      name="payment-method"
+                      value="method1"
+                      disabled={
+                        cartItems.reduce(
+                          (acc, item) => acc + item.price * item.quantity,
+                          0
+                        ) > settings?.codLimit
+                      }
+                      checked={paymentMethod === "cod"}
+                      onChange={() => setPaymentMethod("cod")}
+                      className={`checked:bg-green-600 h-4 w-4 `}
+                    />
+                    <label htmlFor="payment-method-1">Cash on delivery</label>
                   </div>
                 )}
-              </div>
-              
-              {/* Error Messages */}
-              {isCODDisabledForCart && (
-                <h2 className="text-red-500 text-xs mt-2">
-                  Cash on delivery is not available for one or more items in your cart.
-                </h2>
-              )}
-              {!isCODDisabledForCart &&
-                cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) > settings?.codLimit && (
-                  <h2 className="text-red-500 text-xs mt-2">
-                    COD not available for orders above ₹{settings.codLimit}
+                {/* Show message if COD is disabled for category */}
+                {isCODDisabledForCart && (
+                  <h2 className="text-red-500 text-xs">
+                    Cash on delivery is not available for one or more items in your cart.
                   </h2>
                 )}
+                {!isCODDisabledForCart &&
+                  cartItems.reduce(
+                    (acc, item) => acc + item.price * item.quantity,
+                    0
+                  ) > settings?.codLimit && (
+                    <h2 className="text-red-500 text-xs">
+                      COD not available for orders above ₹{settings.codLimit}
+                    </h2>
+                  )}
+              </div>
             </div>
           )}
 

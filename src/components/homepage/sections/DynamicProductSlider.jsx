@@ -56,7 +56,7 @@ const DynamicProductSlider = ({ content }) => {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [products]);
 
   const scroll = (direction) => {
     const container = sliderRef.current;
@@ -264,7 +264,7 @@ const DynamicProductSlider = ({ content }) => {
             className={`hidden sm:flex absolute -left-4 md:-left-5 top-1/2 border border-black/20 transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg items-center justify-center transition-all duration-200 ${
               canScrollLeft
                 ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
-                : "text-gray-300 cursor-not-allowed opacity-0"
+                : "text-gray-300 cursor-not-allowed opacity-50"
             }`}
           >
             <svg
@@ -291,7 +291,7 @@ const DynamicProductSlider = ({ content }) => {
             className={`hidden sm:flex absolute -right-2 md:-right-5 top-1/2 border transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg items-center justify-center transition-all duration-200 ${
               canScrollRight
                 ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
-                : "text-gray-300 cursor-not-allowed opacity-0"
+                : "text-gray-300 cursor-not-allowed opacity-50"
             }`}
           >
             <svg
@@ -315,7 +315,7 @@ const DynamicProductSlider = ({ content }) => {
           <div
             ref={sliderRef}
             onScroll={handleScroll}
-            className="grid grid-cols-2 gap-4 sm:flex sm:overflow-x-auto scrollbar-hide sm:space-x-4 py-4 scroll-smooth"
+            className="grid grid-cols-2 gap-4 auto-rows-fr sm:flex sm:overflow-x-auto scrollbar-hide sm:space-x-4 py-4 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {products?.products?.length > 0

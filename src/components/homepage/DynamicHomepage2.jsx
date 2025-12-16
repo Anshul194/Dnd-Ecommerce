@@ -14,6 +14,7 @@ import { fetchGroupedContent } from "@/app/store/slices/contentSlice";
 import Categories from "./Categories";
 import { LoadingSpinner } from "../common/Loading";
 import ValidatedSection2 from "./ValidatedSection2";
+import AllProducts from "./sections/AllProducts";
 
 function DynamicHomepage2() {
   const { groupedContent, loading, error } = useSelector(
@@ -152,6 +153,11 @@ function DynamicHomepage2() {
 
       {allSections.map(renderSection)}
       {/* <NewLaunchBanner /> */}
+
+      {/* All Products Section */}
+      <div className="max-w-7xl mx-auto px-4">
+        <AllProducts />
+      </div>
     </main>
   );
 }

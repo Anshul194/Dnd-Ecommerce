@@ -8,12 +8,17 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector as useReduxSelector } from "react-redux";
 import { fetchSettings } from "./store/slices/settingSlice";
 import { fetchCategoryWithSubcategories } from "./store/slices/categorySlice";
+import { usePathname } from "next/navigation";
 
 export default function ClientLayout({ children }) {
   const { isAuthenticated } = useSelector((state) => state.auth ?? {});
   const dispatch = useDispatch();
   const settings = useReduxSelector((state) => state.setting?.settings);
   const [categories, setCategories] = useState([]);
+  const pathname = usePathname();
+
+  // Check if we're on the checkout page
+  const isCheckoutPage = pathname === "/checkout";
 
   // Always call hooks at top level
   // useTokenRefresh();
@@ -42,9 +47,9 @@ export default function ClientLayout({ children }) {
 
   return (
     <>
-      <Navbar initialCategories={categories} />
+      {!isCheckoutPage && <Navbar initialCategories={categories} />}
       {children ?? null}
-      <Footer />
+      {!isCheckoutPage && <Footer />}
     </>
   );
 }

@@ -137,12 +137,12 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     <>
       <Link
         href={`/productDetail/${product.slug}`}
-        className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all w-full h-fit"
+        className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all w-full h-full"
         prefetch
       >
         <div
           className={`${
-            showDes ? "h-96 max-sm:h-[320px]" : "h-fit max-sm:h-[320px]"
+            showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
           } bg-white flex max-sm:w-full max-sm:min-w-[100px] max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
         >
           {/* Product Header */}
