@@ -9,20 +9,18 @@ const DynamicWhyUs = ({ content }) => {
   const { title, description, points, image, mobileImage } = content;
   // console.log("DynamicWhyUs content:", content);
 
-  const [isMobile, setIsMobile] = useState(false);
+  // const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window === "undefined") return;
+  //   const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+  //   checkMobile();
+  //   window.addEventListener("resize", checkMobile);
+  //   return () => window.removeEventListener("resize", checkMobile);
+  // }, []);
 
-  const imageToShow =
-    isMobile && mobileImage
-      ? mobileImage
-      : image || "/images/why-us-placeholder.jpg";
+  const desktopSrc = image || "/images/why-us-placeholder.webp";
+  const mobileSrc = mobileImage || desktopSrc;
 
   return (
     <div className="min-h-screen bg-white py-10 lg:py-20 px-4">
@@ -33,14 +31,29 @@ const DynamicWhyUs = ({ content }) => {
         {/* Right content */}
         <div className="">
           <div className="mt-10 flex flex-col lg:flex-row gap-6 lg:gap-20">
-            <div className=" w-[45%] max-sm:w-full h-full sticky top-28 bg-gray-400 rounded-lg flex-shrink-0">
-              <Image
-                src={imageToShow}
-                alt="Why Us"
-                width={400}
-                height={400}
-                className="w-full h-full object-contain rounded-lg"
-              />
+            <div className=" w-[45%] max-sm:w-full h-full sticky top-28 bg-gray-400 rounded-lg flex-shrink-0 relative min-h-[300px]">
+              {/* Desktop Image */}
+              <div className="hidden md:block w-full h-full relative">
+                <Image
+                  src={desktopSrc}
+                  alt="Why Us"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover rounded-lg"
+                  loading="lazy"
+                />
+              </div>
+              {/* Mobile Image */}
+              <div className="md:hidden w-full h-full relative aspect-square">
+                <Image
+                  src={mobileSrc}
+                  alt="Why Us"
+                  fill
+                  sizes="100vw"
+                  className="object-cover rounded-lg"
+                  loading="lazy"
+                />
+              </div>
             </div>
             <div className="w-1/2 max-sm:w-full">
               <h1 className="text-3xl md:text-5xl leading-none mb-5 text-black font-black">

@@ -1,162 +1,201 @@
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Gift, Tag } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchCoupons, setSelectedCoupon, clearSelectedCoupon } from '@/app/store/slices/couponSlice';
+import React, { useRef, useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Copy, Check } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCoupons } from "@/app/store/slices/couponSlice";
+import { toast } from "react-toastify";
 
 const CouponSlider = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const sliderRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [copiedCode, setCopiedCode] = useState(null);
   const dispatch = useDispatch();
-  const { items: coupons, loading, error, selectedCoupon } = useSelector((state) => state.coupon);
+
+  const { items: coupons = [], loading } = useSelector(
+    (state) => state.coupon
+  );
 
   useEffect(() => {
     dispatch(fetchCoupons());
   }, [dispatch]);
 
-  const itemsPerView = 2;
-  const maxSlides = Math.max(0, (coupons?.length || 0) - itemsPerView);
+  const scroll = (direction) => {
+    const container = sliderRef.current;
+    if (!container) return;
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => Math.min(prev + 1, maxSlides));
-  };
+    const scrollAmount = 280;
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => Math.max(prev - 1, 0));
-  };
-
-  const handleSelectCoupon = (coupon) => {
-    if (selectedCoupon?._id === coupon._id) {
-      dispatch(clearSelectedCoupon());
+    if (direction === "left") {
+      container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
     } else {
-      dispatch(setSelectedCoupon(coupon));
+      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
+
+    setTimeout(() => {
+      updateScrollButtons();
+    }, 300);
   };
+
+  const updateScrollButtons = () => {
+    const container = sliderRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+
+    setCanScrollLeft(scrollLeft > 5);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+  };
+
+  const handleScroll = () => {
+    clearTimeout(handleScroll.timeout);
+    handleScroll.timeout = setTimeout(updateScrollButtons, 50);
+  };
+
+  const handleCopyCoupon = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    toast.success(`Coupon code "${code}" copied!`);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateScrollButtons();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [coupons]);
 
   if (loading) {
-    return <div className="p-4 text-center text-gray-500">Loading coupons...</div>;
+    return (
+      <div className="w-full py-4">
+        <div className="flex gap-4 overflow-hidden">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="min-w-[260px] h-28 bg-gray-100 rounded-lg animate-pulse"
+            />
+          ))}
+        </div>
+      </div>
+    );
   }
-  if (error) {
-    return <div className="p-4 text-center text-red-500">Failed to load coupons: {error}</div>;
-  }
+
   if (!coupons || coupons.length === 0) {
-    return <div className="p-4 text-center text-gray-500">No coupons available.</div>;
+    return null;
   }
 
   return (
-    <div className="relative">
-      <div className="flex relative items-center gap-3">
+    <div className="w-full py-4">
+      <div className="relative">
         {/* Left Arrow */}
-        <button 
-          onClick={prevSlide}
-          disabled={currentSlide === 0}
-          className={`w-8 h-8 left-0 top-1/2 translate-y-[-50%] absolute z-30 rounded-full border-2 flex items-center justify-center transition-all ${
-            currentSlide === 0 
-              ? 'border-gray-200 bg-white text-gray-300 cursor-not-allowed' 
-              : 'border text-green-600 hover:bg-green-50'
+        <button
+          onClick={() => scroll("left")}
+          disabled={!canScrollLeft}
+          className={`absolute -left-3 top-1/2 transform -translate-y-1/2 z-10 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-200 border border-gray-200 ${
+            canScrollLeft
+              ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
+              : "text-gray-300 cursor-not-allowed opacity-0"
           }`}
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft size={20} className="text-green-600" />
         </button>
-
-        {/* Coupon Container */}
-        <div className="flex-1 overflow-hidden">
-          <div 
-            className="flex gap-3 transition-transform duration-300 ease-in-out"
-            style={{ transform: `translateX(-${currentSlide * (100 / itemsPerView)}%)` }}
-          >
-            {coupons.map((coupon) => {
-              // Assign color and textColor based on type or code for demo, or use defaults
-              let color = 'bg-gradient-to-r from-green-500 to-teal-500';
-              let textColor = 'text-white';
-              if (coupon.type === 'percent') color = 'bg-gradient-to-r from-blue-500 to-cyan-500';
-              if (coupon.type === 'flat') color = 'bg-gradient-to-r from-orange-500 to-red-500';
-              // Discount string
-              const discount = coupon.type === 'percent' ? `${coupon.value}% OFF` : `₹${coupon.value} OFF`;
-              return (
-                <div
-                  key={coupon._id}
-                  className={`flex-shrink-0 w-1/2 relative cursor-pointer transition-all duration-300 ${
-                    selectedCoupon?._id === coupon._id ? 'scale-105' : 'hover:scale-102'
-                  }`}
-                  onClick={() => handleSelectCoupon(coupon)}
-                >
-                  <div className={`${color} rounded-lg p-4 relative overflow-hidden`}>
-                    {/* Decorative pattern */}
-                    <div className="absolute top-0 right-0 w-16 h-16 opacity-20">
-                      <Gift size={64} className="transform rotate-12" />
-                    </div>
-                    {/* Selection indicator */}
-                    {selectedCoupon?._id === coupon._id && (
-                      <div className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      </div>
-                    )}
-                    <div className={`${textColor} relative z-10`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Tag size={16} />
-                        <span className="font-bold text-sm">{coupon.code}</span>
-                      </div>
-                      <div className="font-bold text-lg mb-1">{discount}</div>
-                      <div className="text-xs opacity-90 mb-1">{coupon.description || ''}</div>
-                      <div className="text-xs opacity-75">Min order: ₹{coupon.minCartValue || 0}</div>
-                    </div>
-                    {/* Border for selected coupon */}
-                    {selectedCoupon?._id === coupon._id && (
-                      <div className="absolute inset-0 border-3 border-white rounded-lg"></div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
         {/* Right Arrow */}
-        <button 
-          onClick={nextSlide}
-          disabled={currentSlide >= maxSlides}
-          className={`w-8 h-8 absolute right-0 top-1/2 translate-y-[-50%] z-30 rounded-full border-2 flex items-center justify-center transition-all ${
-            currentSlide >= maxSlides
-              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-              : 'border text-green-600 hover:bg-green-50'
+        <button
+          onClick={() => scroll("right")}
+          disabled={!canScrollRight}
+          className={`absolute -right-3 top-1/2 transform -translate-y-1/2 z-10 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-all duration-200 border border-gray-200 ${
+            canScrollRight
+              ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
+              : "text-gray-300 cursor-not-allowed opacity-0"
           }`}
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={20} className="text-green-600" />
         </button>
-      </div>
 
-      {/* Selected Coupon Display */}
-      {selectedCoupon && (
-        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm font-medium text-green-700">
-                Coupon {selectedCoupon.code} selected - {selectedCoupon.type === 'percent' ? `${selectedCoupon.value}% OFF` : `₹${selectedCoupon.value} OFF`}
-              </span>
-            </div>
-            <button 
-              onClick={() => dispatch(clearSelectedCoupon())}
-              className="text-green-600 hover:text-green-800 text-sm font-medium"
+        {/* Slider Container */}
+        <div
+          ref={sliderRef}
+          onScroll={handleScroll}
+          className="flex overflow-x-auto scrollbar-hide gap-4 py-2 scroll-smooth"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {coupons.map((coupon, index) => (
+            <div
+              key={coupon._id || index}
+              className="min-w-[260px] flex-shrink-0 relative bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border-2 border-dashed border-green-300 shadow-sm hover:shadow-md transition-all duration-200 group"
             >
-              Remove
-            </button>
-          </div>
-        </div>
-      )}
+              {/* Decorative circles */}
+              <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white rounded-full border-2 border-green-300" />
+              <div className="absolute -right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white rounded-full border-2 border-green-300" />
 
-      {/* Slide indicators */}
-      <div className="flex justify-center gap-1 mt-3">
-        {Array.from({ length: maxSlides + 1 }).map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-colors ${
-              currentSlide === index ? 'bg-green-600' : 'bg-gray-300'
-            }`}
-          />
-        ))}
+              {/* Discount Badge */}
+              <div className="absolute -top-2 -right-2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                {coupon.type === "percent"
+                  ? `${coupon.value}% OFF`
+                  : `₹${coupon.value} OFF`}
+              </div>
+
+              {/* Coupon Content */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-green-800 text-sm uppercase tracking-wide">
+                    {coupon.code}
+                  </h4>
+                  <button
+                    onClick={() => handleCopyCoupon(coupon.code)}
+                    className="p-1.5 hover:bg-green-200 rounded-md transition-colors"
+                    title="Copy code"
+                  >
+                    {copiedCode === coupon.code ? (
+                      <Check size={16} className="text-green-700" />
+                    ) : (
+                      <Copy size={16} className="text-green-600" />
+                    )}
+                  </button>
+                </div>
+
+                <p className="text-xs text-gray-700 line-clamp-2">
+                  {coupon.description || "Save on your purchase"}
+                </p>
+
+                <div className="flex items-center justify-between pt-2 border-t border-green-200">
+                  <span className="text-xs text-gray-600">
+                    Min: ₹{coupon.minCartValue || 0}
+                  </span>
+                  {coupon.maxDiscount && (
+                    <span className="text-xs text-gray-600">
+                      Max: ₹{coupon.maxDiscount}
+                    </span>
+                  )}
+                </div>
+
+                {coupon.expiryDate && (
+                  <div className="text-xs text-gray-500 flex items-center gap-1">
+                    <span>Valid till:</span>
+                    <span className="font-medium">
+                      {new Date(coupon.expiryDate).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };

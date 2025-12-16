@@ -6,7 +6,7 @@ import Providers from "./store/Providers"; // ✅ Updated path
 import ClientLayout from "./ClientLayout";
 import { ToastContainer } from "react-toastify";
 import CheckoutPopup from "../components/CheckoutPopup";
-import OrderPopup from "../components/OrderPopup";
+// import OrderPopup from "../components/OrderPopup";
 export const metadata = {
   title: "DND - Ecommerce ",
   description: "Find the perfect good",
@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
               draggable
             />
             <CheckoutPopup />
-            <OrderPopup />
+            {/* <OrderPopup /> */}
             {children ?? null}
           </ClientLayout>
         </Providers>

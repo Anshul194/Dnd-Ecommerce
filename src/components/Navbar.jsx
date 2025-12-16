@@ -30,7 +30,12 @@ import {
 import { getCartItems, toggleCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import CartSidebar from "./CartSidebar";
+import dynamic from 'next/dynamic';
+// Dynamic import for CartSidebar to reduce initial bundle size
+const CartSidebar = dynamic(() => import('./CartSidebar'), {
+  loading: () => null,
+  ssr: false
+});
 import {
   fetchWishlist,
   selectWishlistItems,
@@ -50,6 +55,12 @@ export default function Navbar({ initialCategories = [] }) {
   const { cartItems } = useSelector((state) => state.cart);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { items } = useSelector((state) => state.blogs);
+  const reduxProducts = useSelector((state) => {
+    const products = state.product?.products;
+    if (Array.isArray(products)) return products;
+    if (products && Array.isArray(products.products)) return products.products;
+    return [];
+  });
   const [filteredBlogs, setFilteredBlogs] = useState([]);
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,11 +82,7 @@ export default function Navbar({ initialCategories = [] }) {
       const res = await fetchCategoryWithSubcategories();
       setCategories(res || []);
     }
-    if (
-      Array.isArray(products)
-        ? products.length === 0
-        : products?.products?.length == 0
-    ) {
+    if (!Array.isArray(products) || products.length === 0) {
       const payload = {
         page: 1,
         limit: 10,
@@ -165,11 +172,11 @@ export default function Navbar({ initialCategories = [] }) {
       const response = await axiosInstance.get("/product", {
         params: quaryParams,
       });
-      setProducts(
-        response.data.products.data.products || response.data.products.data
-      );
+      const fetchedProducts = response?.data?.products?.data?.products || response?.data?.products?.data || [];
+      setProducts(Array.isArray(fetchedProducts) ? fetchedProducts : []);
     } catch (error) {
       //console.error("Error fetching products:", error);
+      setProducts([]);
     }
   };
 
@@ -178,8 +185,8 @@ export default function Navbar({ initialCategories = [] }) {
       setFilteredBlogs([]);
       return;
     }
-    const filtered = items.filter((blog) =>
-      blog.title.toLowerCase().includes(term.toLowerCase())
+    const filtered = items?.filter((blog) =>
+      blog?.title?.toLowerCase().includes(term.toLowerCase())
     );
     setFilteredBlogs(filtered);
   };
@@ -271,7 +278,7 @@ export default function Navbar({ initialCategories = [] }) {
                   <p className="px-4 py-2 text-sm font-semibold text-gray-800">
                     Categories
                   </p>
-                  {categories.map((category, index) => (
+                  {categories?.map((category, index) => (
                     <div key={index}>
                       <div className="flex items-center justify-between">
                         <button
@@ -291,11 +298,10 @@ export default function Navbar({ initialCategories = [] }) {
                             className="px-3 py-2 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
                           >
                             <ChevronDown
-                              className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                                expandedCategory === category._id
-                                  ? "rotate-180"
-                                  : ""
-                              }`}
+                              className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${expandedCategory === category._id
+                                ? "rotate-180"
+                                : ""
+                                }`}
                             />
                           </button>
                         )}
@@ -304,13 +310,12 @@ export default function Navbar({ initialCategories = [] }) {
                       {/* Collapsible subcategories */}
                       {category.subcategories?.length > 0 && (
                         <div
-                          className={`ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${
-                            expandedCategory === category._id
-                              ? "max-h-96 opacity-100"
-                              : "max-h-0 opacity-0"
-                          }`}
+                          className={`ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${expandedCategory === category._id
+                            ? "max-h-96 opacity-100"
+                            : "max-h-0 opacity-0"
+                            }`}
                         >
-                          {category.subcategories.map((sub) => (
+                          {category?.subcategories?.map((sub) => (
                             <button
                               key={sub._id}
                               onClick={() => {
@@ -386,9 +391,8 @@ export default function Navbar({ initialCategories = [] }) {
                 <button className="flex items-center gap-1 text-gray-700 hover:text-[#3C950D] transition-colors py-2 font-medium">
                   Categories
                   <ChevronDown
-                    className={`w-4 h-4 transition-transform ${
-                      showCategoryMenu ? "rotate-180" : ""
-                    }`}
+                    className={`w-4 h-4 transition-transform ${showCategoryMenu ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 
@@ -405,19 +409,18 @@ export default function Navbar({ initialCategories = [] }) {
                               All Categories
                             </h3>
                             <div className="space-y-1">
-                              {categories.map((category) => {
-                                if (category.status !== "Active") return null;
+                              {categories?.map((category) => {
+                                if (category?.status !== "Active") return null;
                                 return (
                                   <div
                                     key={category._id}
                                     onMouseEnter={() =>
                                       setHoveredCategory(category._id)
                                     }
-                                    className={`group cursor-pointer rounded-lg transition-all ${
-                                      hoveredCategory === category._id
-                                        ? "bg-white shadow-sm"
-                                        : "hover:bg-white/50"
-                                    }`}
+                                    className={`group cursor-pointer rounded-lg transition-all ${hoveredCategory === category._id
+                                      ? "bg-white shadow-sm"
+                                      : "hover:bg-white/50"
+                                      }`}
                                   >
                                     <div
                                       onClick={() => {
@@ -431,10 +434,10 @@ export default function Navbar({ initialCategories = [] }) {
                                       style={{ cursor: "pointer" }}
                                     >
                                       <div className="w-10 h-10 rounded-lg overflow-hidden bg-white flex-shrink-0">
-                                        {category.image ? (
+                                        {category?.image ? (
                                           <Image
                                             src={category.image}
-                                            alt={category.name}
+                                            alt={category?.name || ''}
                                             width={40}
                                             height={40}
                                             className="w-full h-full object-cover"
@@ -443,15 +446,14 @@ export default function Navbar({ initialCategories = [] }) {
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <h4
-                                          className={`font-medium text-sm transition-colors truncate ${
-                                            hoveredCategory === category._id
-                                              ? "text-[#3C950D]"
-                                              : "text-gray-700"
-                                          }`}
+                                          className={`font-medium text-sm transition-colors truncate ${hoveredCategory === category._id
+                                            ? "text-[#3C950D]"
+                                            : "text-gray-700"
+                                            }`}
                                         >
-                                          {category.name}
+                                          {category?.name}
                                         </h4>
-                                        {category.subcategories?.length > 0 && (
+                                        {category?.subcategories?.length > 0 && (
                                           <p className="text-xs text-gray-500">
                                             {category.subcategories.length}{" "}
                                             items
@@ -460,11 +462,10 @@ export default function Navbar({ initialCategories = [] }) {
                                       </div>
                                       {category.subcategories?.length > 0 && (
                                         <ChevronRight
-                                          className={`w-4 h-4 transition-colors ${
-                                            hoveredCategory === category._id
-                                              ? "text-[#3C950D]"
-                                              : "text-gray-400"
-                                          }`}
+                                          className={`w-4 h-4 transition-colors ${hoveredCategory === category._id
+                                            ? "text-[#3C950D]"
+                                            : "text-gray-400"
+                                            }`}
                                         />
                                       )}
                                     </div>
@@ -499,12 +500,12 @@ export default function Navbar({ initialCategories = [] }) {
                                       </div>
 
                                       {selectedCategory?.subcategories?.length >
-                                      0 ? (
+                                        0 ? (
                                         <div className="grid grid-cols-2 gap-3">
-                                          {selectedCategory.subcategories.map(
+                                          {selectedCategory?.subcategories?.map(
                                             (subcategory) => {
                                               if (
-                                                subcategory.status !== "Active"
+                                                subcategory?.status !== "Active"
                                               )
                                                 return null;
                                               return (
@@ -518,12 +519,12 @@ export default function Navbar({ initialCategories = [] }) {
                                                 >
                                                   <div className="group/sub flex items-center gap-3 p-3 rounded-lg hover:bg-[#3C950D]/5 transition-all cursor-pointer border border-transparent hover:border-[#3C950D]/20">
                                                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
-                                                      {subcategory.image ? (
+                                                      {subcategory?.image ? (
                                                         <Image
                                                           src={
                                                             subcategory.image
                                                           }
-                                                          alt={subcategory.name}
+                                                          alt={subcategory?.name || ''}
                                                           width={48}
                                                           height={48}
                                                           className="w-full h-full object-cover"
@@ -531,7 +532,7 @@ export default function Navbar({ initialCategories = [] }) {
                                                       ) : null}
                                                     </div>
                                                     <span className="text-sm font-medium text-gray-700 group-hover/sub:text-[#3C950D] transition-colors">
-                                                      {subcategory.name}
+                                                      {subcategory?.name}
                                                     </span>
                                                   </div>
                                                 </Link>
@@ -592,9 +593,8 @@ export default function Navbar({ initialCategories = [] }) {
                 <button className="flex items-center gap-1 text-gray-700 hover:text-[#3C950D] transition-colors py-2 font-medium">
                   Products
                   <ChevronDown
-                    className={`w-4 h-4 transition-transform ${
-                      showProductMenu ? "rotate-180" : ""
-                    }`}
+                    className={`w-4 h-4 transition-transform ${showProductMenu ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 
@@ -607,115 +607,63 @@ export default function Navbar({ initialCategories = [] }) {
                         Featured Products
                       </h3>
                       <div className="grid grid-cols-5 gap-4 max-h-[400px] overflow-y-auto">
-                        {products?.products?.length > 0
-                          ? products?.products?.map((product) => {
-                              if (product?.variants?.length == 0) return null;
-                              return (
-                                <Link
-                                  key={product._id}
-                                  href={`/productDetail/${product.slug}`}
-                                  onClick={() => setShowProductMenu(false)}
-                                >
-                                  <div className="group cursor-pointer">
-                                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
-                                      <Image
-                                        src={
-                                          product?.thumbnail?.url ||
-                                          product.images?.[0]?.url
-                                        }
-                                        alt={
-                                          product?.thumbnail?.alt ||
-                                          product.images?.[0]?.alt
-                                        }
-                                        fill
-                                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                      />
-                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
-                                    </div>
-                                    <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
-                                      {product.name}
-                                    </h4>
-                                    {product?.variants?.[0]?.price ? (
-                                      <div className="flex items-center gap-2">
-                                        {product?.variants[0]?.salePrice && (
-                                          <span className="text-[#3C950D] font-semibold text-sm">
-                                            Rs {product?.variants[0]?.salePrice}
-                                          </span>
-                                        )}
-                                        <span className="text-black/50 font-semibold text-xs line-through">
-                                          Rs {product?.variants[0]?.price}
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <div className="flex items-center gap-2">
-                                        {product?.salePrice && (
-                                          <span className="text-[#3C950D] font-semibold text-sm">
-                                            Rs {product?.salePrice}
-                                          </span>
-                                        )}
-                                        <span className="text-black/50 font-semibold text-xs line-through">
-                                          Rs {product?.price}
-                                        </span>
-                                      </div>
-                                    )}
+                        {(() => {
+                          const displayProducts = (Array.isArray(products) && products.length > 0) ? products : reduxProducts;
+                          return (Array.isArray(displayProducts) ? displayProducts : []).map((product) => {
+                            if (product?.variants?.length == 0) return null;
+                            return (
+                              <Link
+                                key={product._id}
+                                href={`/productDetail/${product.slug}`}
+                                onClick={() => setShowProductMenu(false)}
+                              >
+                                <div className="group cursor-pointer">
+                                  <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
+                                    <Image
+                                      src={
+                                        product?.thumbnail?.url ||
+                                        product.images?.[0]?.url
+                                      }
+                                      alt={
+                                        product?.thumbnail?.alt ||
+                                        product.images?.[0]?.alt
+                                      }
+                                      fill
+                                      className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
                                   </div>
-                                </Link>
-                              );
-                            })
-                          : products?.map((product) => {
-                              if (product?.variants?.length == 0) return null;
-                              return (
-                                <Link
-                                  key={product._id}
-                                  href={`/productDetail/${product.slug}`}
-                                  onClick={() => setShowProductMenu(false)}
-                                >
-                                  <div className="group cursor-pointer">
-                                    <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
-                                      <Image
-                                        src={
-                                          product?.thumbnail?.url ||
-                                          product.images?.[0]?.url
-                                        }
-                                        alt={
-                                          product?.thumbnail?.alt ||
-                                          product.images?.[0]?.alt
-                                        }
-                                        fill
-                                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                      />
-                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                  <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
+                                    {product.name}
+                                  </h4>
+                                  {product?.variants?.[0]?.price ? (
+                                    <div className="flex items-center gap-2">
+                                      {product?.variants[0]?.salePrice && (
+                                        <span className="text-[#3C950D] font-semibold text-sm">
+                                          Rs {product?.variants[0]?.salePrice}
+                                        </span>
+                                      )}
+                                      <span className="text-black/50 font-semibold text-xs line-through">
+                                        Rs {product?.variants[0]?.price}
+                                      </span>
                                     </div>
-                                    <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
-                                      {product.name}
-                                    </h4>
-                                    {product?.variants?.[0]?.price ? (
-                                      <div className="flex items-center gap-2">
-                                        {product?.variants[0]?.salePrice && (
-                                          <span className="text-[#3C950D] font-semibold text-sm">
-                                            Rs {product?.variants[0]?.salePrice}
-                                          </span>
-                                        )}
-                                        <span className="text-black/50 font-semibold text-xs line-through">
-                                          Rs {product?.variants[0]?.price}
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      {product?.salePrice && (
+                                        <span className="text-[#3C950D] font-semibold text-sm">
+                                          Rs {product?.salePrice}
                                         </span>
-                                      </div>
-                                    ) : (
-                                      <div className="flex items-center gap-2">
-                                        {product?.salePrice && (
-                                          <span className="text-[#3C950D] font-semibold text-sm">
-                                            Rs {product?.salePrice}
-                                          </span>
-                                        )}
-                                        <span className="text-black/50 font-semibold text-xs line-through">
-                                          Rs {product?.price}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </Link>
-                              );
-                            })}
+                                      )}
+                                      <span className="text-black/50 font-semibold text-xs line-through">
+                                        Rs {product?.price}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </Link>
+                            );
+                          });
+                        })()}
                       </div>
 
                       <Link
@@ -811,9 +759,8 @@ export default function Navbar({ initialCategories = [] }) {
         {/* Search Bar Dropdown */}
         <div
           ref={searchRef}
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            showSearch ? "max-h-fit opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? "max-h-fit opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <div className="container mx-auto px-2 md:px-8 pb-4 pt-4">
             <div className="relative">
@@ -836,16 +783,16 @@ export default function Navbar({ initialCategories = [] }) {
           </div>
 
           <div className="container flex flex-col gap-2 mx-auto px-2 md:px-8 pb-4">
-            {filteredBlogs.length > 0 && (
+            {filteredBlogs?.length > 0 && (
               <div>
                 <h2 className="text-black">Blogs</h2>
 
                 <div className="mt-2">
-                  {filteredBlogs.length === 0 ? (
+                  {filteredBlogs?.length === 0 ? (
                     <p className="text-gray-500">No blogs found.</p>
                   ) : (
                     <div className="flex gap-4 max-sm:flex-wrap">
-                      {filteredBlogs.map((blog) => (
+                      {filteredBlogs?.map((blog) => (
                         <div
                           key={blog._id}
                           className="border-2 cursor-pointer p-2 rounded-md flex gap-2 border-gray-200"
@@ -871,11 +818,11 @@ export default function Navbar({ initialCategories = [] }) {
               <h2 className="text-black">Products</h2>
 
               <div className="mt-2">
-                {products.length === 0 ? (
+                {!Array.isArray(products) || products?.length === 0 ? (
                   <p className="text-gray-500">No products found.</p>
                 ) : (
                   <div className="flex gap-4 max-sm:flex-wrap">
-                    {products.map((product) => {
+                    {products?.map((product) => {
                       if (product?.variants?.length == 0) return null;
                       return (
                         <Link

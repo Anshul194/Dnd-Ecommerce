@@ -1753,62 +1753,67 @@ export default function CheckoutPopup() {
           {isAuthenticated && (
             <div className="space-y-4 rounded-xl bg-white py-3 px-4">
               <h3 className="font-semibold mb-3">Payment Method</h3>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    id="payment-method-2"
-                    name="payment-method"
-                    value="method2"
-                    checked={paymentMethod === "prepaid"}
-                    onChange={() => setPaymentMethod("prepaid")}
-                    className="checked:bg-green-600 h-4 w-4"
-                  />
-                  <label htmlFor="payment-method-2">Prepaid</label>
+              <div className="grid grid-cols-2 gap-3">
+                {/* UPI/Card Option */}
+                <div 
+                  onClick={() => setPaymentMethod("prepaid")}
+                  className={`border-2 ${paymentMethod === "prepaid" ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"} rounded-lg p-3 cursor-pointer relative transition-all hover:border-gray-300`}
+                >
+                  <div className={`absolute top-2 right-2 w-5 h-5 rounded-full border-2 ${paymentMethod === "prepaid" ? "border-green-500" : "border-gray-300"} bg-white flex items-center justify-center`}>
+                    {paymentMethod === "prepaid" && <div className="w-3 h-3 rounded-full bg-green-500"></div>}
+                  </div>
+                  <div className="text-sm font-semibold text-gray-900 mb-1">
+                    ⚡ UPI / Card
+                  </div>
+                  <div className="text-xs text-gray-600 leading-tight mb-2">
+                    Pay securely with UPI, Credit/Debit Card, or Netbanking
+                  </div>
+                  <div className="text-lg font-bold text-green-600 mt-2">
+                    ₹{total.toFixed(2)}
+                  </div>
                 </div>
-                {/* Only show COD if not disabled for any cart category */}
+
+                {/* Cash on Delivery Option */}
                 {!isCODDisabledForCart && (
-                  <div
-                    className={`flex items-center gap-2 ${cartItems.reduce(
-                      (acc, item) => acc + item.price * item.quantity,
-                      0
-                    ) > settings?.codLimit && "opacity-50 cursor-not-allowed"
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      id="payment-method-1"
-                      name="payment-method"
-                      value="method1"
-                      disabled={
-                        cartItems.reduce(
-                          (acc, item) => acc + item.price * item.quantity,
-                          0
-                        ) > settings?.codLimit
+                  <div 
+                    onClick={() => {
+                      if (cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) <= settings?.codLimit) {
+                        setPaymentMethod("cod");
                       }
-                      checked={paymentMethod === "cod"}
-                      onChange={() => setPaymentMethod("cod")}
-                      className={`checked:bg-green-600 h-4 w-4 `}
-                    />
-                    <label htmlFor="payment-method-1">Cash on delivery</label>
+                    }}
+                    className={`border-2 ${paymentMethod === "cod" ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"} rounded-lg p-3 cursor-pointer relative transition-all hover:border-gray-300 ${
+                      cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) > settings?.codLimit && "opacity-50 cursor-not-allowed"
+                    }`}
+                  >
+                    <div className={`absolute top-2 right-2 w-5 h-5 rounded-full border-2 ${paymentMethod === "cod" ? "border-green-500" : "border-gray-300"} bg-white flex items-center justify-center`}>
+                      {paymentMethod === "cod" && <div className="w-3 h-3 rounded-full bg-green-500"></div>}
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900 mb-1">
+                      💵 Cash on Delivery
+                    </div>
+                    <div className="text-xs text-gray-600 leading-tight mb-2">
+                      Pay with cash when your order is delivered to you
+                    </div>
+                    <div className="text-lg font-bold text-gray-900 mt-2">
+                      ₹{(total + 50).toFixed(2)}
+                      <span className="text-xs text-gray-500 font-normal ml-1">(+₹50 fee)</span>
+                    </div>
                   </div>
                 )}
-                {/* Show message if COD is disabled for category */}
-                {isCODDisabledForCart && (
-                  <h2 className="text-red-500 text-xs">
-                    Cash on delivery is not available for one or more items in your cart.
+              </div>
+              
+              {/* Error Messages */}
+              {isCODDisabledForCart && (
+                <h2 className="text-red-500 text-xs mt-2">
+                  Cash on delivery is not available for one or more items in your cart.
+                </h2>
+              )}
+              {!isCODDisabledForCart &&
+                cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) > settings?.codLimit && (
+                  <h2 className="text-red-500 text-xs mt-2">
+                    COD not available for orders above ₹{settings.codLimit}
                   </h2>
                 )}
-                {!isCODDisabledForCart &&
-                  cartItems.reduce(
-                    (acc, item) => acc + item.price * item.quantity,
-                    0
-                  ) > settings?.codLimit && (
-                    <h2 className="text-red-500 text-xs">
-                      COD not available for orders above ₹{settings.codLimit}
-                    </h2>
-                  )}
-              </div>
             </div>
           )}
 

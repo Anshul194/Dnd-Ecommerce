@@ -4,8 +4,57 @@ import { dirname, resolve } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Bundle analyzer (only in development/analysis mode)
+const withBundleAnalyzer = process.env.ANALYZE === 'true'
+  ? (await import('@next/bundle-analyzer')).default({ enabled: true })
+  : (config) => config;
+
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Performance optimizations
+  reactStrictMode: true,
+  compress: true,
+
+  // Experimental optimizations
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['lucide-react', 'react-toastify', 'swiper'],
+  },
+
+  // Performance headers for caching
+  async headers() {
+    return [
+      {
+        source: '/uploads/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
+
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
       // Comprehensive fallbacks for Node.js modules
@@ -65,6 +114,13 @@ const nextConfig = {
   },
 
   images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 31536000,
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     domains: [
       "www.sampuranswadeshi.com",
       "cdn.shopify.com",
@@ -72,7 +128,13 @@ const nextConfig = {
       "images.unsplash.com",
       "bharat.nexprism.in",
     ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

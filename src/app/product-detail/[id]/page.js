@@ -23,6 +23,7 @@ import ProductReviewTwo from "./components/varients/review/ProductReviewTwo";
 import ProductReviewThree from "./components/varients/review/ProductReviewThree";
 import ProductReview from "./components/ProductReview";
 import FrequentlyPurchased from "./components/FrequentlyPurchased";
+import CouponSlider from "./components/CouponSlider";
 import { useDispatch } from "react-redux";
 import { fetchProductById } from "@/app/store/slices/productSlice";
 import Image from "next/image";
@@ -32,7 +33,7 @@ import {
   setBuyNowProduct,
   toggleCart,
 } from "@/app/store/slices/cartSlice";
-import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
+
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
 function ProductPage({ params }) {
@@ -163,18 +164,7 @@ function ProductPage({ params }) {
         return;
       }
       await dispatch(getCartItems());
-      // tracking: buy now
-      try {
-        trackEvent("buy_now", {
-          productId: data._id,
-          variantId: selectedPack,
-          quantity,
-          user: isAuthenticated ? userId : "guest",
-        });
-      } catch (err) {
-        /* non-blocking */
-      }
-      dispatch(setCheckoutOpen(true));
+      router.push("/checkout");
       // dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -765,12 +755,12 @@ function ProductPage({ params }) {
                   </div>
                 </div>
 
-                {/* <div className="mt-6">
+                <div className="mt-6">
                   <h3 className="font-semibold text-black mb-3">
                     Available Coupons
                   </h3>
                   <CouponSlider />
-                </div> */}
+                </div>
               </div>
             </div>
           </div>

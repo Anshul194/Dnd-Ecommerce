@@ -105,7 +105,7 @@ export function Reviews({ content }) {
                         src={
                           review?.images[0] ||
                           review?.productId?.images[0]?.url ||
-                          "/images/testimonial-placeholder.jpg"
+                          "/images/testimonial-placeholder.webp"
                         }
                         alt="Testimonial Placeholder"
                         width={400}

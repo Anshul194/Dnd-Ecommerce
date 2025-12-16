@@ -1,50 +1,44 @@
-import { NextResponse } from "next/server";
-
-// Whitelisted origins for CORS
-const ALLOWED_ORIGINS = [
-  "https://bharat.nexprism.in",
-  "https://bharatadmin.nexprism.in",
-  "http://bharat.localhost:5173/",
-  "http://bharat.localhost:3001/search",
-];
+import { NextResponse } from 'next/server';
 
 export function middleware(request) {
-  // console.log("Middleware running for:", request.url);
+  const response = NextResponse.next();
 
-  const origin = request.headers.get("origin");
-  const isAllowedOrigin = origin && ALLOWED_ORIGINS.includes(origin);
-  // If origin is allowed echo it back, otherwise fall back to '*'
-  const allowOrigin = isAllowedOrigin ? origin : "*";
+  const { pathname } = request.nextUrl;
 
-  if (request.method === "OPTIONS") {
-    return new NextResponse(null, {
-      status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": allowOrigin,
-        "Access-Control-Allow-Methods":
-          "GET, POST, PATCH, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers":
-          "Content-Type, Authorization, x-access-token, x-refresh-token, x-tenant",
-        // "Access-Control-Allow-Credentials": "true",
-      },
-    });
+  // Add cache headers for static assets
+  if (
+    pathname.startsWith('/uploads') ||
+    pathname.startsWith('/images') ||
+    pathname.startsWith('/category-images') ||
+    pathname.startsWith('/category-thumbnails') ||
+    pathname.startsWith('/subcategory-images') ||
+    pathname.startsWith('/subcategory-thumbnails')
+  ) {
+    response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
   }
 
-  // Normal request
-  const response = NextResponse.next();
-  response.headers.set("Access-Control-Allow-Origin", allowOrigin);
-  response.headers.set(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PATCH, PUT, DELETE, OPTIONS"
-  );
-  response.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, x-access-token, x-refresh-token, x-tenant"
-  );
-  // response.headers.set("Access-Control-Allow-Credentials", "true");
+  // Add cache headers for API responses that are stable
+  if (pathname.startsWith('/api/categories') || pathname.startsWith('/api/page')) {
+    response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+  }
+
+  // Security headers
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   return response;
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: [
+    '/uploads/:path*',
+    '/images/:path*',
+    '/category-images/:path*',
+    '/category-thumbnails/:path*',
+    '/subcategory-images/:path*',
+    '/subcategory-thumbnails/:path*',
+    '/api/:path*',
+  ],
 };

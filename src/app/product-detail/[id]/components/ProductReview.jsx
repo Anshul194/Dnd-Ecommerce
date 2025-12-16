@@ -154,7 +154,7 @@ export default function ProductReview({ id }) {
                   </div>
                 </div>
                 <Image
-                  src="/images/verified.png"
+                  src="/images/verified.webp"
                   alt="Verified"
                   width={18}
                   height={18}
@@ -178,7 +178,7 @@ export default function ProductReview({ id }) {
                       >
                         <img
                           src={
-                            "/uploads/Variant/profile-1753807026838-801819914.jfif"
+                            "/uploads/Variant/profile-1753807026838-801819914.webp"
                           }
                           alt={`Review Image ${idx + 1}`}
                           width={100}

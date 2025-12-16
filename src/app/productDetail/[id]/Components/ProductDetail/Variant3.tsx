@@ -19,19 +19,43 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
-function Variant3() {
+interface Variant3Props {
+  productData?: any;
+}
+
+function Variant3({ productData: propProductData }: Variant3Props) {
   const [expandedSection, setExpandedSection] =
     React.useState<string>("details");
   const [quantity, setQuantity] = React.useState<number>(1);
-  const productData = useSelector(selectSelectedProduct);
+  const reduxProductData = useSelector(selectSelectedProduct);
+  const productData = propProductData || reduxProductData;
   const dispatch = useDispatch();
-  const [selectedVariant, setSelectedVariant] = React.useState<number>(
-    productData?.variants[0]?._id || 0
+  const [selectedVariant, setSelectedVariant] = React.useState<any>(
+    productData?.variants?.[0]?._id
   );
   const [showFixedBar, setShowFixedBar] = React.useState<boolean>(false);
   const actionButtonsRef = React.useRef<HTMLDivElement>(null);
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const userId = useSelector((state) => state.auth.user?._id);
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+  const userId = useSelector((state: any) => state.auth.user?._id);
+
+  React.useEffect(() => {
+    if (productData?.variants?.length > 0 && !selectedVariant) {
+      setSelectedVariant(productData.variants[0]._id);
+    }
+  }, [productData, selectedVariant]);
+
+  // Add early return if productData is not available
+  if (!productData) {
+    return <div className="lg:col-span-6 p-6">Loading product details...</div>;
+  }
+
+  // Normalize reviews if it's an array
+  const reviewsData = Array.isArray(productData.reviews)
+    ? { Average: productData.rating || 0, Reviews: productData.reviews }
+    : productData.reviews || { Average: 0, Reviews: [] };
+
+  const variants = productData.variants || [];
+  const currentVariant = variants.find((v: any) => v._id === selectedVariant) || variants[0];
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
@@ -57,7 +81,7 @@ function Variant3() {
           productId: productData._id,
           user: isAuthenticated ? userId : "guest",
         });
-      } catch (err) {}
+      } catch (err) { }
     }
   }, [productData?._id, isAuthenticated, userId]);
 
@@ -96,7 +120,7 @@ function Variant3() {
           quantity,
           user: isAuthenticated ? userId : "guest",
         });
-      } catch (err) {}
+      } catch (err) { }
       dispatch(toggleCart());
     } catch (error) {
       toast.error("Failed to add to cart");
@@ -134,7 +158,7 @@ function Variant3() {
           quantity,
           user: isAuthenticated ? userId : "guest",
         });
-      } catch (err) {}
+      } catch (err) { }
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {
@@ -209,16 +233,15 @@ function Variant3() {
               <Star
                 key={i}
                 size={18}
-                className={`${
-                  i < Math.round(productData?.reviews?.Average || 0)
+                className={`${i < Math.round(reviewsData.Average || 0)
                     ? "fill-orange-400 text-orange-400"
                     : "text-gray-300"
-                }`}
+                  }`}
               />
             ))}
             <span className="text-sm text-gray-600 ml-2">
-              ({productData?.reviews?.Average?.toFixed(1)}) (
-              {productData?.reviews?.Reviews.length} reviews)
+              ({reviewsData.Average?.toFixed(1)}) (
+              {reviewsData.Reviews?.length || 0} reviews)
             </span>
           </div>
           <div className="h-4 w-px bg-gray-300"></div>
@@ -230,32 +253,15 @@ function Variant3() {
           <div className="flex items-baseline gap-3 mb-2">
             <span className="text-3xl font-bold text-gray-900">
               ₹
-              {
-                productData.variants.filter(
-                  (variant) => variant._id === selectedVariant
-                )[0]?.salePrice
-              }
+              {currentVariant?.salePrice || currentVariant?.price || productData.price}
             </span>
             <span className="text-xl text-gray-500 line-through">
               ₹{" "}
-              {
-                productData.variants.filter(
-                  (variant) => variant._id === selectedVariant
-                )[0]?.price
-              }
+              {currentVariant?.price || productData.originalPrice || productData.price}
             </span>
             <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
               {(
-                ((productData.variants.filter(
-                  (variant) => variant._id === selectedVariant
-                )[0]?.salePrice -
-                  productData.variants.filter(
-                    (variant) => variant._id === selectedVariant
-                  )[0]?.price) *
-                  100) /
-                productData.variants.filter(
-                  (variant) => variant._id === selectedVariant
-                )[0]?.price
+                (((currentVariant?.salePrice || 0) - (currentVariant?.price || 0)) * 100) / (currentVariant?.price || 1)
               ).toFixed(0)}
               % OFF
             </span>
@@ -269,14 +275,13 @@ function Variant3() {
             Choose Size
           </h3>
           <div className="grid grid-cols-3 max-sm:grid-cols-2 gap-3">
-            {productData.variants.map((variant) => (
+            {variants.map((variant: any) => (
               <button
                 key={variant._id}
-                className={`relative p-4 border-2 rounded-xl text-center transition-all ${
-                  selectedVariant === variant._id
+                className={`relative p-4 border-2 rounded-xl text-center transition-all ${selectedVariant === variant._id
                     ? "border-green-500 bg-green-50"
                     : "border-gray-200 hover:border-gray-300"
-                }`}
+                  }`}
                 onClick={() => setSelectedVariant(variant._id)}
               >
                 <div className="font-semibold max-sm:text-sm text-gray-900">
@@ -370,11 +375,10 @@ function Variant3() {
               <button
                 key={tab.key}
                 onClick={() => toggleSection(tab.key)}
-                className={`flex-1 py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
-                  expandedSection === tab.key
+                className={`flex-1 py-4 px-6 text-sm font-medium border-b-2 transition-colors ${expandedSection === tab.key
                     ? "border-green-500 text-green-600"
                     : "border-transparent text-gray-600 hover:text-gray-900"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -394,12 +398,12 @@ function Variant3() {
 
           {expandedSection === "ingredients" && (
             <div className="space-y-3">
-              {productData.ingredients.map((item) => (
+              {productData.ingredients.map((item: any) => (
                 <div key={item._id} className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                   <span
                     dangerouslySetInnerHTML={{
-                      __html: productData.description,
+                      __html: item.description,
                     }}
                     className="text-gray-700"
                   ></span>
@@ -431,12 +435,12 @@ function Variant3() {
 
           {expandedSection === "precautions" && (
             <div className="space-y-3">
-              {productData.precautions.map((item) => (
+              {productData.precautions.map((item: any) => (
                 <div key={item._id} className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
                   <span
                     dangerouslySetInnerHTML={{
-                      __html: productData.description,
+                      __html: item.description || item.name || "",
                     }}
                     className="text-gray-700"
                   ></span>

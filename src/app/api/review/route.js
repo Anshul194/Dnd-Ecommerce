@@ -6,6 +6,7 @@ import { ProductModel } from "../../lib/models/Product.js";
 import { withUserAuth } from "../../middleware/commonAuth.js";
 import fs from "fs/promises"; // Import fs for file operations
 import path from "path"; // Import path for handling file paths
+import mongoose from "mongoose";
 
 // Helper to parse FormData in Next.js
 async function parseFormData(req) {
@@ -132,18 +133,16 @@ export const POST = withUserAuth(async function (req) {
 export async function GET(req) {
   try {
     const subdomain = getSubdomain(req);
-    //consolle.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      //consolle.error("No database connection established");
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
     }
-    //consolle.log("Connection name in route:", conn.name);
     const Review = conn.models.Review || conn.model("Review", ReviewSchema);
-    //consolle.log("Models registered:", { Review: Review.modelName });
+    const Product =
+      conn.models.Product || conn.model("Product", ProductModel.schema);
     const reviewService = new ReviewService(conn);
 
     const { searchParams } = new URL(req.url);
@@ -159,7 +158,26 @@ export async function GET(req) {
       );
     }
 
-    const reviews = await reviewService.getReviewsByProductId(productId, conn);
+    // Check if productId is a valid ObjectId or a slug
+    let actualProductId;
+    if (mongoose.Types.ObjectId.isValid(productId)) {
+      actualProductId = productId;
+    } else {
+      // Try to find product by slug
+      const product = await Product.findOne({ slug: productId }).lean();
+      if (!product) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Product not found",
+          },
+          { status: 404 }
+        );
+      }
+      actualProductId = product._id.toString();
+    }
+
+    const reviews = await reviewService.getReviewsByProductId(actualProductId, conn);
 
     return NextResponse.json({
       success: true,
@@ -167,7 +185,6 @@ export async function GET(req) {
       data: reviews,
     });
   } catch (error) {
-    //consolle.error("Route GET reviews error:", error.message);
     return NextResponse.json(
       {
         success: false,
