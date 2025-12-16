@@ -255,16 +255,16 @@ function Variant3({ productData: propProductData }: Variant3Props) {
               ₹
               {currentVariant?.salePrice || currentVariant?.price || productData.price}
             </span>
-            <span className="text-xl text-gray-500 line-through">
-              ₹{" "}
-              {currentVariant?.price || productData.originalPrice || productData.price}
-            </span>
-            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-              {(
-                (((currentVariant?.salePrice || 0) - (currentVariant?.price || 0)) * 100) / (currentVariant?.price || 1)
-              ).toFixed(0)}
-              % OFF
-            </span>
+            {(currentVariant?.price && currentVariant?.salePrice && currentVariant.price > currentVariant.salePrice) ? (
+              <>
+                <span className="text-xl text-gray-500 line-through">
+                  ₹{currentVariant.price}
+                </span>
+                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                  {Math.round(((currentVariant.price - currentVariant.salePrice) / currentVariant.price) * 100)}% OFF
+                </span>
+              </>
+            ) : null}
           </div>
           <p className="text-sm text-gray-600">Inclusive of all taxes</p>
         </div>
@@ -275,28 +275,35 @@ function Variant3({ productData: propProductData }: Variant3Props) {
             Choose Size
           </h3>
           <div className="grid grid-cols-3 max-sm:grid-cols-2 gap-3">
-            {variants.map((variant: any) => (
-              <button
-                key={variant._id}
-                className={`relative p-4 border-2 rounded-xl text-center transition-all ${selectedVariant === variant._id
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-200 hover:border-gray-300"
-                  }`}
-                onClick={() => setSelectedVariant(variant._id)}
-              >
-                <div className="font-semibold max-sm:text-sm text-gray-900">
-                  {variant.title}
-                </div>
-                <div className="text-sm text-gray-600">
-                  ₹{variant.salePrice || variant.price}
-                </div>
-                {variant.discount && (
-                  <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-                    -{variant.discount}%
+            {variants.map((variant: any) => {
+              // Calculate discount percentage
+              const discountPercent = variant.salePrice && variant.price && variant.price > variant.salePrice
+                ? Math.round(((variant.price - variant.salePrice) / variant.price) * 100)
+                : 0;
+              
+              return (
+                <button
+                  key={variant._id}
+                  className={`relative p-4 border-2 rounded-xl text-center transition-all ${selectedVariant === variant._id
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  onClick={() => setSelectedVariant(variant._id)}
+                >
+                  <div className="font-semibold max-sm:text-sm text-gray-900">
+                    {variant.title}
                   </div>
-                )}
-              </button>
-            ))}
+                  <div className="text-sm text-gray-600">
+                    ₹{variant.salePrice || variant.price}
+                  </div>
+                  {discountPercent > 0 && (
+                    <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                      -{discountPercent}%
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 

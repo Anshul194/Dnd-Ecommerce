@@ -205,7 +205,7 @@ export function ProductDetails({
   const productData = {
     name: product?.name || dummyProduct.name,
     subtitle: product?.subtitle || dummyProduct.subtitle,
-    brand: product?.brand || dummyProduct.brand,
+    brand: product?.brand?.name || product?.brand || dummyProduct.brand,
     price: product?.price || dummyProduct.price,
     originalPrice: product?.originalPrice || dummyProduct.originalPrice,
     discount: product?.discount || dummyProduct.discount,
@@ -214,7 +214,7 @@ export function ProductDetails({
     soldCount: product?.soldCount || dummyProduct.soldCount,
     availability: product?.availability || dummyProduct.availability,
     description: product?.description || dummyProduct.description,
-    variants: dummyProduct.variants,
+    variants: product?.variants || dummyProduct.variants,
     features: product?.features || dummyProduct.features,
     ingredients: product?.ingredients || dummyProduct.ingredients,
     benefits: product?.benefits || dummyProduct.benefits,

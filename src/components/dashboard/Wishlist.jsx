@@ -46,13 +46,7 @@ const Wishlist = () => {
     //console.log("Adding to cart:", item);
     dispatch(
       addToCart({
-        product: {
-          id: item.product._id,
-          name: item.product.name,
-          image: item.product.thumbnail || item.product.images?.[0],
-          variant: item?.variant?._id,
-          slug: item.slug,
-        },
+        product: item.product._id,
         quantity: 1,
         price: item?.variant?.salePrice || item?.price,
         variant: item?.variant?._id,
@@ -65,13 +59,7 @@ const Wishlist = () => {
     wishlistItems.forEach((item) => {
       dispatch(
         addToCart({
-          product: {
-            id: item.product._id,
-            name: item.product.name,
-            image: item.product.thumbnail || item.product.images?.[0],
-            variant: item?.variant?._id,
-            slug: item.slug,
-          },
+          product: item.product._id,
           quantity: 1,
           price: item?.variant?.salePrice || item?.price,
           variant: item?.variant?._id,

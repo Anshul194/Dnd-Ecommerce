@@ -61,13 +61,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     try {
       const resultAction = await dispatch(
         setBuyNowProduct({
-          product: {
-            id: product._id,
-            name: product.name,
-            image: product.thumbnail || product.images[0],
-            variant: product.variants[0]._id,
-            slug: product.slug,
-          },
+          product: product._id,
           quantity: 1,
           price: price.salePrice || price.price,
           variant: product.variants[0]._id,
@@ -107,13 +101,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
       : product?.salePrice || product?.price;
     dispatch(
       addToCart({
-        product: {
-          id: product._id,
-          name: product.name,
-          image: product.thumbnail || product.images[0],
-          variant: product?.variants[0]?._id,
-          slug: product.slug,
-        },
+        product: product._id,
         quantity: 1,
         price: price,
         variant: product?.variants[0]?._id,

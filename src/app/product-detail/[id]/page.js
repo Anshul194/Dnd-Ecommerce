@@ -94,13 +94,7 @@ function ProductPage({ params }) {
     try {
       const resultAction = await dispatch(
         addToCart({
-          product: {
-            id: data._id,
-            name: data.name,
-            image: data.thumbnail || data.images[0],
-            variant: selectedPack,
-            slug: data.slug,
-          },
+          product: data._id,
           quantity,
           price: price.salePrice || price.price,
           variant: selectedPack,
@@ -142,13 +136,7 @@ function ProductPage({ params }) {
     try {
       const resultAction = await dispatch(
         setBuyNowProduct({
-          product: {
-            id: data._id,
-            name: data.name,
-            image: data.thumbnail || data.images[0],
-            variant: selectedPack,
-            slug: data.slug,
-          },
+          product: data._id,
           quantity,
           price: price.salePrice || price.price,
           variant: selectedPack,
@@ -354,48 +342,51 @@ function ProductPage({ params }) {
               {/* Pack Selection */}
               <div className="mb-6 relative">
                 <h3 className="font-semibold text-black mb-3">Select Pack</h3>
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-wrap">
                   {data?.variants?.length > 0 ? (
-                    data?.variants?.map((variant, index) => (
-                      <div
-                        key={index}
-                        className={`relative flex-1 border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                          selectedPack === variant._id
-                            ? "border-green-600 bg-green-50"
-                            : "border-gray-300 hover:border-gray-400"
-                        }`}
-                        onClick={() => setSelectedPack(variant._id)}
-                      >
+                    data?.variants?.map((variant, index) => {
+                      // Calculate discount percentage if sale price exists
+                      const discountPercent = variant.salePrice && variant.price
+                        ? Math.round(((variant.price - variant.salePrice) / variant.price) * 100)
+                        : 0;
+                      
+                      return (
                         <div
-                          className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${
-                            variant.color === "green"
-                              ? "bg-green-600"
-                              : variant.color === "orange"
-                              ? "bg-orange-500"
-                              : "bg-blue-500"
+                          key={variant._id}
+                          className={`relative flex-1 min-w-[140px] border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                            selectedPack === variant._id
+                              ? "border-green-600 bg-green-50"
+                              : "border-gray-300 hover:border-gray-400"
                           }`}
+                          onClick={() => setSelectedPack(variant._id)}
                         >
-                          {variant.discount}
+                          {discountPercent > 0 && (
+                            <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded">
+                              -{discountPercent}% OFF
+                            </div>
+                          )}
+                          <div className="text-center">
+                            <div className="font-bold text-sm text-black mb-1">
+                              {variant.title}
+                            </div>
+                            <div
+                              className={`font-semibold text-lg ${
+                                selectedPack === variant._id
+                                  ? "text-green-600"
+                                  : "text-gray-900"
+                              }`}
+                            >
+                              ₹{variant.salePrice || variant.price}
+                            </div>
+                            {variant.salePrice && variant.price > variant.salePrice && (
+                              <div className="text-sm text-gray-500 line-through">
+                                ₹{variant.price}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-center">
-                          <div className="font-bold text-sm text-black">
-                            {variant.title}
-                          </div>
-                          <div
-                            className={`font-semibold ${
-                              selectedPack === variant._id
-                                ? "text-green-600"
-                                : "text-gray-900"
-                            }`}
-                          >
-                            ₹{variant.salePrice}
-                          </div>
-                          <div className="text-sm text-gray-500 line-through">
-                            ₹{variant.price}
-                          </div>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div
                       className={`relative w-fit border-2 rounded-lg p-4 cursor-pointer transition-all border-gray-300 hover:border-gray-400`}

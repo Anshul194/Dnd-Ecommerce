@@ -106,13 +106,7 @@ const DynamicProductSlider = ({ content }) => {
       : product?.salePrice || product?.price;
     dispatch(
       addToCart({
-        product: {
-          id: product._id,
-          name: product.name,
-          image: product.thumbnail || product.images[0],
-          variant: product?.variants[0]?._id,
-          slug: product.slug,
-        },
+        product: product._id,
         quantity: 1,
         price: price,
         variant: product?.variants[0]?._id,
@@ -138,13 +132,7 @@ const DynamicProductSlider = ({ content }) => {
     try {
       const resultAction = await dispatch(
         setBuyNowProduct({
-          product: {
-            id: productData._id,
-            name: productData.name,
-            image: productData.thumbnail || productData.images[0],
-            variant: productData.variants[0]._id,
-            slug: productData.slug,
-          },
+          product: productData._id,
           quantity: 1,
           price: price.salePrice || price.price,
           variant: productData.variants[0]._id,
