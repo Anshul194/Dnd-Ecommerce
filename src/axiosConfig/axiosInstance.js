@@ -4,7 +4,6 @@ import { getTenantFromURL } from "@/app/utils/getTenantFromURL";
 import axios from "axios";
 
 // API base URL
-
 const axiosInstance = axios.create({
   baseURL: "/api",
   timeout: 100000, // 100 seconds
@@ -14,11 +13,18 @@ const axiosInstance = axios.create({
   },
 });
 
-// Request interceptor
+// Request deduplication - Map of pending requests
+const pendingRequests = new Map();
+
+function getRequestKey(config) {
+  return `${config.method}:${config.url}:${JSON.stringify(config.params || {})}`;
+}
+
+// Request interceptor with deduplication
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Add auth token
     const token = localStorage.getItem("accessToken");
-
     if (token && config.headers) {
       config.headers["Authorization"] = `Bearer ${token}`;
       config.headers["x-access-token"] = token;
@@ -28,6 +34,24 @@ axiosInstance.interceptors.request.use(
         config.headers["x-refresh-token"] = refreshToken;
       }
     }
+
+    // Deduplicate GET requests only
+    if (config.method === 'get') {
+      const requestKey = getRequestKey(config);
+      
+      // If same request is pending, cancel this one
+      if (pendingRequests.has(requestKey)) {
+        const controller = new AbortController();
+        config.signal = controller.signal;
+        controller.abort(); // Cancel this duplicate request
+        console.log('🚫 Blocked duplicate request:', requestKey);
+      } else {
+        // Mark this request as pending
+        pendingRequests.set(requestKey, true);
+        console.log('✅ Allowing request:', requestKey);
+      }
+    }
+
     return config;
   },
   (error) => {
@@ -35,12 +59,24 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor to clean up and handle errors
 axiosInstance.interceptors.response.use(
   (response) => {
+    // Clean up pending request tracker
+    if (response.config.method === 'get') {
+      const requestKey = getRequestKey(response.config);
+      pendingRequests.delete(requestKey);
+      console.log('✅ Request completed:', requestKey);
+    }
     return response;
   },
   async (error) => {
+    // Clean up on error
+    if (error.config?.method === 'get') {
+      const requestKey = getRequestKey(error.config);
+      pendingRequests.delete(requestKey);
+    }
+
     const originalRequest = error.config;
 
     if (

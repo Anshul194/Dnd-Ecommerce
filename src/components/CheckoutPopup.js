@@ -786,10 +786,7 @@ export default function CheckoutPopup() {
         isAddon: true,
       })
     );
-    // Load settings only if not already present to avoid duplicate calls
-    if (!settings || !settings.activeHomepageLayout) {
-      dispatch(fetchSettings());
-    }
+    // Settings are already fetched and cached by ClientLayout - no need to fetch again
   }, []);
 
   // Calculate bill values

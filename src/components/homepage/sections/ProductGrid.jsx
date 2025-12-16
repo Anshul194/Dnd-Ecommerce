@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import ProductCard from "@/app/search/ProductCard";
@@ -10,10 +10,16 @@ const ProductGrid = () => {
   const dispatch = useDispatch();
   const { products, loading } = useSelector((state) => state.product);
 
+  const hasFetchedRef = useRef(false);
+
   useEffect(() => {
-    // Fetch all products on component mount
-    dispatch(fetchProducts({}));
-  }, [dispatch]);
+    // Only fetch if products are not already loaded
+    const productList = products?.products || products || [];
+    if (!hasFetchedRef.current && productList.length === 0) {
+      hasFetchedRef.current = true;
+      dispatch(fetchProducts({}));
+    }
+  }, [dispatch, products]);
 
   // Get products array from the response
   const productList = products?.products || products || [];

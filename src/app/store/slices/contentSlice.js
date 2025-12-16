@@ -20,6 +20,28 @@ export const fetchGroupedContent = createAsyncThunk(
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch content');
     }
+    },
+    {
+      condition: (_, { getState }) => {
+        const state = getState();
+        const now = Date.now();
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+        
+        // Prevent concurrent calls if already loading
+        if (state.content.loading) {
+          return false;
+        }
+        
+        // Prevent API call if cache is valid
+        if (
+          state.content.groupedContent &&
+          state.content.lastFetched &&
+          now - state.content.lastFetched < CACHE_DURATION
+        ) {
+          return false; // Cancel the request
+        }
+        return true; // Proceed with the request
+      }
     }
 );
 
@@ -28,7 +50,8 @@ const contentSlice = createSlice({
     initialState: {
         groupedContent: null,
         loading: false,
-        error: null
+        error: null,
+        lastFetched: null,
     },
     reducers: {},
     extraReducers: (builder) => {
@@ -40,6 +63,7 @@ const contentSlice = createSlice({
             .addCase(fetchGroupedContent.fulfilled, (state, action) => {
                 state.loading = false;
                 state.groupedContent = action.payload;
+                state.lastFetched = Date.now();
             })
             .addCase(fetchGroupedContent.rejected, (state, action) => {
                 state.loading = false;

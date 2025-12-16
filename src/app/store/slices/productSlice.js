@@ -4,7 +4,9 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 
 export const fetchProducts = createAsyncThunk(
   "product/fetchProducts",
-  async (payload) => {
+  async (payload = {}) => {
+    const cacheKey = JSON.stringify(payload);
+    
     const quaryParams = new URLSearchParams();
     payload.page && quaryParams.append("page", payload.page);
     payload.limit && quaryParams.append("limit", payload.limit);
@@ -39,7 +41,29 @@ export const fetchProducts = createAsyncThunk(
     const response = await axiosInstance.get("/product", {
       params: quaryParams,
     });
-    return response.data.products.data;
+    return { data: response.data.products.data, cacheKey };
+  },
+  {
+    condition: (payload = {}, { getState }) => {
+      const state = getState();
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+      
+      // Prevent concurrent calls if already loading
+      if (state.product.loading) {
+        return false;
+      }
+      
+      // Create cache key from payload
+      const cacheKey = JSON.stringify(payload);
+      const cachedData = state.product.productCache?.[cacheKey];
+      
+      // Prevent API call if cache is valid
+      if (cachedData && now - cachedData.timestamp < CACHE_DURATION) {
+        return false; // Cancel the request
+      }
+      return true; // Proceed with the request
+    }
   }
 );
 
@@ -127,6 +151,7 @@ const productSlice = createSlice({
     products: [],
     loading: false,
     error: null,
+    productCache: {},
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -137,7 +162,16 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload;
+        if (action.payload.cacheKey) {
+          // Store in cache
+          state.productCache[action.payload.cacheKey] = {
+            data: action.payload.data,
+            timestamp: Date.now(),
+          };
+          state.products = action.payload.data;
+        } else {
+          state.products = action.payload;
+        }
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;

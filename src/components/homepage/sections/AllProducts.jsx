@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import ProductCard from "@/app/search/ProductCard";
@@ -12,10 +12,16 @@ const AllProducts = () => {
   const { products, loading } = useSelector((state) => state.product);
   const [displayLimit, setDisplayLimit] = useState(12);
 
+  const hasFetchedRef = useRef(false);
+
   useEffect(() => {
-    // Fetch all products without filters
-    dispatch(fetchProducts({}));
-  }, [dispatch]);
+    // Only fetch if products are not already loaded
+    const productList = products?.products || products || [];
+    if (!hasFetchedRef.current && productList.length === 0) {
+      hasFetchedRef.current = true;
+      dispatch(fetchProducts({}));
+    }
+  }, [dispatch, products]);
 
   const handleLoadMore = () => {
     setDisplayLimit((prev) => prev + 12);

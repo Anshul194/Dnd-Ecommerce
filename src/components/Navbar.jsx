@@ -74,7 +74,13 @@ export default function Navbar({ initialCategories = [] }) {
   const pathname = usePathname();
   const router = useRouter();
 
+  const hasInitialized = useRef(false);
+
   const initialData = async () => {
+    // Prevent duplicate calls
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
     // Use categories provided by parent (e.g. ClientLayout) when available
     if (initialCategories && initialCategories.length > 0) {
       setCategories(initialCategories);
@@ -82,7 +88,9 @@ export default function Navbar({ initialCategories = [] }) {
       const res = await fetchCategoryWithSubcategories();
       setCategories(res || []);
     }
-    if (!Array.isArray(products) || products.length === 0) {
+    
+    // Only fetch products if not already in Redux store
+    if (!Array.isArray(reduxProducts) || reduxProducts.length === 0) {
       const payload = {
         page: 1,
         limit: 10,
@@ -92,13 +100,23 @@ export default function Navbar({ initialCategories = [] }) {
       };
       dispatch(fetchProducts(payload));
     }
-    isAuthenticated && dispatch(fetchWishlist());
-    dispatch(fetchBlogs());
+    
+    // Only fetch wishlist if authenticated and not already fetched
+    if (isAuthenticated && (!LikedProducts || LikedProducts.length === 0)) {
+      dispatch(fetchWishlist());
+    }
+    
+    // Only fetch blogs if not already fetched
+    if (!items || items.length === 0) {
+      dispatch(fetchBlogs());
+    }
   };
 
   useEffect(() => {
-    initialData();
-  }, []);
+    if (!hasInitialized.current) {
+      initialData();
+    }
+  }, []); // Only run once on mount
 
   useEffect(() => {
     setIsClient(true);

@@ -4,9 +4,31 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 
 export const fetchCategories = createAsyncThunk(
   "category/fetchCategories",
-  async () => {
+  async (_, { getState }) => {
     const response = await axiosInstance.get("/category");
     return response.data.data.body.data.result;
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+      
+      // Prevent concurrent calls if already loading
+      if (state.category.loading) {
+        return false;
+      }
+      
+      // Prevent API call if cache is valid
+      if (
+        state.category.categories?.length > 0 &&
+        state.category.lastFetched &&
+        now - state.category.lastFetched < CACHE_DURATION
+      ) {
+        return false; // Cancel the request
+      }
+      return true; // Proceed with the request
+    }
   }
 );
 
@@ -50,6 +72,7 @@ const categorySlice = createSlice({
     categories: [],
     loading: false,
     error: null,
+    lastFetched: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -61,6 +84,7 @@ const categorySlice = createSlice({
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.loading = false;
         state.categories = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.loading = false;

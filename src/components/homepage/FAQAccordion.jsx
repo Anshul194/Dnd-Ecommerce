@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import smile from "../../../public/images/smile.png";
 import Image from "next/image";
@@ -10,14 +10,20 @@ import AnimatedGradientBorder from "../ui/AnimatedGradientBorder";
 
 export default function FAQAccordion({ content }) {
   const [openIndex, setOpenIndex] = useState(null);
-  const { faqs, loading, error } = useSelector((state) => state.faq);
+  const { faqs, loading, error, lastFetched } = useSelector((state) => state.faq);
   const dispatch = useDispatch();
 
+  const hasFetchedRef = useRef(false);
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
   useEffect(() => {
-    if (!faqs || faqs.length === 0) {
+    const isCacheValid = lastFetched && (Date.now() - lastFetched < CACHE_DURATION);
+    
+    if (!hasFetchedRef.current && (!faqs || faqs.length === 0 || !isCacheValid)) {
+      hasFetchedRef.current = true;
       dispatch(fetchFaqs());
     }
-  }, [dispatch, faqs]);
+  }, [dispatch, faqs, lastFetched]);
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);

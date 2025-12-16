@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import AnimatedGradientBorder from "./ui/AnimatedGradientBorder";
 
@@ -117,8 +117,11 @@ export default function BlogSection({ content }) {
     </div>
   );
 
+  const hasFetchedRef = useRef(false);
+
   useEffect(() => {
-    if (!items || items.length === 0) {
+    if (!hasFetchedRef.current && (!items || items.length === 0)) {
+      hasFetchedRef.current = true;
       dispatch(fetchBlogs());
     }
   }, [dispatch, items]);

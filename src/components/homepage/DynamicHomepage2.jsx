@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { HeroSlider } from "../HeroSlider";
 import { CustomerFavorites } from "../CustomerFavorites";
 import { TimerBanner } from "../TimerBanner";
@@ -17,20 +17,27 @@ import ValidatedSection2 from "./ValidatedSection2";
 import AllProducts from "./sections/AllProducts";
 
 function DynamicHomepage2() {
-  const { groupedContent, loading, error } = useSelector(
+  const { groupedContent, loading, error, lastFetched } = useSelector(
     (state) => state.content
   );
   const dispatch = useDispatch();
+  const hasFetchedRef = useRef(false);
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   useEffect(() => {
+    const isCacheValid = lastFetched && (Date.now() - lastFetched < CACHE_DURATION);
+    
     if (
-      !groupedContent ||
-      !groupedContent.sections ||
-      Object.keys(groupedContent.sections).length === 0
+      !hasFetchedRef.current &&
+      (!groupedContent ||
+        !groupedContent.sections ||
+        Object.keys(groupedContent.sections).length === 0 ||
+        !isCacheValid)
     ) {
+      hasFetchedRef.current = true;
       dispatch(fetchGroupedContent());
     }
-  }, [dispatch]);
+  }, [dispatch, groupedContent, lastFetched]);
 
   if (loading) {
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect } from "react";
+import React, { use, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   Calendar,
@@ -28,6 +28,7 @@ export default function BlogDetailPage() {
   const dispatch = useDispatch();
   const params = useParams();
   const blogId = params.id;
+  const hasFetchedRef = useRef(false);
   const relatedPosts = [
     {
       id: 1,
@@ -70,10 +71,12 @@ export default function BlogDetailPage() {
 
   useEffect(() => {
     getData();
-    if (!items.length > 0) {
+    if (!hasFetchedRef.current && (!items || items.length === 0)) {
+      hasFetchedRef.current = true;
       dispatch(fetchBlogs());
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount - blogId is from params and won't change
 
   return (
     <div className="min-h-screen bg-white text-gray-900">

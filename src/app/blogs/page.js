@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogs } from "../store/slices/blogSclie";
 import Image from "next/image";
@@ -8,12 +8,14 @@ import Image from "next/image";
 export default function BlogSection() {
   const { items, loading } = useSelector((state) => state.blogs);
   const dispatch = useDispatch();
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    if (!items.length > 0) {
+    if (!hasFetchedRef.current && (!items || items.length === 0)) {
+      hasFetchedRef.current = true;
       dispatch(fetchBlogs());
     }
-  }, []);
+  }, [dispatch, items]);
   return (
     <div className="py-10 px-5">
       <div className="max-w-7xl mx-auto">

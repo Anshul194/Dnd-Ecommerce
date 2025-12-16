@@ -13,7 +13,7 @@ const withBundleAnalyzer = process.env.ANALYZE === 'true'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Performance optimizations
-  reactStrictMode: true,
+  reactStrictMode: false, // Disabled to prevent double API calls in dev mode
   compress: true,
 
   // Experimental optimizations

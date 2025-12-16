@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGroupedContent } from "@/app/store/slices/contentSlice";
 
@@ -29,20 +29,27 @@ import { LoadingSpinner, LoadingSection } from "../common/Loading";
 
 const DynamicHomepage = () => {
   const dispatch = useDispatch();
-  const { groupedContent, loading, error } = useSelector(
+  const { groupedContent, loading, error, lastFetched } = useSelector(
     (state) => state.content
   );
+  const hasFetchedRef = useRef(false);
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   useEffect(() => {
-    // Only fetch if we don't already have grouped content
+    const isCacheValid = lastFetched && (Date.now() - lastFetched < CACHE_DURATION);
+    
+    // Only fetch if we don't already have grouped content or cache expired
     if (
-      !groupedContent ||
-      !groupedContent.sections ||
-      Object.keys(groupedContent.sections).length === 0
+      !hasFetchedRef.current &&
+      (!groupedContent ||
+        !groupedContent.sections ||
+        Object.keys(groupedContent.sections).length === 0 ||
+        !isCacheValid)
     ) {
+      hasFetchedRef.current = true;
       dispatch(fetchGroupedContent());
     }
-  }, [dispatch]);
+  }, [dispatch, groupedContent, lastFetched]);
 
   if (loading) {
     return (

@@ -12,6 +12,29 @@ export const fetchSettings = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+      
+      // Prevent concurrent calls if already loading
+      if (state.setting.loading) {
+        return false;
+      }
+      
+      // Prevent API call if cache is valid
+      if (
+        state.setting.settings &&
+        Object.keys(state.setting.settings).length > 0 &&
+        state.setting.lastFetched &&
+        now - state.setting.lastFetched < CACHE_DURATION
+      ) {
+        return false; // Cancel the request
+      }
+      return true; // Proceed with the request
+    }
   }
 );
 
@@ -50,12 +73,14 @@ const settingSlice = createSlice({
     },
     loading: false,
     error: null,
+    lastFetched: null,
   },
   reducers: {
     clearSettings: (state) => {
       state.settings = {};
       state.loading = false;
       state.error = null;
+      state.lastFetched = null;
     },
   },
   extraReducers: (builder) => {
@@ -68,6 +93,7 @@ const settingSlice = createSlice({
       .addCase(fetchSettings.fulfilled, (state, action) => {
         state.loading = false;
         state.settings = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchSettings.rejected, (state, action) => {
         state.loading = false;

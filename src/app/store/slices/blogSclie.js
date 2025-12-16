@@ -11,6 +11,28 @@ export const fetchBlogs = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+      
+      // Prevent concurrent calls if already loading
+      if (state.blogs.loading) {
+        return false;
+      }
+      
+      // Prevent API call if cache is valid
+      if (
+        state.blogs.items?.length > 0 &&
+        state.blogs.lastFetched &&
+        now - state.blogs.lastFetched < CACHE_DURATION
+      ) {
+        return false; // Cancel the request
+      }
+      return true; // Proceed with the request
+    }
   }
 );
 
@@ -33,6 +55,7 @@ const blogSlice = createSlice({
     loading: false,
     error: null,
     selectedBlog: null,
+    lastFetched: null,
   },
   reducers: {
     setSelectedBlog: (state, action) => {
@@ -51,6 +74,7 @@ const blogSlice = createSlice({
       .addCase(fetchBlogs.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchBlogs.rejected, (state, action) => {
         state.loading = false;

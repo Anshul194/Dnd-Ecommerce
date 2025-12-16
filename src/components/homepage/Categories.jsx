@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import leaf from "../../../public/images/leaf.png";
 import Image from "next/image";
 import heart from "../../../public/images/heart.png";
@@ -17,16 +17,22 @@ import { useRouter } from "next/navigation";
 import AnimatedGradientBorder from "@/components/ui/AnimatedGradientBorder";
 
 const Categories = ({ dynamicContent = null }) => {
-  const { categories } = useSelector((state) => state.category);
+  const { categories, lastFetched } = useSelector((state) => state.category);
   const dispatch = useDispatch();
   const router = useRouter();
 
+  const hasFetched = useRef(false);
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
   useEffect(() => {
-    // Fetch categories or perform any necessary actions
-    if (!categories || categories.length === 0) {
+    const isCacheValid = lastFetched && (Date.now() - lastFetched < CACHE_DURATION);
+    
+    // Fetch categories only once if not already available or cache expired
+    if (!hasFetched.current && (!categories || categories.length === 0 || !isCacheValid)) {
+      hasFetched.current = true;
       dispatch(fetchCategories());
     }
-  }, []);
+  }, [dispatch, categories, lastFetched]);
 
   return (
     <>
