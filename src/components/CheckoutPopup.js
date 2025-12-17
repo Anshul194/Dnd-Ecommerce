@@ -559,10 +559,10 @@ export default function CheckoutPopup() {
   };
 
   useEffect(() => {
-    if (formData.phone.length === 10) {
+    if (checkoutOpen && formData.phone.length === 10) {
       dispatch(sendOtp(formData.phone));
     }
-  }, [formData.phone, dispatch]);
+  }, [formData.phone, dispatch, checkoutOpen]);
 
   useEffect(() => {
     if (otp.every((digit) => digit !== "")) {
