@@ -2,6 +2,8 @@ import { Gift } from "lucide-react";
 import Variant2 from "./Variant2";
 import Variant1 from "./Variant1";
 import Variant3 from "./Variant3";
+import { useEffect, useState } from "react";
+import axiosInstance from "@/axiosConfig/axiosInstance";
 
 export function Coupons({
   component,
@@ -22,6 +24,9 @@ export function Coupons({
   isPreviewMode?: boolean;
   COMPONENT_SPANS: any;
 }) {
+  const [coupons, setCoupons] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const couponSettings = {
     ...{
       itemsPerView: 2,
@@ -33,51 +38,60 @@ export function Coupons({
     variant: component.variant || settings[component.id]?.variant || "slider",
   };
 
-  // Dummy coupon data
-  const dummyCoupons = [
-    {
-      _id: "1",
-      code: "SAVE20",
-      type: "percent",
-      value: 20,
-      description: "Get 20% off on your order",
-      minCartValue: 500,
-    },
-    {
-      _id: "2",
-      code: "FLAT100",
-      type: "flat",
-      value: 100,
-      description: "Flat ₹100 off on orders above ₹1000",
-      minCartValue: 1000,
-    },
-    {
-      _id: "3",
-      code: "WELCOME15",
-      type: "percent",
-      value: 15,
-      description: "Welcome offer for new customers",
-      minCartValue: 300,
-    },
-    {
-      _id: "4",
-      code: "MEGA50",
-      type: "flat",
-      value: 50,
-      description: "Mega sale offer",
-      minCartValue: 750,
-    },
-  ];
+  // Fetch coupons from API
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get("/coupon", {
+          params: {
+            status: "active", // Only fetch active coupons
+          },
+        });
 
-  const coupons = dummyCoupons;
+        console.log("Fetched coupons:", response);
+        
+        if (response.data) {
+          setCoupons(response.data.coupons?.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching coupons:", error);
+        // Keep empty array on error
+        setCoupons([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCoupons();
+  }, []);
 
   const renderVariant = () => {
+    // Show loading state
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        </div>
+      );
+    }
+
+    // Show empty state if no coupons
+    if (!coupons || coupons.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Gift size={48} className="mx-auto text-gray-300 mb-3" />
+          <p className="text-gray-500">No coupons available at the moment</p>
+        </div>
+      );
+    }
+
     switch (couponSettings.variant) {
       case "grid":
         return <Variant1 coupons={coupons} couponSettings={couponSettings} />;
-      case "compact":
-        return <Variant2 coupons={coupons} couponSettings={couponSettings} />;
       case "slider":
+        return <Variant2 coupons={coupons} couponSettings={couponSettings} />;
+      case "compact":
         return <Variant3 coupons={coupons} />;
       default:
         return <Variant1 coupons={coupons} couponSettings={couponSettings} />;

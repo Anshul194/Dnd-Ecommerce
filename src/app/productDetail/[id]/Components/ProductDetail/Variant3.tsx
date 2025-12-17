@@ -221,7 +221,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6w-full lg:w-1/2">
         {/* Title & Rating */}
         <h1 className="text-3xl font-bold text-gray-900 mb-3">
           {productData.name}

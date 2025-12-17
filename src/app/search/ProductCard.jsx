@@ -43,12 +43,12 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     Array.isArray(product.wishlist) &&
     product.wishlist.includes(userId);
 
-  useEffect(() => {
-    // Track product view on mount
+  const handleProductClick = () => {
+    // Track product view only when clicked
     if (product?._id) {
       trackView(product._id);
     }
-  }, [product?._id]);
+  };
 
   const handleBuyNow = async (e) => {
     e.stopPropagation();
@@ -127,6 +127,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         href={`/productDetail/${product.slug}`}
         className="group cursor-pointer hover:shadow-xl action:scale-90 transition-all w-full h-full"
         prefetch
+        onClick={handleProductClick}
       >
         <div
           className={`${

@@ -77,7 +77,7 @@ function Variant1({ coupons, couponSettings }) {
                 return (
                   <div
                     key={coupon._id}
-                    className={`flex-shrink-0 w-1/2 relative cursor-pointer transition-all duration-300 ${
+                    className={`flex-shrink-0 w-1/2  max-w-[300px] relative cursor-pointer transition-all duration-300 ${
                       selectedCoupon?._id === coupon._id
                         ? "scale-105"
                         : "hover:scale-102"

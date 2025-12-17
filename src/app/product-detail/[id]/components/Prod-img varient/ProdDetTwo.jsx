@@ -208,8 +208,8 @@ function ProdDetTwo() {
           {/* Product Info - Right Side */}
           {/* variant2 */}
 
-          <div className="lg:col-span-6">
-            <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-2xl p-6 shadow-sm mb-6 w-full lg:w-1/2">
               {/* Title & Rating */}
               <h1 className="text-3xl font-bold text-gray-900 mb-3">
                 {productData.name}
