@@ -218,9 +218,9 @@ const DynamicHomepage = () => {
       {allSections.map(renderSection)}
 
       {/* All Products Section */}
-      <div className="max-w-7xl mx-auto px-4">
+      {/* <div className="max-w-7xl mx-auto px-4">
         <AllProducts />
-      </div>
+      </div> */}
     </main>
   );
 };
