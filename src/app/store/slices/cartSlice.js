@@ -48,7 +48,7 @@ function mapServerCartToLocal(serverCart) {
       it.variant && (it.variant._id || it.variant)
         ? it.variant._id || it.variant
         : null;
-    // console.log("product details : ", it.product);
+    console.log("Mapping cart item - product with variants:", it.product);
     const id = `${productId}:${variantId || ""}`;
     return {
       id,

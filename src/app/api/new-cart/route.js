@@ -8,13 +8,27 @@ import { verifyTokenAndUser } from "../../middleware/commonAuth.js";
 async function findOrCreateCart({ conn, user, guestId }) {
   if (!conn) throw new Error("Connection is required");
   const Cart = conn.models.Cart || conn.model("Cart", cartSchema);
+  const Variant = conn.models.Variant || conn.model("Variant", (await import("../../lib/models/Variant.js")).variantSchema);
+  
   let cart = null;
   if (user && user._id) {
     cart = await Cart.findOne({ user: user._id })
       .populate("items.product")
-      .populate("items.variant");
+      .populate("items.variant")
+      .lean(); // Convert to plain JS object
     if (!cart) {
       cart = await Cart.create({ user: user._id, items: [], total: 0 });
+      return cart;
+    }
+    
+    // Manually populate variants for each product
+    if (cart && cart.items) {
+      for (let item of cart.items) {
+        if (item.product && item.product._id) {
+          const variants = await Variant.find({ productId: item.product._id }).lean();
+          item.product.variants = variants;
+        }
+      }
     }
     return cart;
   }
@@ -26,7 +40,8 @@ async function findOrCreateCart({ conn, user, guestId }) {
   }
   cart = await Cart.findOne({ userIsGestId: guestId })
     .populate("items.product")
-    .populate("items.variant");
+    .populate("items.variant")
+    .lean(); // Convert to plain JS object
   if (!cart) {
     cart = await Cart.create({
       user: null,
@@ -35,6 +50,17 @@ async function findOrCreateCart({ conn, user, guestId }) {
       items: [],
       total: 0,
     });
+    return cart;
+  }
+  
+  // Manually populate variants for each product
+  if (cart && cart.items) {
+    for (let item of cart.items) {
+      if (item.product && item.product._id) {
+        const variants = await Variant.find({ productId: item.product._id }).lean();
+        item.product.variants = variants;
+      }
+    }
   }
   return cart;
 }

@@ -176,8 +176,18 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    strictPopulate: false
   }
 );
+
+// Virtual field to populate variants
+productSchema.virtual("variants", {
+  ref: "Variant",
+  localField: "_id",
+  foreignField: "productId"
+});
 
 productSchema.pre("save", function (next) {
   if (this.isModified("name")) {

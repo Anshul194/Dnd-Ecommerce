@@ -102,16 +102,25 @@ export const POST = async function (request) {
     }
     cart.total = cart.items.reduce((s, it) => s + it.price * it.quantity, 0);
     await cart.save();
-    // populate product and variant details before returning
-    try {
-      await cart.populate([
-        { path: "items.product" },
-        { path: "items.variant" },
-      ]);
-    } catch (e) {
-      // ignore populate errors, return cart as-is
+    
+    // Convert to plain object and populate product and variant details
+    const populatedCart = await Cart.findById(cart._id)
+      .populate("items.product")
+      .populate("items.variant")
+      .lean();
+      
+    // Manually populate variants for each product
+    const Variant = conn.models.Variant || conn.model("Variant", (await import("../../../lib/models/Variant.js")).variantSchema);
+    if (populatedCart && populatedCart.items) {
+      for (let item of populatedCart.items) {
+        if (item.product && item.product._id) {
+          const variants = await Variant.find({ productId: item.product._id }).lean();
+          item.product.variants = variants;
+        }
+      }
     }
-    return NextResponse.json({ success: true, message: "Item added", cart });
+    
+    return NextResponse.json({ success: true, message: "Item added", cart: populatedCart });
   } catch (err) {
     return NextResponse.json(
       { success: false, message: err.message },
@@ -165,16 +174,25 @@ export const PUT = async function (request) {
     item.quantity = quantity;
     cart.total = cart.items.reduce((s, it) => s + it.price * it.quantity, 0);
     await cart.save();
-    // populate product and variant details before returning
-    try {
-      await cart.populate([
-        { path: "items.product" },
-        { path: "items.variant" },
-      ]);
-    } catch (e) {
-      // ignore populate errors
+    
+    // Convert to plain object and populate product and variant details
+    const populatedCart = await Cart.findById(cart._id)
+      .populate("items.product")
+      .populate("items.variant")
+      .lean();
+      
+    // Manually populate variants for each product
+    const Variant = conn.models.Variant || conn.model("Variant", (await import("../../../lib/models/Variant.js")).variantSchema);
+    if (populatedCart && populatedCart.items) {
+      for (let item of populatedCart.items) {
+        if (item.product && item.product._id) {
+          const variants = await Variant.find({ productId: item.product._id }).lean();
+          item.product.variants = variants;
+        }
+      }
     }
-    return NextResponse.json({ success: true, message: "Item updated", cart });
+    
+    return NextResponse.json({ success: true, message: "Item updated", cart: populatedCart });
   } catch (err) {
     return NextResponse.json(
       { success: false, message: err.message },
@@ -219,16 +237,25 @@ export const DELETE = async function (request) {
     );
     cart.total = cart.items.reduce((s, it) => s + it.price * it.quantity, 0);
     await cart.save();
-    // populate product and variant details before returning
-    try {
-      await cart.populate([
-        { path: "items.product" },
-        { path: "items.variant" },
-      ]);
-    } catch (e) {
-      // ignore populate errors
+    
+    // Convert to plain object and populate product and variant details
+    const populatedCart = await Cart.findById(cart._id)
+      .populate("items.product")
+      .populate("items.variant")
+      .lean();
+      
+    // Manually populate variants for each product
+    const Variant = conn.models.Variant || conn.model("Variant", (await import("../../../lib/models/Variant.js")).variantSchema);
+    if (populatedCart && populatedCart.items) {
+      for (let item of populatedCart.items) {
+        if (item.product && item.product._id) {
+          const variants = await Variant.find({ productId: item.product._id }).lean();
+          item.product.variants = variants;
+        }
+      }
     }
-    return NextResponse.json({ success: true, message: "Item removed", cart });
+    
+    return NextResponse.json({ success: true, message: "Item removed", cart: populatedCart });
   } catch (err) {
     return NextResponse.json(
       { success: false, message: err.message },

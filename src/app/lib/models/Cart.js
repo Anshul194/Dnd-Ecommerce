@@ -100,6 +100,7 @@ export const cartSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    strictPopulate: false
   }
 );
 

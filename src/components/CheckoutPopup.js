@@ -794,6 +794,20 @@ export default function CheckoutPopup() {
     ? buyNowProduct.price * buyNowProduct.quantity
     : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
+
+    console.log("Items Total2:", cartItems);
+
+  // Calculate product discount (original price - sale price)
+  const productDiscount = buyNowProduct
+    ? 0 // For buy now, we'll need the original price if available
+    : cartItems.reduce((acc, item) => {
+        // Assuming item has originalPrice or we calculate from product data
+        const originalPrice = item.product?.variants?.find(v => v._id == item.variant)?.price || item.price;
+        const salePrice = item.product?.variants?.find(v => v._id == item.variant)?.salePrice || item.price;
+        const itemDiscount = originalPrice > salePrice ? (originalPrice - salePrice) * item.quantity : 0;
+        return acc + itemDiscount;
+      }, 0);
+
   const shipping = calculateShipping();
   const couponDiscount = selectedCoupon?.discount || 0;
 
@@ -1845,6 +1859,7 @@ export default function CheckoutPopup() {
             </div>
           )}
 
+
           {isAuthenticated && (
             <div className="space-y-4 rounded-xl bg-white py-3 px-4">
               <h3 className="font-semibold mb-3">Order Summary</h3>
@@ -1853,6 +1868,12 @@ export default function CheckoutPopup() {
                   <h2>Items ({buyNowProduct ? 1 : cartItems.length})</h2>
                   <h2>₹{itemsTotal}</h2>
                 </div>
+               
+                  <div className="flex justify-between text-sm">
+                    <h2>Product Discount</h2>
+                    <h2 className="font-semibold text-green-600">-₹{productDiscount.toFixed(2)}</h2>
+                  </div>
+               
                 <div className="flex justify-between text-sm">
                   <h2>Shipping</h2>
                   {shipping === 0 ? (
