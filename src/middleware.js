@@ -1,9 +1,28 @@
 import { NextResponse } from 'next/server';
 
 export function middleware(request) {
+  const { pathname } = request.nextUrl;
+  const origin = request.headers.get('origin');
+
+  // Handle preflight OPTIONS requests
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant, X-Tenant, x-access-token, x-refresh-token, Accept',
+        'Access-Control-Max-Age': '86400',
+      },
+    });
+  }
+
   const response = NextResponse.next();
 
-  const { pathname } = request.nextUrl;
+  // Add CORS headers - Allow all origins
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-tenant, X-Tenant, x-access-token, x-refresh-token, Accept');
 
   // Add cache headers for static assets
   if (
