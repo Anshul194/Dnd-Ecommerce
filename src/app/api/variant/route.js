@@ -57,10 +57,40 @@ export const POST = async (req) => {
         body[key] = value;
       }
     }
+    
+    // Ensure attributes is always an array
+    if (!body.attributes || !Array.isArray(body.attributes)) {
+      body.attributes = [];
+    }
+    
+    // Convert numeric fields from strings to numbers
+    if (body.price !== undefined && body.price !== null && body.price !== '') {
+      body.price = Number(body.price);
+      if (isNaN(body.price)) {
+        return toNextResponse({ success: false, message: 'Invalid price value' }, 400);
+      }
+    }
+    if (body.salePrice !== undefined && body.salePrice !== null && body.salePrice !== '') {
+      body.salePrice = Number(body.salePrice);
+      if (isNaN(body.salePrice)) {
+        return toNextResponse({ success: false, message: 'Invalid salePrice value' }, 400);
+      }
+    }
+    if (body.stock !== undefined && body.stock !== null && body.stock !== '') {
+      body.stock = Number(body.stock);
+      if (isNaN(body.stock)) {
+        return toNextResponse({ success: false, message: 'Invalid stock value' }, 400);
+      }
+    }
+    
+    // Log the parsed body for debugging
+    console.log('Parsed variant body:', JSON.stringify(body, null, 2));
+    
     const result = await createVariant({ body }, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
-    return toNextResponse({ success: false, message: error.message }, 500);
+    console.error('Variant API Error:', error);
+    return toNextResponse({ success: false, message: error.message || 'Internal server error' }, 500);
   }
 };
 

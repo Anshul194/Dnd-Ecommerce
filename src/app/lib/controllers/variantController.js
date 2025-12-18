@@ -2,13 +2,83 @@ import VariantService from '../services/VariantService.js';
 
 export async function createVariant(req, conn) {
   try {
-    const { productId, attributes } = req.body;
-    if (!productId || !Array.isArray(attributes)) {
+    const { productId, attributes, title, sku, price, stock } = req.body;
+    console.log('Creating variant for body=======:', JSON.stringify(req.body, null, 2));
+    
+    // Validate required fields
+    if (!productId || (typeof productId === 'string' && !productId.trim())) {
       return {
         status: 400,
         body: {
           success: false,
-          message: 'productId and attributes are required',
+          message: 'productId is required',
+          data: null
+        }
+      };
+    }
+    
+    if (!Array.isArray(attributes)) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'attributes must be an array',
+          data: null
+        }
+      };
+    }
+    
+    if (attributes.length === 0) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'At least one attribute is required',
+          data: null
+        }
+      };
+    }
+    
+    // Validate other required fields
+    if (!title || (typeof title === 'string' && !title.trim())) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'title is required',
+          data: null
+        }
+      };
+    }
+    
+    if (!sku || (typeof sku === 'string' && !sku.trim())) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'sku is required',
+          data: null
+        }
+      };
+    }
+    
+    if (!price || isNaN(Number(price)) || Number(price) <= 0) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'Valid price is required',
+          data: null
+        }
+      };
+    }
+    
+    if (stock === undefined || stock === null || isNaN(Number(stock)) || Number(stock) < 0) {
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: 'Valid stock is required',
           data: null
         }
       };
@@ -30,6 +100,17 @@ export async function createVariant(req, conn) {
     const allowedAttributeIds = (product.attributeSet || []).map(a => String(a.attributeId));
     // Validate each attributeId in the variant
     for (const attr of attributes) {
+      if (!attr || !attr.attributeId || !attr.value) {
+        return {
+          status: 400,
+          body: {
+            success: false,
+            message: 'Each attribute must have both attributeId and value',
+            data: null
+          }
+        };
+      }
+      
       if (!allowedAttributeIds.includes(String(attr.attributeId))) {
         return {
           status: 400,
@@ -53,11 +134,12 @@ export async function createVariant(req, conn) {
       }
     };
   } catch (err) {
+    console.error('Create Variant Error:', err);
     return {
       status: 500,
       body: {
         success: false,
-        message: 'Server error',
+        message: err.message || 'Server error',
         data: null
       }
     };
