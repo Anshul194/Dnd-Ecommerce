@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
 import { X, Plus, Minus } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -9,6 +9,7 @@ import {
   removeItemFromCart,
   toggleCart,
   updateCartItemQuantity,
+  closeCart,
 } from "@/app/store/slices/cartSlice";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,16 @@ const CartSidebar = () => {
   const route = useRouter();
   const { products } = useSelector((state) => state.product);
   const [SelectedProduct, setSelectedProduct] = useState(null);
+  const hasClosedRef = useRef(false);
   const shipping = 65;
+
+  // Close cart immediately on mount using useLayoutEffect (runs synchronously before paint)
+  useLayoutEffect(() => {
+    if (!hasClosedRef.current) {
+      dispatch(closeCart());
+      hasClosedRef.current = true;
+    }
+  }, [dispatch]);
 
   // //console.log("cart is open is : ", isCartOpen);
 
@@ -88,14 +98,22 @@ const CartSidebar = () => {
   }, [isCartOpen, dispatch]);
 
   useEffect(() => {
+    // Ensure cart is closed on mount (safety check)
+    // Only close if we haven't already closed it via useLayoutEffect
+    if (!hasClosedRef.current) {
+      dispatch(closeCart());
+      hasClosedRef.current = true;
+    }
+    
     dispatch(
       fetchProducts({
         isAddon: true,
       })
     );
-  }, []);
+  }, [dispatch]);
 
-  if (!loading && !isCartOpen) {
+  // Only show cart if it's explicitly open, regardless of loading state
+  if (!isCartOpen) {
     return null;
   }
 

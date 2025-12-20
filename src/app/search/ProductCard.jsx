@@ -8,6 +8,7 @@ import {
   getCartItems,
   setBuyNowProduct,
   toggleCart,
+  closeCart,
 } from "../store/slices/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
@@ -54,6 +55,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
   const handleBuyNow = async (e) => {
     e.stopPropagation();
     e.preventDefault();
+    // Ensure cart sidebar is closed immediately - before any operations
+    dispatch(closeCart());
     // if (!isAuthenticated) {
     //   setAuthModalOpen(true);
     //   return;
@@ -91,10 +94,13 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         );
         return;
       }
-      await dispatch(getCartItems());
+      // Skip getCartItems for Buy Now - we use buyNowProduct which is separate
+      // await dispatch(getCartItems());
       setOverlayProduct(null);
+      // Open checkout popup immediately
+      dispatch(setCheckoutOpen());
+      // Navigate to checkout-popup page
       router.push("/checkout-popup");
-      // dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
     }
