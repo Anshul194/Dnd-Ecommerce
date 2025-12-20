@@ -50,8 +50,8 @@ export default function RenderSliderVariant() {
       );
       console.log("frequently purchased products ====> ", res);
       if (res?.meta?.requestStatus === "fulfilled") {
-        const prods = res?.payload?.products || [];
-        setProducts(prods);
+        const prods = res?.payload?.products || res?.payload || [];
+        setProducts(Array.isArray(prods) ? prods : []);
         if (userId) {
           const initial = new Set<string>(
             prods
@@ -64,10 +64,14 @@ export default function RenderSliderVariant() {
           setWishlistedIds(initial);
         }
       } else {
-        console.error("Failed to fetch frequently purchased products", res);
+        // Silently handle error - don't break the page
+        console.warn("Failed to fetch frequently purchased products", res?.error || res);
+        setProducts([]); // Set empty array to prevent rendering issues
       }
     } catch (err) {
-      console.error("fetchProducts error", err);
+      // Silently handle error - don't break the page
+      console.warn("fetchProducts error", err);
+      setProducts([]); // Set empty array to prevent rendering issues
     }
   };
 
@@ -243,7 +247,7 @@ export default function RenderSliderVariant() {
           aria-label="Frequently purchased products"
         >
           <div className="flex gap-3 pb-4 max-w-full">
-            {products?.length > 0 &&
+            {products?.length > 0 ? (
               products.map((product) => {
                 if (product._id === selectedProducts?._id) return null;
                 const imgSrc =
@@ -332,7 +336,12 @@ export default function RenderSliderVariant() {
                     </Link>
                   </div>
                 );
-              })}
+              })
+            ) : (
+              <div className="w-full text-center py-8 text-gray-500">
+                <p>No frequently purchased products available at the moment.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

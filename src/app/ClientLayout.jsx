@@ -24,6 +24,29 @@ export default function ClientLayout({ children }) {
   // Always call hooks at top level
   // useTokenRefresh();
 
+  // Suppress canceled errors globally for this component
+  useEffect(() => {
+    const handleUnhandledRejection = (event) => {
+      const error = event.reason;
+      const isCanceled = 
+        error?.name === 'CanceledError' ||
+        error?.code === 'ERR_CANCELED' ||
+        error?.code === 'ECONNABORTED' ||
+        error?.message === 'canceled' ||
+        (error?.message && typeof error.message === 'string' && error.message.toLowerCase().includes('canceled')) ||
+        (error?.config && error.config.signal && error.config.signal.aborted);
+      
+      if (isCanceled) {
+        event.preventDefault(); // Prevent Next.js from logging the error
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
@@ -37,18 +60,41 @@ export default function ClientLayout({ children }) {
     }
 
     // Fetch categories once and pass to Navbar
+    // Use AbortController to properly handle request cancellation
+    const abortController = new AbortController();
     let mounted = true;
-    (async () => {
+    
+    // Wrap in promise that suppresses canceled errors
+    const fetchCategories = async () => {
       try {
-        const res = await fetchCategoryWithSubcategories();
-        if (mounted && res) setCategories(res || []);
+        const res = await fetchCategoryWithSubcategories(abortController.signal);
+        // Only set categories if component is still mounted and response is valid
+        if (mounted && res && !res.canceled && Array.isArray(res)) {
+          setCategories(res);
+        }
       } catch (err) {
-        // console.error("Error loading categories in ClientLayout:", err);
+        // This catch should rarely be hit since fetchCategoryWithSubcategories
+        // now suppresses canceled errors, but handle real errors just in case
+        const isCanceled = 
+          err.name === 'CanceledError' ||
+          err.code === 'ERR_CANCELED' ||
+          err.message === 'canceled' ||
+          (err.message && err.message.toLowerCase().includes('canceled'));
+        
+        if (!isCanceled) {
+          console.warn("Error loading categories in ClientLayout:", err);
+        }
       }
-    })();
+    };
+    
+    // Call and add catch to prevent unhandled rejection
+    fetchCategories().catch(() => {
+      // Silently ignore - errors are already handled in fetchCategories
+    });
 
     return () => {
       mounted = false;
+      abortController.abort(); // Cancel the request when component unmounts
     };
   }, []);
 

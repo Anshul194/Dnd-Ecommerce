@@ -13,6 +13,7 @@ import {
   setBuyNowProduct,
   toggleCart,
 } from "@/app/store/slices/cartSlice";
+import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
 import { toast } from "react-toastify";
 import ProductCard from "@/app/search/ProductCard";
@@ -94,7 +95,7 @@ const DynamicProductSlider = ({ content }) => {
 
 
 
-  const handleAddToCart = (e, product) => {
+  const handleAddToCart = async (e, product) => {
     e.stopPropagation();
     // if (!isAuthenticated) {
     //   setShowAuthModal(true);
@@ -104,21 +105,40 @@ const DynamicProductSlider = ({ content }) => {
     const price = product?.variants[0]
       ? product?.variants[0]?.salePrice || product?.variants[0]?.price
       : product?.salePrice || product?.price;
-    dispatch(
-      addToCart({
-        product: product._id,
-        quantity: 1,
-        price: price,
-        variant: product?.variants[0]?._id,
-      })
-    );
-    dispatch(toggleCart());
-
-    // track
+    
     try {
-      trackAddToCart(product._id);
-    } catch (err) {
-      // non-blocking
+      const resultAction = await dispatch(
+        addToCart({
+          product: product._id,
+          quantity: 1,
+          price: price,
+          variant: product?.variants[0]?._id,
+        })
+      );
+      
+      // Don't immediately call getCartItems() - it can overwrite the cart if server hasn't synced
+      // The addToCart action already updates the Redux state and localStorage
+      // Only refresh cart from server after a delay to allow server to sync
+      if (!resultAction.error) {
+        setTimeout(async () => {
+          try {
+            await dispatch(getCartItems());
+          } catch (err) {
+            // Silently fail - cart is already updated locally
+          }
+        }, 500); // 500ms delay to allow server to process
+      }
+      
+      dispatch(toggleCart());
+
+      // track
+      try {
+        trackAddToCart(product._id);
+      } catch (err) {
+        // non-blocking
+      }
+    } catch (error) {
+      console.warn("Add to cart error:", error);
     }
   };
 
@@ -130,9 +150,23 @@ const DynamicProductSlider = ({ content }) => {
     // }
     const price = productData.variants[0];
     try {
+      // Ensure image has proper structure
+      const productImage = productData.thumbnail || productData.images?.[0];
+      const imageObj = productImage 
+        ? (typeof productImage === 'string' 
+            ? { url: productImage, alt: productData.name } 
+            : { url: productImage.url || productImage, alt: productImage.alt || productData.name })
+        : { url: "/Image-not-found.png", alt: productData.name };
+
       const resultAction = await dispatch(
         setBuyNowProduct({
-          product: productData._id,
+          product: {
+            _id: productData._id,
+            id: productData._id,
+            name: productData.name,
+            image: imageObj,
+            category: productData.category,
+          },
           quantity: 1,
           price: price.salePrice || price.price,
           variant: productData.variants[0]._id,
@@ -149,7 +183,7 @@ const DynamicProductSlider = ({ content }) => {
       }
       await dispatch(getCartItems());
       setOverlayProduct(null);
-      router.push("/checkout");
+      router.push("/checkout-popup");
 
       // track buy now (best-effort)
       try {

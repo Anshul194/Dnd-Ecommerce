@@ -147,7 +147,7 @@ const CartSidebar = () => {
                   >
                     <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
                       <div className="w-12 h-16 bg-white rounded-sm overflow-hidden shadow-sm flex items-center justify-center">
-                        {item?.product ? (
+                        {item?.product && item?.product?.image?.url && item?.product?.image?.url.trim() !== "" ? (
                           <Image
                             src={item?.product?.image?.url}
                             alt={
@@ -159,7 +159,15 @@ const CartSidebar = () => {
                             height={64}
                             className="object-cover h-full w-full "
                           />
-                        ) : null}
+                        ) : (
+                          <Image
+                            src="/Image-not-found.png"
+                            alt={item?.product?.name || "Product Image"}
+                            width={48}
+                            height={64}
+                            className="object-cover h-full w-full "
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -383,7 +391,7 @@ const CartSidebar = () => {
 
                 dispatch(toggleCart());
                 dispatch(removeBuyNowProduct());
-                dispatch(setCheckoutOpen(true));
+                route.push("/checkout-popup");
               }
             }}
             className="w-full bg-green-500 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors"

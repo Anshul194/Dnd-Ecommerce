@@ -175,8 +175,11 @@ export const addToCart = createAsyncThunk(
 
 export const getCartItems = createAsyncThunk(
   "cart/getCartItems",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      // Get current local cart first to preserve any recent additions
+      const localCartData = getCartFromLocalStorage();
+      
       // Try server first
       try {
         const accessToken =
@@ -194,22 +197,39 @@ export const getCartItems = createAsyncThunk(
         const resp = await fetch("/api/new-cart", { method: "GET", headers });
         if (resp.ok) {
           const data = await resp.json();
-          const mapped = mapServerCartToLocal(data.cart || data);
-          saveCartToLocalStorage(mapped);
-          return mapped;
+          const serverMapped = mapServerCartToLocal(data.cart || data);
+          
+          // If server cart has items, use it (it's the source of truth)
+          // But if server cart is empty and local has items, keep local (might be a sync delay)
+          if (serverMapped.cartItems && serverMapped.cartItems.length > 0) {
+            saveCartToLocalStorage(serverMapped);
+            return serverMapped;
+          } else if (localCartData && localCartData.cartItems && localCartData.cartItems.length > 0) {
+            // Server cart is empty but local has items - keep local (might be sync delay)
+            // Don't overwrite with empty server cart
+            return {
+              cartId: localCartData.cartId,
+              cartItems: localCartData.cartItems || [],
+              total: localCartData.total || 0,
+            };
+          } else {
+            // Both are empty
+            saveCartToLocalStorage(serverMapped);
+            return serverMapped;
+          }
         }
       } catch (e) {
         // ignore and fallback to local
       }
 
-      const cartData = getCartFromLocalStorage();
-      if (!cartData) {
+      // Fallback to local storage
+      if (!localCartData) {
         return { cartId: null, cartItems: [], total: 0 };
       }
       return {
-        cartId: cartData.cartId,
-        cartItems: cartData.cartItems || [],
-        total: cartData.total || 0,
+        cartId: localCartData.cartId,
+        cartItems: localCartData.cartItems || [],
+        total: localCartData.total || 0,
       };
     } catch (error) {
       return rejectWithValue("Failed to fetch cart items from localStorage");
@@ -393,9 +413,12 @@ const cartSlice = createSlice({
       .addCase(addToCart.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload) {
-          state.cartItems = action.payload.cartItems;
-          state.cartId = action.payload.cartId;
-          state.total = action.payload.total;
+          // Ensure cartItems is always an array
+          state.cartItems = Array.isArray(action.payload.cartItems) 
+            ? action.payload.cartItems 
+            : [];
+          state.cartId = action.payload.cartId || null;
+          state.total = action.payload.total || 0;
         }
       })
       .addCase(addToCart.rejected, (state, action) => {
@@ -408,9 +431,12 @@ const cartSlice = createSlice({
       })
       .addCase(getCartItems.fulfilled, (state, action) => {
         state.loading = false;
-        state.cartItems = action.payload.cartItems;
-        state.cartId = action.payload.cartId;
-        state.total = action.payload.total;
+        // Ensure cartItems is always an array
+        state.cartItems = Array.isArray(action.payload?.cartItems) 
+          ? action.payload.cartItems 
+          : [];
+        state.cartId = action.payload?.cartId || null;
+        state.total = action.payload?.total || 0;
       })
       .addCase(getCartItems.rejected, (state, action) => {
         state.loading = false;

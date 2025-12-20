@@ -46,7 +46,7 @@ function Page() {
 
             {/* Content Section */}
             <article
-              className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
+              className="prose max-w-none text-gray-700 leading-relaxed text-base"
               style={{
                 "--tw-prose-headings": "#1a1a1a",
                 "--tw-prose-links": "#3c950d",
@@ -99,6 +99,7 @@ function Page() {
         article p {
           margin-bottom: 1.25rem;
           line-height: 1.75;
+          font-size: 1rem;
         }
 
         article ul,

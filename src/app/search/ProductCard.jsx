@@ -11,6 +11,7 @@ import {
 } from "../store/slices/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import { setCheckoutOpen } from "../store/slices/checkOutSlice";
 import AuthRequiredModal from "@/components/AuthRequiredModal";
 import useAuthRedirect from "@/hooks/useAuthRedirect";
 import {
@@ -59,9 +60,23 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     // }
     const price = product.variants[0];
     try {
+      // Ensure image has proper structure
+      const productImage = product.thumbnail || product.images?.[0];
+      const imageObj = productImage 
+        ? (typeof productImage === 'string' 
+            ? { url: productImage, alt: product.name } 
+            : { url: productImage.url || productImage, alt: productImage.alt || product.name })
+        : { url: "/Image-not-found.png", alt: product.name };
+
       const resultAction = await dispatch(
         setBuyNowProduct({
-          product: product._id,
+          product: {
+            _id: product._id,
+            id: product._id,
+            name: product.name,
+            image: imageObj,
+            category: product.category,
+          },
           quantity: 1,
           price: price.salePrice || price.price,
           variant: product.variants[0]._id,
@@ -78,7 +93,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
       }
       await dispatch(getCartItems());
       setOverlayProduct(null);
-      router.push("/checkout");
+      router.push("/checkout-popup");
       // dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -89,8 +104,9 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     setLocalWishlisted(isWishlisted);
   }, [isWishlisted, product._id, userId]);
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.stopPropagation();
+    e.preventDefault(); // Prevent Link navigation
     // if (!isAuthenticated) {
     //   setShowAuthModal(true);
     //   return;
@@ -99,7 +115,9 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     const price = product?.variants[0]
       ? product?.variants[0]?.salePrice || product?.variants[0]?.price
       : product?.salePrice || product?.price;
-    dispatch(
+    
+    try {
+      const resultAction = await dispatch(
       addToCart({
         product: product._id,
         quantity: 1,
@@ -107,8 +125,26 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         variant: product?.variants[0]?._id,
       })
     );
+      
+      // Don't immediately call getCartItems() - it can overwrite the cart if server hasn't synced
+      // The addToCart action already updates the Redux state and localStorage
+      // Only refresh cart from server after a delay to allow server to sync
+      if (!resultAction.error) {
+        setTimeout(async () => {
+          try {
+            await dispatch(getCartItems());
+          } catch (err) {
+            // Silently fail - cart is already updated locally
+          }
+        }, 500); // 500ms delay to allow server to process
+      }
+      
     trackAddToCart(product._id);
     dispatch(toggleCart());
+    } catch (error) {
+      // Handle error silently or show toast if needed
+      console.warn("Add to cart error:", error);
+    }
   };
 
   useEffect(() => {
@@ -199,8 +235,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
             <div className="flex h-56 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
             {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
               <Image
-                src={product?.thumbnail?.url || product.images?.[0]?.url}
-                alt={product?.thumbnail?.alt || product.images?.[0]?.alt}
+                src={product?.thumbnail?.url || product.images?.[0]?.url || "/Image-not-found.png"}
+                alt={product?.thumbnail?.alt || product.images?.[0]?.alt || product?.name || "Product Image"}
                 width={160}
                 height={120}
                 className="object-cover h-full w-full"
@@ -292,16 +328,18 @@ const ProductCard = ({ product, showDes, buyNow }) => {
                   </button>
 
                   <button
-                    onClick={handleAddToCart}
+                    onClick={(e) => handleAddToCart(e)}
                     className="h-10 max-sm:h-9 w-3/5 flex justify-center group/group2 items-center border hover:bg-[#3C950D]  rounded-lg"
+                    type="button"
                   >
                     <ShoppingCart className="w-4 h-4 text-[#3C950D] group-hover/group2:text-white" />
                   </button>
                 </div>
               ) : (
                 <button
-                  onClick={handleAddToCart}
+                  onClick={(e) => handleAddToCart(e)}
                   className="w-full bg text-white py-2.5 max-sm:py-2 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                  type="button"
                 >
                   Add to cart
                 </button>

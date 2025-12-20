@@ -7,8 +7,9 @@ export const fetchCustomerTickets = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/crm/tickets/customer");
-      // console.log("Fetched Tickets As :- :", response.data);
-      return response.data?.data;
+      // Handle response structure: { success: true, data: [...tickets], ... }
+      const ticketsData = response.data?.data || [];
+      return ticketsData;
     } catch (error) {
       // Ensure we return a string error message
       let errorMessage = "An error occurred while fetching tickets";
@@ -140,7 +141,17 @@ const supportTicketSlice = createSlice({
       })
       .addCase(fetchCustomerTickets.fulfilled, (state, action) => {
         state.fetchLoading = false;
-        state.tickets = action.payload || [];
+        // Handle both array response and object with tickets array
+        const payload = action.payload;
+        if (Array.isArray(payload)) {
+          state.tickets = payload;
+        } else if (payload?.tickets && Array.isArray(payload.tickets)) {
+          state.tickets = payload.tickets;
+        } else if (payload?.data && Array.isArray(payload.data)) {
+          state.tickets = payload.data;
+        } else {
+          state.tickets = [];
+        }
       })
       .addCase(fetchCustomerTickets.rejected, (state, action) => {
         state.fetchLoading = false;

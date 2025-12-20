@@ -864,6 +864,21 @@ export default function CheckoutPopup() {
     // If popup just opened, reset the placed flag for the new session
     if (checkoutOpen) {
       orderPlacedRef.current = false;
+      // If we're on the /checkout page, redirect to home to avoid showing checkout page in background
+      if (location === "/checkout") {
+        router.push("/");
+      }
+      // Prevent body scroll when popup is open (only if not on checkout-popup page)
+      if (location !== "/checkout-popup") {
+        document.body.style.overflow = "hidden";
+      }
+    } else {
+      // Restore body scroll when popup closes
+      document.body.style.overflow = "";
+      // If we're on checkout-popup page and popup closes, redirect to home
+      if (location === "/checkout-popup") {
+        router.push("/");
+      }
     }
 
     // detect true -> false transition
@@ -900,7 +915,12 @@ export default function CheckoutPopup() {
     }
 
     prevCheckoutOpen.current = checkoutOpen;
-  }, [checkoutOpen]);
+
+    // Cleanup: restore body scroll on unmount
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [checkoutOpen, location, router]);
 
   // Helper to extract error message from rejectWithValue / thrown Error
   const extractErrorMessage = (err) => {
@@ -912,11 +932,18 @@ export default function CheckoutPopup() {
     return JSON.stringify(err);
   };
 
-  if (!checkoutOpen) return null;
+  // If we're on the checkout-popup page, always show the popup (don't check checkoutOpen)
+  const isCheckoutPopupPage = location === "/checkout-popup";
+  
+  if (!checkoutOpen && !isCheckoutPopupPage) return null;
 
   return (
-    <div className="fixed inset-0 text-black bg-black/10 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-[999] p-4">
-      <div className="bg-[#f5f6fb]  shadow-xl w-full max-w-lg h-screen overflow-y-auto">
+    <div className={`${isCheckoutPopupPage ? 'min-h-screen' : 'fixed inset-0'} text-black ${isCheckoutPopupPage ? 'bg-[#f5f6fb]' : 'bg-black/60 backdrop-blur-sm'} flex items-center justify-center ${isCheckoutPopupPage ? '' : 'z-[9999]'} p-4`} onClick={(e) => {
+      if (e.target === e.currentTarget && !isCheckoutPopupPage) {
+        dispatch(setCheckoutClose());
+      }
+    }}>
+      <div className={`bg-[#f5f6fb] shadow-xl w-full ${isCheckoutPopupPage ? 'max-w-full' : 'max-w-lg'} h-screen overflow-y-auto`}>
         {/* Header */}
         <div className="px-4 py-3 bg-white rounded-t-lg relative">
           <button
@@ -1180,8 +1207,8 @@ export default function CheckoutPopup() {
                   <div className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3">
                     <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
                       <Image
-                        src={buyNowProduct?.product?.image.url}
-                        alt={buyNowProduct?.product?.image.alt || "Product"}
+                        src={buyNowProduct?.product?.image?.url || buyNowProduct?.product?.image || "/Image-not-found.png"}
+                        alt={buyNowProduct?.product?.image?.alt || buyNowProduct?.product?.name || "Product"}
                         width={56}
                         height={64}
                         className="object-cover h-full w-full"
@@ -1217,11 +1244,13 @@ export default function CheckoutPopup() {
                           <Image
                             src={
                               item?.product?.image?.url ||
-                              item?.product?.image?.[0]?.url
+                              item?.product?.image?.[0]?.url ||
+                              "/Image-not-found.png"
                             }
                             alt={
                               item?.product?.image?.alt ||
                               item?.product?.image?.[0]?.alt ||
+                              item?.product?.name ||
                               "Product"
                             }
                             width={56}

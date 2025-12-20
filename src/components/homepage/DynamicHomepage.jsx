@@ -115,70 +115,71 @@ const DynamicHomepage = () => {
   heroSections.sort((a, b) => a.order - b.order);
   categoryPickContent.sort((a, b) => a.order - b.order);
 
-  const renderSection = (section) => {
+  const renderSection = (section, index) => {
     const { sectionType, content, _id } = section;
+    const uniqueKey = _id || `section-${index}`;
     //console.log("Rendering section: --->", section);
     switch (sectionType) {
       case "offerBanner":
-        return <DynamicOfferBanner key={_id} content={content} />;
+        return <DynamicOfferBanner key={uniqueKey} content={content} />;
 
       case "productSlider":
         return (
-          <>
-            <div key={_id} className="max-w-7xl mx-auto px-4">
+          <div key={uniqueKey}>
+            <div className="max-w-7xl mx-auto px-4">
               <DynamicProductSlider content={content} />
             </div>
-            <div key={`${_id}-grid`} className="max-w-7xl mx-auto px-4">
+            <div className="max-w-7xl mx-auto px-4">
               <ProductGrid />
             </div>
-          </>
+          </div>
         );
 
       case "whyUs":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
+          <div key={uniqueKey} className="max-w-7xl mx-auto px-4">
             <DynamicWhyUs content={content} />
           </div>
         );
 
       case "uniqueSellingPoints":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
+          <div key={uniqueKey} className="max-w-7xl mx-auto px-4">
             <DynamicUniqueSellingPoints content={content} />
           </div>
         );
 
       case "genuineHeartStory":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
+          <div key={uniqueKey} className="max-w-7xl mx-auto px-4">
             <TestimonialSlider content={content} />
           </div>
         );
 
       case "secondaryBanner":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
+          <div key={uniqueKey} className="max-w-7xl mx-auto px-4">
             <TeaPartyBanner content={content} />
           </div>
         );
 
       case "blogs":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
+          <div key={uniqueKey} className="max-w-7xl mx-auto px-4">
             <BlogSection content={content} />
           </div>
         );
 
       case "noConfusion":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
+          <div key={uniqueKey} className="max-w-7xl mx-auto px-4">
             <FAQAccordion content={content} />
           </div>
         );
 
       case "3V":
         return (
-          <div key={_id} className="max-w-7xl mx-auto px-4">
+          <div key={uniqueKey} className="max-w-7xl mx-auto px-4">
             <ValidatedSection content={content} />
           </div>
         );
@@ -215,7 +216,7 @@ const DynamicHomepage = () => {
       </div>
 
       {/* Other sections */}
-      {allSections.map(renderSection)}
+      {allSections.map((section, index) => renderSection(section, index))}
 
       {/* All Products Section */}
       {/* <div className="max-w-7xl mx-auto px-4">

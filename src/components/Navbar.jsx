@@ -52,7 +52,7 @@ export default function Navbar({ initialCategories = [] }) {
   const [showSearch, setShowSearch] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null); // For desktop hover
-  const { cartItems } = useSelector((state) => state.cart);
+  const { cartItems = [] } = useSelector((state) => state.cart);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { items } = useSelector((state) => state.blogs);
   const reduxProducts = useSelector((state) => {
@@ -85,8 +85,15 @@ export default function Navbar({ initialCategories = [] }) {
     if (initialCategories && initialCategories.length > 0) {
       setCategories(initialCategories);
     } else {
-      const res = await fetchCategoryWithSubcategories();
-      setCategories(res || []);
+      try {
+        const res = await fetchCategoryWithSubcategories();
+        if (res) setCategories(res || []);
+      } catch (err) {
+        // Error handling is done in fetchCategoryWithSubcategories, but catch here too for safety
+        if (err.name !== 'CanceledError' && err.code !== 'ERR_CANCELED' && err.message !== 'canceled') {
+          console.warn("Error fetching categories in Navbar:", err);
+        }
+      }
     }
     
     // Only fetch products if not already in Redux store
@@ -114,8 +121,33 @@ export default function Navbar({ initialCategories = [] }) {
 
   useEffect(() => {
     if (!hasInitialized.current) {
-      initialData();
+      const abortController = new AbortController();
+      
+      // Wrap initialData call to handle cancellation
+      const loadData = async () => {
+        try {
+          await initialData();
+        } catch (err) {
+          // Ignore canceled errors
+          if (err.name !== 'CanceledError' && err.code !== 'ERR_CANCELED' && err.message !== 'canceled') {
+            console.warn("Error in initialData:", err);
+          }
+        }
+      };
+      
+      loadData();
+      
+      return () => {
+        abortController.abort(); // Cancel any ongoing requests on unmount
+      };
     }
+  }, []); // Only run once on mount
+
+  // Load cart items on mount to ensure badge shows correct count
+  useEffect(() => {
+    // Load cart items when component mounts
+    dispatch(getCartItems());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   useEffect(() => {
@@ -629,11 +661,14 @@ export default function Navbar({ initialCategories = [] }) {
                                     <Image
                                       src={
                                         product?.thumbnail?.url ||
-                                        product.images?.[0]?.url
+                                        product.images?.[0]?.url ||
+                                        "/Image-not-found.png"
                                       }
                                       alt={
                                         product?.thumbnail?.alt ||
-                                        product.images?.[0]?.alt
+                                        product.images?.[0]?.alt ||
+                                        product?.name ||
+                                        "Product Image"
                                       }
                                       fill
                                       className="object-cover group-hover:scale-110 transition-transform duration-300"
@@ -737,7 +772,7 @@ export default function Navbar({ initialCategories = [] }) {
               >
                 <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
                 <Badge className="absolute text-white -top-1 -right-1 md:-top-1 md:-right-2  bg-[#3C950D]  w-4 h-4  rounded-full p-0 flex items-center justify-center text-[10px]  shadow-lg">
-                  {cartItems.length || 0}
+                  {Array.isArray(cartItems) ? cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0) : 0}
                 </Badge>
               </button>
 

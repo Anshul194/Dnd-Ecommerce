@@ -23,7 +23,7 @@ import { toast } from "react-toastify";
 
 const SupportTickets = () => {
   const dispatch = useDispatch();
-  const { loading, error, success, tickets, fetchLoading, replyLoading } =
+  const { loading, error, success, tickets = [], fetchLoading, replyLoading } =
     useSelector((state) => state.supportTicket);
   const {
     orders,
@@ -68,14 +68,21 @@ const SupportTickets = () => {
   // Effect to fetch orders when component mounts
   useEffect(() => {
     if (user?._id) {
-      dispatch(fetchOrders());
+      dispatch(fetchOrders({ page: 1 }));
     }
   }, [dispatch, user?._id]);
 
   // Effect to fetch customer tickets when component mounts
   useEffect(() => {
     if (user?._id) {
-      dispatch(fetchCustomerTickets());
+      dispatch(fetchCustomerTickets()).then((result) => {
+        // Debug: Log fetched tickets
+        if (result.meta.requestStatus === 'fulfilled') {
+          console.log('Tickets fetched successfully:', result.payload);
+        } else {
+          console.error('Failed to fetch tickets:', result.error);
+        }
+      });
     }
   }, [dispatch, user?._id]);
 
@@ -121,9 +128,9 @@ const SupportTickets = () => {
       // Add customer ID (required field)
       formData.append("customer", user._id);
 
-      // Add order ID if selected
+      // Add order ID if selected (backend expects 'order_id')
       if (ticketForm.orderId) {
-        formData.append("orderId", ticketForm.orderId);
+        formData.append("order_id", ticketForm.orderId);
       }
 
       // Debug log to verify customer ID
@@ -145,7 +152,7 @@ const SupportTickets = () => {
 
       // Show success toast message
       toast.success(
-        "Support ticket submitted. We’ll get back to you within 24 hours. Thank you!",
+        "Support ticket submitted. We'll get back to you within 24 hours. Thank you!",
         {
           position: "top-right",
           autoClose: 3000,
@@ -157,7 +164,7 @@ const SupportTickets = () => {
       );
 
       // Refresh tickets from API to get the latest data
-      dispatch(fetchCustomerTickets());
+      await dispatch(fetchCustomerTickets());
 
       // Reset form and close modal
       setTicketForm({
@@ -175,19 +182,34 @@ const SupportTickets = () => {
         dispatch(resetTicketState());
       }, 3000);
     } catch (error) {
-      //console.error("Error submitting ticket:", error);
-      toast.error(
-        error.message || "Failed to submit support ticket. Please try again.",
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+      console.error("Error submitting ticket:", error);
+      
+      // Extract detailed error message
+      let errorMessage = "Failed to submit support ticket. Please try again.";
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        // If there are validation errors, append them
+        if (error.response.data.data && Array.isArray(error.response.data.data)) {
+          const validationErrors = error.response.data.data
+            .map(err => err.message || err.msg || JSON.stringify(err))
+            .join(', ');
+          errorMessage = `${errorMessage}: ${validationErrors}`;
         }
-      );
-      // Error is handled by Redux state
+      }
+      
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -744,7 +766,7 @@ const SupportTickets = () => {
           Loading your orders...
         </div>
       )}
-      {!ordersError && (
+      {ordersError && (
         <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-md">
           Warning: Unable to load orders. You can still create a ticket, but
           order selection will not be available.
@@ -786,7 +808,7 @@ const SupportTickets = () => {
       {error && !fetchLoading && (
         <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
           <p className="font-medium">Error loading tickets:</p>
-          <p>{error}</p>
+          <p>{typeof error === 'string' ? error : JSON.stringify(error)}</p>
           <button
             onClick={() => dispatch(fetchCustomerTickets())}
             className="mt-2 px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
@@ -796,9 +818,10 @@ const SupportTickets = () => {
         </div>
       )}
 
+
       {/* Tickets List */}
       <div className="space-y-4">
-        {!fetchLoading && !error && tickets && tickets.length === 0 ? (
+        {!fetchLoading && !error && (!tickets || tickets.length === 0) ? (
           <div className="bg-white rounded-lg p-8 text-center shadow-sm">
             <FileText size={48} className="mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -819,6 +842,8 @@ const SupportTickets = () => {
           !fetchLoading &&
           !error &&
           tickets &&
+          Array.isArray(tickets) &&
+          tickets.length > 0 &&
           tickets.map((ticket) => (
             <div
               key={ticket._id}
@@ -900,7 +925,7 @@ const SupportTickets = () => {
 
       {/* Support Ticket Modal */}
       {isTicketModalOpen && (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm bg-opacity-50 pt-20 max-sm:pt-0 flex items-center justify-center max-sm:z-[9999]">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] pt-20 max-sm:pt-0 flex items-center justify-center">
           <div className="bg-white rounded-lg py-10 max-sm:max-h-screen max-sm:max-w-screen   p-6 w-full max-w-md mx-4 max-sm:mx-0 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">
@@ -986,21 +1011,22 @@ const SupportTickets = () => {
                   <option value="">Select an order (optional)</option>
                   {orders && orders.length > 0 ? (
                     orders.map((order) => {
-                      //console.log("Rendering order:", order); // Debug log
-
-                      // Get the first item's variant title for display
-                      const firstItemTitle =
-                        order.items?.[0]?.variant?.title || "Unknown Product";
+                      // Get the first item's product name for display
+                      const firstItem = order.items?.[0];
+                      const productName = firstItem?.product?.name || "Unknown Product";
+                      const variantName = firstItem?.variant?.name || "";
+                      const displayName = variantName ? `${productName} (${variantName})` : productName;
                       const itemCount = order.items?.length || 0;
                       const orderDate = new Date(
                         order.createdAt
                       ).toLocaleDateString();
+                      const totalAmount = order.total?.toFixed(2) || "0.00";
 
                       return (
                         <option key={order._id} value={order._id}>
-                          {firstItemTitle}
-                          {itemCount > 1 ? ` (+${itemCount - 1} more)` : ""} - $
-                          {order.total?.toFixed(2) || "0.00"} ({orderDate})
+                          {displayName}
+                          {itemCount > 1 ? ` (+${itemCount - 1} more)` : ""} - ₹
+                          {totalAmount} ({orderDate})
                         </option>
                       );
                     })
@@ -1017,7 +1043,7 @@ const SupportTickets = () => {
                 )}
                 {ordersError && (
                   <p className="text-xs text-red-500 mt-1">
-                    Error loading orders: {ordersError}
+                    Error loading orders: {typeof ordersError === 'string' ? ordersError : ordersError?.message || 'Failed to load orders'}
                   </p>
                 )}
                 <p className="text-xs text-gray-500 mt-1">

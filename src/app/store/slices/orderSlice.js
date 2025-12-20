@@ -5,9 +5,11 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 // Async thunk to fetch all orders
 export const fetchOrders = createAsyncThunk(
   "order/fetchOrders",
-  async (payload) => {
+  async (payload = {}) => {
     const queryParams = new URLSearchParams();
-    payload.page && queryParams.append("page", payload.page);
+    if (payload && payload.page) {
+      queryParams.append("page", payload.page);
+    }
     queryParams.append("limit", 10000);
 
     queryParams.append("sort", JSON.stringify({ createdAt: "desc" }));
@@ -63,7 +65,10 @@ const orderSlice = createSlice({
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload;
+        // Handle both array response and object with orders array
+        state.orders = Array.isArray(action.payload) 
+          ? action.payload 
+          : (action.payload?.orders || action.payload?.data || []);
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;

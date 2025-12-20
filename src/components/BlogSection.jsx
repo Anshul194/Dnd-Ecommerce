@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpRight,
+  ChevronUp,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -225,7 +226,7 @@ export default function BlogSection({ content }) {
             }}
             className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg cursor-pointer"
           >
-            <span className="text-white text-lg">→</span>
+            <ChevronUp className="w-6 h-6 text-white" />
           </div>
         </div>
       )}

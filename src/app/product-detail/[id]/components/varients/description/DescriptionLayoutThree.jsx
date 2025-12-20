@@ -1,5 +1,4 @@
 export default function NewDescriptionLayout({ data }) {
-  console.log("DescriptionLayout data:", data?.name);
   const extractVideoId = (url) => {
     const regex =
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
@@ -7,15 +6,13 @@ export default function NewDescriptionLayout({ data }) {
     return match ? match[1] : url;
   };
 
-  // Static data with real images and video
-  const staticData = {
-    descriptionVideo:
-      data?.descriptionVideo || "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  // Only use actual data, no fallback
+  const displayData = data;
 
-    descriptionImages: data?.descriptionImages,
-  };
-
-  const displayData = data || staticData;
+  // Don't render if no description data
+  if (!displayData?.descriptionVideo && (!displayData?.descriptionImages || displayData.descriptionImages.length === 0)) {
+    return null;
+  }
 
   return (
     <div className="pt-10 lg:pt-10  ">
@@ -24,11 +21,11 @@ export default function NewDescriptionLayout({ data }) {
           DESCRIPTION
         </h1>
         {/* Hero Video Section */}
-        <div className="mb-16">
-          <div className="relative sm:h-auto">
-            <div className="bg-white rounded-lg lg:rounded-3xl shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-500">
-              <div className="!h-[182px] sm:!h-auto md:aspect-[21/9]">
-                {displayData?.descriptionVideo && (
+        {displayData?.descriptionVideo && (
+          <div className="mb-16">
+            <div className="relative sm:h-auto">
+              <div className="bg-white rounded-lg lg:rounded-3xl shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-500">
+                <div className="!h-[182px] sm:!h-auto md:aspect-[21/9]">
                   <iframe
                     src={`https://www.youtube.com/embed/${extractVideoId(
                       displayData.descriptionVideo
@@ -39,73 +36,85 @@ export default function NewDescriptionLayout({ data }) {
                     title="Main Video"
                     onError={(e) => console.error("Iframe error:", e)}
                   />
-                )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Masonry Style Image Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        {displayData?.descriptionImages && displayData.descriptionImages.length > 0 && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Large Image - Spans 2 columns */}
-          <div className="col-span-2 row-span-2">
+          {displayData?.descriptionImages?.[0]?.url && (
+            <div className="col-span-2 row-span-2">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
+                <div
+                  className="aspect-square bg-gray-200"
+                  style={{
+                    backgroundImage: `url(${displayData.descriptionImages[0].url})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          {/* Small Images */}
+          {displayData?.descriptionImages?.[1]?.url && (
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
               <div
                 className="aspect-square bg-gray-200"
                 style={{
-                  backgroundImage: `url(${displayData?.descriptionImages?.[0]?.url})`,
+                  backgroundImage: `url(${displayData.descriptionImages[1].url})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
               ></div>
             </div>
-          </div>
+          )}
 
-          {/* Small Images */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
-            <div
-              className="aspect-square bg-gray-200"
-              style={{
-                backgroundImage: `url(${displayData?.descriptionImages?.[1]?.url})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            ></div>
-          </div>
+          {displayData?.descriptionImages?.[2]?.url && (
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
+              <div
+                className="aspect-square bg-gray-200"
+                style={{
+                  backgroundImage: `url(${displayData.descriptionImages[2].url})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              ></div>
+            </div>
+          )}
 
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
-            <div
-              className="aspect-square bg-gray-200"
-              style={{
-                backgroundImage: `url(${displayData?.descriptionImages?.[2]?.url})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            ></div>
-          </div>
+          {displayData?.descriptionImages?.[3]?.url && (
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
+              <div
+                className="aspect-square bg-gray-200"
+                style={{
+                  backgroundImage: `url(${displayData.descriptionImages[3].url})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              ></div>
+            </div>
+          )}
 
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
-            <div
-              className="aspect-square bg-gray-200"
-              style={{
-                backgroundImage: `url(${displayData?.descriptionImages?.[3]?.url})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            ></div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
-            <div
-              className="aspect-square bg-gray-200"
-              style={{
-                backgroundImage: `url(${displayData?.descriptionImages?.[4]?.url})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            ></div>
-          </div>
+          {displayData?.descriptionImages?.[4]?.url && (
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
+              <div
+                className="aspect-square bg-gray-200"
+                style={{
+                  backgroundImage: `url(${displayData.descriptionImages[4].url})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              ></div>
+            </div>
+          )}
         </div>
+        )}
       </div>
     </div>
   );

@@ -32,38 +32,85 @@ export const fetchCategories = createAsyncThunk(
   }
 );
 
-export const fetchCategoryWithSubcategories = async () => {
-  try {
-    // send explicit pagination params — some backends require both page and limit
-    const params = { page: 1, limit: 1000 };
+// Helper function to check if an error is a canceled error
+const isCanceledError = (error) => {
+  if (!error) return false;
+  return (
+    error.name === 'CanceledError' ||
+    error.code === 'ERR_CANCELED' ||
+    error.code === 'ECONNABORTED' ||
+    error.message === 'canceled' ||
+    (error.message && typeof error.message === 'string' && error.message.toLowerCase().includes('canceled')) ||
+    (error.response && error.response.canceled) ||
+    (error.config && error.config.signal && error.config.signal.aborted)
+  );
+};
 
-    const response = await axiosInstance.get("/category/navbar", {
-      params,
-    });
-
-    const payload = response?.data;
-
-    // Try to normalize various possible response shapes and return an array/object
-    if (Array.isArray(payload?.data?.body?.data?.result)) {
-      return payload.data.body.data.result;
-    }
-    if (Array.isArray(payload?.data?.result)) {
-      return payload.data.result;
-    }
-    if (Array.isArray(payload?.data)) {
-      return payload.data;
-    }
-    if (Array.isArray(payload)) {
-      return payload;
-    }
-
-    // If the API returns an object wrapper for categories, return the most likely object
-    if (payload?.data?.body?.data) return payload.data.body.data;
-    if (payload?.data) return payload.data;
-    return payload;
-  } catch (error) {
-    console.error("Error fetching categories with subcategories:", error);
+export const fetchCategoryWithSubcategories = async (signal = null) => {
+  // Check if signal is already aborted before making request
+  if (signal && signal.aborted) {
+    return null;
   }
+
+  // Wrap the axios call in a promise that suppresses canceled errors
+  // This prevents Next.js from logging them as unhandled rejections
+  const requestPromise = (async () => {
+    try {
+      // send explicit pagination params — some backends require both page and limit
+      const params = { page: 1, limit: 1000 };
+
+      const requestConfig = { params };
+      if (signal) {
+        requestConfig.signal = signal; // Pass abort signal to allow cancellation
+      }
+
+      const response = await axiosInstance.get("/category/navbar", requestConfig);
+
+      // Check if response was canceled or is a mock response from interceptor
+      if (response?.canceled || !response?.data) {
+        return null;
+      }
+
+      const payload = response?.data;
+
+      // Try to normalize various possible response shapes and return an array/object
+      if (Array.isArray(payload?.data?.body?.data?.result)) {
+        return payload.data.body.data.result;
+      }
+      if (Array.isArray(payload?.data?.result)) {
+        return payload.data.result;
+      }
+      if (Array.isArray(payload?.data)) {
+        return payload.data;
+      }
+      if (Array.isArray(payload)) {
+        return payload;
+      }
+
+      // If the API returns an object wrapper for categories, return the most likely object
+      if (payload?.data?.body?.data) return payload.data.body.data;
+      if (payload?.data) return payload.data;
+      return payload;
+    } catch (error) {
+      // Re-throw non-canceled errors
+      if (!isCanceledError(error)) {
+        throw error;
+      }
+      // Return null for canceled errors - don't throw
+      return null;
+    }
+  })();
+
+  // Add a catch handler to suppress canceled errors at the promise level
+  // This prevents Next.js from treating them as unhandled rejections
+  return requestPromise.catch((error) => {
+    if (isCanceledError(error)) {
+      // Silently return null for canceled requests
+      return null;
+    }
+    // Re-throw real errors
+    throw error;
+  });
 };
 
 const categorySlice = createSlice({

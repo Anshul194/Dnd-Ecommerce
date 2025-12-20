@@ -80,12 +80,11 @@ const HowToUse = ({ data }) => {
           <h2 className="text-4xl md:text-5xl text-center text-black bebas mb-4 md:mb-0 ">
             HOW TO USE
           </h2>
-          <p className="text-black lg:max-w-[80%] mx-auto relative poppins-medium leading-tight text-lg mb-8 text-center">
-            Lorem ipsum dolor sit amet,{" "}
-            <span className="text font-semibold">consectetur</span> eiusmod
-            tempor incididunt ut labore et dolor magna aliquaLorem ipsum dolor
-            sit amet, consectetur.
-          </p>
+          {data?.howToUseTitle && (
+            <p className="text-black lg:max-w-[80%] mx-auto relative poppins-medium leading-tight text-lg mb-8 text-center">
+              {data.howToUseTitle}
+            </p>
+          )}
         </div>
 
         {/* Video and Steps Grid */}
@@ -105,27 +104,35 @@ const HowToUse = ({ data }) => {
             </div>
           )}
           <div className="space-y-8">
-            {data?.howToUseSteps?.map((step, index) => (
-              <div key={index} className="flex gap-6 group">
-                {/* Step Number */}
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 bebas bg text-white rounded-full flex items-center justify-center font-black text-lg group-hover:bg-gray-800 transition-colors duration-300">
-                    {index + 1 < step.number ? step.number : `0${index + 1}`}
+            {data?.howToUseSteps && Array.isArray(data.howToUseSteps) && data.howToUseSteps.length > 0 ? (
+              data.howToUseSteps.map((step, index) => (
+                <div key={index} className="flex gap-6 group">
+                  {/* Step Number */}
+                  <div className="flex-shrink-0">
+                    <div className="w-16 h-16 bebas bg text-white rounded-full flex items-center justify-center font-black text-lg group-hover:bg-gray-800 transition-colors duration-300">
+                      {String(index + 1).padStart(2, '0')}
+                    </div>
+                  </div>
+
+                  {/* Step Content */}
+                  <div className="flex-1 pt-2">
+                    {step.title && (
+                      <h3 className="text-2xl font-bold poppins text-black mb-2 group-hover:text-gray-700 transition-colors duration-300">
+                        {step.title}
+                      </h3>
+                    )}
+                    {step.description && (
+                      <div
+                        className="text-gray-600 poppins text-sm leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: step.description }}
+                      ></div>
+                    )}
                   </div>
                 </div>
-
-                {/* Step Content */}
-                <div className="flex-1 pt-2">
-                  <h3 className="text-2xl font-bold poppins text-black mb-2 group-hover:text-gray-700 transition-colors duration-300">
-                    {step.title}
-                  </h3>
-                  <div
-                    className="text-gray-600 poppins text-sm leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: step.description }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500 text-center py-8">No usage instructions available.</p>
+            )}
           </div>
         </div>
       </div>

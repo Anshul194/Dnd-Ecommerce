@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
           content="telephone=no, date=no, email=no, address=no"
         />
       </head>
-      <body>
+      <body suppressHydrationWarning={true}>
         <Providers>
           <ClientLayout>
             <ToastContainer

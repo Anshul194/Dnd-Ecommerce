@@ -33,6 +33,7 @@ import {
   setBuyNowProduct,
   toggleCart,
 } from "@/app/store/slices/cartSlice";
+import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
@@ -109,7 +110,18 @@ function ProductPage({ params }) {
         );
         return;
       }
-      await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
+      
+      // Don't immediately call getCartItems() - it can overwrite the cart if server hasn't synced
+      // The addToCart action already updates the Redux state and localStorage
+      // Only refresh cart from server after a delay to allow server to sync
+      setTimeout(async () => {
+        try {
+          await dispatch(require("@/app/store/slices/cartSlice").getCartItems());
+        } catch (err) {
+          // Silently fail - cart is already updated locally
+        }
+      }, 500); // 500ms delay to allow server to process
+      
       // tracking: add to cart
       try {
         trackEvent("ADD_TO_CART", {
@@ -134,9 +146,23 @@ function ProductPage({ params }) {
     // }
     const price = data.variants.find((variant) => variant._id === selectedPack);
     try {
+      // Ensure image has proper structure
+      const productImage = data.thumbnail || data.images?.[0];
+      const imageObj = productImage 
+        ? (typeof productImage === 'string' 
+            ? { url: productImage, alt: data.name } 
+            : { url: productImage.url || productImage, alt: productImage.alt || data.name })
+        : { url: "/Image-not-found.png", alt: data.name };
+
       const resultAction = await dispatch(
         setBuyNowProduct({
-          product: data._id,
+          product: {
+            _id: data._id,
+            id: data._id,
+            name: data.name,
+            image: imageObj,
+            category: data.category,
+          },
           quantity,
           price: price.salePrice || price.price,
           variant: selectedPack,
@@ -152,7 +178,7 @@ function ProductPage({ params }) {
         return;
       }
       await dispatch(getCartItems());
-      router.push("/checkout");
+      router.push("/checkout-popup");
       // dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -304,20 +330,29 @@ function ProductPage({ params }) {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      className="fill-orange-400 text-orange-400"
-                    />
-                  ))}
+              {(data?.rating > 0 || data?.reviewCount > 0) && (
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={16}
+                        className={`${
+                          i < Math.floor(data?.rating || 0)
+                            ? "fill-orange-400 text-orange-400"
+                            : "fill-gray-200 text-gray-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  {data?.rating > 0 && (
+                    <span className="text-sm text-gray-600">
+                      ({data.rating.toFixed(1)})
+                      {data?.reviewCount > 0 && ` - ${data.reviewCount} Review${data.reviewCount !== 1 ? 's' : ''}`}
+                    </span>
+                  )}
                 </div>
-                <span className="text-sm text-gray-600">
-                  (4.7) - 390 Product Sold
-                </span>
-              </div>
+              )}
 
               {/* Delivery Options */}
               {/* <div className="mb-6">
@@ -697,54 +732,71 @@ function ProductPage({ params }) {
                   )}
 
                 {/* How to use */}
-                <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  <button
-                    onClick={() => toggleSection("usage")}
-                    className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
-                      expandedSection === "usage"
-                        ? "bg-green-50 hover:bg-green-100"
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <span
-                      className={`font-semibold text-base ${
+                {(data?.howToUseSteps && Array.isArray(data.howToUseSteps) && data.howToUseSteps.length > 0) && (
+                  <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <button
+                      onClick={() => toggleSection("usage")}
+                      className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
                         expandedSection === "usage"
-                          ? "text-green-700"
-                          : "text-green-600"
+                          ? "bg-green-50 hover:bg-green-100"
+                          : "hover:bg-gray-50"
                       }`}
                     >
-                      How to use
-                    </span>
-                    <div
-                      className={`p-1 rounded-full transition-all duration-300 ${
-                        expandedSection === "usage"
-                          ? "bg-green-200 rotate-180"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      <ChevronDown
-                        className={`transition-colors duration-200 ${
+                      <span
+                        className={`font-semibold text-base ${
                           expandedSection === "usage"
                             ? "text-green-700"
-                            : "text-gray-600"
+                            : "text-green-600"
                         }`}
-                        size={18}
-                      />
-                    </div>
-                  </button>
-                  <div
-                    className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
-                      expandedSection === "usage"
-                        ? "max-h-96 opacity-100"
-                        : "max-h-0 opacity-0"
-                    } overflow-hidden`}
-                  >
-                    <div className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50">
-                      Add a pinch to warm milk or tea. Can be used in cooking
-                      and baking. Store in a cool, dry place.
+                      >
+                        How to use
+                      </span>
+                      <div
+                        className={`p-1 rounded-full transition-all duration-300 ${
+                          expandedSection === "usage"
+                            ? "bg-green-200 rotate-180"
+                            : "bg-gray-100"
+                        }`}
+                      >
+                        <ChevronDown
+                          className={`transition-colors duration-200 ${
+                            expandedSection === "usage"
+                              ? "text-green-700"
+                              : "text-gray-600"
+                          }`}
+                          size={18}
+                        />
+                      </div>
+                    </button>
+                    <div
+                      className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
+                        expandedSection === "usage"
+                          ? "max-h-96 opacity-100"
+                          : "max-h-0 opacity-0"
+                      } overflow-hidden`}
+                    >
+                      <div className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50">
+                        <ul className="space-y-2">
+                          {data.howToUseSteps.map((step, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                              <div>
+                                {step.title && (
+                                  <div className="font-semibold mb-1">{step.title}</div>
+                                )}
+                                <div
+                                  dangerouslySetInnerHTML={{
+                                    __html: step.description || "",
+                                  }}
+                                />
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 <div className="mt-6">
                   <h3 className="font-semibold text-black mb-3">

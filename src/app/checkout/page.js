@@ -863,12 +863,10 @@ export default function CheckoutPage() {
     return JSON.stringify(err);
   };
 
-  // Redirect if no cart items and no buyNowProduct
+  // Redirect to checkout-popup page instead of showing this page
   useEffect(() => {
-    if (!buyNowProduct && (!cartItems || cartItems.length === 0)) {
-      router.push('/');
-    }
-  }, [buyNowProduct, cartItems, router]);
+    router.push('/checkout-popup');
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -1261,14 +1259,14 @@ export default function CheckoutPage() {
                         <div className="flex gap-4">
                            <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 border">
                               <Image 
-                                 src={buyNowProduct?.product?.image.url}
+                                 src={buyNowProduct?.product?.image?.url || buyNowProduct?.product?.image || "/Image-not-found.png"}
                                  width={64} height={64}
                                  className="object-cover w-full h-full"
-                                 alt={buyNowProduct?.product?.name}
+                                 alt={buyNowProduct?.product?.name || "Product"}
                               />
                            </div>
                            <div className="flex-1">
-                              <h4 className="text-sm font-medium line-clamp-2">{buyNowProduct?.product?.name}</h4>
+                              <h4 className="text-sm font-medium line-clamp-2">{buyNowProduct?.product?.name || "Product"}</h4>
                               <div className="flex justify-between items-center mt-2">
                                  <span className="text-xs text-gray-500">Qty: {buyNowProduct.quantity}</span>
                                  <span className="font-semibold text-sm flex items-center"><IndianRupee size={14} strokeWidth={2.5} />{(buyNowProduct.price * buyNowProduct.quantity).toFixed(2)}</span>

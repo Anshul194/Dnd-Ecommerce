@@ -903,7 +903,10 @@ const Orders = () => {
               <p className="text-gray-600 mb-4">
                 You haven&apos;t placed any orders yet.
               </p>
-              <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+              <button 
+                onClick={() => router.push("/")}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
                 Start Shopping
               </button>
             </div>

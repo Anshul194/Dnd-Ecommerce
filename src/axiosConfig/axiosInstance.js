@@ -23,6 +23,16 @@ function getRequestKey(config) {
 // Request interceptor with deduplication
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Check if request is already aborted before proceeding
+    if (config.signal && config.signal.aborted) {
+      // Throw a cancel error that will be caught by response interceptor
+      const cancelError = new Error('canceled');
+      cancelError.name = 'CanceledError';
+      cancelError.code = 'ERR_CANCELED';
+      cancelError.config = config;
+      throw cancelError;
+    }
+
     // Add auth token
     const token = localStorage.getItem("accessToken");
     if (token && config.headers) {
@@ -44,6 +54,12 @@ axiosInstance.interceptors.request.use(
         const controller = new AbortController();
         config.signal = controller.signal;
         controller.abort(); // Cancel this duplicate request
+        // Throw cancel error to be caught by response interceptor
+        const cancelError = new Error('canceled');
+        cancelError.name = 'CanceledError';
+        cancelError.code = 'ERR_CANCELED';
+        cancelError.config = config;
+        throw cancelError;
       } else {
         // Mark this request as pending
         pendingRequests.set(requestKey, true);
@@ -53,6 +69,7 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
+    // Request interceptor errors are passed through to response error interceptor
     return Promise.reject(error);
   }
 );
@@ -72,6 +89,31 @@ axiosInstance.interceptors.response.use(
     if (error.config?.method === 'get') {
       const requestKey = getRequestKey(error.config);
       pendingRequests.delete(requestKey);
+    }
+
+    // Suppress canceled errors - they're expected when requests are aborted
+    // Check for all possible cancel error formats
+    const isCanceledError = 
+      error.code === 'ERR_CANCELED' ||
+      error.code === 'ECONNABORTED' ||
+      error.name === 'CanceledError' ||
+      error.message === 'canceled' ||
+      (error.message && error.message.toLowerCase().includes('canceled')) ||
+      (error.config && error.config.signal && error.config.signal.aborted) ||
+      (axios.isCancel && axios.isCancel(error));
+
+    if (isCanceledError) {
+      // Return a resolved promise with null to suppress the error
+      // This prevents canceled errors from appearing in console
+      // Create a mock response object to prevent errors downstream
+      return Promise.resolve({ 
+        data: null, 
+        canceled: true,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: error.config || {}
+      });
     }
 
     const originalRequest = error.config;

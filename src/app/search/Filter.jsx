@@ -179,12 +179,24 @@ const Filter = ({ onFilterChange = () => {} }) => {
 
   useEffect(() => {
     // fetch categories without making the effect callback async (avoid returning a Promise)
+    const abortController = new AbortController();
     const load = async () => {
-      const res = await fetchCategoryWithSubcategories();
-      console.log("navCategorys  : :  ===> ", res);
-      setCategories(res || []);
+      try {
+        const res = await fetchCategoryWithSubcategories(abortController.signal);
+        console.log("navCategorys  : :  ===> ", res);
+        setCategories(res || []);
+      } catch (err) {
+        // Ignore canceled errors
+        if (err.name !== 'CanceledError' && err.code !== 'ERR_CANCELED' && err.message !== 'canceled') {
+          console.warn("Error loading categories in Filter:", err);
+        }
+      }
     };
     load();
+    
+    return () => {
+      abortController.abort(); // Cancel request on unmount
+    };
   }, []);
 
   useEffect(() => {
