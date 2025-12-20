@@ -20,38 +20,9 @@ const RenderVariant1 = () => {
   };
   return (
     <div className="flex-1 w-full ">
-      <div
-        className="gap-4 h-fit sticky top-16 flex"
-        style={{
-          flexDirection:
-            typeof window !== "undefined" &&
-            (
-              document?.querySelector(
-                ".product-gallery-container"
-              ) as HTMLElement | null
-            )?.offsetWidth < 640
-              ? "column-reverse"
-              : "row",
-        }}
-        ref={(el) => {
-          if (el) el.classList.add("product-gallery-container");
-        }}
-      >
+      <div className="gap-4 h-fit sticky top-16 flex flex-col-reverse sm:flex-row">
         {/* Thumbnail Images */}
-        <div
-          className="flex gap-3"
-          style={{
-            flexDirection:
-              typeof window !== "undefined" &&
-              (
-                document?.querySelector(
-                  ".product-gallery-container"
-                ) as HTMLElement | null
-              )?.offsetWidth < 640
-                ? "row"
-                : "column",
-          }}
-        >
+        <div className="flex gap-3 flex-row sm:flex-col">
           {productData?.images?.length > 0 &&
             [...productData.images].map((img, index) => (
               <div

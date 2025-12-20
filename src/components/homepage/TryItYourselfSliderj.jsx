@@ -149,7 +149,7 @@ const TryItYourselfSlider = () => {
             {products.map((product) => (
               <div 
                 key={product.id} 
-                className="min-w-[200px] bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200"
+                className="min-w-[280px] h-[340px] flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200"
               >
                 {/* Product Header */}
                 <div className="rounded-xl relative">
@@ -162,7 +162,7 @@ const TryItYourselfSlider = () => {
                   </div>
                 </div>
 
-                <div className="p-3 h-1/2 flex flex-col justify-between">
+                <div className="p-3 flex-1 flex flex-col justify-between">
                     {/* Product Info */}
                     <div >
                     <div className="text-xs font-medium text-gray-600 mb-1">{product.name}</div>
@@ -178,7 +178,7 @@ const TryItYourselfSlider = () => {
                     </div>
 
                     {/* Add to Cart Button */}
-                    <button className="w-full bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200">
+                    <button className="w-full bg-green-600 text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200">
                     ADD TO CART
                     </button>
                 </div>

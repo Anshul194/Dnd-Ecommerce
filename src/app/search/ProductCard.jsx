@@ -168,7 +168,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         <div
           className={`${
             showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
-          } bg-white flex max-sm:w-full max-sm:min-w-[100px] max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
+          } bg-white flex max-sm:w-full max-sm:min-w-[280px] max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
         >
           {/* Product Header */}
           <div className="relative bg-white rounded-t-2xl">
@@ -322,7 +322,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
                 <div className="flex gap-2">
                   <button
                     onClick={(e) => handleBuyNow(e)}
-                    className="w-4/3 h-10 max-sm:h-9 mb-2 bg text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                    className="w-4/3 h-10 max-sm:h-9 mb-2 bg-green-600 text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                   >
                     Buy Now
                   </button>
@@ -338,7 +338,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               ) : (
                 <button
                   onClick={(e) => handleAddToCart(e)}
-                  className="w-full bg text-white py-2.5 max-sm:py-2 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                  className="w-full bg-green-600 text-white py-2.5 max-sm:py-2 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                   type="button"
                 >
                   Add to cart

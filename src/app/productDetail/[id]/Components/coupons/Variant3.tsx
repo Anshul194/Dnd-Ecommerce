@@ -12,7 +12,7 @@ function Variant3({ coupons }) {
     }
   };
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-full md:max-w-[40vw]">
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 bg-green-100 rounded-xl">
           <Gift size={20} className="text-green-600" />

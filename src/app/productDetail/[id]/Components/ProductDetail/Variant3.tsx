@@ -166,7 +166,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
     }
   };
   return (
-    <div className="lg:col-span-6">
+    <div className="lg:col-span-6 max-w-full overflow-hidden">
       {/* Fixed Buy Now and Add to Cart Section */}
       {productData && showFixedBar && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 p-4">
@@ -221,7 +221,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6w-full lg:w-1/2">
+      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6 w-full">
         {/* Title & Rating */}
         <h1 className="text-3xl font-bold text-gray-900 mb-3">
           {productData.name}

@@ -25,7 +25,8 @@ function Variant1({ coupons, couponSettings }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full md:max-w-[50vw]">
+    {/* <div className="space-y-6 max-w-full"> */}
       <div className="text-center mb-6">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">
           🎉 Available Offers
@@ -35,8 +36,8 @@ function Variant1({ coupons, couponSettings }) {
         </p>
       </div>
 
-      <div className="relative">
-        <div className="flex relative items-center gap-3">
+      <div className="relative max-w-full">
+        <div className="flex relative items-center gap-3 max-w-full">
           {/* Left Arrow */}
           <button
             onClick={prevSlide}

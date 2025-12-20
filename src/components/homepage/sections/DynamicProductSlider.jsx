@@ -263,7 +263,7 @@ const DynamicProductSlider = ({ content }) => {
   }, [itemsPerPage, products?.products]);
 
   return (
-    <div className="flex relative flex-col gap-4 justify-between w-full h-fit py-20 lg:px-0">
+    <div className="flex relative flex-col gap-4 justify-between w-full h-fit py-20 px-4 lg:px-0">
       {/* Left Content - Dynamic from API */}
       <div className="flex-1 relative mb-8 lg:mb-0 lg:mr-8 z-20 text-center">
         <h1 className="text-4xl w-full font-black text-gray-800 leading-tight mb-2">
@@ -337,7 +337,7 @@ const DynamicProductSlider = ({ content }) => {
           <div
             ref={sliderRef}
             onScroll={handleScroll}
-            className="grid grid-cols-2 gap-4 auto-rows-fr sm:flex sm:overflow-x-auto scrollbar-hide sm:space-x-4 py-4 scroll-smooth"
+            className="grid grid-cols-2 gap-4 auto-rows-fr sm:grid-cols-3 md:grid-cols-4 lg:flex lg:overflow-x-auto scrollbar-hide lg:space-x-4 py-4 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {products?.products?.length > 0
@@ -633,7 +633,7 @@ const DynamicProductSlider = ({ content }) => {
                 <div className="flex gap-2">
                   <button
                     onClick={(e) => handleBuyNow(e, overlayProduct)}
-                    className="w-32 h-10 mb-2 bg text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                    className="w-32 h-10 mb-2 bg-green-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
                   >
                     Buy Now
                   </button>

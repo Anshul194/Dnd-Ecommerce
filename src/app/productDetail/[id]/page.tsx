@@ -1577,7 +1577,7 @@ export default function ProductPageBuilder() {
 
   return (
     <div
-      className={`min-h-screen my-20 ${isPreviewMode ? "bg-white" : "bg-gray-100"} flex flex-col md:flex-row`}
+      className={`min-h-screen max-w-[100vw] my-20 ${isPreviewMode ? "bg-white" : "bg-gray-100"} flex flex-col md:flex-row`}
     >
       {loading ? (
         <div className="flex w-full justify-center items-center h-[60vh]">
@@ -1586,7 +1586,7 @@ export default function ProductPageBuilder() {
       ) : (
         <div className="flex-1 flex flex-col">
           {/* Main content - Row-based layout */}
-          <div className="flex-1  overflow-auto">
+          <div className="flex-1 max-w-[100vw] overflow-auto">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -1690,7 +1690,7 @@ export default function ProductPageBuilder() {
                             </div>
                           )}
                           <div
-                            className={`flex flex-col md:flex-row ${
+                            className={`flex max-w-[100vw] flex-col md:flex-row ${
                               GAP_CLASSES[columnGap] || "gap-2"
                             } ${isPreviewMode ? "" : "mb-6"}`}
                           >
