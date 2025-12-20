@@ -12,6 +12,7 @@ import {
   getCartItems,
   setBuyNowProduct,
   toggleCart,
+  closeCart,
 } from "@/app/store/slices/cartSlice";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
@@ -144,6 +145,8 @@ const DynamicProductSlider = ({ content }) => {
 
   const handleBuyNow = async (e, productData) => {
     e.stopPropagation();
+    // Ensure cart sidebar is closed immediately - before any operations
+    dispatch(closeCart());
     // if (!isAuthenticated) {
     //   setAuthModalOpen(true);
     //   return;
@@ -181,8 +184,12 @@ const DynamicProductSlider = ({ content }) => {
         );
         return;
       }
-      await dispatch(getCartItems());
+      // Skip getCartItems for Buy Now - we use buyNowProduct which is separate
+      // await dispatch(getCartItems());
       setOverlayProduct(null);
+      // Open checkout popup immediately
+      dispatch(setCheckoutOpen());
+      // Navigate to checkout-popup page
       router.push("/checkout-popup");
 
       // track buy now (best-effort)

@@ -4,10 +4,11 @@ import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { useSelector } from "react-redux";
 import useTokenRefresh from "../hooks/useTokenRefresh";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector as useReduxSelector } from "react-redux";
 import { fetchSettings } from "./store/slices/settingSlice";
 import { fetchCategoryWithSubcategories } from "./store/slices/categorySlice";
+import { closeCart } from "./store/slices/cartSlice";
 import { usePathname } from "next/navigation";
 
 export default function ClientLayout({ children }) {
@@ -46,6 +47,11 @@ export default function ClientLayout({ children }) {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
+
+  // Close cart immediately on mount (synchronous, before useEffect)
+  React.useEffect(() => {
+    dispatch(closeCart());
+  }, [dispatch]);
 
   useEffect(() => {
     if (hasInitialized.current) return;

@@ -27,7 +27,7 @@ import {
   fetchCategories,
   fetchCategoryWithSubcategories,
 } from "@/app/store/slices/categorySlice";
-import { getCartItems, toggleCart } from "@/app/store/slices/cartSlice";
+import { getCartItems, toggleCart, closeCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from 'next/dynamic';
@@ -145,8 +145,20 @@ export default function Navbar({ initialCategories = [] }) {
 
   // Load cart items on mount to ensure badge shows correct count
   useEffect(() => {
+    // Ensure cart is closed on mount (before loading items)
+    dispatch(closeCart());
     // Load cart items when component mounts
-    dispatch(getCartItems());
+    dispatch(getCartItems()).then(() => {
+      // Ensure cart remains closed after items are loaded (with a small delay to handle race conditions)
+      setTimeout(() => {
+        dispatch(closeCart());
+      }, 100);
+    });
+    // Also ensure cart is closed after a short delay (safety net)
+    const timeoutId = setTimeout(() => {
+      dispatch(closeCart());
+    }, 500);
+    return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 

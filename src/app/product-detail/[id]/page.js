@@ -32,6 +32,7 @@ import {
   getCartItems,
   setBuyNowProduct,
   toggleCart,
+  closeCart,
 } from "@/app/store/slices/cartSlice";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
@@ -140,6 +141,8 @@ function ProductPage({ params }) {
   };
 
   const handleBuyNow = async () => {
+    // Ensure cart sidebar is closed immediately - before any operations
+    dispatch(closeCart());
     // if (!isAuthenticated) {
     //   setAuthModalOpen(true);
     //   return;
@@ -177,9 +180,12 @@ function ProductPage({ params }) {
         );
         return;
       }
-      await dispatch(getCartItems());
+      // Skip getCartItems for Buy Now - we use buyNowProduct which is separate
+      // await dispatch(getCartItems());
+      // Open checkout popup immediately
+      dispatch(setCheckoutOpen());
+      // Navigate to checkout-popup page
       router.push("/checkout-popup");
-      // dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
     }

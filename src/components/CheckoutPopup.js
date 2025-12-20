@@ -868,10 +868,8 @@ export default function CheckoutPopup() {
       if (location === "/checkout") {
         router.push("/");
       }
-      // Prevent body scroll when popup is open (only if not on checkout-popup page)
-      if (location !== "/checkout-popup") {
-        document.body.style.overflow = "hidden";
-      }
+      // Prevent body scroll when popup is open
+      document.body.style.overflow = "hidden";
     } else {
       // Restore body scroll when popup closes
       document.body.style.overflow = "";
@@ -938,16 +936,24 @@ export default function CheckoutPopup() {
   if (!checkoutOpen && !isCheckoutPopupPage) return null;
 
   return (
-    <div className={`${isCheckoutPopupPage ? 'min-h-screen' : 'fixed inset-0'} text-black ${isCheckoutPopupPage ? 'bg-[#f5f6fb]' : 'bg-black/60 backdrop-blur-sm'} flex items-center justify-center ${isCheckoutPopupPage ? '' : 'z-[9999]'} p-4`} onClick={(e) => {
-      if (e.target === e.currentTarget && !isCheckoutPopupPage) {
+    <div className={`fixed inset-0 text-black bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4`} onClick={(e) => {
+      if (e.target === e.currentTarget) {
         dispatch(setCheckoutClose());
+        if (isCheckoutPopupPage) {
+          router.push("/");
+        }
       }
     }}>
-      <div className={`bg-[#f5f6fb] shadow-xl w-full ${isCheckoutPopupPage ? 'max-w-full' : 'max-w-lg'} h-screen overflow-y-auto`}>
+      <div className={`bg-[#f5f6fb] shadow-xl w-full max-w-lg h-[90vh] max-h-[90vh] overflow-y-auto rounded-lg`}>
         {/* Header */}
         <div className="px-4 py-3 bg-white rounded-t-lg relative">
           <button
-            onClick={() => dispatch(setCheckoutClose())}
+            onClick={() => {
+              dispatch(setCheckoutClose());
+              if (isCheckoutPopupPage) {
+                router.push("/");
+              }
+            }}
             className="absolute left-4 top-4 text-black rounded-full p-1"
           >
             <ArrowLeft size={20} />
@@ -956,7 +962,7 @@ export default function CheckoutPopup() {
         </div>
 
         {/* Offer Banner */}
-        <div className="bg-green-100 text-black text-center py-1 px-4 text-xs font-medium">
+        <div className="bg-green-100 text-black text-center py-2 px-4 text-xs font-medium rounded-b-lg">
           Get Flat 5% Off On All Prepaid Orders
         </div>
 
@@ -1989,7 +1995,7 @@ export default function CheckoutPopup() {
 
         {/* Footer */}
         <div
-          className={`px-8 pb-4 ${!isAuthenticated && "mt-[32vh]"
+          className={`px-8 pb-4 rounded-b-lg ${!isAuthenticated && "mt-[32vh]"
             } text-xs flex justify-between mb-4 text-gray-500 text-center`}
         >
           T&C | Privacy Policy | IGAZC5
