@@ -121,13 +121,13 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    domains: [
-      "www.sampuranswadeshi.com",
-      "cdn.shopify.com",
-      "cdn.sanity.io",
-      "images.unsplash.com",
-      "bharat.nexprism.in",
-    ],
+    // domains: [
+    //   "www.sampuranswadeshi.com",
+    //   "cdn.shopify.com",
+    //   "cdn.sanity.io",
+    //   "images.unsplash.com",
+    //   "bharat.nexprism.in",
+    // ],
     remotePatterns: [
       {
         protocol: 'https',

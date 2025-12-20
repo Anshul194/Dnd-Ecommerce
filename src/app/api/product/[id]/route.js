@@ -9,8 +9,9 @@ import { ReviewSchema } from "../../../lib/models/Review.js";
 import mongoose from "mongoose";
 
 // GET /api/product/:id
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
+    const { params } = await context;
     const id = params.id;
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
