@@ -12,7 +12,7 @@ function Variant2({ coupons, couponSettings, isFullWidth = false }) {
     }
   };
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full md:max-w-[40vw]">
       <div className="text-center mb-6">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">
           💳 Discount Coupons
