@@ -62,20 +62,39 @@ function Variant5({ detailSettings }) {
     //   setAuthModalOpen(true);
     //   return;
     // }
+    
+    // Check if productData is loaded
+    if (!productData) {
+      toast.error("Product data is not loaded yet. Please wait...");
+      return;
+    }
+    
+    if (!productData.variants || !productData.variants[selectedVariant]) {
+      toast.error("Please select a valid variant");
+      return;
+    }
+    
     const price = productData.variants[selectedVariant];
+    
+    // Get product ID - try multiple possible field names
+    const productId = productData._id || productData.id || productData.productId || productData.product?._id || productData.product?.id;
+    if (!productId) {
+      console.error("Product data structure:", productData);
+      console.error("Available keys:", Object.keys(productData || {}));
+      toast.error("Product ID is not available. Please refresh the page.");
+      return;
+    }
+    
+    // Extract variant ID
+    const variantId = productData.variants[selectedVariant]?._id;
+    
     try {
       const resultAction = await dispatch(
         addToCart({
-          product: {
-            id: productData._id,
-            name: productData.name,
-            image: productData.thumbnail || productData.images[0],
-            variant: productData.variants[selectedVariant],
-            slug: productData.slug,
-          },
+          product: productId, // Pass just the ID string like main page
           quantity,
           price: price.salePrice || price.price,
-          variant: productData.variants[selectedVariant]._id,
+          variant: variantId,
         })
       );
       if (resultAction.error) {
@@ -87,11 +106,25 @@ function Variant5({ detailSettings }) {
         );
         return;
       }
-      await dispatch(getCartItems());
+      
+      // Only call getCartItems() if the server successfully added the item
+      // If addToCart fell back to localStorage (server failed), don't fetch from server
+      // because it won't have the item yet and will overwrite local state
+      const serverSuccess = resultAction.payload?._serverSuccess;
+      if (serverSuccess === true) {
+        setTimeout(async () => {
+          try {
+            await dispatch(getCartItems());
+          } catch (err) {
+            // Silently fail - cart is already updated locally
+          }
+        }, 500); // 500ms delay to allow server to process
+      }
+      
       try {
         trackEvent("ADD_TO_CART", {
-          productId: productData._id,
-          variantId: productData.variants[selectedVariant]?._id,
+          productId: productId,
+          variantId: variantId,
           quantity,
           user: isAuthenticated ? userId : "guest",
         });
