@@ -46,7 +46,7 @@ const ProductGrid = () => {
 
       {/* Products Grid */}
       {!loading && productList.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:px-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:px-4">
           {productList.map((product) => (
             <ProductCard
               key={product._id}

@@ -31,7 +31,7 @@ export default function FAQAccordion({ content }) {
 
   return (
     <div className="w-full py-10 lg:py-20 px-4">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-7">
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-7">
         {/* Left Section */}
         <div className="flex-1 w-full lg:w-1/2">
           <h1 className="text-4xl md:text-5xl leading-none font-black text-black mb-2">

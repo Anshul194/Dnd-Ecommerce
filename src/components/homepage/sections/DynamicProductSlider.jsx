@@ -344,7 +344,7 @@ const DynamicProductSlider = ({ content }) => {
           <div
             ref={sliderRef}
             onScroll={handleScroll}
-            className="grid grid-cols-2 gap-4 auto-rows-fr sm:grid-cols-3 md:grid-cols-4 lg:flex lg:overflow-x-auto scrollbar-hide lg:space-x-4 py-4 scroll-smooth"
+            className="grid grid-cols-2 gap-4 auto-rows-fr  md:grid-cols-3 lg:flex lg:overflow-x-auto scrollbar-hide lg:space-x-4 py-4 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {products?.products?.length > 0
