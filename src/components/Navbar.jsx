@@ -21,7 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchCategories,
@@ -143,28 +143,27 @@ export default function Navbar({ initialCategories = [] }) {
     }
   }, []); // Only run once on mount
 
-  // Load cart items on mount to ensure badge shows correct count
-  useEffect(() => {
-    // Ensure cart is closed on mount (before loading items)
+  // Close cart immediately on mount (synchronous, before paint)
+  useLayoutEffect(() => {
     dispatch(closeCart());
-    // Load cart items when component mounts
-    dispatch(getCartItems()).then(() => {
-      // Ensure cart remains closed after items are loaded (with a small delay to handle race conditions)
-      setTimeout(() => {
-        dispatch(closeCart());
-      }, 100);
-    });
-    // Also ensure cart is closed after a short delay (safety net)
-    const timeoutId = setTimeout(() => {
-      dispatch(closeCart());
-    }, 500);
-    return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, [dispatch]);
+
+  // Removed: Load cart items on mount - this was causing unnecessary API calls
+  // Cart items will be loaded from localStorage instead, and synced with server only when:
+  // 1. User opens the cart sidebar
+  // 2. User adds/removes items
+  // 3. User logs in/out
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Fetch wishlist when user logs in
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchWishlist());
+    }
+  }, [isAuthenticated, dispatch]);
 
   // Close search dropdown when clicking outside of it or the toggle button
   useEffect(() => {
