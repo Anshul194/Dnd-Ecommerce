@@ -215,24 +215,6 @@ function ProdDetTwo() {
                 {productData.name}
               </h1>
 
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={18}
-                      className="fill-orange-400 text-orange-400"
-                    />
-                  ))}
-                  <span className="text-sm text-gray-600 ml-2">
-                    4.7 (390 reviews)
-                  </span>
-                </div>
-                <div className="h-4 w-px bg-gray-300"></div>
-                <span className="text-sm text-green-600 font-medium">
-                  In Stock
-                </span>
-              </div>
 
               {/* Price Section */}
               <div className="mb-6">
