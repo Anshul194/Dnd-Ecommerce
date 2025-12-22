@@ -150,6 +150,22 @@ const SupportTickets = () => {
       // Dispatch the API call
       const result = await dispatch(createSupportTicket(formData)).unwrap();
 
+      // Close modal immediately
+      setIsTicketModalOpen(false);
+
+      // Reset form immediately
+      setTicketForm({
+        subject: "",
+        description: "",
+        priority: "medium",
+        customer: user?._id || "",
+        orderId: "",
+        attachments: [],
+      });
+
+     
+      setSelectedTicket(null);
+
       // Show success toast message
       toast.success(
         "Support ticket submitted. We'll get back to you within 24 hours. Thank you!",
@@ -165,17 +181,6 @@ const SupportTickets = () => {
 
       // Refresh tickets from API to get the latest data
       await dispatch(fetchCustomerTickets());
-
-      // Reset form and close modal
-      setTicketForm({
-        subject: "",
-        description: "",
-        priority: "medium",
-        customer: user?._id || "",
-        orderId: "",
-        attachments: [],
-      });
-      setIsTicketModalOpen(false);
 
       // Reset Redux state
       setTimeout(() => {

@@ -92,7 +92,6 @@ async function seedTenantDBs() {
     }
 
     await tenantConn.close();
-    // console.log(`✅ Seeded tenant DB: ${tenant.companyName}`);
   }
 
   await globalConn.close();
@@ -102,10 +101,8 @@ async function seedTenantDBs() {
 // Run seeding
 seedTenantDBs()
   .then(() => {
-    // console.log('✅ Seeding complete.');
     process.exit(0);
   })
   .catch(err => {
-    // console.error('❌ Seeding error:', err);
     process.exit(1);
   });

@@ -143,9 +143,7 @@ function DynamicHomepage2() {
     });
   });
 
-  // Debug logging to see what sections we have
-  // console.log("Available sections:", groupedContent.sections);
-  // console.log("Visible sections:", allSections);
+ 
 
   // Sort by order
   allSections.sort((a, b) => a.order - b.order);

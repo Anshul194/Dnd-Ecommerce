@@ -90,7 +90,6 @@ const ReturnRequestModal = ({ order, isOpen, onClose, onSuccess }) => {
                 setError(data.message || 'Failed to submit return request');
             }
         } catch (error) {
-            console.error('Return request error:', error);
             setError('Failed to submit return request. Please try again.');
         } finally {
             setLoading(false);

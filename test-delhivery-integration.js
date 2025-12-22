@@ -9,7 +9,6 @@ const DELHIVERY_TOKEN = process.env.DELHIVERY_API_TOKEN || '91be46abf4dde7d868b4
 // Test 1: Get waybill numbers
 async function testGetWaybill() {
   try {
-    console.log('🧪 Testing Delhivery Waybill Generation...');
     
     const response = await axios.get(
       `https://track.delhivery.com/waybill/api/bulk/json/?token=${DELHIVERY_TOKEN}&cl=BHARATGRAM%20B2C&count=3`
@@ -70,10 +69,8 @@ async function testCreateShipment(waybill) {
       }
     );
 
-    console.log('✅ Shipment Response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('❌ Shipment Error:', error.response?.data || error.message);
     return null;
   }
 }

@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import { redisWrapper } from "../../../config/redis.js";
 import { getSubdomain } from "@/app/lib/tenantDb";
 import { getDbConnection } from "../../../lib/tenantDb.js";
-import fetch from "node-fetch";
 
 export async function POST(request) {
   try {
@@ -34,40 +33,29 @@ export async function POST(request) {
     // Generate a 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-
-    // Always use generated OTP
+    // For testing purposes, use fixed OTP for specific numbers
     let finalOtp = otp;
-
+    if (
+      phone === "7014628523" ||
+      phone === "8347496266" ||
+      phone === "7016292085" ||
+      phone === "7774010984" ||
+      phone === "9725398019" ||
+      phone === "1234567890"
+    ) {
+      finalOtp = "123456";
+    }
 
     try {
       if (redisWrapper.isEnabled()) {
         await redisWrapper.setex(`otp:${phone}`, 300, finalOtp); // Store OTP for 5 minutes
-      }
-
-      // Send OTP via MSG91
-      const MSG91_AUTH_KEY = "414720AGI6HDghnl690de1a9P1";
-      const senderId = "BGUS"; // Use your approved sender ID
-      const templateId = "69283c13fd192c6b21371606"; // Optional: Add your template ID if required
-      const msg91Url = `https://api.msg91.com/api/v5/otp?template_id=${templateId}`;
-      const payload = {
-        mobile: phone,
-        otp: finalOtp,
-        authkey: MSG91_AUTH_KEY,
-        sender: senderId,
-        // Add more fields if required by your template
-      };
-
-      let msg91Response = null;
-      try {
-        msg91Response = await fetch(msg91Url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-      } catch (msg91Err) {
-        // Optionally log or handle MSG91 error
+        //console.log(`📩 OTP sent to ${phone}: ${finalOtp}`);
+      } else {
+        // //console.log(
+        //   `📴 Redis disabled - OTP would be: ${finalOtp} (for development)`
+        // );
+        // In production, you might want to handle this differently
+        // For now, we'll continue but log that Redis is disabled
       }
 
       return NextResponse.json(
@@ -77,16 +65,16 @@ export async function POST(request) {
           data: {
             isNewUser: !user,
             redisEnabled: redisWrapper.isEnabled(),
-            msg91Status: msg91Response && msg91Response.ok ? "sent" : "failed",
           },
         },
         { status: 200 }
       );
     } catch (redisError) {
+      //console.error("Redis error:", redisError);
       return NextResponse.json(
         {
           success: false,
-          message: "Failed to store OTP or send SMS",
+          message: "Failed to store OTP",
           error: redisError.message,
         },
         { status: 500 }
