@@ -113,7 +113,7 @@ const DynamicOfferBanner = ({ content }) => {
           </div>
         )}
 
-{console.log("check content ====> " , cta)}
+{/* {console.log("check content ====> " , cta)} */}
         {cta && (
           <Link href={cta.link || "/search"}>
             <button className="bg-white text-green-600 px-8 py-3 rounded-full font-bold uppercase hover:bg-gray-100 transition-all duration-300 flex items-center gap-2 mx-auto">

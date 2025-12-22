@@ -127,7 +127,6 @@ const DynamicHomepage = () => {
   const renderSection = (section, index) => {
     const { sectionType, content, _id } = section;
     const uniqueKey = _id || `section-${index}`;
-    //console.log("Rendering section: --->", section);
     switch (sectionType) {
       case "offerBanner":
         return <DynamicOfferBanner key={uniqueKey} content={content} />;

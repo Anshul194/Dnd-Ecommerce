@@ -39,7 +39,6 @@ export default function ValidatedSection2({ content }) {
     }
   };
 
-  // console.log("====================> ", certificates);
   return (
     <div className="w-full py-10 lg:py-20 px-4">
       <div className=" mx-auto">

@@ -139,7 +139,7 @@ const DynamicProductSlider = ({ content }) => {
         // non-blocking
       }
     } catch (error) {
-      console.warn("Add to cart error:", error);
+      // console.warn("Add to cart error:", error);
     }
   };
 

@@ -99,9 +99,7 @@ async function seedTenantDBs(singleTenantId = null) {
   const globalDbUri = process.env.MONGODB_URI;
 
   if (!globalDbUri) {
-    console.error(
-      "❌ Missing MONGODB_URI in environment. Set MONGODB_URI and retry."
-    );
+   
     throw new Error("MONGODB_URI not provided");
   }
 
@@ -113,10 +111,7 @@ async function seedTenantDBs(singleTenantId = null) {
   try {
     await waitForConnection(globalConn, 10000);
   } catch (err) {
-    console.error(
-      "❌ Could not connect to global DB:",
-      err && err.message ? err.message : err
-    );
+  
     await globalConn.close().catch(() => {});
     throw err;
   }
@@ -162,12 +157,8 @@ async function seedTenantDBs(singleTenantId = null) {
         await Role.replaceOne({ _id: role._id }, roleData, { upsert: true });
       }
 
-      console.log(`✅ Seeded tenant DB: ${tenant.companyName}`);
     } catch (err) {
-      console.error(
-        `❌ Failed to seed tenant ${tenant.companyName || tenant._id}:`,
-        err && err.message ? err.message : err
-      );
+    
     } finally {
       await tenantConn.close().catch(() => {});
     }
@@ -181,11 +172,9 @@ if (require.main === module) {
   const tenantId = process.argv[2] || null;
   seedTenantDBs(tenantId)
     .then(() => {
-      console.log("✅ Seeding complete.");
       process.exit(0);
     })
     .catch((err) => {
-      console.error("❌ Seeding error:", err);
       process.exit(1);
     });
 }
