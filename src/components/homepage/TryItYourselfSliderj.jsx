@@ -1,11 +1,10 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import Image from 'next/image';
 import teaOne from '../../../public/images/one.webp';
-import leaf from '../../../public/images/leaf.png';
 
-const TryItYourselfSlider = () => {
+const TryItYourselfSlider = memo(() => {
   const sliderRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -58,7 +57,17 @@ const TryItYourselfSlider = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const scroll = (direction) => {
+  const updateScrollButtons = useCallback(() => {
+    const container = sliderRef.current;
+    if (!container) return;
+    
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    
+    setCanScrollLeft(scrollLeft > 5);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+  }, []);
+
+  const scroll = useCallback((direction) => {
     const container = sliderRef.current;
     if (!container) return;
     
@@ -74,17 +83,9 @@ const TryItYourselfSlider = () => {
     setTimeout(() => {
       updateScrollButtons();
     }, 300);
-  };
+  }, [updateScrollButtons]);
 
-  const updateScrollButtons = () => {
-    const container = sliderRef.current;
-    if (!container) return;
-    
-    const { scrollLeft, scrollWidth, clientWidth } = container;
-    
-    setCanScrollLeft(scrollLeft > 5);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
-  };
+
 
   const handleScroll = () => {
     // Throttle the scroll updates
@@ -158,6 +159,7 @@ const TryItYourselfSlider = () => {
                       src={product.image} 
                       alt={product.name}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                 </div>
@@ -195,6 +197,6 @@ const TryItYourselfSlider = () => {
       `}</style>
     </div>
   );
-};
+});
 
 export default TryItYourselfSlider;

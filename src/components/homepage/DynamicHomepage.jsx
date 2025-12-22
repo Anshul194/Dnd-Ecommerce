@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGroupedContent } from "@/app/store/slices/contentSlice";
+import dynamic from "next/dynamic";
 
 // Import all existing components
 import Categories from "./Categories";
@@ -10,7 +11,15 @@ import FAQAccordion from "./FAQAccordion";
 import SeasonSaleBanner from "./SeasonSaleBanner";
 import TeaPartyBanner from "./TeaPartyBanner";
 import TestimonialSlider from "./TestimonialSlider";
-import TryItYourselfSlider from "./TryItYourselfSliderj";
+// Lazy load TryItYourselfSlider for better performance
+const TryItYourselfSlider = dynamic(() => import("./TryItYourselfSliderj"), {
+  loading: () => (
+    <div className="h-96 flex items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  ),
+  ssr: true
+});
 import ValidatedSection from "./ValidatedSection";
 import WhyUs from "./WhyUs";
 import BlogSection from "../BlogSection";

@@ -1,10 +1,28 @@
 "use client";
-import DynamicHomepage from "@/components/homepage/DynamicHomepage";
-import DynamicHomepage2 from "@/components/homepage/DynamicHomepage2";
+import dynamic from "next/dynamic";
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSettings } from "./store/slices/settingSlice";
 import { LoadingSpinner } from "@/components/common/Loading";
+
+// Dynamic imports for homepage components to reduce initial bundle size
+const DynamicHomepage = dynamic(() => import("@/components/homepage/DynamicHomepage"), {
+  loading: () => (
+    <div className="h-[90vh] flex justify-center items-center">
+      <LoadingSpinner />
+    </div>
+  ),
+  ssr: true
+});
+
+const DynamicHomepage2 = dynamic(() => import("@/components/homepage/DynamicHomepage2"), {
+  loading: () => (
+    <div className="h-[90vh] flex justify-center items-center">
+      <LoadingSpinner />
+    </div>
+  ),
+  ssr: true
+});
 
 export default function HomePage() {
   const { settings, loading } = useSelector((state) => state.setting);
