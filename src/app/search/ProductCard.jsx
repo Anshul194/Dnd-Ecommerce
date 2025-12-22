@@ -38,12 +38,40 @@ const ProductCard = ({ product, showDes, buyNow }) => {
   const { trackView, trackAddToCart, trackWishlist, trackRemoveWishlist } =
     useTrack();
 
-  // Fast check: is userId in product.wishlist array?
-  const isWishlisted =
+  // Get wishlist items from Redux for immediate updates
+  const wishlistItems = useSelector((state) => state.wishlist.items);
+
+  // Check if product is in Redux wishlist (for immediate UI updates)
+  const isInReduxWishlist = wishlistItems.some((item) => {
+    const itemProductId = String(item.product?._id || item.product?.id || '');
+    const productId = String(product._id || '');
+    
+    if (itemProductId !== productId) return false;
+    
+    // If variant exists, also check variant match
+    const variantId = product?.variants[0]?._id;
+    if (variantId) {
+      const itemVariantId = String(item.variant?._id || item.variant?.id || '');
+      return itemVariantId === String(variantId);
+    }
+    
+    return true;
+  });
+
+  // Fast check: is userId in product.wishlist array? (from server data - fallback only when Redux is empty)
+  const isWishlistedFromProduct =
     isAuthenticated &&
     userId &&
     Array.isArray(product.wishlist) &&
     product.wishlist.includes(userId);
+
+  // Always prioritize Redux state when available (even if empty)
+  // Only fallback to product data if Redux hasn't been initialized yet
+  // Check if Redux has been loaded by checking if wishlistItems is an array
+  const isReduxInitialized = Array.isArray(wishlistItems);
+  const isWishlisted = isReduxInitialized
+    ? isInReduxWishlist  // Always trust Redux state if it's been initialized
+    : isWishlistedFromProduct; // Only use product data if Redux hasn't loaded yet
 
   const handleProductClick = () => {
     // Track product view only when clicked
@@ -106,9 +134,11 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     }
   };
 
+  // Sync local state with Redux state and product data
+  // This ensures local state stays in sync, but we use isWishlisted directly for display
   useEffect(() => {
     setLocalWishlisted(isWishlisted);
-  }, [isWishlisted, product._id, userId]);
+  }, [isWishlisted, wishlistItems.length, product._id, userId]);
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
@@ -191,27 +221,41 @@ const ProductCard = ({ product, showDes, buyNow }) => {
                   }
                   setHeartAnimating(true);
 
-                  // currently based on server wishlist and local optimistic state
-                  const currentlyWishlisted = localWishlisted;
+                  // Use Redux state to determine current wishlist status
+                  const currentlyWishlisted = isWishlisted;
 
                   if (!currentlyWishlisted) {
+                    // Optimistically update for immediate UI feedback
                     setLocalWishlisted(true);
-                    await dispatch(
+                    const result = await dispatch(
                       addToWishlist({
                         product: product._id,
                         variant: product?.variants[0]?._id,
                       })
                     );
-                    trackWishlist(product._id);
+                    // If add failed, revert optimistic update
+                    if (result.error) {
+                      setLocalWishlisted(false);
+                      toast.error("Failed to add to wishlist");
+                    } else {
+                      trackWishlist(product._id);
+                    }
                   } else {
+                    // Optimistically update for immediate UI feedback
                     setLocalWishlisted(false);
-                    await dispatch(
+                    const result = await dispatch(
                       removeFromWishlist({
                         productId: product._id,
                         variantId: product?.variants[0]?._id,
                       })
                     );
-                    trackRemoveWishlist(product._id);
+                    // If remove failed, revert optimistic update
+                    if (result.error) {
+                      setLocalWishlisted(true);
+                      toast.error("Failed to remove from wishlist");
+                    } else {
+                      trackRemoveWishlist(product._id);
+                    }
                   }
 
                   setTimeout(() => setHeartAnimating(false), 400);
@@ -228,8 +272,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
                 >
                   <path
                     d="M20.84 4.61C20.3292 4.099 19.7228 3.69364 19.0554 3.41708C18.3879 3.14052 17.6725 2.99817 16.95 2.99817C16.2275 2.99817 15.5121 3.14052 14.8446 3.41708C14.1772 3.69364 13.5708 4.099 13.06 4.61L12 5.67L10.94 4.61C9.9083 3.5783 8.50903 2.9987 7.05 2.9987C5.59096 2.9987 4.19169 3.5783 3.16 4.61C2.1283 5.6417 1.5487 7.04097 1.5487 8.5C1.5487 9.95903 2.1283 11.3583 3.16 12.39L12 21.23L20.84 12.39C21.351 11.8792 21.7563 11.2728 22.0329 10.6053C22.3095 9.93789 22.4518 9.22248 22.4518 8.5C22.4518 7.77752 22.3095 7.06211 22.0329 6.3947C21.7563 5.72729 21.351 5.1208 20.84 4.61V4.61Z"
-                    stroke={localWishlisted ? "#e63946" : "black"}
-                    fill={localWishlisted ? "#e63946" : "none"}
+                    stroke={isWishlisted ? "#e63946" : "black"}
+                    fill={isWishlisted ? "#e63946" : "none"}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
