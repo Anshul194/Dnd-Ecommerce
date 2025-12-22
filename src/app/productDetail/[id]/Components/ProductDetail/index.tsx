@@ -203,6 +203,8 @@ export function ProductDetails({
   };
 
   const productData = {
+    _id: product?._id || product?.id || product?.variants?.[0]?.productId || null,
+    id: product?._id || product?.id || product?.variants?.[0]?.productId || null,
     name: product?.name || dummyProduct.name,
     subtitle: product?.subtitle || dummyProduct.subtitle,
     brand: product?.brand?.name || product?.brand || dummyProduct.brand,
@@ -222,6 +224,9 @@ export function ProductDetails({
     offers: product?.offers || dummyProduct.offers,
     usage: product?.usage || dummyProduct.usage,
     coupons: product?.coupons || dummyProduct.coupons,
+    slug: product?.slug || null,
+    thumbnail: product?.thumbnail || null,
+    images: product?.images || null,
   };
 
   const renderVariant = () => {
