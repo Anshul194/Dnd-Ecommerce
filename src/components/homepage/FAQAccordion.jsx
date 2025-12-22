@@ -54,7 +54,7 @@ export default function FAQAccordion({ content }) {
           </p>
 
           <button className="bg text-white px-6 py-3 rounded-md font-medium hover:bg transition-colors flex items-center gap-2">
-            {content.cta.title || "Get Started"}
+            {content?.cta?.title || "Get Started"}
             <span>→</span>
           </button>
         </div>
