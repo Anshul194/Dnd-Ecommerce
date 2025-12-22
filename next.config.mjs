@@ -170,6 +170,9 @@ const nextConfig = {
       },
     ],
   },
+
+  // Enable Turbopack (Next.js 16+)
+  turbopack: {},
 };
 
 export default withBundleAnalyzer(nextConfig);

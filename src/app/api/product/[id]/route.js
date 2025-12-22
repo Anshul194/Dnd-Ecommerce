@@ -10,8 +10,9 @@ import mongoose from "mongoose";
 
 // GET /api/product/:id
 export async function GET(req, { params }) {
+  const resolvedParams = await params;
   try {
-    const id = params.id;
+    const id = resolvedParams.id;
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
@@ -67,7 +68,10 @@ export async function GET(req, { params }) {
 }
 
 // PATCH /api/product/:id
+
+// PATCH and DELETE handlers must also unwrap params from a promise
 export async function PATCH(req, { params }) {
+  const resolvedParams = await params;
   try {
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
@@ -83,7 +87,7 @@ export async function PATCH(req, { params }) {
     const productService = new ProductService(productRepo);
     const productController = new ProductController(productService);
     const body = await req.json();
-    const response = await productController.update(params.id, body, conn);
+    const response = await productController.update(resolvedParams.id, body, conn);
     return NextResponse.json(response, {
       status: response.success ? 200 : 400,
     });
@@ -94,8 +98,9 @@ export async function PATCH(req, { params }) {
 
 // PUT /api/product/:id
 export async function PUT(req, { params }) {
+  const resolvedParams = await params;
   try {
-    const id = params.id;
+    const id = resolvedParams.id;
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Product ID is required" },
@@ -423,8 +428,9 @@ export async function PUT(req, { params }) {
 
 // DELETE /api/product/:id
 export async function DELETE(req, { params }) {
+  const resolvedParams = await params;
   try {
-    const id = params.id;
+    const id = resolvedParams.id;
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
