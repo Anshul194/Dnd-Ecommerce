@@ -24,39 +24,15 @@ async function getDbConnection(subdomain) {
   //consolle.log("getDbConnection subdomain: ===> ", subdomain);
   if (!subdomain || subdomain === "localhost") {
     // Use default DB (from env)
-
     return await dbConnect();
   } else {
-    // Connect to global DB to get tenant DB URI
+    // Remove "admin" if present in subdomain
     const subDomain = subdomain.includes("admin")
       ? subdomain.replace("admin", "")
-      : subdomain; // Remove port if any
-
+      : subdomain;
+    // Directly connect to the tenant DB using the subdomain
     const url = `mongodb+srv://anshul:anshul149@clusterdatabase.24furrx.mongodb.net/tenant_${subDomain}?retryWrites=true&w=majority`;
-
-    //consolle.log("Connecting to tenant DB for subdomain:", subDomain);
-    await dbConnect(url);
-    //consolle.log("Connected to global DB to fetch tenant info");
-    const Tenant =
-      mongoose.models.Tenant ||
-      mongoose.model(
-        "Tenant",
-        new mongoose.Schema(
-          {
-            name: String,
-            dbUri: String,
-            subdomain: String,
-          },
-          { collection: "tenants" }
-        )
-      );
-    const tenant = await Tenant.findOne({ subdomain: subDomain });
-    //consolle.log("tenant db is ==> ", tenant);
-    if (!tenant?.dbUri) return null;
-    // Connect to tenant DB
-
-    //consolle.log("tenant DB : ", tenant.dbUri);
-    return await dbConnect(tenant.dbUri);
+    return await dbConnect(url);
   }
 }
 
