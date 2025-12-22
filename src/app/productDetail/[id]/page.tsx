@@ -181,7 +181,7 @@ function DroppableColumn({
         isPreviewMode ? "min-h-0" : "min-h-96"
       } ${
         isPreviewMode ? "" : "p-2 border-2 border-dashed"
-      } transition-colors text-black ${
+      } transition-colors text-black w-full ${
         !isPreviewMode && isEmpty
           ? "border-gray-300 bg-gray-50"
           : !isPreviewMode && !isEmpty

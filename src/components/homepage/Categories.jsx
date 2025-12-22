@@ -66,7 +66,7 @@ const Categories = ({ dynamicContent = null }) => {
           }
         }
       `}</style>
-      <div className="flex relative flex-col gap-8 justify-between w-full h-fit py-20 px-4 lg:px-0">
+      <div className="flex relative flex-col gap-8 justify-between w-full h-fit py-20 md:px-4 lg:px-0">
         <div className="absolute -left-30 md:-left-1/4 top-3/4 transform -translate-y-1/2 -z-0">
           <Image
             className="w-[40vh] md:w-[50vh] rotate-[140deg] max-h-[600px]"
@@ -169,7 +169,7 @@ const Categories = ({ dynamicContent = null }) => {
               </Swiper>
             ) : (
               // Render as grid when 6 or fewer categories
-              <div className="flex flex-wrap gap-4 justify-center md:justify-center">
+              <div className="grid grid-cols-2 md:flex md:flex-row md:justify-center flex-wrap gap-4 justify-items-center">
                 {categories.length > 0 &&
                   categories.map((item, index) => (
                     <Link href={`/search?category=${item.slug}`} key={index}>

@@ -94,7 +94,7 @@ const TryItYourselfSlider = memo(() => {
   };
 
   return (
-    <div className="flex relative flex-col lg:flex-row justify-between w-full h-fit py-20 px-4 lg:px-0">
+    <div className="flex relative flex-col lg:flex-row justify-between w-full h-fit py-20 md:px-4 lg:px-0">
 
       {/* Left Content */}
       <div className="flex-1 relative mb-8 lg:mb-0 lg:mr-8 z-20">
@@ -140,17 +140,17 @@ const TryItYourselfSlider = memo(() => {
             </svg>
           </button>
 
-          {/* Slider Container */}
+          {/* Slider Container - Desktop only, Grid for Mobile */}
           <div 
             ref={sliderRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto scrollbar-hide space-x-4 md:px-12 py-4 scroll-smooth"
+            className="grid grid-cols-2 gap-4 md:flex md:overflow-x-auto md:scrollbar-hide md:gap-0 md:space-x-4 md:px-12 py-4 md:scroll-smooth"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {products.map((product) => (
               <div 
                 key={product.id} 
-                className="min-w-[280px] h-[340px] flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200"
+                className="w-full md:min-w-[280px] md:h-[340px] flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200"
               >
                 {/* Product Header */}
                 <div className="rounded-xl relative">

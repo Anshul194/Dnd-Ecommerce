@@ -30,8 +30,8 @@ const DynamicWhyUs = ({ content }) => {
 
         {/* Right content */}
         <div className="">
-          <div className="mt-10 flex flex-col lg:flex-row gap-6 lg:gap-20">
-            <div className=" w-[45%] max-sm:w-full h-full md:sticky md:top-28 bg-gray-400 rounded-lg flex-shrink-0 relative min-h-[300px]">
+          <div className="mt-10 flex flex-col md:flex-row gap-6 lg:gap-20">
+            <div className="max-sm:w-full sm:w-full md:w-[45%]   h-full md:sticky md:top-28 bg-gray-400 rounded-lg flex-shrink-0 relative min-h-[300px]">
               {/* Desktop Image */}
               <div className="hidden md:block w-full h-full relative">
                 <Image
@@ -55,7 +55,7 @@ const DynamicWhyUs = ({ content }) => {
                 />
               </div>
             </div>
-            <div className="w-1/2 max-sm:w-full">
+            <div className="w-full md:w-1/2  max-sm:w-full">
               <h1 className="text-3xl md:text-5xl leading-none mb-5 text-black font-black">
                 {title || "WHY US?"}
               </h1>
