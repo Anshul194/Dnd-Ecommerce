@@ -4,9 +4,35 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 
 export const fetchBrands = createAsyncThunk(
   "brand/fetchBrands",
-  async () => {
-    const response = await axiosInstance.get("/api/brand");
-    return response.data.data;
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/api/brand");
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+      
+      // Prevent concurrent calls if already loading
+      if (state.brand.loading) {
+        return false;
+      }
+      
+      // Prevent API call if cache is valid
+      if (
+        state.brand.brands?.length > 0 &&
+        state.brand.lastFetched &&
+        now - state.brand.lastFetched < CACHE_DURATION
+      ) {
+        return false; // Cancel the request
+      }
+      return true; // Proceed with the request
+    }
   }
 );
 
@@ -16,6 +42,7 @@ const brandSlice = createSlice({
     brands: [],
     loading: false,
     error: null,
+    lastFetched: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -27,10 +54,11 @@ const brandSlice = createSlice({
       .addCase(fetchBrands.fulfilled, (state, action) => {
         state.loading = false;
         state.brands = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchBrands.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
       });
   },
 });

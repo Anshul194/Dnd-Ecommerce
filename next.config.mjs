@@ -18,7 +18,7 @@ const nextConfig = {
 
   // Experimental optimizations
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Disabled - requires critters package
     optimizePackageImports: ['lucide-react', 'react-toastify', 'swiper'],
   },
 
@@ -99,6 +99,41 @@ const nextConfig = {
         "@nodelib/fs.stat": resolve(__dirname, "./lib/empty-fs-module.js"),
         "@nodelib/fs.walk": resolve(__dirname, "./lib/empty-fs-module.js"),
         "fast-glob": resolve(__dirname, "./lib/empty-glob-module.js"),
+      };
+
+      // Optimize bundle splitting for better caching
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunk for node_modules
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /node_modules/,
+              priority: 20
+            },
+            // Common chunk for shared code
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 10,
+              reuseExistingChunk: true,
+              enforce: true
+            },
+            // Separate chunk for React and Redux
+            react: {
+              name: 'react-vendor',
+              test: /[\\/]node_modules[\\/](react|react-dom|redux|react-redux|@reduxjs)[\\/]/,
+              chunks: 'all',
+              priority: 30
+            }
+          }
+        }
       };
     }
 

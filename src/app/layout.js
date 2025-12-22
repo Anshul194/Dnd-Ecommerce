@@ -22,6 +22,21 @@ export default function RootLayout({ children }) {
           name="format-detection"
           content="telephone=no, date=no, email=no, address=no"
         />
+        {/* Preload critical fonts for faster First Contentful Paint */}
+        <link
+          rel="preload"
+          href="/fonts/Poppins-Regular.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/BebasNeue-Regular.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
       </head>
       <body suppressHydrationWarning={true}>
         <Providers>

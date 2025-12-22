@@ -12,6 +12,28 @@ export const fetchCoupons = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState();
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+      
+      // Prevent concurrent calls if already loading
+      if (state.coupons.loading) {
+        return false;
+      }
+      
+      // Prevent API call if cache is valid
+      if (
+        state.coupons.items?.length > 0 &&
+        state.coupons.lastFetched &&
+        now - state.coupons.lastFetched < CACHE_DURATION
+      ) {
+        return false; // Cancel the request
+      }
+      return true; // Proceed with the request
+    }
   }
 );
 
@@ -59,6 +81,7 @@ const couponSlice = createSlice({
     loading: false,
     error: null,
     selectedCoupon: null,
+    lastFetched: null,
   },
   reducers: {
     setSelectedCoupon: (state, action) => {
@@ -77,6 +100,7 @@ const couponSlice = createSlice({
       .addCase(fetchCoupons.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchCoupons.rejected, (state, action) => {
         state.loading = false;
