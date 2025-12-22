@@ -45,6 +45,7 @@ import { fetchSettings } from "@/app/store/slices/settingSlice";
 import axiosInstance from "@/axiosConfig/axiosInstance";
 import { LoadingSpinner } from "./common/Loading";
 import { useTrack } from "@/app/lib/tracking/useTrack";
+import { fetchPages } from "@/app/store/slices/pagesSlice";
 
 export default function CheckoutPopup() {
   const checkoutOpen = useSelector((state) => state.checkout.checkoutOpen);
@@ -63,10 +64,12 @@ export default function CheckoutPopup() {
   const { cartItems, buyNowProduct } = useSelector((state) => state.cart);
   const { selectedCoupon } = useSelector((state) => state.coupon);
   const { settings } = useSelector((state) => state.setting);
+  const { list: pagesList } = useSelector((state) => state.pages);
   //console.log("Settings:", settings);
   const [couponCode, setCouponCode] = useState("");
   const [activeField, setActiveField] = useState(null);
   const [isLogged, setIsLogged] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const inputRefs = useRef([]); // Array of refs for each input field
   const [SelectedProduct, setSelectedProduct] = useState(null);
   const dispatch = useDispatch();
@@ -781,13 +784,15 @@ export default function CheckoutPopup() {
   };
 
   useEffect(() => {
+    setMounted(true);
     dispatch(
       fetchProducts({
         isAddon: true,
       })
     );
+    dispatch(fetchPages());
     // Settings are already fetched and cached by ClientLayout - no need to fetch again
-  }, []);
+  }, [dispatch]);
 
   // Calculate bill values
   const itemsTotal = buyNowProduct
@@ -928,6 +933,30 @@ export default function CheckoutPopup() {
     if (err?.data?.message) return err.data.message;
     if (err?.payload?.message) return err.payload.message;
     return JSON.stringify(err);
+  };
+
+  // Helper to find Terms and Conditions page
+  const getTermsPageUrl = () => {
+    if (!pagesList || !Array.isArray(pagesList)) return null;
+    
+    for (const group of pagesList) {
+      if (group.pages && Array.isArray(group.pages)) {
+        const termsPage = group.pages.find(
+          (page) =>
+            page.title &&
+            (page.title.toLowerCase().includes("terms") ||
+              page.title.toLowerCase().includes("t&c") ||
+              page.title.toLowerCase().includes("terms and conditions"))
+        );
+        
+        if (termsPage) {
+          return termsPage.redirectBySlug
+            ? `/${termsPage.slug}`
+            : `/pages/${termsPage._id}`;
+        }
+      }
+    }
+    return null;
   };
 
   // If we're on the checkout-popup page, always show the popup (don't check checkoutOpen)
@@ -1998,9 +2027,36 @@ export default function CheckoutPopup() {
           className={`px-8 pb-4 rounded-b-lg ${!isAuthenticated && "mt-[32vh]"
             } text-xs flex justify-between mb-4 text-gray-500 text-center`}
         >
-          T&C | Privacy Policy | IGAZC5
+          {getTermsPageUrl() && getTermsPageUrl() !== "#" ? (
+            <>
+              <span
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Close popup state
+                  dispatch(setCheckoutClose());
+                  // Navigate to terms page - this will change route and hide popup if on checkout-popup
+                  const termsUrl = getTermsPageUrl();
+                  if (isCheckoutPopupPage) {
+                    // If on checkout-popup route, replace it with terms page
+                    router.replace(termsUrl);
+                  } else {
+                    // Otherwise, push to terms page
+                    router.push(termsUrl);
+                  }
+                }}
+                className="hover:text-gray-700 hover:underline cursor-pointer"
+              >
+                T&C
+              </span>
+              {" | "}
+            </>
+          ) : (
+            "T&C | "
+          )}
+          Privacy Policy | IGAZC5
           <br />
-          <span className="text-gray-400">Powered by Shiprocket</span>
+         
         </div>
       </div>
     </div>
