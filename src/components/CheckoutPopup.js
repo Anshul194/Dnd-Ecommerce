@@ -1995,7 +1995,7 @@ export default function CheckoutPopup() {
               {pincodeChecking
                 ? "Checking..."
                 : pinCodeVerified?.success
-                  ? `  Place Order (₹${total})`
+                  ? `  Place Order (₹${total?.toFixed(2)})`
                   : "Check Pincode"}
             </button>
           )}
