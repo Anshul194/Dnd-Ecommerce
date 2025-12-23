@@ -5,7 +5,6 @@ import Filter from "./Filter";
 import ProductCard from "./ProductCard";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import Category from "../lib/models/Category";
 import { fetchProducts } from "../store/slices/productSlice";
 import { LoadingSpinner } from "@/components/common/Loading";
 
