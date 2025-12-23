@@ -79,11 +79,6 @@ class ProductRepository extends CrudRepository {
           }
         );
 
-        wishlistSchema.pre("save", function (next) {
-          this.updatedAt = Date.now();
-          next();
-        });
-
         Wishlist = connection.model("Wishlist", wishlistSchema);
       } else {
         Wishlist = connection.models.Wishlist;
