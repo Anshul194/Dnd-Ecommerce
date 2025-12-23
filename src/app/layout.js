@@ -55,6 +55,7 @@ export default function RootLayout({ children }) {
             <CheckoutPopup />
             {/* <OrderPopup /> */}
             {children ?? null}
+            
           </ClientLayout>
         </Providers>
       </body>
