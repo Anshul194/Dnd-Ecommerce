@@ -309,11 +309,20 @@ export async function hasModulePermission(user, moduleId, permission = null, con
  * Route Protection for Authenticated Users (any user)
  */
 export function withUserAuth(handler) {
-    return async function (request, ...args) {
-        const authResult = await verifyTokenAndUser(request, 'user');
-        if (authResult.error) return authResult.error;
+    return async function (request, context) {
+        try {
+            const authResult = await verifyTokenAndUser(request, 'user');
+            if (authResult.error) return authResult.error;
 
-        request.user = authResult.user;
-        return handler(request, ...args);
+            request.user = authResult.user;
+            // Only pass request to handler, not context or next
+            return await handler(request);
+        } catch (error) {
+            console.error('withUserAuth error:', error);
+            return NextResponse.json(
+                { success: false, error: error.message || 'Authentication failed' },
+                { status: 500 }
+            );
+        }
     };
 }
