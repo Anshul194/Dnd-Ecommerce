@@ -13,7 +13,7 @@ import {
 
 // GET /api/attribute/:id
 export async function GET(req, context) {
-  const { params } = context;
+  const params = await context.params;
   const id = params?.id;
   const subdomain = getSubdomain(req);
   const conn = await getDbConnection(subdomain);
@@ -35,7 +35,7 @@ export async function GET(req, context) {
 
 // PUT /api/attribute/:id
 export async function PUT(req, context) {
-  const { params } = context;
+  const params = await context.params;
   const id = params?.id;
   const subdomain = getSubdomain(req);
   const conn = await getDbConnection(subdomain);
@@ -52,7 +52,7 @@ export async function PUT(req, context) {
 
 // PATCH /api/attribute/:id
 export async function PATCH(req, context) {
-  const { params } = context;
+  const params = await context.params;
   const id = params?.id;
   const subdomain = getSubdomain(req);
   const conn = await getDbConnection(subdomain);
@@ -69,7 +69,7 @@ export async function PATCH(req, context) {
 
 // DELETE /api/attribute/:id
 export async function DELETE(req, context) {
-  const { params } = context;
+  const params = await context.params;
   const id = params?.id;
   const subdomain = getSubdomain(req);
   const conn = await getDbConnection(subdomain);
