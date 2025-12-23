@@ -24,7 +24,7 @@ export default function TeaPartyBanner({ content }) {
 
       {/* Mobile image (shown on small screens) */}
       <Image
-        src={content?.mobileImage || "/images/teabanner-mobile.webp"}
+        src={content?.mobileImage || "/images/teabanner.webp"}
         alt="Tea Party Banner Mobile"
         fill
         style={{ objectFit: "cover" }}

@@ -15,7 +15,6 @@ import { getSubdomain, getDbConnection } from "../../../lib/tenantDb";
 import { getUserById, withUserAuth } from "../../../middleware/commonAuth.js";
 import userSchema from "@/app/lib/models/User.js";
 import UserService from "@/app/lib/services/userService.js";
-import { json } from "stream/consumers";
 
 export async function POST(req) {
   try {

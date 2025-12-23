@@ -1,3 +1,5 @@
+"use client";
+
 import React, { Suspense, use, useEffect, useState } from "react";
 import {
   Package,
@@ -27,7 +29,6 @@ import { useDispatch, useSelector } from "react-redux";
 import Loading from "@/components/Loading";
 import { useRouter, useSearchParams } from "next/navigation";
 import { addReview, fetchProducts } from "@/app/store/slices/productSlice";
-import { set } from "mongoose";
 import { LoadingSpinner } from "../common/Loading";
 import Link from "next/link";
 import ReturnRequestModal from "../orders/ReturnRequestModal";
