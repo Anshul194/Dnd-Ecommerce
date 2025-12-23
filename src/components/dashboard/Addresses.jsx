@@ -17,7 +17,7 @@ import {
 } from "@/app/store/slices/authSlice";
 
 const Addresses = () => {
-  const [addresses, setAddresses] = useState(null);
+  const [addresses, setAddresses] = useState([]);
   const { user } = useSelector((state) => state.auth);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
@@ -49,7 +49,7 @@ const Addresses = () => {
     // Simulate fetching addresses from an API
     const response = await dispatch(getuserAddresses(user._id));
     //console.log("Fetched addresses:", response);
-    setAddresses(response.payload || []);
+    setAddresses(Array.isArray(response.payload) ? response.payload : []);
   };
 
   const handleSubmit = async (e) => {
