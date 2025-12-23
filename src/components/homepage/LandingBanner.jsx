@@ -12,10 +12,10 @@ function LandingBanner({ content }) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    if (!content || !Array.isArray(content) || content.length === 0) return;
+    if (!content || !Array.isArray(content) || content?.length === 0) return;
     
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % content.length);
+      setCurrentSlide((prev) => (prev + 1) % content?.length);
     }, 5000);
     return () => clearInterval(timer);
   }, [content]);
