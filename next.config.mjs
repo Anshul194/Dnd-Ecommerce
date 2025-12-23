@@ -76,6 +76,7 @@ const nextConfig = {
         net: false,
         tls: false,
         child_process: false,
+        async_hooks: false,
       };
 
       // Specifically handle the Tailwind CSS -> fast-glob -> @nodelib/fs chain
