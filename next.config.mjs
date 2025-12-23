@@ -90,6 +90,9 @@ const nextConfig = {
         new webpack.IgnorePlugin({
           resourceRegExp: /@nodelib\/fs/,
           contextRegExp: /node_modules/,
+        }),
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^mongoose$/,
         })
       );
 
