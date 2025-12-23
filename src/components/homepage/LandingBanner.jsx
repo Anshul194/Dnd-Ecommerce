@@ -12,11 +12,13 @@ function LandingBanner({ content }) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    if (!content || !Array.isArray(content) || content.length === 0) return;
+    
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % content.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [content]);
 
   // detect small screens and update on resize / orientation change
   useEffect(() => {
@@ -41,10 +43,12 @@ function LandingBanner({ content }) {
   }, []);
 
   const nextSlide = () => {
+    if (!content || !Array.isArray(content) || content.length === 0) return;
     setCurrentSlide((prev) => (prev + 1) % content.length);
   };
 
   const prevSlide = () => {
+    if (!content || !Array.isArray(content) || content.length === 0) return;
     setCurrentSlide((prev) => (prev - 1 + content.length) % content.length);
   };
 
