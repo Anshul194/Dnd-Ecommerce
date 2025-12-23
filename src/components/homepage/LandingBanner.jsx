@@ -6,17 +6,23 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { Button } from "../ui/button";
 
-function LandingBanner({ content }) {
+function LandingBanner({ content = [] }) {
   // console.log("content is ===> ", content);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
+  // Ensure content is an array and has items
+  const safeContent = Array.isArray(content) ? content : [];
+  const contentLength = safeContent.length || 1; // Prevent division by zero
+
   useEffect(() => {
+    if (contentLength <= 1) return; // Don't set timer if there's only one or no slides
+    
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % content.length);
+      setCurrentSlide((prev) => (prev + 1) % contentLength);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [contentLength]);
 
   // detect small screens and update on resize / orientation change
   useEffect(() => {
@@ -41,14 +47,21 @@ function LandingBanner({ content }) {
   }, []);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % content.length);
+    if (contentLength <= 1) return;
+    setCurrentSlide((prev) => (prev + 1) % contentLength);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + content.length) % content.length);
+    if (contentLength <= 1) return;
+    setCurrentSlide((prev) => (prev - 1 + contentLength) % contentLength);
   };
 
-  const currentContent = content?.[currentSlide]?.content;
+  // Early return if no content
+  if (!safeContent || safeContent.length === 0) {
+    return null;
+  }
+
+  const currentContent = safeContent?.[currentSlide]?.content;
   const hasCtaLink = currentContent?.cta?.link;
   const hasCtaTitle = currentContent?.cta?.title;
   const ctaLinkHref = hasCtaLink?.includes("about")
@@ -142,19 +155,21 @@ function LandingBanner({ content }) {
       </button>
 
       {/* Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
-        {content?.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`h-2 rounded-full transition-all ${
-              index === currentSlide
-                ? "bg-white w-10 shadow-lg"
-                : "bg-white/50 w-2 hover:bg-white/70"
-            }`}
-          />
-        ))}
-      </div>
+      {contentLength > 1 && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
+          {safeContent.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`h-2 rounded-full transition-all ${
+                index === currentSlide
+                  ? "bg-white w-10 shadow-lg"
+                  : "bg-white/50 w-2 hover:bg-white/70"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
