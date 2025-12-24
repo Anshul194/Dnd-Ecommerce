@@ -4,8 +4,14 @@ import shippingController from '../../../lib/controllers/shippingContoller.js';
 import { withUserAuth } from '../../../middleware/commonAuth.js';
 import mongoose from 'mongoose';
 
-export const GET = withUserAuth(async function (request, { params }) {
+export const GET = withUserAuth(async function (request, context) {
   try {
+    // Extract params from context (params may be a promise in Next.js 13.4+)
+    const params = context?.params ? (await context.params || context.params) : null;
+    if (!params || !params.id) {
+      return NextResponse.json({ success: false, error: 'Shipping ID is required' }, { status: 400 });
+    }
+    
     const subdomain = getSubdomain(request);
     //consolle.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
@@ -22,12 +28,18 @@ export const GET = withUserAuth(async function (request, { params }) {
     return await shippingController.getShippingById(request, null, id, conn);
   } catch (err) {
     //consolle.error('Shipping GET by ID error:', err.message, err.stack);
-    return NextResponse.json({ success: false, message: err.message }, { status: 400 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 });
 
-export const PUT = withUserAuth(async function (request, { params }) {
+export const PUT = withUserAuth(async function (request, context) {
   try {
+    // Extract params from context (params may be a promise in Next.js 13.4+)
+    const params = context?.params ? (await context.params || context.params) : null;
+    if (!params || !params.id) {
+      return NextResponse.json({ success: false, error: 'Shipping ID is required' }, { status: 400 });
+    }
+    
     const subdomain = getSubdomain(request);
     //consolle.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
@@ -46,12 +58,18 @@ export const PUT = withUserAuth(async function (request, { params }) {
     return await shippingController.updateShipping(request, null, body, id, conn);
   } catch (err) {
     //consolle.error('Shipping PUT error:', err.message, err.stack);
-    return NextResponse.json({ success: false, message: err.message }, { status: 400 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 });
 
-export const DELETE = withUserAuth(async function (request, { params }) {
+export const DELETE = withUserAuth(async function (request, context) {
   try {
+    // Extract params from context (params may be a promise in Next.js 13.4+)
+    const params = context?.params ? (await context.params || context.params) : null;
+    if (!params || !params.id) {
+      return NextResponse.json({ success: false, error: 'Shipping ID is required' }, { status: 400 });
+    }
+    
     const subdomain = getSubdomain(request);
     //consolle.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
@@ -68,6 +86,6 @@ export const DELETE = withUserAuth(async function (request, { params }) {
     return await shippingController.deleteShipping(request, null, id, conn);
   } catch (err) {
     //consolle.error('Shipping DELETE error:', err.message, err.stack);
-    return NextResponse.json({ success: false, message: err.message }, { status: 400 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 });

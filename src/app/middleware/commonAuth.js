@@ -315,8 +315,8 @@ export function withUserAuth(handler) {
             if (authResult.error) return authResult.error;
 
             request.user = authResult.user;
-            // Only pass request to handler, not context or next
-            return await handler(request);
+            // Pass both request and context to handler so params are available
+            return await handler(request, context);
         } catch (error) {
             console.error('withUserAuth error:', error);
             return NextResponse.json(
