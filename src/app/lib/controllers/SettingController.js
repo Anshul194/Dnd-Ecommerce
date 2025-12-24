@@ -10,7 +10,7 @@ class SettingController {
       const SettingRepo = new SettingRepository(SettingModel);
       const settingService = new SettingService(SettingRepo);
       const setting = await settingService.getSetting(tenant);
-      return NextResponse.json({ success: true, setting }, { status: 200 });
+      return NextResponse.json({ success: true, setting , tenant }, { status: 200 });
     } catch (err) {
       return NextResponse.json({ success: false, message: err.message }, { status: 400 });
     }
