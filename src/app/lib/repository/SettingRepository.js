@@ -6,6 +6,7 @@ class SettingRepository {
   }
 
   async getSetting(tenant) {
+    console?.log("here the tenant",tenant);
     return await this.model.findOne({ tenant });
   }
 
