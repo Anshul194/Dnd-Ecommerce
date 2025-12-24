@@ -9,18 +9,29 @@ import mongoose from "mongoose";
 // DELETE /api/product/image/:id
 export async function DELETE(req, { params }) {
   try {
-    const imageId = params.id; // Image _id from the route
+    // Normalize and sanitize incoming id from route params
+    let imageId = params.id; // Image _id from the route
+    if (typeof imageId !== "string") imageId = String(imageId || "");
+    try {
+      imageId = decodeURIComponent(imageId).trim();
+    } catch (e) {
+      imageId = (imageId || "").trim();
+    }
     const subdomain = getSubdomain(req);
     //consolle.log('Subdomain:', subdomain);
     //consolle.log('Attempting to delete image with ID:', imageId);
 
-    // Validate imageId format
+    // Validate imageId format; allow a cleaned hex-only fallback
     if (!imageId || !mongoose.isValidObjectId(imageId)) {
-      //consolle.log('Invalid image ID format:', imageId);
-      return NextResponse.json(
-        { success: false, message: "Invalid image ID format" },
-        { status: 400 }
-      );
+      const hex = (imageId || "").replace(/[^0-9a-fA-F]/g, "");
+      if (!(hex.length === 24 && mongoose.isValidObjectId(hex))) {
+        console.log("Invalid image ID format:", imageId, "-> hex:", hex);
+        return NextResponse.json(
+          { success: false, message: "Invalid image ID format" },
+          { status: 400 }
+        );
+      }
+      imageId = hex;
     }
 
     const conn = await getDbConnection(subdomain);
