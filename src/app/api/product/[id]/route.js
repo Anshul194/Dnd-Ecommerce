@@ -60,8 +60,9 @@ export async function GET(req, context) {
       { status: 200 }
     );
   } catch (error) {
+    console.error("Product GET error:", error.stack || error);
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: error.message, stack: error.stack },
       { status: 500 }
     );
   }
