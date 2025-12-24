@@ -16,13 +16,13 @@ function LandingBanner({ content = [] }) {
   const contentLength = safeContent.length || 1; // Prevent division by zero
 
   useEffect(() => {
-    if (contentLength <= 1) return; // Don't set timer if there's only one or no slides
+    if (!content || !Array.isArray(content) || content?.length === 0) return;
     
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % contentLength);
+      setCurrentSlide((prev) => (prev + 1) % content?.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [contentLength]);
+  }, [content]);
 
   // detect small screens and update on resize / orientation change
   useEffect(() => {
@@ -48,13 +48,20 @@ function LandingBanner({ content = [] }) {
 
   const nextSlide = () => {
     if (contentLength <= 1) return;
+    if (!content || !Array.isArray(content) || content.length === 0) return;
     setCurrentSlide((prev) => (prev + 1) % contentLength);
   };
 
   const prevSlide = () => {
     if (contentLength <= 1) return;
+    if (!content || !Array.isArray(content) || content.length === 0) return;
     setCurrentSlide((prev) => (prev - 1 + contentLength) % contentLength);
   };
+
+  // Early return if no content
+  if (!safeContent || safeContent.length === 0) {
+    return null;
+  }
 
   // Early return if no content
   if (!safeContent || safeContent.length === 0) {

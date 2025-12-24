@@ -33,9 +33,4 @@ export const wishlistSchema = new mongoose.Schema({
   timestamps: true
 });
 
-wishlistSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
-
 export default mongoose.models.Wishlist || mongoose.model('Wishlist', wishlistSchema);

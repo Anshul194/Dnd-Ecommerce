@@ -104,9 +104,4 @@ export const cartSchema = new mongoose.Schema(
   }
 );
 
-cartSchema.pre("save", function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
-
 export default mongoose.models.Cart || mongoose.model("Cart", cartSchema);

@@ -6,6 +6,8 @@ import { signUp } from "../store/slices/authSlice";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoadingSpinner } from "@/components/common/Loading";
 import { toast } from "react-toastify";
+import Image from "next/image";
+import Link from "next/link";
 
 export function SignupPage() {
   const [formData, setFormData] = useState({
@@ -92,7 +94,16 @@ export function SignupPage() {
         <div className="flex-1 bg-gradient-to-br from-green-500 to-green-600 p-6 sm:p-8 lg:p-12 text-white flex flex-col justify-center">
           <div className="mb-6 lg:mb-8">
             <div className="flex items-center mb-4 lg:mb-6">
-              <div className="text-2xl sm:text-3xl font-bold">🍃 TEABOX</div>
+              <div className="text-2xl sm:text-3xl font-bold">
+                <Link href="/" className="text-black">
+                                                <Image
+                                                  src="/logo.webp"
+                                                  alt="TeaHaven Logo"
+                                                  width={80}
+                                                  height={80}
+                                                  className="rounded-full h-[70px] w-[70px] max-sm:h-[60px] max-sm:w-[60px] object-cover "
+                                                />
+                                              </Link> TEABOX</div>
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 leading-tight">
               Welcome to the World of Fresh Indian Tea's!

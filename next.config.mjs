@@ -76,6 +76,7 @@ const nextConfig = {
         net: false,
         tls: false,
         child_process: false,
+        async_hooks: false,
       };
 
       // Specifically handle the Tailwind CSS -> fast-glob -> @nodelib/fs chain
@@ -89,6 +90,9 @@ const nextConfig = {
         new webpack.IgnorePlugin({
           resourceRegExp: /@nodelib\/fs/,
           contextRegExp: /node_modules/,
+        }),
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^mongoose$/,
         })
       );
 
