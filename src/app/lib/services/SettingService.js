@@ -16,7 +16,14 @@ class SettingService {
     if (checkTenant && checkTenant.endsWith("admin")) {
       newTenant = checkTenant.replace(/admin$/, "");
     } // Persist using the cleaned tenant value when available.
+    // Persist using the cleaned tenant value when available.
     const tenantToUse = newTenant || tenant;
+    
+    // If the tenant is 'admin', update ALL tenants
+    if (tenantToUse === 'admin') {
+      return await this.settingRepository.updateAllSettings(data);
+    }
+    
     return await this.settingRepository.updateSetting(tenantToUse, data);
   }
 }

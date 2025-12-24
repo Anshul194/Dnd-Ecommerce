@@ -44,7 +44,7 @@ export const updateSettings = createAsyncThunk(
   async (updatedData, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.put("/settings", updatedData);
-      return response.data?.data || {};
+      return response.data?.setting || {};
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
