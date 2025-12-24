@@ -4,8 +4,12 @@ import { SettingSchema } from "../models/Setting.js";
 import { NextResponse } from "next/server";
 
 class SettingController {
+
   async getSetting(req, _res, conn, tenant) {
     try {
+     if(tenant=="bharatgramudyogsangh"){
+       tenant="bharat";
+     }
       const SettingModel = conn.models.Setting || conn.model("Setting", SettingSchema);
       const SettingRepo = new SettingRepository(SettingModel);
       const settingService = new SettingService(SettingRepo);
