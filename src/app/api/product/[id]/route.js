@@ -9,8 +9,8 @@ import { ReviewSchema } from "../../../lib/models/Review.js";
 import mongoose from "mongoose";
 
 // GET /api/product/:id
-export async function GET(req, { params }) {
-  const resolvedParams = await params;
+export async function GET(req, context) {
+  const resolvedParams = await context.params;
   try {
     const id = resolvedParams.id;
     const subdomain = getSubdomain(req);
@@ -70,8 +70,8 @@ export async function GET(req, { params }) {
 // PATCH /api/product/:id
 
 // PATCH and DELETE handlers must also unwrap params from a promise
-export async function PATCH(req, { params }) {
-  const resolvedParams = await params;
+export async function PATCH(req, context) {
+  const resolvedParams = await context.params;
   try {
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
@@ -97,10 +97,16 @@ export async function PATCH(req, { params }) {
 }
 
 // PUT /api/product/:id
-export async function PUT(req, { params }) {
-  const resolvedParams = await params;
+export async function PUT(req, context) {
   try {
-    const id = resolvedParams.id;
+    if (!context || !context.params) {
+      return NextResponse.json(
+        { success: false, message: "Invalid request context" },
+        { status: 400 }
+      );
+    }
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Product ID is required" },
@@ -427,8 +433,8 @@ export async function PUT(req, { params }) {
 }
 
 // DELETE /api/product/:id
-export async function DELETE(req, { params }) {
-  const resolvedParams = await params;
+export async function DELETE(req, context) {
+  const resolvedParams = await context.params;
   try {
     const id = resolvedParams.id;
     const subdomain = getSubdomain(req);
