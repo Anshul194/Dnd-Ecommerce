@@ -189,19 +189,18 @@ productSchema.virtual("variants", {
   foreignField: "productId"
 });
 
-productSchema.pre("save", function (next) {
+productSchema.pre("save", function () {
   if (this.isModified("name")) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
-  next();
 });
 
-productSchema.pre("findOneAndUpdate", function (next) {
+
+productSchema.pre("findOneAndUpdate", function () {
   const update = this.getUpdate();
-  if (update.name) {
+  if (update?.name) {
     update.slug = slugify(update.name, { lower: true, strict: true });
   }
-  next();
 });
 
 export const ProductSchema = productSchema;
