@@ -27,16 +27,48 @@ async function parseFormData(req) {
 
 export async function GET(req, context) {
   try {
-    const resolvedParams = await context.params;
-    const id = resolvedParams?.id;
-    
+    // Handle both old and new Next.js patterns
+    let id;
+    try {
+      if (context && context.params) {
+        if (context.params instanceof Promise) {
+          const params = await context.params;
+          id = params?.id;
+        } else if (
+          typeof context.params === "object" &&
+          context.params !== null
+        ) {
+          id = context.params.id;
+        }
+      }
+    } catch (paramError) {
+      console.warn("Error accessing context.params:", paramError);
+    }
+
+    // Fallback: Extract ID from URL path
+    if (!id) {
+      try {
+        const url = new URL(req.url);
+        const pathParts = url.pathname.split("/").filter((p) => p);
+        for (let i = pathParts.length - 1; i >= 0; i--) {
+          const part = pathParts[i];
+          if (part && /^[0-9a-fA-F]{24}$/.test(part)) {
+            id = part;
+            break;
+          }
+        }
+      } catch (urlError) {
+        console.error("Error extracting ID from URL:", urlError);
+      }
+    }
+
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Invalid brandId: undefined" },
         { status: 400 }
       );
     }
-    
+
     const subdomain = getSubdomain(req);
     //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
@@ -83,16 +115,48 @@ export async function GET(req, context) {
 
 export async function PUT(req, context) {
   try {
-    const resolvedParams = await context.params;
-    const id = resolvedParams?.id;
-    
+    // Handle both old and new Next.js patterns
+    let id;
+    try {
+      if (context && context.params) {
+        if (context.params instanceof Promise) {
+          const params = await context.params;
+          id = params?.id;
+        } else if (
+          typeof context.params === "object" &&
+          context.params !== null
+        ) {
+          id = context.params.id;
+        }
+      }
+    } catch (paramError) {
+      console.warn("Error accessing context.params:", paramError);
+    }
+
+    // Fallback: Extract ID from URL path
+    if (!id) {
+      try {
+        const url = new URL(req.url);
+        const pathParts = url.pathname.split("/").filter((p) => p);
+        for (let i = pathParts.length - 1; i >= 0; i--) {
+          const part = pathParts[i];
+          if (part && /^[0-9a-fA-F]{24}$/.test(part)) {
+            id = part;
+            break;
+          }
+        }
+      } catch (urlError) {
+        console.error("Error extracting ID from URL:", urlError);
+      }
+    }
+
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Invalid brandId: undefined" },
         { status: 400 }
       );
     }
-    
+
     const subdomain = getSubdomain(req);
     //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
@@ -156,16 +220,59 @@ export async function PUT(req, context) {
 
 export async function DELETE(req, context) {
   try {
-    const resolvedParams = await context.params;
-    const id = resolvedParams?.id;
-    
+    console.log("DELETE /api/brand/[id] - Received request");
+    console.log("Request URL:", req.url);
+
+    // Handle both old and new Next.js patterns
+    let id;
+    try {
+      if (context && context.params) {
+        // Next.js 15+ pattern - params is a Promise
+        if (context.params instanceof Promise) {
+          const params = await context.params;
+          id = params?.id;
+        } else if (
+          typeof context.params === "object" &&
+          context.params !== null
+        ) {
+          // Next.js 13-14 pattern - params is an object
+          id = context.params.id;
+        }
+        console.log("ID from context.params:", id);
+      }
+    } catch (paramError) {
+      console.warn("Error accessing context.params:", paramError);
+    }
+
+    // Fallback: Extract ID from URL path
+    if (!id) {
+      try {
+        const url = new URL(req.url);
+        const pathname = url.pathname;
+        console.log("Pathname:", pathname);
+        // Extract ID from path like /api/brand/{id}
+        const pathParts = pathname.split("/").filter((p) => p);
+        // Find the last segment that looks like an ObjectId (24 hex chars)
+        for (let i = pathParts.length - 1; i >= 0; i--) {
+          const part = pathParts[i];
+          if (part && /^[0-9a-fA-F]{24}$/.test(part)) {
+            id = part;
+            console.log("ID extracted from URL path:", id);
+            break;
+          }
+        }
+      } catch (urlError) {
+        console.error("Error extracting ID from URL:", urlError);
+      }
+    }
+
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Invalid brandId: undefined" },
         { status: 400 }
       );
     }
-    
+
     const subdomain = getSubdomain(req);
     //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
@@ -184,6 +291,10 @@ export async function DELETE(req, context) {
     const deleted = await brandService.deleteBrand(id);
 
     if (!deleted) {
+      console.error(
+        "DELETE /api/brand/[id] - Brand not found or could not be deleted for ID:",
+        id
+      );
       return NextResponse.json(
         {
           success: false,
@@ -193,16 +304,18 @@ export async function DELETE(req, context) {
       );
     }
 
+    console.log("DELETE /api/brand/[id] - Successfully deleted brand:", id);
     return NextResponse.json({
       success: true,
       message: "Brand deleted successfully",
     });
   } catch (error) {
-    //console.error("Route DELETE brand error:", error.message);
+    console.error("DELETE /api/brand/[id] - Error:", error);
+    console.error("Error stack:", error.stack);
     return NextResponse.json(
       {
         success: false,
-        message: error.message,
+        message: error.message || "Internal server error",
       },
       { status: 500 }
     );
