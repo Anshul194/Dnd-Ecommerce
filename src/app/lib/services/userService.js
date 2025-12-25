@@ -59,10 +59,21 @@ class UserService {
         }
         // If the role is tenant-scoped, ensure it belongs to the correct tenant
         if (role.scope === "tenant") {
-          if (!role.tenantId || role.tenantId.toString() !== data.tenant) {
-            throw new Error(
-              "Tenant-scoped role does not belong to the specified tenant"
-            );
+          // If role has tenantId, use it (route handler should have set this, but ensure it's set)
+          if (role.tenantId) {
+            // If tenant is provided, it must match the role's tenantId
+            if (data.tenant && data.tenant.toString() !== role.tenantId.toString()) {
+              throw new Error(
+                "Tenant-scoped role does not belong to the specified tenant"
+              );
+            }
+            // If tenant is not provided, use the role's tenantId
+            if (!data.tenant) {
+              data.tenant = role.tenantId;
+            }
+          } else {
+            // Role is tenant-scoped but has no tenantId - this is invalid
+            throw new Error("Tenant-scoped role must have a tenantId");
           }
         }
         // If role is global, tenant may be optional
