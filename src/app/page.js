@@ -12,7 +12,7 @@ const DynamicHomepage = dynamic(() => import("@/components/homepage/DynamicHomep
       <LoadingSpinner />
     </div>
   ),
-  ssr: flase
+  ssr: false // Disable SSR for client components
 });
 
 const DynamicHomepage2 = dynamic(
