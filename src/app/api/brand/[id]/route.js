@@ -25,9 +25,18 @@ async function parseFormData(req) {
   }
 }
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
-    const { id } = params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Invalid brandId: undefined" },
+        { status: 400 }
+      );
+    }
+    
     const subdomain = getSubdomain(req);
     //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
@@ -72,9 +81,18 @@ export async function GET(req, { params }) {
   }
 }
 
-export async function PUT(req, { params }) {
+export async function PUT(req, context) {
   try {
-    const { id } = params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Invalid brandId: undefined" },
+        { status: 400 }
+      );
+    }
+    
     const subdomain = getSubdomain(req);
     //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
@@ -136,9 +154,18 @@ export async function PUT(req, { params }) {
   }
 }
 
-export async function DELETE(req, { params }) {
+export async function DELETE(req, context) {
   try {
-    const { id } = params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Invalid brandId: undefined" },
+        { status: 400 }
+      );
+    }
+    
     const subdomain = getSubdomain(req);
     //console.log("Subdomain:", subdomain);
     const conn = await getDbConnection(subdomain);
