@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import UserService from "../../../lib/services/userService.js";
-import mongoose from "mongoose";
 import { redisWrapper } from "../../../config/redis.js";
 import { getSubdomain } from "@/app/lib/tenantDb";
 import { getDbConnection } from "../../../lib/tenantDb.js";
+import axios from "axios";
 
 export async function POST(request) {
   try {
     const subdomain = getSubdomain(request);
     const conn = await getDbConnection(subdomain);
+
     if (!conn) {
       return NextResponse.json(
         { success: false, message: "DB not found" },
@@ -16,7 +17,6 @@ export async function POST(request) {
       );
     }
 
-    const userService = new UserService(conn);
     const body = await request.json();
     const { phone } = body;
 
@@ -27,62 +27,57 @@ export async function POST(request) {
       );
     }
 
-    // Check if user exists with this phone number
+    const userService = new UserService(conn);
     const user = await userService.getUserByPhone(phone);
 
-    // Generate a 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate OTP
+    const otp =
+      phone === "7014629750"
+        ? "123456"
+        : Math.floor(100000 + Math.random() * 900000).toString();
 
-    // For testing purposes, use fixed OTP for specific numbers
-    let finalOtp = otp;
-    if (phone === "7014629750") {
-      finalOtp = "123456";
+    // Save OTP in Redis
+    if (redisWrapper.isEnabled()) {
+      await redisWrapper.setex(`otp:${phone}`, 300, otp);
     }
 
-    try {
-      if (redisWrapper.isEnabled()) {
-        await redisWrapper.setex(`otp:${phone}`, 300, finalOtp); // Store OTP for 5 minutes
-        //console.log(`📩 OTP sent to ${phone}: ${finalOtp}`);
-      } else {
-        // //console.log(
-        //   `📴 Redis disabled - OTP would be: ${finalOtp} (for development)`
-        // );
-        // In production, you might want to handle this differently
-        // For now, we'll continue but log that Redis is disabled
+    // 🔴 MSG91 API CALL
+    await axios.post(
+      "https://control.msg91.com/api/v5/flow/",
+      {
+        template_id: "694a2080301fbd6fd46bc6a2",
+        sender: process.env.MSG91_SENDER_ID,
+        mobiles: `91${phone}`,
+        OTP: otp,
+      },
+      {
+        headers: {
+          authkey: process.env.MSG91_AUTH_KEY,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       }
+    );
 
-      return NextResponse.json(
-        {
-          success: true,
-          message: `OTP sent to ${phone}`,
-          data: {
-            isNewUser: !user,
-            redisEnabled: redisWrapper.isEnabled(),
-          },
+    return NextResponse.json(
+      {
+        success: true,
+        message: `OTP sent to ${phone}`,
+        data: {
+          isNewUser: !user,
+          redisEnabled: redisWrapper.isEnabled(),
         },
-        { status: 200 }
-      );
-    } catch (redisError) {
-      //console.error("Redis error:", redisError);
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Failed to store OTP",
-          error: redisError.message,
-        },
-        { status: 500 }
-      );
-    }
-
-    // TODO: Integrate SMS service here
-    // For now, we're just storing the OTP in Redis
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    //console.error("POST /auth/request-otp error:", error);
+    console.error("OTP error:", error?.response?.data || error.message);
+
     return NextResponse.json(
       {
         success: false,
         message: "Failed to send OTP",
-        error: error.message,
+        error: error?.response?.data || error.message,
       },
       { status: 500 }
     );
