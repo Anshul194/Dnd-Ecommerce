@@ -12,7 +12,7 @@ const DynamicHomepage = dynamic(() => import("@/components/homepage/DynamicHomep
       <LoadingSpinner />
     </div>
   ),
-  ssr: true
+  ssr: false
 });
 
 const DynamicHomepage2 = dynamic(() => import("@/components/homepage/DynamicHomepage2"), {
@@ -21,7 +21,7 @@ const DynamicHomepage2 = dynamic(() => import("@/components/homepage/DynamicHome
       <LoadingSpinner />
     </div>
   ),
-  ssr: true
+  ssr: false
 });
 
 export default function HomePage() {
