@@ -18,9 +18,18 @@ async function parseFormData(req) {
   return { fields, files };
 }
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
-    const { id } = params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Certificate ID is required" },
+        { status: 400 }
+      );
+    }
+    
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
     if (!conn)
@@ -39,7 +48,7 @@ export async function GET(req, { params }) {
       );
     return NextResponse.json({ success: true, data: cert });
   } catch (error) {
-    //consolle.error("Certificates GET id error:", error.message);
+    console.error("Certificates GET id error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
@@ -47,9 +56,18 @@ export async function GET(req, { params }) {
   }
 }
 
-export async function PUT(req, { params }) {
+export async function PUT(req, context) {
   try {
-    const { id } = params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Certificate ID is required" },
+        { status: 400 }
+      );
+    }
+    
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
     if (!conn)
@@ -86,7 +104,7 @@ export async function PUT(req, { params }) {
       data: cert,
     });
   } catch (error) {
-    //consolle.error("Certificates PUT error:", error.message);
+    console.error("Certificates PUT error:", error.message);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
@@ -94,34 +112,46 @@ export async function PUT(req, { params }) {
   }
 }
 
-export async function DELETE(req, { params }) {
+export async function DELETE(req, context) {
   try {
-    const { id } = params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Certificate ID is required" },
+        { status: 400 }
+      );
+    }
+    
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
-    if (!conn)
+    if (!conn) {
       return NextResponse.json(
         { success: false, message: "DB not found" },
         { status: 404 }
       );
+    }
 
     const Certificate =
       conn.models.Certificate || conn.model("Certificate", CertificateSchema);
     const cert = await Certificate.findById(id);
-    if (!cert)
+    if (!cert) {
       return NextResponse.json(
         { success: false, message: "Not found" },
         { status: 404 }
       );
+    }
 
     // soft delete
     cert.deletedAt = new Date();
     await cert.save();
     return NextResponse.json({ success: true, message: "Certificate deleted" });
   } catch (error) {
-    //consolle.error("Certificates DELETE error:", error.message);
+    console.error("Certificates DELETE error:", error.message);
+    console.error("Error stack:", error.stack);
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: error.message || "Internal server error" },
       { status: 500 }
     );
   }
