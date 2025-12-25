@@ -74,7 +74,7 @@ export default function HomePage() {
       {settings?.activeHomepageLayout == "Minimal & Organic UI" ? (
         <DynamicHomepage2 />
       ) : (
-        <DynamicHomepage />
+        <DynamicHomepage2 />
       )}
     </main>
   );
