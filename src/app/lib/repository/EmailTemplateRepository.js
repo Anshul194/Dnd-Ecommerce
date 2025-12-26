@@ -53,10 +53,27 @@ export default class EmailTemplateRepository {
   async getById(id, conn) {
     try {
       console.log('Repository getById called with id:', id);
+      
+      // Validate ID format
+      if (!id || typeof id !== 'string') {
+        console.error('Invalid ID format:', id);
+        return null;
+      }
+      
       const emailTemplate = await this.EmailTemplate.findById(id);
+      
+      if (!emailTemplate) {
+        console.log('Email template not found for id:', id);
+        return null;
+      }
+      
       return emailTemplate;
     } catch (error) {
       console.error('Repository getById error:', error.message);
+      // Return null instead of throwing to allow graceful handling
+      if (error.name === 'CastError') {
+        return null;
+      }
       throw error;
     }
   }

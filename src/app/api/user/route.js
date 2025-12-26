@@ -4,20 +4,11 @@ import { Token } from "../../middleware/generateToken.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import roleSchema from "@/app/lib/models/role";
-import { getDbConnection } from "@/app/lib/tenantDb.js";
+import { getDbConnection,getSubdomain } from "@/app/lib/tenantDb.js";
+
 
 // Helper to extract subdomain from x-tenant header or host header
-function getSubdomain(request) {
-  // Prefer x-tenant header if present
-  const xTenant = request.headers.get("x-tenant");
-  if (xTenant) return xTenant;
-  const host = request.headers.get("host") || "";
-  // e.g. tenant1.localhost:5173 or tenant1.example.com
-  const parts = host.split(".");
-  if (parts.length > 2) return parts[0];
-  if (parts.length === 2 && parts[0] !== "localhost") return parts[0];
-  return null;
-}
+
 
 // Register (Create User)
 export async function POST(request) {
