@@ -573,17 +573,59 @@ export default function CheckoutPage() {
     }
   };
 
+  // Track previous phone to detect manual changes
+  const previousPhoneRef = useRef("");
+  const isInitialMountRef = useRef(true);
+
   useEffect(() => {
-    if (formData.phone.length === 10) {
-      dispatch(sendOtp(formData.phone));
+    // Skip on initial mount to avoid triggering when formData is populated from saved data
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      previousPhoneRef.current = formData.phone || "";
+      return;
     }
-  }, [formData.phone, dispatch]);
+
+    // Only send OTP if:
+    // 1. User is NOT authenticated (guest checkout)
+    // 2. Phone number is exactly 10 digits
+    // 3. Phone number was manually changed (different from previous)
+    // 4. OTP hasn't been sent already
+    // 5. Phone doesn't match logged-in user's phone (if user exists)
+    const phoneChanged = formData.phone !== previousPhoneRef.current;
+    const isValidLength = formData.phone.length === 10;
+    const isUserPhone = isAuthenticated && user?.phone === formData.phone;
+    
+    // Update previous phone reference
+    previousPhoneRef.current = formData.phone || "";
+
+    if (
+      !isAuthenticated && // Only for guest users
+      phoneChanged && // Phone was manually changed
+      isValidLength && // Valid phone length
+      !otpSended && // OTP hasn't been sent yet
+      !isUserPhone // Not the logged-in user's phone
+    ) {
+      dispatch(sendOtp(formData.phone));
+    } else if (isAuthenticated && isUserPhone) {
+      // If logged-in user's phone matches, clear OTP state
+      if (otpSended) {
+        dispatch(setOtpSended(false));
+      }
+    }
+  }, [formData.phone, dispatch, isAuthenticated, otpSended, user?.phone]);
 
   useEffect(() => {
     if (otp.every((digit) => digit !== "")) {
       dispatch(verifyOtp({ phone: formData.phone, otp: otp.join("") }));
     }
   }, [otp, dispatch, formData.phone]);
+
+  // Reset OTP state when user is authenticated (logged-in users don't need OTP)
+  useEffect(() => {
+    if (isAuthenticated && otpSended) {
+      dispatch(setOtpSended(false));
+    }
+  }, [isAuthenticated, otpSended, dispatch]);
 
   useEffect(() => {
     // Only set form data from addressData if it exists and has actual data
@@ -599,9 +641,17 @@ export default function CheckoutPage() {
         state: addressData?.address?.state || "",
         email: addressData?.address?.email || "",
         addressType: addressData?.address?.addressType || "Home",
-        phone: addressData?.address?.phone || "",
+        phone: addressData?.address?.phone || user?.phone || "",
       });
       setAddressType(addressData?.title || "");
+    }
+
+    // If user is authenticated, populate phone from user data if not in addressData
+    if (isAuthenticated && user?.phone && !formData.phone) {
+      setFormData((prev) => ({
+        ...prev,
+        phone: user.phone || prev.phone,
+      }));
     }
 
     const fetchUserAddresses = async () => {
