@@ -15,14 +15,19 @@ import { motion } from "motion/react";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPages } from "@/app/store/slices/pagesSlice";
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import axiosInstance from "@/axiosConfig/axiosInstance";
+import store from "@/app/store";
 
 export default function Footer() {
   const { list } = useSelector((state: any) => state.pages);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<typeof store.dispatch>();
   const pathname = usePathname();
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   console.log("footer page links =======>", list);
 
@@ -44,6 +49,67 @@ export default function Footer() {
       .toString()
       .toLowerCase()
       .trim();
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newsletterEmail.trim()) {
+      setNewsletterMessage({ type: "error", text: "Please enter a valid email address" });
+      return;
+    }
+
+    setNewsletterLoading(true);
+    setNewsletterMessage(null);
+
+    try {
+      const response = await axiosInstance.post("/crm/leads", {
+        email: newsletterEmail.trim(),
+        source: "newsletter",
+        status: "new",
+        fullName: newsletterEmail.split("@")[0], // Use email prefix as name if no name provided
+      });
+
+      if (response.data.success !== false) {
+        setNewsletterMessage({ 
+          type: "success", 
+          text: "Thank you for subscribing! Check your email for confirmation." 
+        });
+        setNewsletterEmail("");
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setNewsletterMessage(null);
+        }, 5000);
+      } else {
+        throw new Error(response.data.message || "Subscription failed");
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Failed to subscribe. Please try again.";
+      
+      // Check if email already exists
+      if (errorMessage.toLowerCase().includes("already") || 
+          errorMessage.toLowerCase().includes("duplicate")) {
+        setNewsletterMessage({ 
+          type: "error", 
+          text: "This email is already subscribed to our newsletter." 
+        });
+      } else {
+        setNewsletterMessage({ 
+          type: "error", 
+          text: errorMessage 
+        });
+      }
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => {
+        setNewsletterMessage(null);
+      }, 5000);
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   const sortedList = Array.isArray(list)
     ? [...list].sort((a: any, b: any) => {
@@ -225,16 +291,36 @@ export default function Footer() {
             <p className="text-gray-400 text-sm mb-4">
               Subscribe to get special offers and updates
             </p>
-            <div className="flex gap-2 mb-6">
+            <form
+              onSubmit={handleNewsletterSubmit}
+              className="flex gap-2 mb-6"
+            >
               <Input
                 type="email"
                 placeholder="Your email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                required
+                disabled={newsletterLoading}
                 className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 backdrop-blur-sm"
               />
-              <Button className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] shadow-lg">
-                Subscribe
+              <Button 
+                type="submit"
+                disabled={newsletterLoading || !newsletterEmail.trim()}
+                className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {newsletterLoading ? "Subscribing..." : "Subscribe"}
               </Button>
-            </div>
+            </form>
+            {newsletterMessage && (
+              <p className={`text-sm ${
+                newsletterMessage.type === "success" 
+                  ? "text-green-400" 
+                  : "text-red-400"
+              }`}>
+                {newsletterMessage.text}
+              </p>
+            )}
             {/* <div className="space-y-3 text-sm">
               {[
                 { Icon: Phone, text: "+91 1234567890" },

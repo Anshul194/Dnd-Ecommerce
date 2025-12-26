@@ -101,6 +101,9 @@ export default function Footer() {
     clientCare: false,
   });
   const pathname = usePathname();
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState(null);
 
   const toggleAccordion = (section) => {
     setOpenAccordions((prev) => ({
@@ -129,6 +132,67 @@ export default function Footer() {
   useEffect(() => {
     getData();
   }, []);
+
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!newsletterEmail.trim()) {
+      setNewsletterMessage({ type: "error", text: "Please enter a valid email address" });
+      return;
+    }
+
+    setNewsletterLoading(true);
+    setNewsletterMessage(null);
+
+    try {
+      const response = await axiosInstance.post("/crm/leads", {
+        email: newsletterEmail.trim(),
+        source: "newsletter",
+        status: "new",
+        fullName: newsletterEmail.split("@")[0], // Use email prefix as name if no name provided
+      });
+
+      if (response.data.success !== false) {
+        setNewsletterMessage({ 
+          type: "success", 
+          text: "Thank you for subscribing! Check your email for confirmation." 
+        });
+        setNewsletterEmail("");
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setNewsletterMessage(null);
+        }, 5000);
+      } else {
+        throw new Error(response.data.message || "Subscription failed");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Failed to subscribe. Please try again.";
+      
+      // Check if email already exists
+      if (errorMessage.toLowerCase().includes("already") || 
+          errorMessage.toLowerCase().includes("duplicate")) {
+        setNewsletterMessage({ 
+          type: "error", 
+          text: "This email is already subscribed to our newsletter." 
+        });
+      } else {
+        setNewsletterMessage({ 
+          type: "error", 
+          text: errorMessage 
+        });
+      }
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => {
+        setNewsletterMessage(null);
+      }, 5000);
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   //console.log("current path == > " , pathname)
 
@@ -393,16 +457,36 @@ export default function Footer() {
           <h3 className="text-lg font-normal mb-4">
             RING ADVICE, STRAIGHT TO YOUR INBOX
           </h3>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-0 max-w-md mx-auto">
+          <form
+            onSubmit={handleNewsletterSubmit}
+            className="flex flex-col sm:flex-row justify-center items-center gap-0 max-w-md mx-auto"
+          >
             <input
               type="email"
               placeholder="Your email address"
-              className="w-full sm:w-auto flex-1 px-4 py-3 text-gray-900 bg-white border-0 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              required
+              disabled={newsletterLoading}
+              className="w-full sm:w-auto flex-1 px-4 py-3 text-gray-900 bg-white border-0 focus:outline-none focus:ring-2 focus:ring-emerald-600 disabled:opacity-50"
             />
-            <button className="w-full sm:w-auto px-6 py-3 bg-emerald-700 text-white font-medium hover:bg-emerald-600 transition-colors font-gintoNord">
-              SUBMIT
+            <button 
+              type="submit"
+              disabled={newsletterLoading || !newsletterEmail.trim()}
+              className="w-full sm:w-auto px-6 py-3 bg-emerald-700 text-white font-medium hover:bg-emerald-600 transition-colors font-gintoNord disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {newsletterLoading ? "SUBSCRIBING..." : "SUBMIT"}
             </button>
-          </div>
+          </form>
+          {newsletterMessage && (
+            <p className={`mt-3 text-sm ${
+              newsletterMessage.type === "success" 
+                ? "text-emerald-300" 
+                : "text-red-300"
+            }`}>
+              {newsletterMessage.text}
+            </p>
+          )}
         </div>
       </div>
 
