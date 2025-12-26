@@ -3,7 +3,7 @@ import { getSubdomain, getDbConnection } from '../../../../lib/tenantDb.js';
 
 export async function GET(req, { params }) {
   try {
-    const { categoryId } = await params;
+    const { categoryId } = params;
     if (!categoryId) {
       return NextResponse.json({ success: false, message: 'categoryId is required' }, { status: 400 });
     }

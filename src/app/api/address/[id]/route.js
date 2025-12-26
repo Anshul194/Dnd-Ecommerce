@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
         { status: 404 }
       );
     }
-    const { id } = await params;
+    const { id } = params;
     const repo = new AddressRepository(conn);
 
     // Check if this is a request for addresses by user ID
