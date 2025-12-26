@@ -6,13 +6,29 @@ import {
 
 export async function createAttribute(req, conn) {
   try {
-    const { error } = attributeCreateValidator.validate(req.body);
-    if (error) {
+    // Extract body from req object (route passes { body })
+    const body = req.body || req;
+    
+    if (!body || typeof body !== 'object') {
       return {
         status: 400,
         body: {
           success: false,
-          message: "Validation error",
+          message: "Invalid request data",
+          data: null,
+        },
+      };
+    }
+
+    // Validate the request body
+    const { error, value } = attributeCreateValidator.validate(body);
+    if (error) {
+      console.error("Attribute validation error:", error.details);
+      return {
+        status: 400,
+        body: {
+          success: false,
+          message: error.details[0]?.message || "Validation error",
           data: error.details,
         },
       };
@@ -21,7 +37,7 @@ export async function createAttribute(req, conn) {
     const attributeService = new AttributeService(conn);
 
     // Check for duplicate name
-    const existing = await attributeService.searchAttributesByName(req.body.name);
+    const existing = await attributeService.searchAttributesByName(value.name);
     if (existing && existing.length > 0) {
       return {
         status: 400,
@@ -33,7 +49,22 @@ export async function createAttribute(req, conn) {
       };
     }
 
-    const attribute = await attributeService.createAttribute(req.body);
+    // Ensure values is an array (validator requires it)
+    const attributeData = {
+      ...value,
+      values: Array.isArray(value.values) && value.values.length > 0 
+        ? value.values.filter(v => v && v.trim() !== '') 
+        : []
+    };
+
+    // If no values provided, set empty array (or handle based on your business logic)
+    if (attributeData.values.length === 0) {
+      // You might want to allow empty values or require at least one
+      // For now, we'll allow empty array but log a warning
+      console.warn("Attribute created with no values:", attributeData.name);
+    }
+
+    const attribute = await attributeService.createAttribute(attributeData);
 
     return {
       status: 201,
@@ -44,12 +75,14 @@ export async function createAttribute(req, conn) {
       },
     };
   } catch (err) {
-    //consolle.error("Create Attribute Error:", err.message);
+    console.error("Create Attribute Error:", err);
     return {
       status: 500,
       body: {
         success: false,
-        message: err?.message?.includes('duplicate') ? "Attribute with this name already exists" : "Server error",
+        message: err?.message?.includes('duplicate') 
+          ? "Attribute with this name already exists" 
+          : err?.message || "Server error",
         data: null,
       },
     };
