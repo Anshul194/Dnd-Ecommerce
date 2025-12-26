@@ -109,21 +109,30 @@ export default function CheckoutPopup() {
 
     const selectedAddress = userAddresses[parseInt(selectedIndex)];
     //console.log("Selected Address:", JSON.stringify({ ...selectedAddress }));
-    //console.log("Selected Address Phone:", selectedAddress.phone);
+    //console.log("Selected Address Phone:", selectedAddress.address?.phone);
     setFormData({
-      pincode: selectedAddress.pincode || "",
-      firstName: selectedAddress.firstName || "",
-      lastName: selectedAddress.lastName || "",
-      flatNumber: selectedAddress.line1 || "",
-      area: selectedAddress.area || "",
-      landmark: selectedAddress.line2 || "",
-      city: selectedAddress.city || "",
-      state: selectedAddress.state || "",
-      email: selectedAddress.email || "",
-      addressType: selectedAddress.addressType || "Home",
-      phone: selectedAddress.phone || user?.phone || "",
+      pincode: selectedAddress.address?.pincode || "",
+      firstName: selectedAddress.address?.firstName || "",
+      lastName: selectedAddress.address?.lastName || "",
+      flatNumber: selectedAddress.address?.line1 || "",
+      area: selectedAddress.address?.area || "",
+      landmark: selectedAddress.address?.line2 || "",
+      city: selectedAddress.address?.city || "",
+      state: selectedAddress.address?.state || "",
+      email: selectedAddress.address?.email || "",
+      addressType: selectedAddress.title || "Home",
+      phone: selectedAddress.address?.phone || user?.phone || "",
     });
-    dispatch(setAddress({ ...selectedAddress, phone: user?.phone }));
+    setAddressType(selectedAddress.title || "Home");
+    // Dispatch with correct structure matching what setAddress expects
+    const addressStructure = {
+      title: selectedAddress.title || "Home",
+      address: {
+        ...selectedAddress.address,
+        phone: selectedAddress.address?.phone || user?.phone || "",
+      },
+    };
+    dispatch(setAddress(addressStructure));
   };
 
   const handleInputChange = (e) => {
@@ -188,90 +197,96 @@ export default function CheckoutPopup() {
 
   const handleAddAddress = async () => {
     //console.log("Adding address:", formData);
+    // Trim and validate pincode
+    const trimmedPincode = formData.pincode?.trim() || "";
     if (
-      formData.pincode === "" ||
-      formData.firstName === "" ||
-      formData.lastName === "" ||
-      formData.flatNumber === "" ||
-      formData.landmark === ""
+      trimmedPincode === "" ||
+      formData.firstName?.trim() === "" ||
+      formData.lastName?.trim() === "" ||
+      formData.flatNumber?.trim() === "" ||
+      formData.landmark?.trim() === ""
     ) {
-      alert("Please fill all required fields");
+      toast.error("Please fill all required fields");
       return;
     }
-    const data =
-      localStorage.getItem("address") &&
-      JSON.parse(localStorage.getItem("address"));
-    //console.log("checking addressData", data);
-    if (data && data._id) {
-      //console.log("Updating existing address:", data._id);
-      await dispatch(
-        updateUserAddress({
-          addressId: data._id,
-          addressData: {
-            user: user?._id,
-            title: addressType || "Home",
-            address: {
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              email: formData.email,
-              phone: formData.phone,
-              pincode: formData.pincode,
-              line1: formData.flatNumber,
-              line2: formData.landmark,
-              landmark: formData.landmark,
-              city: formData.city,
-              state: formData.state,
-            },
-          },
-        })
-      );
-    } else {
-      await dispatch(
-        createUserAddress({
-          user: user?._id,
-          title: addressType || "Home",
-          address: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phone: formData.phone || user?.phone,
-            pincode: formData.pincode,
-            line1: formData.flatNumber,
-            line2: formData.landmark,
-            landmark: formData.landmark,
-            city: formData.city,
-            state: formData.state,
-          },
-        })
-      );
-    }
-    // Structure the address data to match the expected format for display
-    const addressStructure = {
-      title: addressType || "Home",
-      address: {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone || user?.phone,
-        pincode: formData.pincode,
-        line1: formData.flatNumber,
-        line2: formData.landmark,
-        landmark: formData.landmark,
-        area: formData.area,
-        city: formData.city,
-        state: formData.state,
-      },
-    };
-    await dispatch(setAddress(addressStructure));
+    
+    try {
+      const data =
+        localStorage.getItem("address") &&
+        JSON.parse(localStorage.getItem("address"));
+      //console.log("checking addressData", data);
+      
+      const addressPayload = {
+        user: user?._id,
+        title: addressType?.trim() || "Home",
+        address: {
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email?.trim() || "",
+          phone: formData.phone?.trim() || user?.phone || "",
+          pincode: trimmedPincode,
+          line1: formData.flatNumber.trim(),
+          line2: formData.landmark.trim(),
+          landmark: formData.landmark.trim(),
+          area: formData.area?.trim() || "",
+          city: formData.city?.trim() || "",
+          state: formData.state?.trim() || "",
+        },
+      };
 
-    // Refresh user addresses after adding/updating
-    if (isAuthenticated && user?._id) {
-      try {
-        const response = await dispatch(getuserAddresses(user._id));
-        setUserAddresses(response.payload || []);
-      } catch (error) {
-        //console.error("Error fetching user addresses:", error);
+      if (data && data._id) {
+        //console.log("Updating existing address:", data._id);
+        const result = await dispatch(
+          updateUserAddress({
+            addressId: data._id,
+            addressData: addressPayload,
+          })
+        );
+        if (result.type?.endsWith('/rejected')) {
+          toast.error(result.payload?.message || "Failed to update address");
+          return;
+        }
+        toast.success("Address updated successfully");
+      } else {
+        const result = await dispatch(createUserAddress(addressPayload));
+        if (result.type?.endsWith('/rejected')) {
+          toast.error(result.payload?.message || "Failed to create address");
+          return;
+        }
+        toast.success("Address added successfully");
       }
+      
+      // Structure the address data to match the expected format for display
+      const addressStructure = {
+        title: addressType?.trim() || "Home",
+        address: {
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email?.trim() || "",
+          phone: formData.phone?.trim() || user?.phone || "",
+          pincode: trimmedPincode,
+          line1: formData.flatNumber.trim(),
+          line2: formData.landmark.trim(),
+          landmark: formData.landmark.trim(),
+          area: formData.area?.trim() || "",
+          city: formData.city?.trim() || "",
+          state: formData.state?.trim() || "",
+        },
+      };
+      await dispatch(setAddress(addressStructure));
+
+      // Refresh user addresses after adding/updating
+      if (isAuthenticated && user?._id) {
+        try {
+          const response = await dispatch(getuserAddresses(user._id));
+          setUserAddresses(response.payload || []);
+        } catch (error) {
+          //console.error("Error fetching user addresses:", error);
+        }
+      }
+    } catch (error) {
+      console.error("Error in handleAddAddress:", error);
+      toast.error("An error occurred while saving the address");
     }
   };
 
@@ -1778,6 +1793,7 @@ export default function CheckoutPopup() {
                         onChange={handleInputChange}
                         onFocus={() => setActiveField("pincode")}
                         onBlur={() => setActiveField(null)}
+                        maxLength={10}
                         className="outline-none text-md   w-full border-0 h-full "
                       />
                     </div>
