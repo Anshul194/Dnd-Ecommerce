@@ -13,7 +13,7 @@ class VariantService {
     // Support pagination, filtering, search, and sorting
     const {
       page = 1,
-      limit = 10,
+      limit = 1000,
       filters = '{}',
       searchFields = '{}',
       sort = '{}',

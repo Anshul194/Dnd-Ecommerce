@@ -87,7 +87,7 @@ export async function PUT(req, context) {
     const faqRepo = new FaqRepository(Faq);
     const faqService = new FaqService(faqRepo);
     const faqController = new FaqController(faqService);
-    const result = await faqController.update(id, body, conn);
+    const result = await faqController.update(id, { body }, conn);
     
     if (!result || !result.success) {
       return NextResponse.json(

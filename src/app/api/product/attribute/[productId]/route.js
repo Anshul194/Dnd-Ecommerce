@@ -6,9 +6,19 @@ import { getByProductId } from "../../../../lib/controllers/attributeController.
 import ProductModel from "../../../../lib/models/Product.js";
 
 // GET /api/product/attribute/:productId
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
-    const product_id = params.productId;
+    const params = context?.params;
+    let product_id = params?.productId;
+    if (!product_id) {
+      try {
+        const url = new URL(req.url);
+        const parts = url.pathname.split("/").filter(Boolean);
+        product_id = parts[parts.length - 1];
+      } catch (e) {
+        product_id = undefined;
+      }
+    }
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
