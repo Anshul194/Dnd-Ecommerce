@@ -72,6 +72,7 @@ export default function CheckoutPopup() {
   const [mounted, setMounted] = useState(false);
   const inputRefs = useRef([]); // Array of refs for each input field
   const [SelectedProduct, setSelectedProduct] = useState(null);
+  const [showVariantModal, setShowVariantModal] = useState(null); // Track which product's variants to show
   const dispatch = useDispatch();
   const { trackCheckout } = useTrack();
 
@@ -298,6 +299,12 @@ export default function CheckoutPopup() {
   };
 
   const checkBeforePayment = async () => {
+    // Validate postal code before checking
+    if (!formData.pincode || formData.pincode.trim() === "") {
+      toast.error("Please enter a valid postal code");
+      return { success: false, message: "Postal code is required" };
+    }
+
     try {
       const payload = {
         userId: user._id,
@@ -325,7 +332,7 @@ export default function CheckoutPopup() {
           addressLine2: formData.landmark,
           city: formData.city,
           state: formData.state,
-          postalCode: formData.pincode,
+          postalCode: formData.pincode.trim(),
           country: formData.country || "India",
           phoneNumber: formData.phone,
         },
@@ -335,7 +342,7 @@ export default function CheckoutPopup() {
           addressLine2: formData.landmark,
           city: formData.city,
           state: formData.state,
-          postalCode: formData.pincode,
+          postalCode: formData.pincode.trim(),
           country: formData.country || "India",
           phoneNumber: formData.phone,
         },
@@ -357,20 +364,40 @@ export default function CheckoutPopup() {
       return response.data;
     } catch (error) {
       //console.log("Error checking payment status:", error);
-      toast.error(error.response.data.message);
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to validate order. Please check your address details.";
+      toast.error(errorMessage);
+      return { 
+        success: false, 
+        message: errorMessage 
+      };
     }
   };
 
   const handelPayment = async () => {
     console.log("payment function invoked");
-    const check = await checkBeforePayment();
-    console.log("check response ", check);
-    if (!check.success && check.message !== "Order is valid") {
-      toast.error(
-        check.message || "Order validation failed. Please try again."
-      );
+    
+    // Validate postal code first
+    if (!formData.pincode || formData.pincode.trim() === "") {
+      toast.error("Please enter a valid postal code before placing order");
       return;
     }
+
+    const check = await checkBeforePayment();
+    console.log("check response ", check);
+    
+    // Check if check returned an error
+    if (!check || !check.success) {
+      const errorMessage = check?.message || "Order validation failed. Please check your address and try again.";
+      toast.error(errorMessage);
+      return;
+    }
+    
+    // Additional check for the specific message
+    if (check.message && check.message !== "Order is valid" && !check.success) {
+      toast.error(check.message || "Order validation failed. Please try again.");
+      return;
+    }
+    
     console.log("check completed");
     try {
       if (paymentMethod === "prepaid") {
@@ -439,16 +466,25 @@ export default function CheckoutPopup() {
               selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
               selectedCoupon && (payload.discount = selectedCoupon.discount);
 
-              await dispatch(placeOrder(payload));
+              const orderResult = await dispatch(placeOrder(payload));
+              
+              // Check if order placement failed
+              if (placeOrder.rejected.match(orderResult)) {
+                const errorMessage = orderResult.payload?.message || orderResult.error?.message || "Order placement failed. Please check your address details and try again.";
+                toast.error(errorMessage);
+                return;
+              }
+
               // Mark that order was placed to avoid sending abandonment event
               orderPlacedRef.current = true;
               dispatch(setCheckoutClose());
               dispatch(clearCart());
               router.push(location + "?Order_status=success");
             } catch (error) {
-              //console.error("Error booking slot:", error);
-              toast.error("Booking failed. Please contact support.");
-              router.push(location + "?Order_status=failure");
+              console.error("Error placing order:", error);
+              const errorMessage = error?.response?.data?.message || error?.message || "Order placement failed. Please check your address details and try again.";
+              toast.error(errorMessage);
+              // Don't redirect on error, let user fix the issue
             }
           },
           prefill: {
@@ -483,6 +519,12 @@ export default function CheckoutPopup() {
         const razorpay = new window.Razorpay(options);
         razorpay.open();
       } else {
+        // Validate postal code for COD orders
+        if (!formData.pincode || formData.pincode.trim() === "") {
+          toast.error("Please enter a valid postal code before placing order");
+          return;
+        }
+
         try {
           const payload = {
             userId: user._id,
@@ -510,7 +552,7 @@ export default function CheckoutPopup() {
               addressLine2: formData.landmark,
               city: formData.city,
               state: formData.state,
-              postalCode: formData.pincode,
+              postalCode: formData.pincode.trim(),
               country: formData.country || "India",
               phoneNumber: formData.phone,
             },
@@ -520,7 +562,7 @@ export default function CheckoutPopup() {
               addressLine2: formData.landmark,
               city: formData.city,
               state: formData.state,
-              postalCode: formData.pincode,
+              postalCode: formData.pincode.trim(),
               country: formData.country || "India",
               phoneNumber: formData.phone,
             },
@@ -536,16 +578,25 @@ export default function CheckoutPopup() {
           selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
           selectedCoupon && (payload.discount = selectedCoupon.discount);
 
-          await dispatch(placeOrder(payload));
+          const orderResult = await dispatch(placeOrder(payload));
+          
+          // Check if order placement failed
+          if (placeOrder.rejected.match(orderResult)) {
+            const errorMessage = orderResult.payload?.message || orderResult.error?.message || "Order placement failed. Please check your address details and try again.";
+            toast.error(errorMessage);
+            return;
+          }
+
           // Mark that order was placed to avoid sending abandonment event
           orderPlacedRef.current = true;
           dispatch(setCheckoutClose());
           dispatch(clearCart());
           router.push(location + "?Order_status=success");
         } catch (error) {
-          //console.error("Error placing order:", error);
-          toast.error("Order placement failed. Please try again.");
-          router.push(location + "?Order_status=failure");
+          console.error("Error placing order:", error);
+          const errorMessage = error?.response?.data?.message || error?.message || "Order placement failed. Please check your address details and try again.";
+          toast.error(errorMessage);
+          // Don't redirect on error, let user fix the issue
         }
       }
     } catch (error) {
@@ -1274,10 +1325,15 @@ export default function CheckoutPopup() {
                         {parseFloat(buyNowProduct?.price) *
                           parseFloat(buyNowProduct?.quantity).toFixed(2)}
                       </span>
-                      <div className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs">
-                        <Plus className="h-3 w-3" />
-                        <h3>3 options</h3>
-                      </div>
+                      {buyNowProduct?.product?.variants?.length > 0 && (
+                        <button
+                          onClick={() => setShowVariantModal({ type: 'buyNow', product: buyNowProduct.product, selectedVariant: buyNowProduct.variant })}
+                          className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs cursor-pointer hover:bg-blue-50 transition-colors"
+                        >
+                          <Plus className="h-3 w-3" />
+                          <h3>{buyNowProduct.product.variants.length} {buyNowProduct.product.variants.length === 1 ? 'option' : 'options'}</h3>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1317,10 +1373,15 @@ export default function CheckoutPopup() {
                             {parseFloat(item?.price) *
                               parseFloat(item?.quantity).toFixed(2)}
                           </span>
-                          <div className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs">
-                            <Plus className="h-3 w-3" />
-                            <h3>3 options</h3>
-                          </div>
+                          {item?.product?.variants?.length > 0 && (
+                            <button
+                              onClick={() => setShowVariantModal({ type: 'cart', product: item.product, selectedVariant: item.variant, cartItem: item, index: index })}
+                              className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs cursor-pointer hover:bg-blue-50 transition-colors"
+                            >
+                              <Plus className="h-3 w-3" />
+                              <h3>{item.product.variants.length} {item.product.variants.length === 1 ? 'option' : 'options'}</h3>
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -2075,6 +2136,108 @@ export default function CheckoutPopup() {
          
         </div>
       </div>
+
+      {/* Variant Options Modal */}
+      {showVariantModal && (
+        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4" onClick={() => setShowVariantModal(null)}>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Select Variant</h3>
+              <button
+                onClick={() => setShowVariantModal(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              {showVariantModal.product?.variants?.map((variant, index) => {
+                const isSelected = variant._id === showVariantModal.selectedVariant || variant._id?.toString() === showVariantModal.selectedVariant?.toString();
+                const variantPrice = variant.salePrice || variant.price;
+                const originalPrice = variant.salePrice ? variant.price : null;
+                
+                return (
+                  <div
+                    key={variant._id || index}
+                    onClick={async () => {
+                      if (showVariantModal.type === 'buyNow') {
+                        // Update buyNowProduct variant
+                        const newPrice = variant.salePrice || variant.price;
+                        await dispatch(
+                          addToCart({
+                            product: showVariantModal.product._id,
+                            variant: variant._id,
+                            quantity: 1,
+                            price: newPrice,
+                          })
+                        );
+                        toast.success("Variant updated");
+                      } else if (showVariantModal.type === 'cart') {
+                        // Update cart item variant
+                        const newPrice = variant.salePrice || variant.price;
+                        await dispatch(
+                          addToCart({
+                            product: showVariantModal.product._id,
+                            variant: variant._id,
+                            quantity: showVariantModal.cartItem?.quantity || 1,
+                            price: newPrice,
+                          })
+                        );
+                        toast.success("Variant updated");
+                      }
+                      setShowVariantModal(null);
+                    }}
+                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      isSelected
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm capitalize">
+                          {variant.title || variant.name || `Variant ${index + 1}`}
+                        </h4>
+                        {variant.attributes && Object.keys(variant.attributes).length > 0 && (
+                          <div className="text-xs text-gray-600 mt-1">
+                            {Object.entries(variant.attributes).map(([key, value]) => (
+                              <span key={key} className="mr-2">
+                                {key}: {value}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-right ml-4">
+                        <div className="font-semibold text-sm text-blue-600">
+                          ₹{variantPrice}
+                        </div>
+                        {originalPrice && (
+                          <div className="text-xs text-gray-500 line-through">
+                            ₹{originalPrice}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <div className="mt-2 text-xs text-blue-600 font-medium">
+                        ✓ Currently Selected
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            
+            {showVariantModal.product?.variants?.length === 0 && (
+              <div className="text-center py-4 text-gray-500">
+                No variants available for this product
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
