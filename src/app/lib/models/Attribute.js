@@ -6,7 +6,6 @@ const attributeSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
     },
     slug: {
@@ -37,6 +36,17 @@ attributeSchema.pre("save", function (next) {
   }
   next();
 });
+
+// Create a partial unique index on name that only applies when deletedAt is null
+// This allows reusing names of soft-deleted attributes
+attributeSchema.index(
+  { name: 1 },
+  { 
+    unique: true,
+    partialFilterExpression: { deletedAt: null },
+    name: 'name_unique_when_not_deleted'
+  }
+);
 
 const Attribute =
   mongoose.models.Attribute || mongoose.model("Attribute", attributeSchema);
