@@ -6,9 +6,12 @@ import EmailTemplateService from '../../../lib/services/EmailTemplateService.js'
 import EmailTemplateRepository from '../../../lib/repository/EmailTemplateRepository.js';
 import { EmailTemplateSchema } from '../../../lib/models/EmailTemplate.js';
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
+    // Await params in Next.js App Router (required in newer versions)
+    const params = await context.params;
     const id = params.id;
+    
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid email template ID' }, { status: 400 });
     }
@@ -31,14 +34,17 @@ export async function GET(req, { params }) {
     
     return NextResponse.json({ success: true, emailTemplate });
   } catch (error) {
-    //console.error('Route GET by ID error:', error.message);
+    console.error('Route GET by ID error:', error.message);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
 
-export async function PUT(req, { params }) {
+export async function PUT(req, context) {
   try {
+    // Await params in Next.js App Router (required in newer versions)
+    const params = await context.params;
     const id = params.id;
+    
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid email template ID' }, { status: 400 });
     }
@@ -62,14 +68,17 @@ export async function PUT(req, { params }) {
     
     return NextResponse.json({ success: true, emailTemplate: result.data });
   } catch (error) {
-    //console.error('Route PUT error:', error.message);
+    console.error('Route PUT error:', error.message);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
 
-export async function DELETE(req, { params }) {
+export async function DELETE(req, context) {
   try {
+    // Await params in Next.js App Router (required in newer versions)
+    const params = await context.params;
     const id = params.id;
+    
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid email template ID' }, { status: 400 });
     }
@@ -92,7 +101,7 @@ export async function DELETE(req, { params }) {
     
     return NextResponse.json({ success: true, message: 'Email template deleted successfully' });
   } catch (error) {
-    //console.error('Route DELETE error:', error.message);
+    console.error('Route DELETE error:', error.message);
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
