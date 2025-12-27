@@ -50,9 +50,9 @@ const Dashboard = React.memo(({ user }) => {
           {user?.email ? (
             <span className="text-xs text-gray-500"> ({user.email})</span>
           ) : null}{" "}
-          <a href="/logout" className="text-green-500 hover:underline">
+          <Link href="/logout" className="text-green-500 hover:underline">
             Log out
-          </a>
+          </Link>
         </p>
       </div>
 

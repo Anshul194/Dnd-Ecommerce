@@ -18,6 +18,7 @@ const DynamicWhyUs = ({ content }) => {
   //   window.addEventListener("resize", checkMobile);
   //   return () => window.removeEventListener("resize", checkMobile);
   // }, []);
+  // console.log( "why us image ---",image)
 
   const desktopSrc = image || "/images/why-us-placeholder.webp";
   const mobileSrc = mobileImage || desktopSrc;

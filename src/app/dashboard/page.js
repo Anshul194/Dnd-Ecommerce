@@ -83,7 +83,7 @@ export function SidebarDashboard() {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
 
-    window.location.href = "/login";
+    router.push("/login");
   };
 
   const SidebarContent = () => (
