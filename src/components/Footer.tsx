@@ -380,7 +380,7 @@ export default function Footer() {
         >
           <p>
             &copy; 2025 TeaHaven. All rights reserved. Made with 💚 for tea
-            lovers.
+            lovers. footer one
           </p>
         </motion.div>
       </div>
