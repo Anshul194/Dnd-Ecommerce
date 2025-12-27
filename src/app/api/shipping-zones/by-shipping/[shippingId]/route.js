@@ -14,7 +14,8 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
     //consolle.log('Connection name in route:', conn.name);
-    const shippingId = params.shippingId;
+    const resolvedParams = await params;
+    const shippingId = resolvedParams.shippingId;
     //consolle.log('Processing shipping ID:', shippingId);
     if (!mongoose.Types.ObjectId.isValid(shippingId)) {
       return NextResponse.json({ success: false, message: 'Invalid shipping ID' }, { status: 400 });

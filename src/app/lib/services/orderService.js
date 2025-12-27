@@ -223,10 +223,10 @@ class OrderService {
       // Apply prepaid discount if applicable
       let prepaidDiscount = 0;
       if (paymentMode !== "COD" && settings?.prepaidDiscountEnabled) {
-        if (settings.prepaidDiscountType === 'percentage') {
-          prepaidDiscount = (subtotal * settings.prepaidDiscountValue) / 100;
-        } else if (settings.prepaidDiscountType === 'amount') {
-          prepaidDiscount = settings.prepaidDiscountValue;
+        if (settings?.prepaidDiscountType === 'percentage') {
+          prepaidDiscount = (subtotal * (settings?.prepaidDiscountValue || 0)) / 100;
+        } else if (settings?.prepaidDiscountType === 'amount') {
+          prepaidDiscount = settings?.prepaidDiscountValue || 0;
         }
       }
 
@@ -234,7 +234,7 @@ class OrderService {
       const order_total = subtotal - discount - prepaidDiscount;
 
       // --- COD Order Limit ---
-      if (paymentMode === "COD" && order_total > (settings.codLimit ?? 1500)) {
+      if (paymentMode === "COD" && order_total > (settings?.codLimit ?? 1500)) {
         return {
           success: false,
           message: "COD not available for orders above ₹1500",
@@ -243,7 +243,7 @@ class OrderService {
       }
 
       // --- Repeat COD Restriction (per product, within 10 days) ---
-      if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
+      if (paymentMode === "COD" && settings?.repeatOrderRestrictionDays) {
         const Order = conn.models.Order || conn.model("Order", OrderSchema);
         for (const item of items) {
           const lastOrder = await Order.findOne({
@@ -257,7 +257,7 @@ class OrderService {
             const lastDate = new Date(lastOrder.createdAt);
             const now = new Date();
             const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
-            if (diffDays < (settings.repeatOrderRestrictionDays ?? 10)) {
+            if (diffDays < (settings?.repeatOrderRestrictionDays ?? 10)) {
               return {
                 success: false,
                 message:
@@ -273,19 +273,20 @@ class OrderService {
 
       // --- Shipping Charges ---
       let shippingCharge = 0;
-      if (order_total >= (settings.freeShippingThreshold ?? 500)) {
+      const freeShippingThreshold = settings?.freeShippingThreshold ?? 500;
+      if (order_total >= freeShippingThreshold) {
         shippingCharge = 0;
-      } else if (order_total < (settings.freeShippingThreshold ?? 500)) {
+      } else if (order_total < freeShippingThreshold) {
         if (paymentMode === "COD") {
-          shippingCharge = settings.codShippingChargeBelowThreshold ?? 80;
+          shippingCharge = settings?.codShippingChargeBelowThreshold ?? 80;
         } else {
-          shippingCharge = settings.prepaidShippingChargeBelowThreshold ?? 40;
+          shippingCharge = settings?.prepaidShippingChargeBelowThreshold ?? 40;
         }
       }
 
       // --- GST & Payment Gateway Charges ---
-      const gstRate = settings.gstCharge || 0;
-      const pgRate = settings.paymentGatewayCharge || 0;
+      const gstRate = settings?.gstCharge || 0;
+      const pgRate = settings?.paymentGatewayCharge || 0;
 
       const taxableAmount = Math.max(0, order_total);
       const gstAmount = (taxableAmount * gstRate) / 100;
@@ -527,10 +528,10 @@ class OrderService {
       // Apply prepaid discount if applicable
       let prepaidDiscount = 0;
       if (paymentMode !== "COD" && settings?.prepaidDiscountEnabled) {
-        if (settings.prepaidDiscountType === 'percentage') {
-          prepaidDiscount = (subtotal * settings.prepaidDiscountValue) / 100;
-        } else if (settings.prepaidDiscountType === 'amount') {
-          prepaidDiscount = settings.prepaidDiscountValue;
+        if (settings?.prepaidDiscountType === 'percentage') {
+          prepaidDiscount = (subtotal * (settings?.prepaidDiscountValue || 0)) / 100;
+        } else if (settings?.prepaidDiscountType === 'amount') {
+          prepaidDiscount = settings?.prepaidDiscountValue || 0;
         }
       }
 
@@ -538,7 +539,7 @@ class OrderService {
       const order_total = subtotal - discount - prepaidDiscount;
 
       // --- COD Order Limit ---
-      if (paymentMode === "COD" && order_total > (settings.codLimit ?? 1500)) {
+      if (paymentMode === "COD" && order_total > (settings?.codLimit ?? 1500)) {
         return {
           success: false,
           message: "COD not available for orders above ₹1500",
@@ -548,7 +549,7 @@ class OrderService {
 
       // --- Repeat COD Restriction (per product, within 10 days) ---
       let codBlockedReason = null;
-      if (paymentMode === "COD" && settings.repeatOrderRestrictionDays) {
+      if (paymentMode === "COD" && settings?.repeatOrderRestrictionDays) {
         const Order = conn.models.Order || conn.model("Order", OrderSchema);
         for (const item of items) {
           const lastOrder = await Order.findOne({
@@ -562,8 +563,8 @@ class OrderService {
             const lastDate = new Date(lastOrder.createdAt);
             const now = new Date();
             const diffDays = (now - lastDate) / (1000 * 60 * 60 * 24);
-            if (diffDays < (settings.repeatOrderRestrictionDays ?? 10)) {
-              codBlockedReason = `COD blocked for product ${item.product} (ordered within last ${settings.repeatOrderRestrictionDays} days)`;
+            if (diffDays < (settings?.repeatOrderRestrictionDays ?? 10)) {
+              codBlockedReason = `COD blocked for product ${item.product} (ordered within last ${settings?.repeatOrderRestrictionDays} days)`;
               return {
                 success: false,
                 message:
@@ -577,19 +578,20 @@ class OrderService {
 
       // --- Shipping Charges ---
       let shippingCharge = 0;
-      if (order_total >= (settings.freeShippingThreshold ?? 500)) {
+      const freeShippingThreshold = settings?.freeShippingThreshold ?? 500;
+      if (order_total >= freeShippingThreshold) {
         shippingCharge = 0;
-      } else if (order_total < (settings.freeShippingThreshold ?? 500)) {
+      } else if (order_total < freeShippingThreshold) {
         if (paymentMode === "COD") {
-          shippingCharge = settings.codShippingChargeBelowThreshold ?? 80;
+          shippingCharge = settings?.codShippingChargeBelowThreshold ?? 80;
         } else {
-          shippingCharge = settings.prepaidShippingChargeBelowThreshold ?? 40;
+          shippingCharge = settings?.prepaidShippingChargeBelowThreshold ?? 40;
         }
       }
 
       // --- GST & Payment Gateway Charges ---
-      const gstRate = settings.gstCharge || 0;
-      const pgRate = settings.paymentGatewayCharge || 0;
+      const gstRate = settings?.gstCharge || 0;
+      const pgRate = settings?.paymentGatewayCharge || 0;
 
       const taxableAmount = Math.max(0, order_total);
       const gstAmount = (taxableAmount * gstRate) / 100;
@@ -666,16 +668,16 @@ class OrderService {
       try {
         // Only trigger auto-call for COD orders if enabled in settings
         //consolle.log("Triggering auto-call for COD order", settings);
-        if (settings.orderConfirmEnabled) {
+        if (settings?.orderConfirmEnabled) {
           const apiUrl = "https://obd-api.myoperator.co/obd-api-v1";
           const payload = {
-            company_id: settings.myOperatorCompanyId || "683aebae503f2118",
+            company_id: settings?.myOperatorCompanyId || "683aebae503f2118",
             secret_token:
-              settings.myOperatorSecretToken ||
+              settings?.myOperatorSecretToken ||
               "2a67cfdb278391cf9ae47a7fffd6b0ec8d93494ff0004051c0f328a501553c98",
             type: "2",
             number: "+91" + shippingAddress.phoneNumber, // fallback to shipping phone if user phone not present
-            public_ivr_id: settings.myOperatorIvrId || "68b0383927f53564",
+            public_ivr_id: settings?.myOperatorIvrId || "68b0383927f53564",
           };
           //consolle.log("User phone number:", user);
           //consolle.log("Shipping address phone number:", shippingAddress);
@@ -685,7 +687,7 @@ class OrderService {
             method: "POST",
             headers: {
               "x-api-key":
-                settings.myOperatorApiKey ||
+                settings?.myOperatorApiKey ||
                 "oomfKA3I2K6TCJYistHyb7sDf0l0F6c8AZro5DJh",
               "Content-Type": "application/json",
             },

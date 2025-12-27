@@ -133,6 +133,14 @@ class AttributeService {
   async searchAttributesByName(name) {
     return await this.attributeRepo.searchByName(name);
   }
+
+  async searchAttributesByNameIncludingDeleted(name) {
+    return await this.attributeRepo.searchByNameIncludingDeleted(name);
+  }
+
+  async permanentDeleteByName(name) {
+    return await this.attributeRepo.permanentDeleteByName(name);
+  }
 }
 
 export default AttributeService;

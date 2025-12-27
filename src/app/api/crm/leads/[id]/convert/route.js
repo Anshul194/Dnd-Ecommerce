@@ -13,7 +13,8 @@ export async function POST(request, { params }) {
     const body = await request.json();
     const { customerId } = body;
 
-    const result = await convertLeadController(params.id, customerId, conn);
+    const resolvedParams = await params;
+    const result = await convertLeadController(resolvedParams.id, customerId, conn);
     return NextResponse.json(result.body, { status: result.status });
   } catch (err) {
     console.error('POST /crm/leads/:id/convert error:', err);

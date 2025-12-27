@@ -22,7 +22,8 @@ export const PUT = withUserAuth(async function(request, { params }) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
     //console.log('Connection name in route:', conn.name);
-    const cartId = params.id;
+    const resolvedParams = await params;
+    const cartId = resolvedParams.id;
     if (!mongoose.Types.ObjectId.isValid(cartId)) {
       return NextResponse.json({ success: false, message: 'Invalid cart ID' }, { status: 400 });
     }

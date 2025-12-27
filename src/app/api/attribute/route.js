@@ -21,10 +21,25 @@ export const POST = async (req) => {
       return toNextResponse({ success: false, message: "DB not found" }, 404);
     }
     const body = await req.json();
+    
+    // Validate that body exists
+    if (!body) {
+      return toNextResponse({ 
+        success: false, 
+        message: "Request body is required",
+        data: null 
+      }, 400);
+    }
+    
     const result = await createAttribute({ body }, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
-    return toNextResponse({ success: false, message: error.message }, 500);
+    console.error('Attribute POST route error:', error);
+    return toNextResponse({ 
+      success: false, 
+      message: error.message || "Server error",
+      data: null 
+    }, 500);
   }
 };
 

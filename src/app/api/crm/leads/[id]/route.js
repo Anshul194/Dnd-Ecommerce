@@ -4,7 +4,7 @@ import { getLeadByIdService, updateLeadService, deleteLeadService } from '@/app/
 
 export async function GET(request, { params }) {
     try {
-        const { id } = await params;
+            const { id } = await params;
         const subdomain = getSubdomain(request);
         const conn = await getDbConnection(subdomain);
 

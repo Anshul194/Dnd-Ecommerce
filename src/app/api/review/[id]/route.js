@@ -38,9 +38,18 @@ async function parseFormData(req) {
   }
 }
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
-    const { id } = params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Invalid reviewId: undefined" },
+        { status: 400 }
+      );
+    }
+    
     const subdomain = getSubdomain(req);
     //consolle.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
@@ -90,9 +99,18 @@ export async function GET(req, { params }) {
   }
 }
 
-export const PUT = withUserAuth(async function (req, { params }) {
+export const PUT = withUserAuth(async function (req, context) {
   try {
-    const { id } = params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Invalid reviewId: undefined" },
+        { status: 400 }
+      );
+    }
+    
     const subdomain = getSubdomain(req);
     //consolle.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
@@ -167,9 +185,18 @@ export const PUT = withUserAuth(async function (req, { params }) {
   }
 });
 
-export const DELETE = withUserAuth(async function (req, { params }) {
+export const DELETE = withUserAuth(async function (req, context) {
   try {
-    const { id } = params;
+    const resolvedParams = await context.params;
+    const id = resolvedParams?.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Invalid reviewId: undefined" },
+        { status: 400 }
+      );
+    }
+    
     const subdomain = getSubdomain(req);
     //consolle.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
