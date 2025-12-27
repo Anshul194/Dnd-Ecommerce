@@ -235,19 +235,21 @@ export function SignupPage() {
                   className="ml-3 text-xs sm:text-sm text-gray-600"
                 >
                   I accept that I have read & understood TeaBox's{" "}
-                  <a
-                    href="#"
+                  <button
+                    type="button"
+                    onClick={(e) => e.preventDefault()}
                     className="text-green-600 hover:text-green-700 underline"
                   >
                     Privacy Policy
-                  </a>{" "}
+                  </button>{" "}
                   and{" "}
-                  <a
-                    href="#"
+                  <button
+                    type="button"
+                    onClick={(e) => e.preventDefault()}
                     className="text-green-600 hover:text-green-700 underline"
                   >
                     T&Cs
-                  </a>
+                  </button>
                 </label>
               </div>
 
@@ -265,12 +267,12 @@ export function SignupPage() {
             <div className="mt-5 lg:mt-6 text-center">
               <p className="text-xs sm:text-sm text-gray-600">
                 Already have an account?{" "}
-                <a
+                <Link
                   href="/login"
                   className="text-green-600 hover:text-green-700 font-medium underline"
                 >
                   Login here
-                </a>
+                </Link>
               </p>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
 import { refreshToken } from '@/app/store/slices/authSlice';
 
 // Client-side token validation function
@@ -33,6 +34,7 @@ const isTokenExpiringSoon = (token) => {
 
 const useTokenRefresh = () => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const { isAuthenticated } = useSelector((state) => state.auth);
   
   const refreshTokenIfNeeded = useCallback(async () => {
@@ -57,11 +59,11 @@ const useTokenRefresh = () => {
         // Redirect to login on refresh failure
         if (typeof window !== 'undefined') {
           const currentPath = window.location.pathname + window.location.search;
-          window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+          router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
         }
       }
     }
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch, router, isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) return;

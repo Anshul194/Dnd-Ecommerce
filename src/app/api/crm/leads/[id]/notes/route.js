@@ -14,7 +14,8 @@ export async function POST(request, { params }) {
     request.user = user;
 
     //console.log('Raw params:', params);
-    const id = params.id;
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
     //console.log('Extracted lead ID:', id);
 
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {

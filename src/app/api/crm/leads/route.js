@@ -48,6 +48,64 @@ export async function POST(request) {
     const conn = await getDbConnection(subdomain);
     const body = await request.json();
 
+    // Special handling for newsletter subscriptions
+    if (body.source === "newsletter") {
+      const Lead = conn.models.Lead || conn.model("Lead", (await import("@/app/lib/models/Lead.js")).default);
+      
+      // Validate email
+      if (!body.email || !body.email.trim()) {
+        return NextResponse.json(
+          { success: false, message: "Email is required" },
+          { status: 400 }
+        );
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(body.email.trim())) {
+        return NextResponse.json(
+          { success: false, message: "Invalid email format" },
+          { status: 400 }
+        );
+      }
+
+      // Check for existing newsletter subscription
+      const existingLead = await Lead.findOne({
+        email: body.email.trim().toLowerCase(),
+        source: "newsletter",
+      });
+
+      if (existingLead) {
+        return NextResponse.json(
+          {
+            success: true,
+            message: "You are already subscribed to our newsletter!",
+            data: existingLead,
+          },
+          { status: 200 }
+        );
+      }
+
+      // Prepare newsletter lead data
+      const leadData = {
+        email: body.email.trim().toLowerCase(),
+        source: "newsletter",
+        status: "new",
+        fullName: body.fullName || body.email.split("@")[0],
+        notes: [{ note: "Subscribed via newsletter form on website" }],
+      };
+
+      const result = await createLeadService(leadData, conn);
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Successfully subscribed to newsletter!",
+          data: result,
+        },
+        { status: 201 }
+      );
+    }
+
+    // Regular lead creation for other sources
     // Ensure fullName is populated if firstName/lastName are provided
     if (body.firstName || body.lastName) {
       body.fullName = `${body.firstName || ""} ${body.lastName || ""}`.trim();
@@ -69,6 +127,21 @@ export async function POST(request) {
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error("Error creating lead:", error);
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    
+    // Handle duplicate key errors (MongoDB unique index)
+    if (error.code === 11000 || error.message?.includes("duplicate")) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "This email is already subscribed to our newsletter.",
+        },
+        { status: 409 }
+      );
+    }
+    
+    return NextResponse.json(
+      { success: false, message: error.message || "Failed to create lead" },
+      { status: 500 }
+    );
   }
 }

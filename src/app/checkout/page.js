@@ -56,6 +56,7 @@ export default function CheckoutPage() {
   const [addressType, setAddressType] = useState("");
   const [pinCodeVerified, setPinCodeVerified] = useState(null);
   const [pincodeChecking, setPincodeChecking] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
   const router = useRouter();
   const location = usePathname();
   const { isAuthenticated, otpSended, loading, user } = useSelector(
@@ -344,12 +345,30 @@ export default function CheckoutPage() {
 
   const handelPayment = async () => {
     console.log("payment function invoked");
+    
+    // Set loading state immediately when user clicks Place Order
+    setPlacingOrder(true);
+    
+    // Validate postal code first
+    if (!formData.pincode || formData.pincode.trim() === "") {
+      toast.error("Please enter a valid postal code before placing order");
+      setPlacingOrder(false);
+      return;
+    }
+    
     const check = await checkBeforePayment();
     console.log("check response ", check);
-    if (!check.success && check.message !== "Order is valid") {
-      toast.error(
-        check.message || "Order validation failed. Please try again."
-      );
+    if (!check || !check.success) {
+      const errorMessage = check?.message || "Order validation failed. Please check your address and try again.";
+      toast.error(errorMessage);
+      setPlacingOrder(false);
+      return;
+    }
+    
+    // Additional check for the specific message
+    if (check.message && check.message !== "Order is valid" && !check.success) {
+      toast.error(check.message || "Order validation failed. Please try again.");
+      setPlacingOrder(false);
       return;
     }
     console.log("check completed");
@@ -421,20 +440,36 @@ export default function CheckoutPage() {
               selectedCoupon && (payload.discount = selectedCoupon.discount);
 
               console.log("Placing order with payload:", payload);
+              // Loading state is already set at the start of handelPayment
               const result = await dispatch(placeOrder(payload));
               console.log("Place order result:", result);
               
-              if (result.error) {
-                console.error("Order placement failed:", result.error);
-                toast.error(result.error.message || "Order placement failed. Please contact support.");
+              // Check if order placement failed
+              if (result.type?.endsWith('/rejected') || result.error) {
+                console.error("Order placement failed:", result.error || result.payload);
+                const errorMessage = result.payload?.message || result.error?.message || "Order placement failed. Please contact support.";
+                toast.error(errorMessage);
+                setPlacingOrder(false);
+                return;
+              }
+
+              // Check if the API returned an error response
+              if (result.payload && !result.payload.success) {
+                console.error("Order placement failed:", result.payload);
+                const errorMessage = result.payload.message || "Order placement failed. Please contact support.";
+                toast.error(errorMessage);
+                setPlacingOrder(false);
                 return;
               }
               
               // Mark that order was placed to avoid sending abandonment event
               orderPlacedRef.current = true;
-              dispatch(clearCart());
-              console.log("Redirecting to order success page");
-              router.push("/order-success?Order_status=success");
+              // Redirect first to prevent page refresh issues
+              router.replace("/order-success?Order_status=success");
+              // Clear cart after redirect
+              setTimeout(() => {
+                dispatch(clearCart());
+              }, 100);
             } catch (error) {
               console.error("Error in payment handler:", error);
               toast.error(error?.message || "Order placement failed. Please contact support.");
@@ -450,6 +485,7 @@ export default function CheckoutPage() {
           modal: {
             ondismiss: function () {
               toast.info("Payment cancelled");
+              setPlacingOrder(false);
             },
           },
         };
@@ -465,6 +501,7 @@ export default function CheckoutPage() {
               "Payment gateway failed to load. Please try again later."
             );
             console.error("Razorpay load error", err);
+            setPlacingOrder(false);
             return;
           }
         }
@@ -526,23 +563,40 @@ export default function CheckoutPage() {
           selectedCoupon && (payload.discount = selectedCoupon.discount);
 
           console.log("Placing COD order with payload:", payload);
+          setPlacingOrder(true);
           const result = await dispatch(placeOrder(payload));
           console.log("Place COD order result:", result);
           
-          if (result.error) {
-            console.error("COD order placement failed:", result.error);
-            toast.error(result.error.message || "Order placement failed. Please try again.");
+          // Check if order placement failed
+          if (result.type?.endsWith('/rejected') || result.error) {
+            console.error("COD order placement failed:", result.error || result.payload);
+            const errorMessage = result.payload?.message || result.error?.message || "Order placement failed. Please try again.";
+            toast.error(errorMessage);
+            setPlacingOrder(false);
+            return;
+          }
+
+          // Check if the API returned an error response
+          if (result.payload && !result.payload.success) {
+            console.error("COD order placement failed:", result.payload);
+            const errorMessage = result.payload.message || "Order placement failed. Please try again.";
+            toast.error(errorMessage);
+            setPlacingOrder(false);
             return;
           }
           
           // Mark that order was placed to avoid sending abandonment event
           orderPlacedRef.current = true;
-          dispatch(clearCart());
-          console.log("Redirecting to order success page");
-          router.push("/order-success?Order_status=success");
+          // Redirect first to prevent page refresh issues
+          router.replace("/order-success?Order_status=success");
+          // Clear cart after redirect
+          setTimeout(() => {
+            dispatch(clearCart());
+          }, 100);
         } catch (error) {
           console.error("Error placing COD order:", error);
           toast.error(error?.message || "Order placement failed. Please try again.");
+          setPlacingOrder(false);
         }
       }
     } catch (error) {
@@ -1433,16 +1487,35 @@ export default function CheckoutPage() {
                   {/* Place Order Button */}
                   {isAuthenticated && addressAdded && (
                      <button
-                        onClick={pinCodeVerified?.success ? handelPayment : checkPincode}
-                        disabled={pincodeChecking}
-                        className={`w-full py-4 rounded-lg font-bold text-white shadow-lg transition-transform active:scale-[0.98] ${
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (pinCodeVerified?.success) {
+                            handelPayment();
+                          } else {
+                            checkPincode();
+                          }
+                        }}
+                        disabled={placingOrder || pincodeChecking}
+                        className={`w-full py-4 rounded-lg font-bold text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
                            pinCodeVerified?.success
                            ? "bg-green-600 hover:bg-green-700 shadow-green-200"
                            : "bg-blue-600 hover:bg-blue-700 shadow-blue-200"
                         }`}
                      >
-                        {pincodeChecking ? "Checking..." : 
-                           pinCodeVerified?.success ? <span className="flex items-center justify-center gap-1">PLACE ORDER &bull; <IndianRupee size={18} strokeWidth={3} /> {total.toFixed(2)}</span> : "CHECK PINCODE"}
+                        {placingOrder ? (
+                           <>
+                              <LoadingSpinner />
+                              <span>Placing Order...</span>
+                           </>
+                        ) : pincodeChecking ? (
+                           "Checking..."
+                        ) : pinCodeVerified?.success ? (
+                           <span className="flex items-center justify-center gap-1">PLACE ORDER &bull; <IndianRupee size={18} strokeWidth={3} /> {total.toFixed(2)}</span>
+                        ) : (
+                           "CHECK PINCODE"
+                        )}
                      </button>
                   )}
                </div>

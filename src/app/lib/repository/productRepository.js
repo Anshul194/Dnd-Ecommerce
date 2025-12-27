@@ -84,8 +84,6 @@ class ProductRepository extends CrudRepository {
         Wishlist = connection.models.Wishlist;
       }
 
-      const populateOptions = [{ path: "attributeSet.attributeId" }];
-
       // Calculate skip value for pagination
       const skip = (pageNum - 1) * limitNum;
 
@@ -101,13 +99,29 @@ class ProductRepository extends CrudRepository {
         cleanedSortConditions[cleanField] = direction;
       }
 
-      const products = await this.model
-        .find(filter)
-        .populate(populateOptions)
-        .sort(cleanedSortConditions)
-        .skip(skip)
-        .limit(limitNum)
-        .select(selectFields);
+      // Try to populate attributeSet, but handle errors gracefully
+      // Note: Schema has strictPopulate: false, but if populate still fails, we'll skip it
+      let products;
+      try {
+        const populateOptions = [{ path: "attributeSet.attributeId" }];
+        products = await this.model
+          .find(filter)
+          .populate(populateOptions)
+          .sort(cleanedSortConditions)
+          .skip(skip)
+          .limit(limitNum)
+          .select(selectFields);
+      } catch (populateError) {
+        // If populate fails, fetch without populate
+        // This can happen if strictPopulate is enforced at connection level
+        console.warn("Failed to populate attributeSet.attributeId, fetching without populate:", populateError.message);
+        products = await this.model
+          .find(filter)
+          .sort(cleanedSortConditions)
+          .skip(skip)
+          .limit(limitNum)
+          .select(selectFields);
+      }
 
       const results = [];
 
@@ -245,15 +259,27 @@ class ProductRepository extends CrudRepository {
         Order = conn.models.Order;
       }
 
-      const populateOptions = [{ path: "attributeSet.attributeId" }];
-
+      // Try to populate attributeSet, but handle errors gracefully
+      // Note: Schema has strictPopulate: false, but if populate still fails, we'll skip it
       let productDoc;
-      if (mongoose.Types.ObjectId.isValid(id)) {
-        productDoc = await this.model.findById(id).populate(populateOptions);
-      } else {
-        productDoc = await this.model
-          .findOne({ slug: id })
-          .populate(populateOptions);
+      try {
+        const populateOptions = [{ path: "attributeSet.attributeId" }];
+        if (mongoose.Types.ObjectId.isValid(id)) {
+          productDoc = await this.model.findById(id).populate(populateOptions);
+        } else {
+          productDoc = await this.model
+            .findOne({ slug: id })
+            .populate(populateOptions);
+        }
+      } catch (populateError) {
+        // If populate fails, fetch without populate
+        // This can happen if strictPopulate is enforced at connection level
+        console.warn("Failed to populate attributeSet.attributeId, fetching without populate:", populateError.message);
+        if (mongoose.Types.ObjectId.isValid(id)) {
+          productDoc = await this.model.findById(id);
+        } else {
+          productDoc = await this.model.findOne({ slug: id });
+        }
       }
 
       if (!productDoc) return null;

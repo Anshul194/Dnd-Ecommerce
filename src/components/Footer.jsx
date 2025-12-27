@@ -155,7 +155,7 @@ export default function Footer() {
       if (response.data.success !== false) {
         setNewsletterMessage({ 
           type: "success", 
-          text: "Thank you for subscribing! Check your email for confirmation." 
+          text: response.data.message || "Thank you for subscribing! Check your email for confirmation." 
         });
         setNewsletterEmail("");
         

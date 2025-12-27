@@ -131,7 +131,7 @@ function LandingBanner({ content = [] }) {
                   ? currentContent?.mobileImage
                   : currentContent?.image
               })`,
-              backgroundSize: "contain", // Changed from 'contain' to 'cover' for better full-screen fill
+              backgroundSize: "cover", // Changed from 'contain' to 'cover' for better full-screen fill
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
             }}

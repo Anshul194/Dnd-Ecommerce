@@ -14,7 +14,8 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
     //console.log('Connection name in route:', conn.name);
-    const agentId = params.agentId;
+    const resolvedParams = await params;
+    const agentId = resolvedParams.agentId;
     //console.log('Processing agent ID:', agentId);
     if (!mongoose.Types.ObjectId.isValid(agentId)) {
       return NextResponse.json({ success: false, message: 'Invalid agent ID' }, { status: 400 });

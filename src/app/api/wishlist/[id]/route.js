@@ -20,7 +20,8 @@ export const PUT = withUserAuth(async function(request, { params }) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
     //consolle.log('Connection name in route:', conn.name);
-    const wishlistId = params.id;
+    const resolvedParams = await params;
+    const wishlistId = resolvedParams.id;
     if (!mongoose.Types.ObjectId.isValid(wishlistId)) {
       return NextResponse.json({ success: false, message: 'Invalid wishlist ID' }, { status: 400 });
     }

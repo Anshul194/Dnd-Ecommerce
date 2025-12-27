@@ -21,7 +21,8 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
     //console.log('Connection name in route:', conn.name);
-    const id = params.id;
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
     //console.log('Processing influencer video ID:', id);
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid influencer video ID' }, { status: 400 });
@@ -43,7 +44,8 @@ export const PUT = withUserAuth(async function (request, { params }) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
     //console.log('Connection name in route:', conn.name);
-    const id = params.id;
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
     //console.log('Processing influencer video ID:', id);
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid influencer video ID' }, { status: 400 });
@@ -65,7 +67,8 @@ export const DELETE = withUserAuth(async function (request, { params }) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
     //console.log('Connection name in route:', conn.name);
-    const id = params.id;
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
     //console.log('Processing influencer video ID:', id);
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid influencer video ID' }, { status: 400 });

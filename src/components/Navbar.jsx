@@ -285,7 +285,7 @@ export default function Navbar({ initialCategories = [] }) {
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               {!pathname.includes("/dashboard") && (
                 <SheetTrigger asChild>
-                  <button className="md:hidden text-[#3C950D] hover:text-[#3C950D] transition-colors p-2 pr-4">
+                  <button type="button" className="md:hidden text-[#3C950D] hover:text-[#3C950D] transition-colors p-2 pr-4">
                     <Menu className="w-6 h-6" />
                   </button>
                 </SheetTrigger>
@@ -351,6 +351,7 @@ export default function Navbar({ initialCategories = [] }) {
                         {/* Toggle button for subcategories */}
                         {category.subcategories?.length > 0 && (
                           <button
+                            type="button"
                             onClick={() => toggleCategory(category._id)}
                             className="px-3 py-2 hover:bg-[#3C950D]/10 rounded-lg transition-colors"
                           >
@@ -441,7 +442,7 @@ export default function Navbar({ initialCategories = [] }) {
                   setHoveredCategory(null);
                 }}
               >
-                <button className="flex items-center gap-1 text-gray-700 hover:text-[#3C950D] transition-colors py-2 font-medium">
+                <button type="button" className="flex items-center gap-1 text-gray-700 hover:text-[#3C950D] transition-colors py-2 font-medium">
                   Categories
                   <ChevronDown
                     className={`w-4 h-4 transition-transform ${showCategoryMenu ? "rotate-180" : ""
@@ -626,7 +627,7 @@ export default function Navbar({ initialCategories = [] }) {
                             setHoveredCategory(null);
                           }}
                         >
-                          <button className="w-full py-2.5 bg-gradient-to-r from-[#3C950D] to-[#2d7009] text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm">
+                          <button type="button" className="w-full py-2.5 bg-gradient-to-r from-[#3C950D] to-[#2d7009] text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm">
                             View All Categories →
                           </button>
                         </Link>
@@ -642,7 +643,7 @@ export default function Navbar({ initialCategories = [] }) {
                 onMouseEnter={() => setShowProductMenu(true)}
                 onMouseLeave={() => setShowProductMenu(false)}
               >
-                <button className="flex items-center gap-1 text-gray-700 hover:text-[#3C950D] transition-colors py-2 font-medium">
+                <button type="button" className="flex items-center gap-1 text-gray-700 hover:text-[#3C950D] transition-colors py-2 font-medium">
                   Products
                   <ChevronDown
                     className={`w-4 h-4 transition-transform ${showProductMenu ? "rotate-180" : ""
@@ -725,7 +726,7 @@ export default function Navbar({ initialCategories = [] }) {
                         href="/search"
                         onClick={() => setShowProductMenu(false)}
                       >
-                        <button className="mt-6 w-full py-3 bg-gradient-to-r from-[#3C950D] to-[#2d7009] text-white rounded-lg hover:shadow-lg transition-all font-medium">
+                        <button type="button" className="mt-6 w-full py-3 bg-gradient-to-r from-[#3C950D] to-[#2d7009] text-white rounded-lg hover:shadow-lg transition-all font-medium">
                           Explore More Products →
                         </button>
                       </Link>
@@ -757,6 +758,7 @@ export default function Navbar({ initialCategories = [] }) {
             <div className="flex items-center gap-2 md:gap-4 ">
               {/* Search Icon */}
               <button
+                type="button"
                 ref={searchToggleRef}
                 onClick={() => setShowSearch(!showSearch)}
                 className="hover:text-[#3C950D] max-sm:hidden text-black outline-none transition-all hover:scale-110"
@@ -769,7 +771,7 @@ export default function Navbar({ initialCategories = [] }) {
                 <Link
                   href={isAuthenticated ? "/dashboard?tab=wishlist" : "/login"}
                 >
-                  <button className="relative flex hover:text-[#3C950D] text-black transition-all hover:scale-110">
+                  <button type="button" className="relative flex hover:text-[#3C950D] text-black transition-all hover:scale-110">
                     <Heart className="w-5 h-5 md:w-6 md:h-6" />
                     <Badge className="absolute text-white -top-1 -right-1 md:-top-1 md:-right-2  bg-[#3C950D]  w-4 h-4  rounded-full p-0 flex items-center justify-center text-[10px]  shadow-lg">
                       {LikedProducts?.length || 0}
@@ -780,6 +782,7 @@ export default function Navbar({ initialCategories = [] }) {
 
               {/* Cart */}
               <button
+                type="button"
                 onClick={handelCartToggle}
                 className="relative flex max-sm:mr-2 hover:text-[#3C950D] text-black transition-all hover:scale-110"
               >
@@ -829,6 +832,7 @@ export default function Navbar({ initialCategories = [] }) {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button
+                type="button"
                 onClick={() => setShowSearch(false)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#3C950D] transition-colors"
               >
