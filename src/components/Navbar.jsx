@@ -421,6 +421,7 @@ export default function Navbar({ initialCategories = [] }) {
                   className="rounded-full h-[90px] w-[90px] max-sm:h-[60px] max-sm:w-[60px] object-cover "
                 />
               </Link>
+              <h1 className="text-xl font-semibold text-[#3C950D]">Anshul</h1>
             </div>
 
             {/* Desktop Navigation Links */}
