@@ -424,9 +424,19 @@ export default function CheckoutPage() {
               const result = await dispatch(placeOrder(payload));
               console.log("Place order result:", result);
               
-              if (result.error) {
-                console.error("Order placement failed:", result.error);
-                toast.error(result.error.message || "Order placement failed. Please contact support.");
+              // Check if order placement failed
+              if (result.type?.endsWith('/rejected') || result.error) {
+                console.error("Order placement failed:", result.error || result.payload);
+                const errorMessage = result.payload?.message || result.error?.message || "Order placement failed. Please contact support.";
+                toast.error(errorMessage);
+                return;
+              }
+
+              // Check if the API returned an error response
+              if (result.payload && !result.payload.success) {
+                console.error("Order placement failed:", result.payload);
+                const errorMessage = result.payload.message || "Order placement failed. Please contact support.";
+                toast.error(errorMessage);
                 return;
               }
               
@@ -529,9 +539,19 @@ export default function CheckoutPage() {
           const result = await dispatch(placeOrder(payload));
           console.log("Place COD order result:", result);
           
-          if (result.error) {
-            console.error("COD order placement failed:", result.error);
-            toast.error(result.error.message || "Order placement failed. Please try again.");
+          // Check if order placement failed
+          if (result.type?.endsWith('/rejected') || result.error) {
+            console.error("COD order placement failed:", result.error || result.payload);
+            const errorMessage = result.payload?.message || result.error?.message || "Order placement failed. Please try again.";
+            toast.error(errorMessage);
+            return;
+          }
+
+          // Check if the API returned an error response
+          if (result.payload && !result.payload.success) {
+            console.error("COD order placement failed:", result.payload);
+            const errorMessage = result.payload.message || "Order placement failed. Please try again.";
+            toast.error(errorMessage);
             return;
           }
           

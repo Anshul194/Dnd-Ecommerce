@@ -212,10 +212,10 @@ export default function CheckoutPopup() {
     }
     
     try {
-      const data =
-        localStorage.getItem("address") &&
-        JSON.parse(localStorage.getItem("address"));
-      //console.log("checking addressData", data);
+    const data =
+      localStorage.getItem("address") &&
+      JSON.parse(localStorage.getItem("address"));
+    //console.log("checking addressData", data);
       
       const addressPayload = {
         user: user?._id,
@@ -235,11 +235,11 @@ export default function CheckoutPopup() {
         },
       };
 
-      if (data && data._id) {
-        //console.log("Updating existing address:", data._id);
+    if (data && data._id) {
+      //console.log("Updating existing address:", data._id);
         const result = await dispatch(
-          updateUserAddress({
-            addressId: data._id,
+        updateUserAddress({
+          addressId: data._id,
             addressData: addressPayload,
           })
         );
@@ -248,7 +248,7 @@ export default function CheckoutPopup() {
           return;
         }
         toast.success("Address updated successfully");
-      } else {
+    } else {
         const result = await dispatch(createUserAddress(addressPayload));
         if (result.type?.endsWith('/rejected')) {
           toast.error(result.payload?.message || "Failed to create address");
@@ -257,10 +257,10 @@ export default function CheckoutPopup() {
         toast.success("Address added successfully");
       }
       
-      // Structure the address data to match the expected format for display
-      const addressStructure = {
+    // Structure the address data to match the expected format for display
+    const addressStructure = {
         title: addressType?.trim() || "Home",
-        address: {
+      address: {
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim(),
           email: formData.email?.trim() || "",
@@ -272,18 +272,18 @@ export default function CheckoutPopup() {
           area: formData.area?.trim() || "",
           city: formData.city?.trim() || "",
           state: formData.state?.trim() || "",
-        },
-      };
-      await dispatch(setAddress(addressStructure));
+      },
+    };
+    await dispatch(setAddress(addressStructure));
 
-      // Refresh user addresses after adding/updating
-      if (isAuthenticated && user?._id) {
-        try {
-          const response = await dispatch(getuserAddresses(user._id));
-          setUserAddresses(response.payload || []);
-        } catch (error) {
-          //console.error("Error fetching user addresses:", error);
-        }
+    // Refresh user addresses after adding/updating
+    if (isAuthenticated && user?._id) {
+      try {
+        const response = await dispatch(getuserAddresses(user._id));
+        setUserAddresses(response.payload || []);
+      } catch (error) {
+        //console.error("Error fetching user addresses:", error);
+      }
       }
     } catch (error) {
       console.error("Error in handleAddAddress:", error);
@@ -466,20 +466,39 @@ export default function CheckoutPopup() {
               selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
               selectedCoupon && (payload.discount = selectedCoupon.discount);
 
+              console.log("Placing order with payload:", payload);
               const orderResult = await dispatch(placeOrder(payload));
+              console.log("Order placement result:", orderResult);
               
               // Check if order placement failed
-              if (placeOrder.rejected.match(orderResult)) {
+              if (orderResult.type?.endsWith('/rejected') || orderResult.error) {
+                console.error("Order placement rejected:", orderResult);
                 const errorMessage = orderResult.payload?.message || orderResult.error?.message || "Order placement failed. Please check your address details and try again.";
                 toast.error(errorMessage);
                 return;
               }
 
+              // Check if the API returned an error response
+              if (orderResult.payload && !orderResult.payload.success) {
+                console.error("Order placement API error:", orderResult.payload);
+                const errorMessage = orderResult.payload.message || "Order placement failed. Please check your address details and try again.";
+                toast.error(errorMessage);
+                return;
+              }
+
+              // Verify order was created successfully
+              if (!orderResult.payload || !orderResult.payload.success) {
+                console.error("Unexpected order result format:", orderResult);
+                toast.error("Order placement failed. Please try again or contact support.");
+                return;
+              }
+
+              console.log("Order placed successfully:", orderResult.payload);
               // Mark that order was placed to avoid sending abandonment event
               orderPlacedRef.current = true;
               dispatch(setCheckoutClose());
               dispatch(clearCart());
-              router.push(location + "?Order_status=success");
+              router.push("/order-success?Order_status=success");
             } catch (error) {
               console.error("Error placing order:", error);
               const errorMessage = error?.response?.data?.message || error?.message || "Order placement failed. Please check your address details and try again.";
@@ -578,20 +597,39 @@ export default function CheckoutPopup() {
           selectedCoupon && (payload.coupon = selectedCoupon.coupon._id);
           selectedCoupon && (payload.discount = selectedCoupon.discount);
 
+          console.log("Placing COD order with payload:", payload);
           const orderResult = await dispatch(placeOrder(payload));
+          console.log("COD order placement result:", orderResult);
           
           // Check if order placement failed
-          if (placeOrder.rejected.match(orderResult)) {
+          if (orderResult.type?.endsWith('/rejected') || orderResult.error) {
+            console.error("COD order placement rejected:", orderResult);
             const errorMessage = orderResult.payload?.message || orderResult.error?.message || "Order placement failed. Please check your address details and try again.";
             toast.error(errorMessage);
             return;
           }
 
+          // Check if the API returned an error response
+          if (orderResult.payload && !orderResult.payload.success) {
+            console.error("COD order placement API error:", orderResult.payload);
+            const errorMessage = orderResult.payload.message || "Order placement failed. Please check your address details and try again.";
+            toast.error(errorMessage);
+            return;
+          }
+
+          // Verify order was created successfully
+          if (!orderResult.payload || !orderResult.payload.success) {
+            console.error("Unexpected COD order result format:", orderResult);
+            toast.error("Order placement failed. Please try again or contact support.");
+            return;
+          }
+
+          console.log("COD order placed successfully:", orderResult.payload);
           // Mark that order was placed to avoid sending abandonment event
           orderPlacedRef.current = true;
           dispatch(setCheckoutClose());
           dispatch(clearCart());
-          router.push(location + "?Order_status=success");
+          router.push("/order-success?Order_status=success");
         } catch (error) {
           console.error("Error placing order:", error);
           const errorMessage = error?.response?.data?.message || error?.message || "Order placement failed. Please check your address details and try again.";
@@ -1330,7 +1368,7 @@ export default function CheckoutPopup() {
                           onClick={() => setShowVariantModal({ type: 'buyNow', product: buyNowProduct.product, selectedVariant: buyNowProduct.variant })}
                           className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs cursor-pointer hover:bg-blue-50 transition-colors"
                         >
-                          <Plus className="h-3 w-3" />
+                        <Plus className="h-3 w-3" />
                           <h3>{buyNowProduct.product.variants.length} {buyNowProduct.product.variants.length === 1 ? 'option' : 'options'}</h3>
                         </button>
                       )}
@@ -1378,7 +1416,7 @@ export default function CheckoutPopup() {
                               onClick={() => setShowVariantModal({ type: 'cart', product: item.product, selectedVariant: item.variant, cartItem: item, index: index })}
                               className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs cursor-pointer hover:bg-blue-50 transition-colors"
                             >
-                              <Plus className="h-3 w-3" />
+                            <Plus className="h-3 w-3" />
                               <h3>{item.product.variants.length} {item.product.variants.length === 1 ? 'option' : 'options'}</h3>
                             </button>
                           )}
@@ -2149,7 +2187,7 @@ export default function CheckoutPopup() {
               >
                 <X className="h-5 w-5" />
               </button>
-            </div>
+    </div>
             
             <div className="space-y-2">
               {showVariantModal.product?.variants?.map((variant, index) => {
