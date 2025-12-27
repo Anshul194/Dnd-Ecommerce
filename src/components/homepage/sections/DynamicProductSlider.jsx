@@ -353,17 +353,7 @@ const DynamicProductSlider = ({ content }) => {
             className="grid grid-cols-2 gap-4 auto-rows-fr  md:grid-cols-3 lg:flex lg:overflow-x-auto scrollbar-hide lg:space-x-4 py-4 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {loading || !products || products.length === 0 ? (
-              // Show skeleton loaders while products are loading
-              Array.from({ length: 6 }).map((_, index) => (
-                <div
-                  key={`skeleton-${index}`}
-                  className="min-w-[200px] lg:min-w-[320px] max-w-[320px] animate-pulse"
-                >
-                  <div className="bg-gray-200 rounded-lg h-[400px]"></div>
-                </div>
-              ))
-            ) : products?.products?.length > 0 ? (
+            {products?.products?.length > 0 ? (
               products?.products?.map((product, index) => (
                 <TrySectionCard
                   key={product._id}
