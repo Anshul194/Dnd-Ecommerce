@@ -464,9 +464,12 @@ export default function CheckoutPage() {
               
               // Mark that order was placed to avoid sending abandonment event
               orderPlacedRef.current = true;
-              dispatch(clearCart());
-              console.log("Redirecting to order success page");
-              router.push("/order-success?Order_status=success");
+              // Redirect first to prevent page refresh issues
+              router.replace("/order-success?Order_status=success");
+              // Clear cart after redirect
+              setTimeout(() => {
+                dispatch(clearCart());
+              }, 100);
             } catch (error) {
               console.error("Error in payment handler:", error);
               toast.error(error?.message || "Order placement failed. Please contact support.");
@@ -584,9 +587,12 @@ export default function CheckoutPage() {
           
           // Mark that order was placed to avoid sending abandonment event
           orderPlacedRef.current = true;
-          dispatch(clearCart());
-          console.log("Redirecting to order success page");
-          router.push("/order-success?Order_status=success");
+          // Redirect first to prevent page refresh issues
+          router.replace("/order-success?Order_status=success");
+          // Clear cart after redirect
+          setTimeout(() => {
+            dispatch(clearCart());
+          }, 100);
         } catch (error) {
           console.error("Error placing COD order:", error);
           toast.error(error?.message || "Order placement failed. Please try again.");
@@ -1481,7 +1487,16 @@ export default function CheckoutPage() {
                   {/* Place Order Button */}
                   {isAuthenticated && addressAdded && (
                      <button
-                        onClick={pinCodeVerified?.success ? handelPayment : checkPincode}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (pinCodeVerified?.success) {
+                            handelPayment();
+                          } else {
+                            checkPincode();
+                          }
+                        }}
                         disabled={placingOrder || pincodeChecking}
                         className={`w-full py-4 rounded-lg font-bold text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
                            pinCodeVerified?.success
