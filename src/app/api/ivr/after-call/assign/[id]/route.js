@@ -7,7 +7,8 @@ import { withSuperAdminOrRoleAdminAuth } from '../../../../../middleware/commonA
 export const PUT = withSuperAdminOrRoleAdminAuth(async function (request, { params }) {
   try {
     //console.log('Raw params:', params); // Debug log
-    const id = params.id; // Direct access to params.id
+    const resolvedParams = await params;
+    const id = resolvedParams.id; // Direct access to params.id
     //console.log('Extracted lead ID:', id); // Debug log
 
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {

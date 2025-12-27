@@ -6,8 +6,8 @@ import mongoose from 'mongoose';
 
 export const GET = withUserAuth(async function (request, context) {
   try {
-    // Extract params from context (params may be a promise in Next.js 13.4+)
-    const params = context?.params ? (await context.params || context.params) : null;
+    // Extract params from context (params is a Promise in Next.js 15+)
+    const params = await context.params;
     if (!params || !params.id) {
       return NextResponse.json({ success: false, error: 'Shipping ID is required' }, { status: 400 });
     }
@@ -34,8 +34,8 @@ export const GET = withUserAuth(async function (request, context) {
 
 export const PUT = withUserAuth(async function (request, context) {
   try {
-    // Extract params from context (params may be a promise in Next.js 13.4+)
-    const params = context?.params ? (await context.params || context.params) : null;
+    // Extract params from context (params is a Promise in Next.js 15+)
+    const params = await context.params;
     if (!params || !params.id) {
       return NextResponse.json({ success: false, error: 'Shipping ID is required' }, { status: 400 });
     }
@@ -64,8 +64,8 @@ export const PUT = withUserAuth(async function (request, context) {
 
 export const DELETE = withUserAuth(async function (request, context) {
   try {
-    // Extract params from context (params may be a promise in Next.js 13.4+)
-    const params = context?.params ? (await context.params || context.params) : null;
+    // Extract params from context (params is a Promise in Next.js 15+)
+    const params = await context.params;
     if (!params || !params.id) {
       return NextResponse.json({ success: false, error: 'Shipping ID is required' }, { status: 400 });
     }

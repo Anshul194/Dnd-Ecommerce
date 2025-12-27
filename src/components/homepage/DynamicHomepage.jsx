@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGroupedContent } from "@/app/store/slices/contentSlice";
 import dynamic from "next/dynamic";
+import { LoadingSpinner, LoadingSection } from "../common/Loading";
 
 // Import all existing components
 import Categories from "./Categories";
@@ -18,7 +19,7 @@ const TryItYourselfSlider = dynamic(() => import("./TryItYourselfSliderj"), {
       <LoadingSpinner />
     </div>
   ),
-  ssr: true
+  ssr: false // Match parent component SSR setting
 });
 import ValidatedSection from "./ValidatedSection";
 import WhyUs from "./WhyUs";
@@ -34,7 +35,6 @@ import DynamicWhyUs from "./sections/DynamicWhyUs";
 import DynamicUniqueSellingPoints from "./sections/DynamicUniqueSellingPoints";
 import ProductGrid from "./sections/ProductGrid";
 import AllProducts from "./sections/AllProducts";
-import { LoadingSpinner, LoadingSection } from "../common/Loading";
 
 const DynamicHomepage = () => {
   const dispatch = useDispatch();
