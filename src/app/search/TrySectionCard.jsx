@@ -38,7 +38,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
   const { trackView, trackAddToCart, trackWishlist, trackRemoveWishlist } =
     useTrack();
 
-  const [imageLoading, setImageLoading] = useState(true);
+
 
   // Get wishlist items from Redux for immediate updates
   const wishlistItems = useSelector((state) => state.wishlist.items);
@@ -286,29 +286,14 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
               </button>
             </div>
             {/* Product Image */}
-            <div className="relative flex h-56 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
-              {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
-              {imageLoading && (
-                <div className="absolute inset-0 bg-gray-200 animate-pulse z-10" />
-              )}
+            <div className="flex h-56 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
+            {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
               <Image
-                src={
-                  product?.thumbnail?.url ||
-                  product.images?.[0]?.url ||
-                  "/Image-not-found.png"
-                }
-                alt={
-                  product?.thumbnail?.alt ||
-                  product.images?.[0]?.alt ||
-                  product?.name ||
-                  "Product Image"
-                }
+                src={product?.thumbnail?.url || product.images?.[0]?.url || "/Image-not-found.png"}
+                alt={product?.thumbnail?.alt || product.images?.[0]?.alt || product?.name || "Product Image"}
                 width={160}
                 height={120}
-                onLoad={() => setImageLoading(false)}
-                className={`object-cover h-full w-full transition-opacity duration-300 ${
-                  imageLoading ? "opacity-0" : "opacity-100"
-                }`}
+                className="object-cover h-full w-full"
               />
             </div>
           </div>
