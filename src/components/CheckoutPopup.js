@@ -507,9 +507,13 @@ export default function CheckoutPopup() {
               console.log("Order placed successfully:", orderResult.payload);
               // Mark that order was placed to avoid sending abandonment event
               orderPlacedRef.current = true;
-              dispatch(setCheckoutClose());
-              dispatch(clearCart());
-              router.push("/order-success?Order_status=success");
+              // Redirect first to prevent page refresh issues
+              router.replace("/order-success?Order_status=success");
+              // Clear cart and close checkout after redirect
+              setTimeout(() => {
+                dispatch(setCheckoutClose());
+                dispatch(clearCart());
+              }, 100);
             } catch (error) {
               console.error("Error placing order:", error);
               const errorMessage = error?.response?.data?.message || error?.message || "Order placement failed. Please check your address details and try again.";
@@ -647,9 +651,13 @@ export default function CheckoutPopup() {
           console.log("COD order placed successfully:", orderResult.payload);
           // Mark that order was placed to avoid sending abandonment event
           orderPlacedRef.current = true;
+          // Redirect first to prevent page refresh issues
+          router.replace("/order-success?Order_status=success");
+          // Clear cart and close checkout after redirect
+          setTimeout(() => {
           dispatch(setCheckoutClose());
           dispatch(clearCart());
-          router.push("/order-success?Order_status=success");
+          }, 100);
         } catch (error) {
           console.error("Error placing order:", error);
           const errorMessage = error?.response?.data?.message || error?.message || "Order placement failed. Please check your address details and try again.";
@@ -2123,7 +2131,16 @@ export default function CheckoutPopup() {
 
           {isAuthenticated && addressAdded && (
             <button
-              onClick={pinCodeVerified?.success ? handelPayment : checkPincode}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (pinCodeVerified?.success) {
+                  handelPayment();
+                } else {
+                  checkPincode();
+                }
+              }}
               disabled={placingOrder || pincodeChecking}
               className={`w-full mt-4  text-sm ${pinCodeVerified?.success
                 ? "bg-blue-600 hover:bg-blue-700"
