@@ -4,62 +4,71 @@ import { dirname, resolve } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Bundle analyzer (only in development/analysis mode)
-const withBundleAnalyzer = process.env.ANALYZE === 'true'
-  ? (await import('@next/bundle-analyzer')).default({ enabled: true })
-  : (config) => config;
-
+// Bundle analyzer (optional)
+const withBundleAnalyzer =
+  process.env.ANALYZE === "true"
+    ? (await import("@next/bundle-analyzer")).default({ enabled: true })
+    : (config) => config;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Performance optimizations
-  reactStrictMode: false, // Disabled to prevent double API calls in dev mode
+  reactStrictMode: false,
   compress: true,
 
-  // Experimental optimizations
+  output: "standalone",
+
   experimental: {
-    // optimizeCss: true, // Disabled - requires critters package
-    optimizePackageImports: ['lucide-react', 'react-toastify', 'swiper'],
+    optimizePackageImports: ["lucide-react", "react-toastify", "swiper"],
   },
 
-  // Performance headers for caching
+  /**
+   * 🔥 HEADERS (CRITICAL)
+   * - Disable HTML / RSC caching
+   * - Allow long cache ONLY for images/uploads
+   */
   async headers() {
     return [
+      // 🚫 Disable caching for ALL pages & layouts
       {
-        source: '/uploads/:path*',
+        source: "/((?!_next|images|uploads).*)",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate, proxy-revalidate",
           },
         ],
       },
+
+      // ✅ Images cache (safe)
       {
-        source: '/images/:path*',
+        source: "/images/:path*",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },
+
+      // ✅ Uploads cache (safe)
       {
-        source: '/_next/static/:path*',
+        source: "/uploads/:path*",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },
     ];
   },
 
+  /**
+   * 🔧 Webpack fixes (client side only)
+   */
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
-      // Comprehensive fallbacks for Node.js modules
       config.resolve.fallback = {
-        ...config.resolve.fallback,
         fs: false,
         path: false,
         os: false,
@@ -72,31 +81,18 @@ const nextConfig = {
         assert: false,
         constants: false,
         events: false,
-        dgram: false,
         net: false,
         tls: false,
         child_process: false,
         async_hooks: false,
       };
 
-      // Specifically handle the Tailwind CSS -> fast-glob -> @nodelib/fs chain
       config.plugins.push(
-        new webpack.IgnorePlugin({
-          resourceRegExp: /^fast-glob$/,
-        }),
-        new webpack.IgnorePlugin({
-          resourceRegExp: /^@nodelib\/fs/,
-        }),
-        new webpack.IgnorePlugin({
-          resourceRegExp: /@nodelib\/fs/,
-          contextRegExp: /node_modules/,
-        }),
-        new webpack.IgnorePlugin({
-          resourceRegExp: /^mongoose$/,
-        })
+        new webpack.IgnorePlugin({ resourceRegExp: /^fast-glob$/ }),
+        new webpack.IgnorePlugin({ resourceRegExp: /^@nodelib\/fs/ }),
+        new webpack.IgnorePlugin({ resourceRegExp: /^mongoose$/ })
       );
 
-      // Replace problematic modules with empty implementations
       config.resolve.alias = {
         ...config.resolve.alias,
         "@nodelib/fs.scandir": resolve(__dirname, "./lib/empty-fs-module.js"),
@@ -104,102 +100,32 @@ const nextConfig = {
         "@nodelib/fs.walk": resolve(__dirname, "./lib/empty-fs-module.js"),
         "fast-glob": resolve(__dirname, "./lib/empty-glob-module.js"),
       };
-
-      // Optimize bundle splitting for better caching
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            default: false,
-            vendors: false,
-            // Vendor chunk for node_modules
-            vendor: {
-              name: 'vendor',
-              chunks: 'all',
-              test: /node_modules/,
-              priority: 20
-            },
-            // Common chunk for shared code
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'all',
-              priority: 10,
-              reuseExistingChunk: true,
-              enforce: true
-            },
-            // Separate chunk for React and Redux
-            react: {
-              name: 'react-vendor',
-              test: /[\\/]node_modules[\\/](react|react-dom|redux|react-redux|@reduxjs)[\\/]/,
-              chunks: 'all',
-              priority: 30
-            }
-          }
-        }
-      };
     }
 
     return config;
+  },
+
+  /**
+   * 🖼 Image Optimization
+   */
+  images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 31536000,
+    dangerouslyAllowSVG: true,
+    remotePatterns: [
+      { protocol: "https", hostname: "cdn.shopify.com" },
+      { protocol: "https", hostname: "cdn.sanity.io" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "bharat.nexprism.in" },
+      { protocol: "http", hostname: "localhost", port: "3000" },
+      { protocol: "http", hostname: "localhost", port: "3001" },
+    ],
   },
 
   typescript: {
     ignoreBuildErrors: true,
   },
 
-  images: {
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 31536000,
-    dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'www.sampuranswadeshi.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cdn.shopify.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cdn.sanity.io',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'bharat.nexprism.in',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3000',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3001',
-      },
-      {
-        protocol: 'http',
-        hostname: 'bharat.localhost',
-        port: '3001',
-      },
-      {
-        protocol: 'http',
-        hostname: '**',
-      },
-    ],
-  },
-
-  // Enable Turbopack (Next.js 16+)
   turbopack: {},
 };
 
