@@ -22,8 +22,8 @@ export function formatToReadableDate(isoDateString) {
 }
 
 export default function BlogDetailPage() {
-  const [data, setData] = React.useState(null);
-  const { items, loading } = useSelector((state) => state.blogs);
+  const { items, loading, selectedBlog, error } = useSelector((state) => state.blogs);
+
 
   const dispatch = useDispatch();
   const params = useParams();
@@ -59,24 +59,19 @@ export default function BlogDetailPage() {
     },
   ];
 
-  const getData = async () => {
-    try {
-      const response = await dispatch(fetchBlogById(blogId));
-      //consolle.log("Fetched blog data:", response.payload);
-      setData(response.payload);
-    } catch (error) {
-      //consolle.error("Error fetching blog data:", error);
-    }
-  };
-
   useEffect(() => {
-    getData();
+    if (blogId) {
+      dispatch(fetchBlogById(blogId));
+    }
     if (!hasFetchedRef.current && (!items || items.length === 0)) {
       hasFetchedRef.current = true;
       dispatch(fetchBlogs());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount - blogId is from params and won't change
+  }, [blogId]); // Re-fetch when blogId changes
+
+  // Use selectedBlog from Redux store
+  const data = selectedBlog;
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
