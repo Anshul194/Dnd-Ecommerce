@@ -79,6 +79,19 @@ const blogSlice = createSlice({
       .addCase(fetchBlogs.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(fetchBlogById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBlogById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedBlog = action.payload;
+      })
+      .addCase(fetchBlogById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.selectedBlog = null;
       });
   },
 });

@@ -15,7 +15,7 @@ export async function PATCH(request, { params }) {
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
     // Setup controller
     const couponRepo = new CouponRepository(conn.models.Coupon);
@@ -37,7 +37,7 @@ export async function DELETE(request, { params }) {
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const { id } = params;
+    const { id } = await params;
     // Setup controller
     const couponRepo = new CouponRepository(conn.models.Coupon);
     const couponService = new CouponService(couponRepo);
@@ -60,7 +60,7 @@ export async function GET(request, { params }) {
     if (!conn) {
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    const { id } = params;
+    const { id } = await params;
     // Setup controller
     const couponRepo = new CouponRepository(conn.models.Coupon);
     const couponService = new CouponService(couponRepo);
