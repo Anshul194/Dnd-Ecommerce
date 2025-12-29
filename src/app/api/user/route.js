@@ -130,7 +130,17 @@ export async function PATCH(request) {
     }
     const userService = new UserService(conn);
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (jsonError) {
+      console.error("PATCH /user JSON parse error:", jsonError?.message);
+      return NextResponse.json(
+        { success: false, message: "Invalid request body. Please check your request format." },
+        { status: 400 }
+      );
+    }
+    
     const { email, password, phone } = body;
 
     // Support both email/password and phone-based login
@@ -182,8 +192,9 @@ export async function PATCH(request) {
     );
   } catch (err) {
     console.error("PATCH /user login error:", err?.message);
+    const errorMessage = err?.message || "Login failed";
     return NextResponse.json(
-      { success: false, message: "Login failed" },
+      { success: false, message: errorMessage },
       { status: 400 }
     );
   }
