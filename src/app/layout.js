@@ -4,6 +4,7 @@ import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import Providers from "./store/Providers"; // ✅ Updated path
 import ClientLayout from "./ClientLayout";
+import ClientOnly from "../components/ClientOnly.jsx";
 import { ToastContainer } from "react-toastify";
 import CheckoutPopup from "../components/CheckoutPopup";
 // import OrderPopup from "../components/OrderPopup";
@@ -40,7 +41,8 @@ export default function RootLayout({ children }) {
       </head>
       <body suppressHydrationWarning={true}>
         <Providers>
-          <ClientLayout>
+          <ClientOnly>
+            <ClientLayout>
             <ToastContainer
               position="top-right"
               autoClose={5000}
@@ -54,9 +56,9 @@ export default function RootLayout({ children }) {
             />
             <CheckoutPopup />
             {/* <OrderPopup /> */}
-            {children ?? null}
-            
-          </ClientLayout>
+              {children ?? null}
+            </ClientLayout>
+          </ClientOnly>
         </Providers>
       </body>
     </html>

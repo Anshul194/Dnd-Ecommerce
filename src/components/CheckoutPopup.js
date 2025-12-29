@@ -848,6 +848,10 @@ export default function CheckoutPopup() {
       ? buyNowProduct.price * buyNowProduct.quantity
       : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     //console?.log("totalValue", totalValue);
+    
+    // Return 0 if cart is empty or totalValue is 0
+    if (!totalValue || totalValue === 0) return 0;
+    
     if (totalValue > 500) return 0;
 
     if (paymentMethod === "cod") {
@@ -931,7 +935,7 @@ export default function CheckoutPopup() {
   // Calculate bill values
   const itemsTotal = buyNowProduct
     ? buyNowProduct.price * buyNowProduct.quantity
-    : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    : (cartItems?.length > 0 ? cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) : 0);
 
 
     console.log("Items Total2:", cartItems);
@@ -1143,7 +1147,7 @@ export default function CheckoutPopup() {
                 ₹
                 {buyNowProduct
                   ? buyNowProduct.price * buyNowProduct.quantity
-                  : (total - (selectedCoupon?.discount || 0)).toFixed(2)}
+                  : (cartItems?.length > 0 ? (total - (selectedCoupon?.discount || 0)).toFixed(2) : "0.00")}
               </span>
             </div>
 

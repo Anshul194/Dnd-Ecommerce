@@ -830,6 +830,10 @@ export default function CheckoutPage() {
       ? buyNowProduct.price * buyNowProduct.quantity
       : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     //console?.log("totalValue", totalValue);
+    
+    // Return 0 if cart is empty or totalValue is 0
+    if (!totalValue || totalValue === 0) return 0;
+    
     if (totalValue > 500) return 0;
 
     if (paymentMethod === "cod") {
@@ -914,7 +918,7 @@ export default function CheckoutPage() {
   // Calculate bill values
   const itemsTotal = buyNowProduct
     ? buyNowProduct.price * buyNowProduct.quantity
-    : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    : (cartItems?.length > 0 ? cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) : 0);
 
   const shipping = calculateShipping();
   const couponDiscount = selectedCoupon?.discount || 0;
@@ -1451,7 +1455,7 @@ export default function CheckoutPage() {
                   <div className="pt-4 border-t space-y-2 text-sm">
                      <div className="flex justify-between text-gray-600">
                         <span>Total MRP</span>
-                        <span className="flex items-center"><IndianRupee size={14} />{itemsTotal.toFixed(2)}</span>
+                        <span className="flex items-center"><IndianRupee size={14} />{cartItems?.length > 0 ? itemsTotal.toFixed(2) : "0.00"}</span>
                      </div>
                      {selectedCoupon && (
                         <div className="flex justify-between text-green-600">
@@ -1473,7 +1477,7 @@ export default function CheckoutPage() {
                      )}
                      <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
                         <span>Grand Total</span>
-                        <span className="flex items-center"><IndianRupee size={18} />{total.toFixed(2)}</span>
+                        <span className="flex items-center"><IndianRupee size={18} />{cartItems?.length > 0 ? total.toFixed(2) : "0.00"}</span>
                      </div>
                      
                      {/* Savings Badge */}
