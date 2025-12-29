@@ -442,8 +442,19 @@ const cartSlice = createSlice({
       state.isCartOpen = false;
     },
     setBuyNowProduct: (state, action) => {
-      state.buyNowProduct = action.payload;
-      saveBuyNowToLocalStorage(action.payload);
+      // Normalize buyNow payload to ensure numeric price/quantity before saving
+      const payload = action.payload || {};
+      const normalized = {
+        ...payload,
+        quantity: Number(payload.quantity || 1),
+        price: Number((payload.price === undefined || payload.price === null) ? 0 : payload.price),
+      };
+      state.buyNowProduct = normalized;
+      try {
+        saveBuyNowToLocalStorage(normalized);
+      } catch (e) {
+        // ignore
+      }
     },
     removeBuyNowProduct: (state) => {
       state.buyNowProduct = null;

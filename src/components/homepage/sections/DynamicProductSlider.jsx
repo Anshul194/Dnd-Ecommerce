@@ -171,10 +171,31 @@ const DynamicProductSlider = ({ content }) => {
             category: productData.category,
           },
           quantity: 1,
-          price: price.salePrice || price.price,
+          price: Number(price.salePrice || price.price || 0),
           variant: productData.variants[0]._id,
         })
       );
+      // Persist buy-now explicitly to localStorage as an extra-safety (some environments
+      // may not execute reducer side-effects synchronously in time before navigation)
+      try {
+        const buyNowPayload = {
+          product: {
+            _id: productData._id,
+            id: productData._id,
+            name: productData.name,
+            image: imageObj,
+            category: productData.category,
+          },
+          quantity: 1,
+          price: Number(price.salePrice || price.price || 0),
+          variant: productData.variants[0]._id,
+        };
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem("dnd_ecommerce_buy_now", JSON.stringify(buyNowPayload));
+        }
+      } catch (e) {
+        // ignore
+      }
       if (resultAction.error) {
         // Show backend error (payload) if present, else generic
         toast.error(

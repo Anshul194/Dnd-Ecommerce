@@ -696,10 +696,32 @@ export default function CheckoutPopup() {
   };
 
   useEffect(() => {
-    if (checkoutOpen && formData.phone.length === 10) {
-      dispatch(sendOtp(formData.phone));
+    // Only request OTP when phone transitions to a complete 10-digit number,
+    // user is not already authenticated, and OTP hasn't been sent yet.
+    // This prevents multiple requests while the user types.
+    if (!checkoutOpen) return;
+    if (isAuthenticated) return; // no OTP for logged-in users
+    try {
+      if (!this?.__prevPhone) this.__prevPhone = "";
+    } catch (e) {
+      // ignore
     }
-  }, [formData.phone, dispatch, checkoutOpen]);
+    // Use a local ref on the function object to track previous phone value
+    const prev = (function () {
+      try {
+        return (typeof window !== "undefined" && window.__checkout_prev_phone) || "";
+      } catch (e) {
+        return "";
+      }
+    })();
+
+    if (formData.phone && formData.phone.length === 10 && prev !== formData.phone && !otpSended) {
+      dispatch(sendOtp(formData.phone));
+      try {
+        if (typeof window !== "undefined") window.__checkout_prev_phone = formData.phone;
+      } catch (e) {}
+    }
+  }, [formData.phone, dispatch, checkoutOpen, isAuthenticated, otpSended]);
 
   useEffect(() => {
     if (otp.every((digit) => digit !== "")) {
@@ -934,8 +956,8 @@ export default function CheckoutPopup() {
 
   // Calculate bill values
   const itemsTotal = buyNowProduct
-    ? buyNowProduct.price * buyNowProduct.quantity
-    : (cartItems?.length > 0 ? cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) : 0);
+    ? (Number(buyNowProduct.price || 0) * Number(buyNowProduct.quantity || 1))
+    : (cartItems?.length > 0 ? cartItems.reduce((acc, item) => acc + (Number(item.price || 0) * Number(item.quantity || 0)), 0) : 0);
 
 
     console.log("Items Total2:", cartItems);
