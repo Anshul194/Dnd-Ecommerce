@@ -77,6 +77,23 @@ export default function CheckoutPopup() {
   const dispatch = useDispatch();
   const { trackCheckout } = useTrack();
 
+  // Hydrate buy-now from localStorage into Redux when popup mounts
+  useEffect(() => {
+    if (!buyNowProduct) {
+      try {
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("dnd_ecommerce_buy_now");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            dispatch(setBuyNowProduct(parsed));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to hydrate buyNowProduct", err);
+      }
+    }
+  }, [buyNowProduct, dispatch]);
+
   // Track whether an order was placed while checkout was open
   const orderPlacedRef = useRef(false);
   // initialize prev as false so we only detect actual true->false transitions
