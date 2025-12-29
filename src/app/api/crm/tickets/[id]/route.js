@@ -14,10 +14,9 @@ const toNextResponse = (data, status = 200) => {
 };
 
 // GET /api/crm/tickets/[id] - Get ticket by ID
-export async function GET(req, context) {
+export async function GET(req, { params }) {
   try {
-    const { params } = context;
-    const { id } = params;
+    const { id } = await params;
 
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
@@ -36,10 +35,9 @@ export async function GET(req, context) {
 }
 
 // PUT /api/crm/tickets/[id] - Update ticket by ID
-export async function PUT(req, context) {
+export async function PUT(req, { params }) {
   try {
-    const { params } = context;
-    const { id } = params;
+    const { id } = await params;
 
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
@@ -62,10 +60,9 @@ export async function PUT(req, context) {
 
 
 // DELETE /api/crm/tickets/[id] - Delete ticket by ID
-export async function DELETE(req, context) {
+export async function DELETE(req, { params }) {
   try {
-    const { params } = context;
-    const { id } = params;
+    const { id } = await params;
 
     const subdomain = getSubdomain(req);
     const conn = await getDbConnection(subdomain);
