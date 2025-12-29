@@ -70,21 +70,43 @@ function mapServerCartToLocal(serverCart) {
       it.variant && (it.variant._id || it.variant)
         ? it.variant._id || it.variant
         : null;
-    console.log("Mapping cart item - product with variants:", it.product);
+    // Defensive price/quantity derivation: server payloads vary.
+    // Try explicit price, then variant price, then product fallback, otherwise 0.
+    const derivedPrice = (() => {
+      if (typeof it.price === "number") return it.price;
+      if (it.price && !isNaN(Number(it.price))) return Number(it.price);
+      if (it.variant && typeof it.variant === "object" && (it.variant.price || it.variant.salePrice)) {
+        return Number(it.variant.salePrice || it.variant.price || 0);
+      }
+      if (it.product && typeof it.product === "object") {
+        // product may contain variants array
+        if (Array.isArray(it.product.variants) && it.product.variants.length > 0) {
+          const v = it.product.variants[0];
+          return Number(v.salePrice || v.price || 0);
+        }
+        if (it.product.price) return Number(it.product.price);
+      }
+      return 0;
+    })();
+
+    const derivedQuantity = Number(it.quantity) > 0 ? Number(it.quantity) : 1;
+
     const id = `${productId}:${variantId || ""}`;
     return {
       id,
       product: it.product,
       variant: variantId,
-      quantity: it.quantity,
-      price: it.price,
+      quantity: derivedQuantity,
+      price: derivedPrice,
       addedAt: it.addedAt
         ? new Date(it.addedAt).toISOString()
         : new Date().toISOString(),
     };
   });
   const total =
-    serverCart.total || items.reduce((s, it) => s + it.price * it.quantity, 0);
+    (typeof serverCart.total === "number" && !isNaN(serverCart.total))
+      ? serverCart.total
+      : items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
   return { cartId, cartItems: items, total };
 }
 
