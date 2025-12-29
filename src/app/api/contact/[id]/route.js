@@ -7,7 +7,7 @@ import ContactService from "@/app/lib/services/ContactService.js";
 import ContactController from "@/app/lib/controllers/ContactController.js";
 
 export async function GET(req, { params }) {
-  const { id } = params || {};
+  const { id } = await params;
 
   // Validate id param
   const { error: idError } = contactIdValidator.validate({ id });
@@ -53,7 +53,7 @@ export async function GET(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-  const { id } = params || {};
+  const { id } = await params;
 
   // Validate id
   const { error: idError } = contactIdValidator.validate({ id });
