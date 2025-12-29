@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+
 import Link from "next/link";
 import {
   addToCart,
@@ -30,7 +31,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
   const dispatch = useDispatch();
   const { redirectToLogin, redirectToSignup } = useAuthRedirect();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const userId = useSelector((state) => state.auth.user?._id); // get logged-in user id
+  const userId = useSelector((state) => state.auth.user?._id);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [heartAnimating, setHeartAnimating] = useState(false);
   const [localWishlisted, setLocalWishlisted] = useState(false);
@@ -38,19 +39,14 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
   const { trackView, trackAddToCart, trackWishlist, trackRemoveWishlist } =
     useTrack();
 
-
-
-  // Get wishlist items from Redux for immediate updates
   const wishlistItems = useSelector((state) => state.wishlist.items);
 
-  // Check if product is in Redux wishlist (for immediate UI updates)
   const isInReduxWishlist = wishlistItems.some((item) => {
     const itemProductId = String(item.product?._id || item.product?.id || '');
     const productId = String(product._id || '');
     
     if (itemProductId !== productId) return false;
     
-    // If variant exists, also check variant match
     const variantId = product?.variants[0]?._id;
     if (variantId) {
       const itemVariantId = String(item.variant?._id || item.variant?.id || '');
@@ -60,23 +56,18 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
     return true;
   });
 
-  // Fast check: is userId in product.wishlist array? (from server data - fallback only when Redux is empty)
   const isWishlistedFromProduct =
     isAuthenticated &&
     userId &&
     Array.isArray(product.wishlist) &&
     product.wishlist.includes(userId);
 
-  // Always prioritize Redux state when available (even if empty)
-  // Only fallback to product data if Redux hasn't been initialized yet
-  // Check if Redux has been loaded by checking if wishlistItems is an array
   const isReduxInitialized = Array.isArray(wishlistItems);
   const isWishlisted = isReduxInitialized
-    ? isInReduxWishlist  // Always trust Redux state if it's been initialized
-    : isWishlistedFromProduct; // Only use product data if Redux hasn't loaded yet
+    ? isInReduxWishlist
+    : isWishlistedFromProduct;
 
   const handleProductClick = () => {
-    // Track product view only when clicked
     if (product?._id) {
       trackView(product._id);
     }
@@ -85,15 +76,9 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
   const handleBuyNow = async (e) => {
     e.stopPropagation();
     e.preventDefault();
-    // Ensure cart sidebar is closed immediately - before any operations
     dispatch(closeCart());
-    // if (!isAuthenticated) {
-    //   setAuthModalOpen(true);
-    //   return;
-    // }
     const price = product.variants[0];
     try {
-      // Ensure image has proper structure
       const productImage = product.thumbnail || product.images?.[0];
       const imageObj = productImage 
         ? (typeof productImage === 'string' 
@@ -116,7 +101,6 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
         })
       );
       if (resultAction.error) {
-        // Show backend error (payload) if present, else generic
         toast.error(
           resultAction.payload ||
             resultAction.error.message ||
@@ -124,31 +108,21 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
         );
         return;
       }
-      // Skip getCartItems for Buy Now - we use buyNowProduct which is separate
-      // await dispatch(getCartItems());
       setOverlayProduct(null);
-      // Open checkout popup immediately
       dispatch(setCheckoutOpen());
-      // Navigate to checkout-popup page
       router.push("/checkout-popup");
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
     }
   };
 
-  // Sync local state with Redux state and product data
-  // This ensures local state stays in sync, but we use isWishlisted directly for display
   useEffect(() => {
     setLocalWishlisted(isWishlisted);
   }, [isWishlisted, wishlistItems.length, product._id, userId]);
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
-    e.preventDefault(); // Prevent Link navigation
-    // if (!isAuthenticated) {
-    //   setShowAuthModal(true);
-    //   return;
-    // }
+    e.preventDefault();
 
     const price = product?.variants[0]
       ? product?.variants[0]?.salePrice || product?.variants[0]?.price
@@ -164,23 +138,18 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
       })
     );
       
-      // Don't immediately call getCartItems() - it can overwrite the cart if server hasn't synced
-      // The addToCart action already updates the Redux state and localStorage
-      // Only refresh cart from server after a delay to allow server to sync
       if (!resultAction.error) {
         setTimeout(async () => {
           try {
             await dispatch(getCartItems());
           } catch (err) {
-            // Silently fail - cart is already updated locally
           }
-        }, 500); // 500ms delay to allow server to process
+        }, 500);
       }
       
     trackAddToCart(product._id);
     dispatch(toggleCart());
     } catch (error) {
-      // Handle error silently or show toast if needed
       console.warn("Add to cart error:", error);
     }
   };
@@ -192,8 +161,10 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
   }, [isAuthenticated]);
 
   if (!product.variants || product.variants.length === 0) {
-    return null; // Don't render if no variants
+    return null;
   }
+
+  console.log("new code");
 
   return (
     <>
@@ -206,12 +177,9 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
         <div
           className={`${
             showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
-          } bg-white flex max-sm:w-full  max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 md:w-full max-w-80 lg:min-w-80`}
-          // } bg-white flex max-sm:w-full max-sm:min-w-[280px] max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
+          } bg-white flex flex-col justify-between border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-80 lg:w-80 shrink-0`}
         >
-          {/* Product Header */}
           <div className="relative bg-white rounded-t-2xl">
-            {/* Heart Icon */}
             <div className="absolute top-2 right-2 z-10">
               <button
                 type="button"
@@ -225,11 +193,9 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                   }
                   setHeartAnimating(true);
 
-                  // Use Redux state to determine current wishlist status
                   const currentlyWishlisted = isWishlisted;
 
                   if (!currentlyWishlisted) {
-                    // Optimistically update for immediate UI feedback
                     setLocalWishlisted(true);
                     const result = await dispatch(
                       addToWishlist({
@@ -237,7 +203,6 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                         variant: product?.variants[0]?._id,
                       })
                     );
-                    // If add failed, revert optimistic update
                     if (result.error) {
                       setLocalWishlisted(false);
                       toast.error("Failed to add to wishlist");
@@ -245,7 +210,6 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                       trackWishlist(product._id);
                     }
                   } else {
-                    // Optimistically update for immediate UI feedback
                     setLocalWishlisted(false);
                     const result = await dispatch(
                       removeFromWishlist({
@@ -253,7 +217,6 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                         variantId: product?.variants[0]?._id,
                       })
                     );
-                    // If remove failed, revert optimistic update
                     if (result.error) {
                       setLocalWishlisted(true);
                       toast.error("Failed to remove from wishlist");
@@ -285,9 +248,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                 </svg>
               </button>
             </div>
-            {/* Product Image */}
-            <div className="flex h-56 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
-            {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
+            <div className="flex h-56 max-sm:h-44 w-full justify-center items-center overflow-hidden">
               <Image
                 src={product?.thumbnail?.url || product.images?.[0]?.url || "/Image-not-found.png"}
                 alt={product?.thumbnail?.alt || product.images?.[0]?.alt || product?.name || "Product Image"}
@@ -299,14 +260,12 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
           </div>
 
           <div className="p-2">
-            {/* Title */}
             <h3 className="text-xs  bg-[#F1FAEE] w-fit p-1 px-3 text poppins-medium  mb-1">
               {product?.name?.slice(0, 15)}
               {""}
               {product?.name?.length > 18 ? "..." : ""}
             </h3>
 
-            {/* Rating - Only show if rating > 0 */}
             {product?.rating > 0 && (
               <div className="flex items-center gap-1 mb-2">
                 <div className="flex items-center">
@@ -323,7 +282,6 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
               </div>
             )}
 
-            {/* Description */}
             {showDes && (
               <div
                 className="text-sm h-10 text-black poppins-medium mb-3 max-sm:hidden"
@@ -334,10 +292,8 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
             )}
           </div>
 
-          {/* Product Info */}
           <div className="p-2">
             <div>
-              {/* Price and Rating */}
               <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-4">
                 <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
                   {product?.variants?.[0]?.price ? (
@@ -347,7 +303,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                           Rs {product?.variants[0]?.salePrice}
                         </span>
                       )}
-                      <span className="text-xs  max-sm:text-xs text-gray-400 h-5  line-through">
+                      <span className="text-xs text-gray-400 h-5 line-through">
                         Rs {product?.variants[0]?.price}
                       </span>
                     </>
@@ -364,13 +320,6 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                     </>
                   )}
                 </div>
-                {/* <div className="flex items-center space-x-1 pt-1">
-                  <span className="text-orange-400 text-sm">⭐</span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {product?.rating?.Average || 4.5} (
-                    {product?.reviewCount || 1} reviews)
-                  </span>
-                </div> */}
               </div>
               {buyNow ? (
                 <div className="flex gap-2">
