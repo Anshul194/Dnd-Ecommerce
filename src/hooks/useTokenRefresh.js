@@ -72,9 +72,9 @@ const useTokenRefresh = () => {
     refreshTokenIfNeeded();
 
     // Set up interval to check token every 5 minutes
-    const interval = setInterval(refreshTokenIfNeeded, 5 * 60 * 1000);
+   // const interval = setInterval(refreshTokenIfNeeded, 5 * 60 * 1000);
 
-    return () => clearInterval(interval);
+    return () => {}; // clearInterval(interval);
   }, [refreshTokenIfNeeded, isAuthenticated]);
 
   // Also check token on focus/visibility change

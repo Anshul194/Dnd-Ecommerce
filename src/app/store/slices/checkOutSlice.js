@@ -4,6 +4,8 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 const isBrowser =
   typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 
+const CHECKOUT_STATE_KEY = "dnd_ecommerce_checkout_open";
+
 // Async thunk to submit checkout data (example)
 export const submitCheckout = createAsyncThunk(
   "checkout/submitCheckout",
@@ -56,6 +58,7 @@ const checkoutSlice = createSlice({
   reducers: {
     setCheckoutOpen: (state) => {
       state.checkoutOpen = true;
+      if (isBrowser) localStorage.setItem(CHECKOUT_STATE_KEY, "true");
     },
     resetAddress: (state) => {
       state.addressAdded = false;
@@ -63,6 +66,13 @@ const checkoutSlice = createSlice({
     },
     setCheckoutClose: (state) => {
       state.checkoutOpen = false;
+      if (isBrowser) localStorage.removeItem(CHECKOUT_STATE_KEY);
+    },
+    restoreCheckoutState: (state) => {
+      if (isBrowser) {
+        const isOpen = localStorage.getItem(CHECKOUT_STATE_KEY) === "true";
+        if (isOpen) state.checkoutOpen = true;
+      }
     },
     getAddressFormLocalStorage: (state) => {
       state.addressData = isBrowser
@@ -113,6 +123,7 @@ export const {
   clearCheckoutData,
   resetAddress,
   getAddressFormLocalStorage,
+  restoreCheckoutState,
 } = checkoutSlice.actions;
 
 export default checkoutSlice.reducer;

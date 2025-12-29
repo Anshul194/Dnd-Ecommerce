@@ -3,6 +3,28 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // localStorage utility functions
 const CART_STORAGE_KEY = "dnd_ecommerce_cart";
+const BUY_NOW_STORAGE_KEY = "dnd_ecommerce_buy_now";
+
+const getBuyNowFromLocalStorage = () => {
+  try {
+    const data = localStorage.getItem(BUY_NOW_STORAGE_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    return null;
+  }
+};
+
+const saveBuyNowToLocalStorage = (data) => {
+  try {
+    localStorage.setItem(BUY_NOW_STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {}
+};
+
+const clearBuyNowFromLocalStorage = () => {
+  try {
+    localStorage.removeItem(BUY_NOW_STORAGE_KEY);
+  } catch (error) {}
+};
 
 const saveCartToLocalStorage = (cartData) => {
   try {
@@ -399,9 +421,17 @@ const cartSlice = createSlice({
     },
     setBuyNowProduct: (state, action) => {
       state.buyNowProduct = action.payload;
+      saveBuyNowToLocalStorage(action.payload);
     },
     removeBuyNowProduct: (state) => {
       state.buyNowProduct = null;
+      clearBuyNowFromLocalStorage();
+    },
+    restoreCartState: (state) => {
+      const buyNow = getBuyNowFromLocalStorage();
+      if (buyNow) {
+        state.buyNowProduct = buyNow;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -495,5 +525,6 @@ export const {
   closeCart,
   setBuyNowProduct,
   removeBuyNowProduct,
+  restoreCartState,
 } = cartSlice.actions;
 export default cartSlice.reducer;
