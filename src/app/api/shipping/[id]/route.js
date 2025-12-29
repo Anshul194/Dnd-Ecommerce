@@ -35,30 +35,28 @@ export const GET = withUserAuth(async function (request, context) {
 export const PUT = withUserAuth(async function (request, context) {
   try {
     // Extract params from context (params is a Promise in Next.js 15+)
-    const params = await context.params;
-    if (!params || !params.id) {
+    const resolvedParams = await context.params;
+    if (!resolvedParams || !resolvedParams.id) {
       return NextResponse.json({ success: false, error: 'Shipping ID is required' }, { status: 400 });
     }
     
     const subdomain = getSubdomain(request);
-    //consolle.log('Subdomain:', subdomain);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
-      //consolle.error('No database connection established');
       return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
     }
-    //consolle.log('Connection name in route:', conn.name);
-    const id = params.id;
-    //consolle.log('Processing shipping ID:', id);
+    
+    const id = resolvedParams.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: 'Invalid shipping ID' }, { status: 400 });
     }
+    
     const body = await request.json();
-    //consolle.log('Request body:', JSON.stringify(body, null, 2));
-    return await shippingController.updateShipping(request, null, body, id, conn);
+    const result = await shippingController.updateShipping(request, null, body, id, conn);
+    return result;
   } catch (err) {
-    //consolle.error('Shipping PUT error:', err.message, err.stack);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    console.error('Shipping PUT error:', err.message, err.stack);
+    return NextResponse.json({ success: false, error: err.message || 'Failed to update shipping method' }, { status: 500 });
   }
 });
 

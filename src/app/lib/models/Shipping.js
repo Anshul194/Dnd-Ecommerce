@@ -146,11 +146,19 @@ shippingSchema.pre("save", function (next) {
 
 // Pre-update hook to update slug if name changes
 shippingSchema.pre("findOneAndUpdate", function (next) {
-  const update = this.getUpdate();
-  if (update.name) {
-    update.slug = slugify(update.name, { lower: true });
+  try {
+    const update = this.getUpdate();
+    if (update && update.name) {
+      update.slug = slugify(update.name, { lower: true });
+    }
+    if (typeof next === 'function') {
+      next();
+    }
+  } catch (error) {
+    if (typeof next === 'function') {
+      next(error);
+    }
   }
-  next();
 });
 
 export const ShippingSchema = shippingSchema;
