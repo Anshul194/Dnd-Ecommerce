@@ -144,10 +144,6 @@ const nextConfig = {
     return config;
   },
 
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -160,16 +156,44 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    domains: [
-      "www.sampuranswadeshi.com",
-      "cdn.shopify.com",
-      "cdn.sanity.io",
-      "images.unsplash.com",
-      "bharat.nexprism.in",
-    ],
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'www.sampuranswadeshi.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopify.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bharat.nexprism.in',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3001',
+      },
+      {
+        protocol: 'http',
+        hostname: 'bharat.localhost',
+        port: '3001',
+      },
+      {
+        protocol: 'http',
         hostname: '**',
       },
     ],
