@@ -30,11 +30,10 @@ const attributeSchema = new mongoose.Schema(
   }
 );
 
-attributeSchema.pre("save", function (next) {
+attributeSchema.pre("save", function () {
   if (this.isModified("name")) {
     this.slug = slugify(this.name, { lower: true });
   }
-  next();
 });
 
 // Create a partial unique index on name that only applies when deletedAt is null
