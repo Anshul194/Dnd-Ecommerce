@@ -95,6 +95,83 @@ export async function POST(request) {
       };
 
       const result = await createLeadService(leadData, conn);
+
+      // Send confirmation email
+      try {
+        const EmailService = (await import("@/app/lib/services/EmailService.js")).default;
+        const emailService = new EmailService();
+        
+        // Try to use a template if it exists
+        const templateName = "Newsletter Subscription";
+        const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://bharatgramudyogsangh.org';
+        const brandName = "Bharat Gram Udyogsangh";
+
+        const replacements = {
+          fullName: leadData.fullName || 'Subscriber',
+          email: leadData.email,
+          site_url: siteUrl,
+          brand_name: brandName
+        };
+
+        try {
+          // Attempt to send using template
+          const emailResponse = await emailService.sendOrderEmail({
+            templateName,
+            to: leadData.email,
+            replacements,
+            conn
+          });
+
+          if (!emailResponse.success) {
+            console.warn("Failed to send newsletter email via template, falling back to basic email:", emailResponse.message);
+            // Fallthrough to basic email
+            throw new Error("Template fallback");
+          }
+          console.log(`Newsletter confirmation email sent using template to ${leadData.email}`);
+        } catch (templateError) {
+          // Fallback to basic email if template fails or doesn't exist
+          await emailService.sendEmail({
+            to: leadData.email,
+            subject: `Welcome to ${brandName} Newsletter!`,
+            html: `
+              <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #333; line-height: 1.6;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                  <h1 style="color: #236339; margin-bottom: 10px;">Welcome to ${brandName}!</h1>
+                  <p style="font-size: 18px; color: #666;">Thank you for subscribing to our newsletter.</p>
+                </div>
+                
+                <div style="background-color: #f9f9f9; padding: 30px; border-radius: 8px; margin-bottom: 30px;">
+                  <p>Hi ${leadData.fullName || 'Subscriber'},</p>
+                  <p>We're thrilled to have you join our community! From now on, you'll be the first to know about:</p>
+                  <ul style="padding-left: 20px;">
+                    <li>New tea arrivals and organic products</li>
+                    <li>Exclusive subscriber-only updates</li>
+                    <li>Expert tips on organic living and wellness</li>
+                    <li>Stories from our organic gardens</li>
+                  </ul>
+                </div>
+                
+                <div style="text-align: center;">
+                  <a href="${siteUrl}" style="display: inline-block; background-color: #236339; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">Visit Our Store</a>
+                </div>
+                
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #999; text-align: center;">
+                  <p>Best Regards,<br><strong style="color: #236339;">The ${brandName} Team</strong></p>
+                  <p style="margin-top: 20px;">
+                    You are receiving this email because you subscribed at our website.<br>
+                    <a href="#" style="color: #999; text-decoration: underline;">Unsubscribe</a> | <a href="#" style="color: #999; text-decoration: underline;">Privacy Policy</a>
+                  </p>
+                </div>
+              </div>
+            `
+          });
+          console.log(`Newsletter confirmation email sent using basic fallback to ${leadData.email}`);
+        }
+      } catch (emailError) {
+        console.error("Critical error sending newsletter confirmation email:", emailError);
+        // We continue anyway as the lead was already created successfully
+      }
+
       return NextResponse.json(
         {
           success: true,

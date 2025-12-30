@@ -4,24 +4,31 @@ import { EmailTemplateSchema } from '../models/EmailTemplate.js';
 
 class EmailService {
   constructor() {
+    const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+    const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+    const host = process.env.SMTP_HOST || (user?.endsWith('@gmail.com') ? 'smtp.gmail.com' : 'smtp.zoho.com');
+    const port = Number(process.env.SMTP_PORT) || (host === 'smtp.gmail.com' ? 587 : 465);
+    const secure = process.env.SMTP_SECURE ? (process.env.SMTP_SECURE === 'true') : (port === 465);
+
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.zoho.com',
-      port: Number(process.env.SMTP_PORT) || 465,
-      secure: process.env.SMTP_SECURE === 'true', // true for port 465
+      host,
+      port,
+      secure,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user,
+        pass,
       },
       tls: {
-        rejectUnauthorized: false, // optional
+        rejectUnauthorized: false,
       },
     });
+    this.user = user;
   }
 
   async sendEmail({ to, subject, html, from }) {
     try {
       const mailOptions = {
-        from: from || process.env.EMAIL_FROM || process.env.SMTP_USER,
+        from: from || process.env.EMAIL_FROM || this.user,
         to,
         subject,
         html,
@@ -30,10 +37,10 @@ class EmailService {
       //console.log('Sending email with options:', mailOptions);
 
       const info = await this.transporter.sendMail(mailOptions);
-      //console.log('Email sent:', info.messageId);
+      console.log('Email sent:', info.messageId);
       return { success: true, message: 'Email sent successfully', data: info };
     } catch (error) {
-      //console.error('EmailService sendEmail Error:', error.message);
+      console.error('EmailService sendEmail Error:', error.message);
       return { success: false, message: error.message };
     }
   }
@@ -47,7 +54,7 @@ class EmailService {
       }
       return template;
     } catch (error) {
-      //console.error('EmailService getEmailTemplate Error:', error.message);
+      console.error('EmailService getEmailTemplate Error:', error.message);
       throw error;
     }
   }
@@ -66,7 +73,7 @@ class EmailService {
         from: template.from,
       });
     } catch (error) {
-      //console.error('EmailService sendOrderEmail Error:', error.message);
+      console.error('EmailService sendOrderEmail Error:', error.message);
       return { success: false, message: error.message };
     }
   }
