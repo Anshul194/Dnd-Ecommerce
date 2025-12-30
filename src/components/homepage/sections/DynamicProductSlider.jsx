@@ -143,89 +143,86 @@ const DynamicProductSlider = ({ content }) => {
     }
   };
 
-  const handleBuyNow = async (e, productData) => {
-    e.stopPropagation();
-    // Ensure cart sidebar is closed immediately - before any operations
-    dispatch(closeCart());
-    // if (!isAuthenticated) {
-    //   setAuthModalOpen(true);
-    //   return;
-    // }
-    const price = productData.variants[0];
-    try {
-      // Ensure image has proper structure
-      const productImage = productData.thumbnail || productData.images?.[0];
-      const imageObj = productImage 
-        ? (typeof productImage === 'string' 
-            ? { url: productImage, alt: productData.name } 
-            : { url: productImage.url || productImage, alt: productImage.alt || productData.name })
-        : { url: "/Image-not-found.png", alt: productData.name };
+ const handleBuyNow = async (e, productData) => {
+  e.stopPropagation();
 
-      const resultAction = await dispatch(
-        setBuyNowProduct({
-          product: {
-            _id: productData._id,
-            id: productData._id,
-            name: productData.name,
-            image: imageObj,
-            category: productData.category,
-          },
-          quantity: 1,
-          price: Number(price.salePrice || price.price || 0),
-          variant: productData.variants[0]._id,
-        })
+  // 1️⃣ Close cart immediately
+  dispatch(closeCart());
+
+  const price = productData.variants[0];
+
+  try {
+    // 2️⃣ Normalize product image
+    const productImage = productData.thumbnail || productData.images?.[0];
+    const imageObj = productImage
+      ? typeof productImage === "string"
+        ? { url: productImage, alt: productData.name }
+        : {
+            url: productImage.url || productImage,
+            alt: productImage.alt || productData.name,
+          }
+      : { url: "/Image-not-found.png", alt: productData.name };
+
+    // 3️⃣ Prepare Buy Now payload
+    const buyNowPayload = {
+      product: {
+        _id: productData._id,
+        id: productData._id,
+        name: productData.name,
+        image: imageObj,
+        category: productData.category,
+      },
+      quantity: 1,
+      price: Number(price.salePrice || price.price || 0),
+      variant: productData.variants[0]._id,
+    };
+
+    // 4️⃣ Update Redux (for UI state)
+    const resultAction = await dispatch(setBuyNowProduct(buyNowPayload));
+
+    if (resultAction.error) {
+      toast.error(
+        resultAction.payload ||
+          resultAction.error.message ||
+          "Failed to add to cart"
       );
-      // Persist buy-now explicitly to localStorage as an extra-safety (some environments
-      // may not execute reducer side-effects synchronously in time before navigation)
-      try {
-        const buyNowPayload = {
-          product: {
-            _id: productData._id,
-            id: productData._id,
-            name: productData.name,
-            image: imageObj,
-            category: productData.category,
-          },
-          quantity: 1,
-          price: Number(price.salePrice || price.price || 0),
-          variant: productData.variants[0]._id,
-        };
-        if (typeof window !== "undefined" && window.localStorage) {
-          localStorage.setItem("dnd_ecommerce_buy_now", JSON.stringify(buyNowPayload));
-        }
-      } catch (e) {
-        // ignore
-      }
-      if (resultAction.error) {
-        // Show backend error (payload) if present, else generic
-        toast.error(
-          resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
-        );
-        return;
-      }
-      // Skip getCartItems for Buy Now - we use buyNowProduct which is separate
-      // await dispatch(getCartItems());
-      setOverlayProduct(null);
-      // Open checkout popup immediately
-      dispatch(setCheckoutOpen());
-      // Navigate to checkout-popup page
-      router.push("/checkout-popup");
-
-      // track buy now (best-effort)
-      try {
-        trackAddToCart(productData._id); // reuse add_to_cart tracking
-        // also send BUY_NOW event
-        trackEvent("BUY_NOW", {
-          productId: productData._id,
-          variantId: productData.variants[0]._id,
-        });
-      } catch (err) {}
-    } catch (error) {
-      toast.error(error?.message || "Failed to add to cart");
+      return;
     }
-  };
+
+    // 5️⃣ FORCE write to localStorage (client-only)
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "dnd_ecommerce_buy_now",
+        JSON.stringify(buyNowPayload)
+      );
+    }
+
+    // 🔑 6️⃣ CRITICAL: wait one frame so browser flushes storage
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    // 7️⃣ Close overlay (UI cleanup)
+    setOverlayProduct(null);
+
+    // 8️⃣ Open checkout state (if used)
+    dispatch(setCheckoutOpen());
+
+    // 9️⃣ Navigate AFTER storage is guaranteed
+    router.push("/checkout-popup");
+
+    // 🔟 Tracking (non-blocking)
+    try {
+      trackAddToCart(productData._id);
+      trackEvent("BUY_NOW", {
+        productId: productData._id,
+        variantId: productData.variants[0]._id,
+      });
+    } catch (_) {}
+
+  } catch (error) {
+    toast.error(error?.message || "Failed to add to cart");
+  }
+};
+
 
   const openOverlay = (product) => {
     setOverlayProduct(product);
