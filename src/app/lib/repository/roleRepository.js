@@ -1,5 +1,6 @@
 
 
+import mongoose from 'mongoose';
 import roleSchema from '../models/role.js';
 import CrudRepository from './CrudRepository.js';
 
@@ -7,7 +8,7 @@ import CrudRepository from './CrudRepository.js';
 class RoleRepository extends CrudRepository {
     constructor(conn) {
         // Use the provided connection for tenant DB, or global mongoose if not provided
-        const connection = conn || require('mongoose');
+        const connection = conn || mongoose;
         const RoleModel = connection.models.Role || connection.model('Role', roleSchema);
         super(RoleModel);
         this.Role = RoleModel;
