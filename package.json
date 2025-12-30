@@ -9,6 +9,8 @@
     "start:tenant1": "cross-env PORT=3001 next start --hostname tenant1.localhost",
     "dev:tenant1": "cross-env PORT=3001 next dev --hostname tenant1.localhost",
     "dev:bharat": "cross-env PORT=3001 next dev --hostname bharat.localhost",
+    "build:bharat": "cross-env NEXT_PUBLIC_TENANT=bharat next build",
+    "start:bharat": "cross-env PORT=3001 next start --hostname bharat.localhost",
     "lint": "next lint",
     "test": "jest",
     "optimize:images": "node scripts/optimize-images.js",
