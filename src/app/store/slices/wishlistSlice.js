@@ -41,14 +41,24 @@ export const removeFromWishlist = createAsyncThunk(
   }
 );
 
+const initialState = {
+  items: [],
+  loading: false,
+  error: null,
+  initialized: false, // Added to track if wishlist has been loaded at least once
+};
+
 const wishlistSlice = createSlice({
   name: "wishlist",
-  initialState: {
-    items: [],
-    loading: false,
-    error: null,
+  initialState,
+  reducers: {
+    clearWishlistState: (state) => {
+      state.items = [];
+      state.loading = false;
+      state.error = null;
+      state.initialized = false;
+    },
   },
-  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(addToWishlist.pending, (state) => {
@@ -57,29 +67,31 @@ const wishlistSlice = createSlice({
       })
       .addCase(addToWishlist.fulfilled, (state, action) => {
         state.loading = false;
-        // API returns: { status: 'true', message: '...', wishlist: { items: [...] } }
-        // Extract items from the wishlist object
+        state.initialized = true;
         const response = action.payload;
-        let items = [];
         
+        // Prefer the full wishlist from the response if available
         if (response?.wishlist?.items && Array.isArray(response.wishlist.items)) {
-          // Response has wishlist.items array
-          items = response.wishlist.items;
+          state.items = response.wishlist.items;
         } else if (response?.items && Array.isArray(response.items)) {
-          // Response has items array directly
-          items = response.items;
+          state.items = response.items;
         } else if (Array.isArray(response)) {
-          // Response is directly an array
-          items = response;
-        } else if (response?.product) {
-          // Response is a single item object
-          items = [...state.items, response];
-        }
-        
-        // Update state with the items from the response
-        // This ensures we have the latest data from the server
-        if (items.length > 0 || Array.isArray(response?.wishlist?.items)) {
-          state.items = items;
+          state.items = response;
+        } else if (response?.product || response?.productId) {
+          // If only a single item is returned, add it if not already present
+          const newItem = response?.wishlist || response;
+          const newItemProductId = String(newItem.product?._id || newItem.product || newItem.productId || '');
+          const newItemVariantId = String(newItem.variant?._id || newItem.variant || newItem.variantId || '');
+          
+          const exists = state.items.some(item => {
+            const itemProductId = String(item.product?._id || item.product || item.productId || '');
+            const itemVariantId = String(item.variant?._id || item.variant || item.variantId || '');
+            return itemProductId === newItemProductId && itemVariantId === newItemVariantId;
+          });
+          
+          if (!exists) {
+            state.items.push(newItem);
+          }
         }
       })
       .addCase(addToWishlist.rejected, (state, action) => {
@@ -92,12 +104,14 @@ const wishlistSlice = createSlice({
       })
       .addCase(fetchWishlist.fulfilled, (state, action) => {
         state.loading = false;
-        let items = action.payload?.wishlist?.items;
+        state.initialized = true;
+        let items = action.payload?.wishlist?.items || action.payload?.items || action.payload;
         state.items = Array.isArray(items) ? items : [];
       })
       .addCase(fetchWishlist.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.initialized = true; // Even if it fails, we consider it "initialized" to stop falling back
       })
       .addCase(removeFromWishlist.pending, (state) => {
         state.loading = true;
@@ -105,37 +119,44 @@ const wishlistSlice = createSlice({
       })
       .addCase(removeFromWishlist.fulfilled, (state, action) => {
         state.loading = false;
-        // Remove the item from the items array using the productId and variantId passed as arg
+        state.initialized = true;
+        
+        // If the backend returns the updated wishlist, use it
+        const response = action.payload;
+        if (response?.wishlist?.items && Array.isArray(response.wishlist.items)) {
+          state.items = response.wishlist.items;
+          return;
+        }
+        
+        // Fallback: Remove the item locally using the args passed to the thunk
         const productId = action?.meta?.arg?.productId;
         const variantId = action?.meta?.arg?.variantId;
         
         if (productId) {
-          // Convert to string for reliable comparison
           const productIdStr = String(productId);
           const variantIdStr = variantId ? String(variantId) : null;
           
           state.items = state.items.filter((item) => {
-            // Get item product ID (handle both _id and id fields)
-            const itemProductId = item.product?._id || item.product?.id;
-            const itemProductIdStr = itemProductId ? String(itemProductId) : null;
+            const itemProduct = item.product;
+            const itemProductId = String(
+              (typeof itemProduct === 'object' ? (itemProduct?._id || itemProduct?.id) : itemProduct) || ''
+            );
             
-            // If product IDs don't match, keep the item
-            if (itemProductIdStr !== productIdStr) {
+            if (itemProductId !== productIdStr) {
               return true;
             }
             
-            // If variantId is provided, also check variant match
             if (variantIdStr) {
-              const itemVariantId = item.variant?._id || item.variant?.id;
-              const itemVariantIdStr = itemVariantId ? String(itemVariantId) : null;
+              const itemVariant = item.variant;
+              const itemVariantId = String(
+                (typeof itemVariant === 'object' ? (itemVariant?._id || itemVariant?.id) : itemVariant) || ''
+              );
               
-              // If variant doesn't match, keep the item
-              if (itemVariantIdStr !== variantIdStr) {
+              if (itemVariantId !== variantIdStr) {
                 return true;
               }
             }
             
-            // Product ID matches (and variant matches if provided), so remove this item
             return false;
           });
         }

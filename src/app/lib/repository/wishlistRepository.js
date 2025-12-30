@@ -64,20 +64,54 @@ class WishlistRepository {
   async addItem(userId, item, conn) {
     let wishlist = await this.getWishlistByUser(userId, conn);
     if (!wishlist) wishlist = await this.createWishlist(userId, conn);
-    const existingItem = wishlist.items.find(i => i.product.equals(item.product) && (!item.variant || (i.variant && i.variant.equals(item.variant))));
+    
+    // Use toString() for comparison to handle both ObjectIds and strings correctly
+    const existingItem = wishlist.items.find(i => {
+      const itemProductId = i.product?._id || i.product || i.product?.id;
+      const targetProductId = item.product?._id || item.product || item.product?.id;
+      
+      const productsMatch = String(itemProductId) === String(targetProductId);
+      
+      if (!productsMatch) return false;
+      
+      const itemVariantId = i.variant?._id || i.variant || i.variant?.id;
+      const targetVariantId = item.variant?._id || item.variant || item.variant?.id;
+      
+      return !targetVariantId || String(itemVariantId) === String(targetVariantId);
+    });
+
     if (!existingItem) {
       wishlist.items.push(item);
+      await wishlist.save();
+      // Re-fetch or populate to ensure all items are populated for the response
+      wishlist = await this.getWishlistByUser(userId, conn);
     }
-    await wishlist.save();
     return wishlist;
   }
 
   async removeItem(userId, productId, variantId, conn) {
-    const wishlist = await this.getWishlistByUser(userId, conn);
+    const Wishlist = this.getWishlistModel(conn);
+    let wishlist = await Wishlist.findOne({ user: userId });
+    
     if (!wishlist) return null;
-    wishlist.items = wishlist.items.filter(i => !(i.product.equals(productId) && (!variantId || (i.variant && i.variant.equals(variantId)))));
+    
+    wishlist.items = wishlist.items.filter(i => {
+      const itemProductId = i.product?._id || i.product || i.product?.id;
+      const productsMatch = String(itemProductId) === String(productId);
+      
+      if (!productsMatch) return true;
+      
+      if (variantId) {
+        const itemVariantId = i.variant?._id || i.variant || i.variant?.id;
+        return String(itemVariantId) !== String(variantId);
+      }
+      
+      return false; // Product matches and no variantId specified, so filter out
+    });
+    
     await wishlist.save();
-    return wishlist;
+    // Return populated wishlist
+    return this.getWishlistByUser(userId, conn);
   }
 
   async clearWishlist(userId, conn) {

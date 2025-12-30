@@ -34,22 +34,27 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
   const userId = useSelector((state) => state.auth.user?._id);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [heartAnimating, setHeartAnimating] = useState(false);
-  const [localWishlisted, setLocalWishlisted] = useState(false);
   const [overlayProduct, setOverlayProduct] = useState(null);
   const { trackView, trackAddToCart, trackWishlist, trackRemoveWishlist } =
     useTrack();
 
-  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const { items: wishlistItems, initialized } = useSelector((state) => state.wishlist);
 
   const isInReduxWishlist = wishlistItems.some((item) => {
-    const itemProductId = String(item.product?._id || item.product?.id || '');
-    const productId = String(product._id || '');
+    const itemProduct = item.product;
+    const itemProductId = String(
+      (typeof itemProduct === 'object' ? (itemProduct?._id || itemProduct?.id) : itemProduct) || ''
+    );
+    const productId = String(product._id || product.id || '');
 
     if (itemProductId !== productId) return false;
 
-    const variantId = product?.variants[0]?._id;
+    const variantId = product?.variants?.[0]?._id;
     if (variantId) {
-      const itemVariantId = String(item.variant?._id || item.variant?.id || '');
+      const itemVariant = item.variant;
+      const itemVariantId = String(
+        (typeof itemVariant === 'object' ? (itemVariant?._id || itemVariant?.id) : itemVariant) || ''
+      );
       return itemVariantId === String(variantId);
     }
 
@@ -60,12 +65,10 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
     isAuthenticated &&
     userId &&
     Array.isArray(product.wishlist) &&
-    product.wishlist.includes(userId);
+    product.wishlist.some(id => String(id) === String(userId));
 
-  const isReduxInitialized = Array.isArray(wishlistItems);
-  const isWishlisted = isReduxInitialized
-    ? isInReduxWishlist
-    : isWishlistedFromProduct;
+  // Combine both checks for reliability. Trust Redux exclusively if it's already initialized.
+  const isWishlisted = initialized ? isInReduxWishlist : (isInReduxWishlist || isWishlistedFromProduct);
 
   const handleProductClick = () => {
     if (product?._id) {
@@ -116,10 +119,6 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
       toast.error(error?.message || "Failed to add to cart");
     }
   };
-
-  useEffect(() => {
-    setLocalWishlisted(isWishlisted);
-  }, [isWishlisted, wishlistItems.length, product._id, userId]);
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();

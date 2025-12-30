@@ -45,15 +45,46 @@ export function CustomerFavorites({ content }) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [heartAnimating, setHeartAnimating] = useState(false);
 
-  // Store wishlisted product ids locally so liked state persists on reload
-  const [wishlistedIds, setWishlistedIds] = useState(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      return JSON.parse(localStorage.getItem("wishlistedIds") || "[]");
-    } catch (e) {
-      return [];
-    }
-  });
+  // Selector for Redux wishlist items
+  const { items: wishlistItems, initialized } = useSelector((state) => state.wishlist);
+
+  // Function to check if a specific product is wishlisted
+  const getIsWishlisted = (product) => {
+    const isInReduxWishlist = wishlistItems.some((item) => {
+      const itemProduct = item.product;
+      const itemProductId = String(
+        (typeof itemProduct === "object"
+          ? itemProduct?._id || itemProduct?.id
+          : itemProduct) || ""
+      );
+      const productId = String(product._id || product.id || "");
+
+      if (itemProductId !== productId) return false;
+
+      const variantId = product?.variants?.[0]?._id;
+      if (variantId) {
+        const itemVariant = item.variant;
+        const itemVariantId = String(
+          (typeof itemVariant === "object"
+            ? itemVariant?._id || itemVariant?.id
+            : itemVariant) || ""
+        );
+        return itemVariantId === String(variantId);
+      }
+      return true;
+    });
+
+    const isWishlistedFromProduct =
+      isAuthenticated &&
+      userId &&
+      Array.isArray(product.wishlist) &&
+      product.wishlist.some((id) => String(id) === String(userId));
+
+    // Trust Redux exclusively if initialized, otherwise merge/fallback
+    return initialized
+      ? isInReduxWishlist
+      : isInReduxWishlist || isWishlistedFromProduct;
+  };
 
   const handleAddToCart = (product) => {
     // if (!isAuthenticated) {
@@ -80,15 +111,6 @@ export function CustomerFavorites({ content }) {
     );
     dispatch(toggleCart());
   };
-
-  // persist wishlisted ids whenever they change
-  useEffect(() => {
-    try {
-      localStorage.setItem("wishlistedIds", JSON.stringify(wishlistedIds));
-    } catch (e) {
-      // ignore localStorage errors
-    }
-  }, [wishlistedIds]);
 
   useEffect(() => {
     // console.log("CustomerFavorites content is ===> ", content);
@@ -146,53 +168,37 @@ export function CustomerFavorites({ content }) {
                             return;
                           }
 
-                          const currentlyLiked = wishlistedIds.includes(
-                            product._id
-                          );
+                          // Check if currently liked using our helper function
+                          const currentlyLiked = getIsWishlisted(product);
 
-                          // toggle locally
                           if (currentlyLiked) {
-                            // Optimistically remove locally
-                            setWishlistedIds((prev) =>
-                              prev.filter((id) => id !== product._id)
-                            );
-                            // Remove on server
                             try {
                               await dispatch(
                                 removeFromWishlist({
                                   productId: product._id,
                                   variantId: product?.variants[0]?._id,
                                 })
-                              );
+                              ).unwrap();
                             } catch (err) {
-                              // if server remove fails, re-add locally
-                              setWishlistedIds((prev) => [
-                                ...prev,
-                                product._id,
-                              ]);
+                              console.error("Failed to remove from wishlist:", err);
                             }
                           } else {
                             setHeartAnimating(true);
-                            setWishlistedIds((prev) => [...prev, product._id]);
-                            // Optimistically show heart as red and add to server-side wishlist
                             try {
                               await dispatch(
                                 addToWishlist({
                                   product: product._id,
                                   variant: product?.variants[0]?._id,
                                 })
-                              );
+                              ).unwrap();
                             } catch (err) {
-                              // if the server add fails, remove the id again
-                              setWishlistedIds((prev) =>
-                                prev.filter((id) => id !== product._id)
-                              );
+                              console.error("Failed to add to wishlist:", err);
                             }
                             setTimeout(() => setHeartAnimating(false), 400);
                           }
                         }}
                         aria-label={
-                          wishlistedIds.includes(product._id)
+                          getIsWishlisted(product)
                             ? "Remove from wishlist"
                             : "Add to wishlist"
                         }
@@ -207,16 +213,8 @@ export function CustomerFavorites({ content }) {
                         >
                           <path
                             d="M20.84 4.61C20.3292 4.099 19.7228 3.69364 19.0554 3.41708C18.3879 3.14052 17.6725 2.99817 16.95 2.99817C16.2275 2.99817 15.5121 3.14052 14.8446 3.41708C14.1772 3.69364 13.5708 4.099 13.06 4.61L12 5.67L10.94 4.61C9.9083 3.5783 8.50903 2.9987 7.05 2.9987C5.59096 2.9987 4.19169 3.5783 3.16 4.61C2.1283 5.6417 1.5487 7.04097 1.5487 8.5C1.5487 9.95903 2.1283 11.3583 3.16 12.39L12 21.23L20.84 12.39C21.351 11.8792 21.7563 11.2728 22.0329 10.6053C22.3095 9.93789 22.4518 9.22248 22.4518 8.5C22.4518 7.77752 22.3095 7.06211 22.0329 6.3947C21.7563 5.72729 21.351 5.1208 20.84 4.61V4.61Z"
-                            stroke={
-                              wishlistedIds.includes(product._id)
-                                ? "#e63946"
-                                : "black"
-                            }
-                            fill={
-                              wishlistedIds.includes(product._id)
-                                ? "#e63946"
-                                : "none"
-                            }
+                            stroke={getIsWishlisted(product) ? "#e63946" : "black"}
+                            fill={getIsWishlisted(product) ? "#e63946" : "none"}
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"

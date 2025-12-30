@@ -33,45 +33,44 @@ const ProductCard = ({ product, showDes, buyNow }) => {
   const userId = useSelector((state) => state.auth.user?._id); // get logged-in user id
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [heartAnimating, setHeartAnimating] = useState(false);
-  const [localWishlisted, setLocalWishlisted] = useState(false);
-  const [overlayProduct, setOverlayProduct] = useState(null);
   const { trackView, trackAddToCart, trackWishlist, trackRemoveWishlist } =
     useTrack();
 
   // Get wishlist items from Redux for immediate updates
-  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const { items: wishlistItems, initialized } = useSelector((state) => state.wishlist);
 
   // Check if product is in Redux wishlist (for immediate UI updates)
   const isInReduxWishlist = wishlistItems.some((item) => {
-    const itemProductId = String(item.product?._id || item.product?.id || '');
-    const productId = String(product._id || '');
+    const itemProduct = item.product;
+    const itemProductId = String(
+      (typeof itemProduct === 'object' ? (itemProduct?._id || itemProduct?.id) : itemProduct) || ''
+    );
+    const productId = String(product._id || product.id || '');
 
     if (itemProductId !== productId) return false;
 
     // If variant exists, also check variant match
-    const variantId = product?.variants[0]?._id;
+    const variantId = product?.variants?.[0]?._id;
     if (variantId) {
-      const itemVariantId = String(item.variant?._id || item.variant?.id || '');
+      const itemVariant = item.variant;
+      const itemVariantId = String(
+        (typeof itemVariant === 'object' ? (itemVariant?._id || itemVariant?.id) : itemVariant) || ''
+      );
       return itemVariantId === String(variantId);
     }
 
     return true;
   });
 
-  // Fast check: is userId in product.wishlist array? (from server data - fallback only when Redux is empty)
+  // Fast check: is userId in product.wishlist array? (from server data)
   const isWishlistedFromProduct =
     isAuthenticated &&
     userId &&
     Array.isArray(product.wishlist) &&
-    product.wishlist.includes(userId);
+    product.wishlist.some(id => String(id) === String(userId));
 
-  // Always prioritize Redux state when available (even if empty)
-  // Only fallback to product data if Redux hasn't been initialized yet
-  // Check if Redux has been loaded by checking if wishlistItems is an array
-  const isReduxInitialized = Array.isArray(wishlistItems);
-  const isWishlisted = isReduxInitialized
-    ? isInReduxWishlist  // Always trust Redux state if it's been initialized
-    : isWishlistedFromProduct; // Only use product data if Redux hasn't loaded yet
+  // Combine both checks for reliability. Trust Redux exclusively if it's already initialized.
+  const isWishlisted = initialized ? isInReduxWishlist : (isInReduxWishlist || isWishlistedFromProduct);
 
   const handleProductClick = () => {
     // Track product view only when clicked
@@ -85,10 +84,6 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     e.preventDefault();
     // Ensure cart sidebar is closed immediately - before any operations
     dispatch(closeCart());
-    // if (!isAuthenticated) {
-    //   setAuthModalOpen(true);
-    //   return;
-    // }
     const price = product.variants[0];
     try {
       // Ensure image has proper structure
@@ -122,8 +117,6 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         );
         return;
       }
-      // Skip getCartItems for Buy Now - we use buyNowProduct which is separate
-      // await dispatch(getCartItems());
       setOverlayProduct(null);
       // Open checkout popup immediately
       dispatch(setCheckoutOpen());
@@ -133,12 +126,6 @@ const ProductCard = ({ product, showDes, buyNow }) => {
       toast.error(error?.message || "Failed to add to cart");
     }
   };
-
-  // Sync local state with Redux state and product data
-  // This ensures local state stays in sync, but we use isWishlisted directly for display
-  useEffect(() => {
-    setLocalWishlisted(isWishlisted);
-  }, [isWishlisted, wishlistItems.length, product._id, userId]);
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
