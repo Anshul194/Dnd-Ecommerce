@@ -7,8 +7,8 @@ import mongoose from 'mongoose';
 
 // GET /api/subcategory/:id
 export async function GET(req, context) {
-  const { params } = context;
-  const id = await params?.id;
+  const params = await context.params;
+  const id = params?.id;
   if (!id) {
     return NextResponse.json({ success: false, message: 'ID is missing' }, { status: 400 });
   }
@@ -33,8 +33,8 @@ export async function GET(req, context) {
 
 // PATCH /api/subcategory/:id
 export async function PATCH(req, context) {
-  const { params } = context;
-  const id = await params?.id;
+  const params = await context.params;
+  const id = params?.id;
   const formData = await req.formData();
   const data = Object.fromEntries(formData.entries());
   if (!id) {
@@ -61,8 +61,8 @@ export async function PATCH(req, context) {
 
 // DELETE /api/subcategory/:id
 export async function DELETE(req, context) {
-  const { params } = context;
-  const id = await params?.id;
+  const params = await context.params;
+  const id = params?.id;
   if (!id) {
     return NextResponse.json({ success: false, message: 'ID is missing' }, { status: 400 });
   }
