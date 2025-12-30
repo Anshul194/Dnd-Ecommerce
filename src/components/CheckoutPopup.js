@@ -748,6 +748,19 @@ export default function CheckoutPopup() {
     }
   }, [otp, dispatch, formData.phone]);
 
+  // Automatically sync phone from user profile when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.phone) {
+      setFormData(prev => ({
+        ...prev,
+        phone: user.phone
+      }));
+    } else if (!isAuthenticated) {
+      // Optional: Clear phone if logged out, but keeping might be safer for UX if they re-login
+      // setFormData(prev => ({ ...prev, phone: "" }));
+    }
+  }, [isAuthenticated, user?.phone]);
+
   useEffect(() => {
     // Only set form data from addressData if it exists and has actual data
     if (addressData && Object.keys(addressData).length > 0) {
@@ -1990,6 +2003,8 @@ export default function CheckoutPopup() {
                       />
                     </div>
                   </div>
+
+
 
                   <div
                     className={`relative group w-full px-3 py-0 h-11 border-[1px] ${activeField === "email"

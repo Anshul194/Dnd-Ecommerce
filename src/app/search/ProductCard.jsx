@@ -33,6 +33,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
   const userId = useSelector((state) => state.auth.user?._id); // get logged-in user id
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [heartAnimating, setHeartAnimating] = useState(false);
+  const [localWishlisted, setLocalWishlisted] = useState(null);
   const { trackView, trackAddToCart, trackWishlist, trackRemoveWishlist } =
     useTrack();
 
@@ -70,7 +71,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     product.wishlist.some(id => String(id) === String(userId));
 
   // Combine both checks for reliability. Trust Redux exclusively if it's already initialized.
-  const isWishlisted = initialized ? isInReduxWishlist : (isInReduxWishlist || isWishlistedFromProduct);
+  const isWishlistedRedux = initialized ? isInReduxWishlist : (isInReduxWishlist || isWishlistedFromProduct);
+  const isWishlisted = localWishlisted !== null ? localWishlisted : isWishlistedRedux;
 
   const handleProductClick = () => {
     // Track product view only when clicked
@@ -117,7 +119,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         );
         return;
       }
-      setOverlayProduct(null);
+
       // Open checkout popup immediately
       dispatch(setCheckoutOpen());
       // Navigate to checkout-popup page with query params
