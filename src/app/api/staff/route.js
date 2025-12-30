@@ -1,40 +1,10 @@
-import dbConnect from "../../connection/dbConnect";
 import { NextResponse } from "next/server";
 import UserService from "../../lib/services/userService.js";
 import { Token } from "../../middleware/generateToken.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-import roleSchema from "@/app/lib/models/role";
-
-// Helper to extract subdomain from x-tenant header or host header
-function getSubdomain(request) {
-  // Prefer x-tenant header if present
-  const xTenant = request.headers.get("x-tenant");
-  if (xTenant) return xTenant;
-  const host = request.headers.get("host") || "";
-  // e.g. tenant1.localhost:5173 or tenant1.example.com
-  const parts = host.split(".");
-  if (parts.length > 2) return parts[0];
-  if (parts.length === 2 && parts[0] !== "localhost") return parts[0];
-  return null;
-}
-
-// Helper to get DB connection based on subdomain
-async function getDbConnection(subdomain) {
-  //consolle.log("getDbConnection subdomain: ===> ", subdomain);
-  if (!subdomain || subdomain === "localhost") {
-    // Use default DB (from env)
-    return await dbConnect();
-  } else {
-    // Remove "admin" if present in subdomain
-    const subDomain = subdomain.includes("admin")
-      ? subdomain.replace("admin", "")
-      : subdomain;
-    // Directly connect to the tenant DB using the subdomain
-    const url = `mongodb+srv://anshul:anshul149@clusterdatabase.24furrx.mongodb.net/tenant_${subDomain}?retryWrites=true&w=majority`;
-    return await dbConnect(url);
-  }
-}
+import { getSubdomain, getDbConnection } from "../../lib/tenantDb.js";
+import RoleRepository from "../../lib/repository/roleRepository.js";
 
 // Register (Create User)
 export async function POST(request) {
@@ -52,9 +22,9 @@ export async function POST(request) {
       );
     }
     const userService = new UserService(conn);
+    const roleRepo = new RoleRepository(conn);
 
     const body = await request.json();
-   
     
     const {
       name,
@@ -69,14 +39,12 @@ export async function POST(request) {
     
     // Basic validation
     if (!name || !email || !password) {
-     
       return NextResponse.json(
         { success: false, message: "Name, email, and password are required." },
         { status: 400 }
       );
     }
 
-    const RoleModel = conn.models.Role || conn.model("Role", roleSchema);
     let finalTenant = tenant || null;
     let finalRole = role || null;
 
@@ -90,8 +58,8 @@ export async function POST(request) {
           { status: 400 }
         );
       }
-      // Fetch the role document
-      const roleDoc = await RoleModel.findById(role);
+      // Fetch the role document using repository
+      const roleDoc = await roleRepo.findById(role);
       if (!roleDoc) {
       
         return NextResponse.json(

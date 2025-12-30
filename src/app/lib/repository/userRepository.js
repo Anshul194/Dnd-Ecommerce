@@ -94,7 +94,7 @@ class UserRepository extends CrudRepository {
   // ✅ Find role by ID (skips deleted roles)
   async findRoleById(roleId) {
     try {
-      return await this.roleModel.findOne({ _id: roleId, isDeleted: false });
+      return await this.roleModel.findOne({ _id: roleId, deletedAt: null });
     } catch (error) {
       //consolle.error('UserRepo findRoleById error:', error);
       throw error;

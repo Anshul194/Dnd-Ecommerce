@@ -55,7 +55,7 @@ class UserService {
       }
       // If role is provided, verify role exists and matches tenant if applicable
       if (data.role) {
-        const role = await this.roleRepo.findById({ _id: data.role });
+        const role = await this.roleRepo.findById(data.role);
         if (!role) {
           throw new Error("Role not found");
         }
