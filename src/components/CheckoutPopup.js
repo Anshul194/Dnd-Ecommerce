@@ -39,7 +39,7 @@ import {
 } from "@/app/store/slices/couponSlice";
 import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { initializeBuyNowFromQuery, getCartItems, restoreCartState } from "@/app/store/slices/cartSlice";
+import { initializeBuyNowFromQuery, getCartItems, restoreCartState, setBuyNowProduct } from "@/app/store/slices/cartSlice";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import { toast } from "react-toastify";
 import { fetchSettings } from "@/app/store/slices/settingSlice";

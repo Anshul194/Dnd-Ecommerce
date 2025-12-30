@@ -1,3 +1,4 @@
+"use client";
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { ChevronLeft, ChevronRight, Eye, Heart, Share2 } from "lucide-react";
 import { useState } from "react";

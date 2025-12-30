@@ -1,3 +1,5 @@
+ "use client";
+
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { Eye, Heart, Share2 } from "lucide-react";
 import Image from "next/image";

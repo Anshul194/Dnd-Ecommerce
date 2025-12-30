@@ -1,3 +1,5 @@
+"use client";
+
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { Star, ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";

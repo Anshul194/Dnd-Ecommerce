@@ -1,3 +1,5 @@
+"use client";
+
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import {
   Star,

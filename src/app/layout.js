@@ -1,21 +1,17 @@
 // src/app/layout.js
-import { Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
-import Providers from "./store/Providers"; // ✅ Updated path
+import Providers from "./store/Providers";
 import ClientLayout from "./ClientLayout";
-import ClientOnly from "../components/ClientOnly.jsx";
 import { ToastContainer } from "react-toastify";
 import CheckoutPopup from "../components/CheckoutPopup";
-// import OrderPopup from "../components/OrderPopup";
+
 export const metadata = {
-  title: "DND - Ecommerce ",
+  title: "DND - Ecommerce",
   description: "Find the perfect good",
 };
 
 export default function RootLayout({ children }) {
-  // console.log = () => {};
-
   return (
     <html lang="en">
       <head>
@@ -23,7 +19,6 @@ export default function RootLayout({ children }) {
           name="format-detection"
           content="telephone=no, date=no, email=no, address=no"
         />
-        {/* Preload critical fonts for faster First Contentful Paint */}
         <link
           rel="preload"
           href="/fonts/Poppins-Regular.ttf"
@@ -39,26 +34,19 @@ export default function RootLayout({ children }) {
           crossOrigin="anonymous"
         />
       </head>
-      <body suppressHydrationWarning={true}>
+
+      {/* ❌ removed suppressHydrationWarning */}
+      <body>
         <Providers>
-          <ClientOnly>
-            <ClientLayout>
+          <ClientLayout>
             <ToastContainer
               position="top-right"
               autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
               className="!z-[9999999]"
             />
             <CheckoutPopup />
-            {/* <OrderPopup /> */}
-              {children ?? null}
-            </ClientLayout>
-          </ClientOnly>
+            {children}
+          </ClientLayout>
         </Providers>
       </body>
     </html>

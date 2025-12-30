@@ -1,3 +1,5 @@
+"use client";
+
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import React, { useRef, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
