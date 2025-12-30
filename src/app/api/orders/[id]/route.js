@@ -42,3 +42,27 @@ export const GET = withUserAuth(async function (request, { params }) {
     return NextResponse.json({ success: false, message: error.message }, { status: 400 });
   }
 });
+
+export const PUT = withUserAuth(async function (request, { params }) {
+  try {
+    const subdomain = getSubdomain(request);
+    const conn = await getDbConnection(subdomain);
+    if (!conn) {
+      return NextResponse.json({ success: false, message: 'DB not found' }, { status: 404 });
+    }
+
+    const Order = conn.models.Order || conn.model('Order', OrderSchema);
+    const orderRepo = new OrderRepository(Order, conn);
+    const orderService = new OrderService(orderRepo);
+    const orderController = new OrderController(orderService);
+
+    const result = await orderController.update(request, conn, params);
+    return NextResponse.json({
+      success: result.success,
+      message: result.message,
+      data: result.data
+    });
+  } catch (error) {
+    return NextResponse.json({ success: false, message: error.message }, { status: 400 });
+  }
+});

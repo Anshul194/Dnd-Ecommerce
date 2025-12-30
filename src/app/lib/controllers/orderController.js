@@ -125,12 +125,11 @@ class OrderController {
     const { orderId } = body;
 
     // Fetch order from DB
-    const order = await this.orderService.getOrderById(orderId);
-    //consolle.log("Order fetched in controller:", order);
-    if (!order) return { success: false, message: "Order not found" };
-    // //consolle.log('F
-    // etched order:', order);
-    const services = await this.orderService.getServiceOptions(order, conn);
+    const orderResp = await this.orderService.getOrderById(orderId, null, ["items.product"]);
+    console.log("Order fetched in controller:", orderResp);
+    if (!orderResp || !orderResp.success) return { success: false, message: "Order not found" };
+    
+    const services = await this.orderService.getServiceOptions(orderResp, conn);
 
     return { success: true, orderId, services };
   }
@@ -139,23 +138,23 @@ class OrderController {
     const { orderId, courier, serviceCode } = body;
 
     if (!orderId || !courier || !serviceCode)
-      return { success: false, message: "Missing data" };
+      return { success: false, message: "Missing data (" + (orderId ? "" : "orderId ") + (courier ? "" : "courier ") + (serviceCode ? "" : "serviceCode") + ")" };
 
-    const order = await this.orderService.getOrderById(orderId);
-    // //consolle.log("Order fetched in controller for shipment:", order);
-    if (!order) return { success: false, message: "Order not found" };
+    const orderResp = await this.orderService.getOrderById(orderId, null, ["items.product"]);
+    if (!orderResp || !orderResp.success) return { success: false, message: orderResp?.message || "Order not found for shipment" };
 
     const shipmentResp = await this.orderService.createShipment(
-      order.data,
+      orderResp.data,
       courier,
       serviceCode
     );
 
     return {
-      success: true,
+      success: shipmentResp.success,
+      message: shipmentResp.message,
       orderId,
       courier,
-      response: shipmentResp.data,
+      response: shipmentResp.data || shipmentResp.error,
     };
   }
 
@@ -324,6 +323,21 @@ class OrderController {
       return result;
     } catch (error) {
       return { success: false, message: error.message };
+    }
+  }
+
+  async update(request, conn, params) {
+    try {
+      const { id } = await params;
+      const data = await request.json();
+      const result = await this.orderService.updateOrder(id, data);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
     }
   }
 }

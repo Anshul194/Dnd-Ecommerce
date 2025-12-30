@@ -184,8 +184,8 @@ function ProductPage({ params }) {
       // await dispatch(getCartItems());
       // Open checkout popup immediately
       dispatch(setCheckoutOpen());
-      // Navigate to checkout-popup page
-      router.push("/checkout-popup");
+      // Navigate to checkout-popup page with query params
+      router.push(`/checkout-popup?buyNow=true&productId=${data._id}&variantId=${selectedPack}&quantity=${quantity}`);
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
     }

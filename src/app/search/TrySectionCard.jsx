@@ -44,15 +44,15 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
   const isInReduxWishlist = wishlistItems.some((item) => {
     const itemProductId = String(item.product?._id || item.product?.id || '');
     const productId = String(product._id || '');
-    
+
     if (itemProductId !== productId) return false;
-    
+
     const variantId = product?.variants[0]?._id;
     if (variantId) {
       const itemVariantId = String(item.variant?._id || item.variant?.id || '');
       return itemVariantId === String(variantId);
     }
-    
+
     return true;
   });
 
@@ -80,10 +80,10 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
     const price = product.variants[0];
     try {
       const productImage = product.thumbnail || product.images?.[0];
-      const imageObj = productImage 
-        ? (typeof productImage === 'string' 
-            ? { url: productImage, alt: product.name } 
-            : { url: productImage.url || productImage, alt: productImage.alt || product.name })
+      const imageObj = productImage
+        ? (typeof productImage === 'string'
+          ? { url: productImage, alt: product.name }
+          : { url: productImage.url || productImage, alt: productImage.alt || product.name })
         : { url: "/Image-not-found.png", alt: product.name };
 
       const resultAction = await dispatch(
@@ -103,14 +103,15 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
       if (resultAction.error) {
         toast.error(
           resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          resultAction.error.message ||
+          "Failed to add to cart"
         );
         return;
       }
       setOverlayProduct(null);
       dispatch(setCheckoutOpen());
-      router.push("/checkout-popup");
+      // Navigate to checkout-popup page with query params
+      router.push(`/checkout-popup?buyNow=true&productId=${product._id}&variantId=${product.variants[0]._id}&quantity=1`);
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
     }
@@ -127,17 +128,17 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
     const price = product?.variants[0]
       ? product?.variants[0]?.salePrice || product?.variants[0]?.price
       : product?.salePrice || product?.price;
-    
+
     try {
       const resultAction = await dispatch(
-      addToCart({
-        product: product._id,
-        quantity: 1,
-        price: price,
-        variant: product?.variants[0]?._id,
-      })
-    );
-      
+        addToCart({
+          product: product._id,
+          quantity: 1,
+          price: price,
+          variant: product?.variants[0]?._id,
+        })
+      );
+
       if (!resultAction.error) {
         setTimeout(async () => {
           try {
@@ -146,9 +147,9 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
           }
         }, 500);
       }
-      
-    trackAddToCart(product._id);
-    dispatch(toggleCart());
+
+      trackAddToCart(product._id);
+      dispatch(toggleCart());
     } catch (error) {
       console.warn("Add to cart error:", error);
     }
@@ -175,9 +176,8 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
         onClick={handleProductClick}
       >
         <div
-          className={`${
-            showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
-          } bg-white flex flex-col justify-between border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-80 lg:w-80 shrink-0`}
+          className={`${showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
+            } bg-white flex flex-col justify-between border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-80 lg:w-80 shrink-0`}
         >
           <div className="relative bg-white rounded-t-2xl">
             <div className="absolute top-2 right-2 z-10">

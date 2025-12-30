@@ -465,6 +465,12 @@ const cartSlice = createSlice({
       if (buyNow) {
         state.buyNowProduct = buyNow;
       }
+      const cart = getCartFromLocalStorage();
+      if (cart) {
+        state.cartItems = Array.isArray(cart.cartItems) ? cart.cartItems : [];
+        state.total = cart.total || 0;
+        state.cartId = cart.cartId || null;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -551,6 +557,53 @@ const cartSlice = createSlice({
       });
   },
 });
+
+// Thunk to initialize buyNowProduct from query params
+export const initializeBuyNowFromQuery = createAsyncThunk(
+  "cart/initializeBuyNowFromQuery",
+  async ({ productId, variantId, quantity }, { dispatch, getState }) => {
+    try {
+      const state = getState();
+      // If we already have it in Redux, no need to fetch (unless it's different)
+      if (state.cart.buyNowProduct && 
+          (state.cart.buyNowProduct.product?.id === productId || state.cart.buyNowProduct.product?._id === productId) &&
+          state.cart.buyNowProduct.variant === variantId) {
+        return;
+      }
+
+      // Fetch product details
+      const { fetchProductById } = require("./productSlice");
+      const action = await dispatch(fetchProductById(productId));
+      const product = action.payload;
+
+      if (product) {
+        const variant = product.variants?.find((v) => v._id === variantId);
+        const price = variant ? (variant.salePrice || variant.price) : 0;
+        const productImage = product.thumbnail || product.images?.[0];
+        const imageObj = productImage 
+          ? (typeof productImage === 'string' 
+              ? { url: productImage, alt: product.name } 
+              : { url: productImage.url || productImage, alt: productImage.alt || product.name })
+          : { url: "/Image-not-found.png", alt: product.name };
+
+        dispatch(setBuyNowProduct({
+          product: {
+            _id: product._id,
+            id: product._id,
+            name: product.name,
+            image: imageObj,
+            category: product.category,
+          },
+          quantity: Number(quantity) || 1,
+          price: price,
+          variant: variantId,
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to initialize buy now from query:", error);
+    }
+  }
+);
 
 export const {
   toggleCart,

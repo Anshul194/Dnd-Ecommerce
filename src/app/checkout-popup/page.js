@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import CheckoutPopup from "@/components/CheckoutPopup";
@@ -13,6 +13,10 @@ export default function CheckoutPopupPage() {
     dispatch(setCheckoutOpen());
   }, [dispatch]);
 
-  return <CheckoutPopup />;
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <CheckoutPopup />
+    </React.Suspense>
+  );
 }
 

@@ -38,7 +38,8 @@ import {
   clearSelectedCoupon,
 } from "@/app/store/slices/couponSlice";
 import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { initializeBuyNowFromQuery, getCartItems, restoreCartState } from "@/app/store/slices/cartSlice";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import { toast } from "react-toastify";
 import { fetchSettings } from "@/app/store/slices/settingSlice";
@@ -58,6 +59,7 @@ export default function CheckoutPopup() {
   const [pincodeChecking, setPincodeChecking] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const location = usePathname();
   const { isAuthenticated, otpSended, loading, user } = useSelector(
     (state) => state.auth
@@ -945,6 +947,7 @@ export default function CheckoutPopup() {
 
   useEffect(() => {
     setMounted(true);
+    dispatch(restoreCartState());
     dispatch(
       fetchProducts({
         isAddon: true,
@@ -952,7 +955,24 @@ export default function CheckoutPopup() {
     );
     dispatch(fetchPages());
     // Settings are already fetched and cached by ClientLayout - no need to fetch again
-  }, [dispatch]);
+    
+    // Refresh cart items from server/localStorage on mount to prevent 0 cart value on refresh
+    dispatch(getCartItems());
+
+    // Handle Buy Now query params if present and redux state is empty
+    const isBuyNow = searchParams.get("buyNow") === "true";
+    const qProductId = searchParams.get("productId");
+    const qVariantId = searchParams.get("variantId");
+    const qQuantity = searchParams.get("quantity");
+
+    if (isBuyNow && qProductId && qVariantId) {
+      dispatch(initializeBuyNowFromQuery({
+        productId: qProductId,
+        variantId: qVariantId,
+        quantity: qQuantity || 1
+      }));
+    }
+  }, [dispatch, searchParams]);
 
   // Calculate bill values
   const itemsTotal = buyNowProduct

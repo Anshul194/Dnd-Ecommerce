@@ -45,16 +45,16 @@ const ProductCard = ({ product, showDes, buyNow }) => {
   const isInReduxWishlist = wishlistItems.some((item) => {
     const itemProductId = String(item.product?._id || item.product?.id || '');
     const productId = String(product._id || '');
-    
+
     if (itemProductId !== productId) return false;
-    
+
     // If variant exists, also check variant match
     const variantId = product?.variants[0]?._id;
     if (variantId) {
       const itemVariantId = String(item.variant?._id || item.variant?.id || '');
       return itemVariantId === String(variantId);
     }
-    
+
     return true;
   });
 
@@ -93,10 +93,10 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     try {
       // Ensure image has proper structure
       const productImage = product.thumbnail || product.images?.[0];
-      const imageObj = productImage 
-        ? (typeof productImage === 'string' 
-            ? { url: productImage, alt: product.name } 
-            : { url: productImage.url || productImage, alt: productImage.alt || product.name })
+      const imageObj = productImage
+        ? (typeof productImage === 'string'
+          ? { url: productImage, alt: product.name }
+          : { url: productImage.url || productImage, alt: productImage.alt || product.name })
         : { url: "/Image-not-found.png", alt: product.name };
 
       const resultAction = await dispatch(
@@ -117,8 +117,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         // Show backend error (payload) if present, else generic
         toast.error(
           resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          resultAction.error.message ||
+          "Failed to add to cart"
         );
         return;
       }
@@ -127,8 +127,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
       setOverlayProduct(null);
       // Open checkout popup immediately
       dispatch(setCheckoutOpen());
-      // Navigate to checkout-popup page
-      router.push("/checkout-popup");
+      // Navigate to checkout-popup page with query params
+      router.push(`/checkout-popup?buyNow=true&productId=${product._id}&variantId=${product.variants[0]._id}&quantity=1`);
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
     }
@@ -151,17 +151,17 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     const price = product?.variants[0]
       ? product?.variants[0]?.salePrice || product?.variants[0]?.price
       : product?.salePrice || product?.price;
-    
+
     try {
       const resultAction = await dispatch(
-      addToCart({
-        product: product._id,
-        quantity: 1,
-        price: price,
-        variant: product?.variants[0]?._id,
-      })
-    );
-      
+        addToCart({
+          product: product._id,
+          quantity: 1,
+          price: price,
+          variant: product?.variants[0]?._id,
+        })
+      );
+
       // Don't immediately call getCartItems() - it can overwrite the cart if server hasn't synced
       // The addToCart action already updates the Redux state and localStorage
       // Only refresh cart from server after a delay to allow server to sync
@@ -174,9 +174,9 @@ const ProductCard = ({ product, showDes, buyNow }) => {
           }
         }, 500); // 500ms delay to allow server to process
       }
-      
-    trackAddToCart(product._id);
-    dispatch(toggleCart());
+
+      trackAddToCart(product._id);
+      dispatch(toggleCart());
     } catch (error) {
       // Handle error silently or show toast if needed
       console.warn("Add to cart error:", error);
@@ -202,10 +202,9 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         onClick={handleProductClick}
       >
         <div
-          className={`${
-            showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
-          } bg-white flex max-sm:w-full  max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 md:w-full max-w-[320px]`}
-          // } bg-white flex max-sm:w-full max-sm:min-w-[280px] max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
+          className={`${showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
+            } bg-white flex max-sm:w-full  max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 md:w-full max-w-[320px]`}
+        // } bg-white flex max-sm:w-full max-sm:min-w-[280px] max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
         >
           {/* Product Header */}
           <div className="relative bg-white rounded-t-2xl">
@@ -284,7 +283,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
             </div>
             {/* Product Image */}
             <div className="flex h-56 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
-            {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
+              {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
               <Image
                 src={product?.thumbnail?.url || product.images?.[0]?.url || "/Image-not-found.png"}
                 alt={product?.thumbnail?.alt || product.images?.[0]?.alt || product?.name || "Product Image"}

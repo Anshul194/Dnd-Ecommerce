@@ -1157,15 +1157,42 @@ class OrderService {
    * Create Shipment on the selected courier
    */
   async createShipment(order, courier, serviceCode) {
-    switch (courier.toUpperCase()) {
-      case "DTDC":
-        return this.createDtdcShipment(order, serviceCode);
-      case "DELHIVERY":
-        return this.createDelhiveryShipment(order, serviceCode);
-      case "BLUEDART":
-        return this.createBluedartShipment(order, serviceCode);
-      default:
-        throw new Error("Unsupported courier");
+    try {
+      switch (courier.toUpperCase()) {
+        case "DTDC":
+          return this.createDtdcShipment(order, serviceCode);
+        case "DELHIVERY":
+          return this.createDelhiveryShipment(order, serviceCode);
+        case "BLUEDART":
+          return this.createBluedartShipment(order, serviceCode);
+        default:
+          throw new Error("Unsupported courier");
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+  }
+
+  async updateOrder(id, data) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error(`Invalid orderId: ${id}`);
+      }
+      const updatedOrder = await this.orderRepository.updateOrder(id, data);
+      return {
+        success: true,
+        message: "Order updated successfully",
+        data: updatedOrder,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
     }
   }
 
@@ -1928,7 +1955,7 @@ class OrderService {
         country: order.shippingAddress.country || "India",
         hsn_code: order.items[0]?.hsn || "",
         quantity: order.items.reduce((sum, i) => sum + i.quantity, 0),
-        shipping_mode: shipping?.shippingMethod || "Surface",
+        shipping_mode: typeof shipping === 'string' ? shipping : (shipping?.shippingMethod || "Surface"),
         address_type: "home",
         mps_master: packageCount > 1 ? "Y" : undefined,
       });
@@ -2075,7 +2102,7 @@ class OrderService {
       consignments: [
         {
           customer_code: process.env.DTDC_CUSTOMER_CODE,
-          service_type_id: shipping?.service_type_id || "B2C PRIORITY",
+          service_type_id: typeof shipping === 'string' ? shipping : (shipping?.service_type_id || "B2C PRIORITY"),
           load_type: "NON-DOCUMENT",
           description: order.items
             .map((i) => i.product?.name || "Product")
@@ -2499,7 +2526,7 @@ class OrderService {
           },
           Services: {
             AWBNo: "",
-            ProductCode: shipping?.productCode || "D", // D = Domestic, A = Apex
+            ProductCode: typeof shipping === 'string' ? shipping : (shipping?.productCode || "D"), // D = Domestic, A = Apex
             SubProductCode: isCOD ? "C" : "", // C = COD
             ProductType: 0,
             PickupDate: dateString, // Use Bluedart date format

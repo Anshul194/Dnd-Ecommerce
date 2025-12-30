@@ -39,7 +39,8 @@ import {
   clearSelectedCoupon,
 } from "@/app/store/slices/couponSlice";
 import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { initializeBuyNowFromQuery, getCartItems, restoreCartState } from "@/app/store/slices/cartSlice";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import { toast } from "react-toastify";
 import { fetchSettings } from "@/app/store/slices/settingSlice";
@@ -47,7 +48,7 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 import { LoadingSpinner } from "@/components/common/Loading";
 import { useTrack } from "@/app/lib/tracking/useTrack";
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   // Removed checkoutOpen check - this is now a dedicated page
   const { addressData, addressAdded } = useSelector((state) => state.checkout);
   const { products } = useSelector((state) => state.product);
@@ -58,6 +59,7 @@ export default function CheckoutPage() {
   const [pincodeChecking, setPincodeChecking] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const location = usePathname();
   const { isAuthenticated, otpSended, loading, user } = useSelector(
     (state) => state.auth
@@ -709,6 +711,7 @@ export default function CheckoutPage() {
     }
 
     const fetchUserAddresses = async () => {
+      dispatch(restoreCartState());
       if (isAuthenticated && user?._id) {
         try {
           const response = await dispatch(getuserAddresses(user._id));
@@ -725,7 +728,24 @@ export default function CheckoutPage() {
     loadRazorpayScript().catch((err) => {
       console.error("Failed to load Razorpay script on init:", err);
     });
-  }, [addressData, isAuthenticated, user?._id, dispatch]);
+
+    // Refresh cart items from server/localStorage on mount to prevent 0 cart value on refresh
+    dispatch(getCartItems());
+
+    // Handle Buy Now query params if present and redux state is empty
+    const isBuyNow = searchParams.get("buyNow") === "true";
+    const qProductId = searchParams.get("productId");
+    const qVariantId = searchParams.get("variantId");
+    const qQuantity = searchParams.get("quantity");
+
+    if (isBuyNow && qProductId && qVariantId) {
+      dispatch(initializeBuyNowFromQuery({
+        productId: qProductId,
+        variantId: qVariantId,
+        quantity: qQuantity || 1
+      }));
+    }
+  }, [addressData, isAuthenticated, user?._id, dispatch, searchParams]);
 
   // Fetch address suggestions from Google Places API
   const fetchAddressSuggestions = async (input) => {
@@ -1536,5 +1556,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <CheckoutPageContent />
+    </React.Suspense>
   );
 }
