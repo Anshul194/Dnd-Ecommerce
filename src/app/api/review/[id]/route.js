@@ -146,13 +146,8 @@ export const PUT = withUserAuth(async function (req, context) {
       }, { status: 403 });
     }
 
-    const productExists = await Product.exists({ _id: existingReview.productId });
-    if (!productExists) {
-      return NextResponse.json({
-        success: false,
-        message: 'Invalid productId: Product does not exist',
-      }, { status: 404 });
-    }
+    // Product check removed to allow managing reviews for deleted products
+
 
     if (files.images && files.images.length > 0) {
       const newImagePaths = files.images.map((file, index) => `/uploads/review-${Date.now()}-${index}-${file.name}`);
@@ -229,13 +224,8 @@ export const DELETE = withUserAuth(async function (req, context) {
       }, { status: 403 });
     }
 
-    const productExists = await Product.exists({ _id: existingReview.productId });
-    if (!productExists) {
-      return NextResponse.json({
-        success: false,
-        message: 'Invalid productId: Product does not exist',
-      }, { status: 404 });
-    }
+    // Product check removed to allow managing reviews for deleted products
+
 
     const deleted = await reviewService.deleteReview(id);
 
