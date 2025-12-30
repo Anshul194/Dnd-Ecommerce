@@ -5,9 +5,28 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 
+const ImageWithFallback = ({ src, fallbackSrc, alt, ...props }) => {
+  const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
+  return (
+    <Image
+      {...props}
+      src={imgSrc}
+      alt={alt}
+      onError={() => {
+        setImgSrc(fallbackSrc);
+      }}
+    />
+  );
+};
+
 const DynamicWhyUs = ({ content }) => {
   const { title, description, points, image, mobileImage } = content;
-  // console.log("DynamicWhyUs content:", content);
+  console.log("DynamicWhyUs content:", content);
 
   // const [isMobile, setIsMobile] = useState(false);
 
@@ -18,10 +37,19 @@ const DynamicWhyUs = ({ content }) => {
   //   window.addEventListener("resize", checkMobile);
   //   return () => window.removeEventListener("resize", checkMobile);
   // }, []);
-  // console.log( "why us image ---",image)
+  console.log("why us image ---", image)
 
-  const desktopSrc = image || "/images/why-us-placeholder.webp";
-  const mobileSrc = mobileImage || desktopSrc;
+  const getValidSrc = (img) => {
+    if (typeof img === "string" && img.trim() !== "") return img;
+    if (img && typeof img === "object" && img.url) return img.url;
+    return null;
+  };
+
+  const placeholder = "/images/why-us-placeholder.webp";
+  const desktopSrc = getValidSrc(image) || placeholder;
+  const mobileSrc = getValidSrc(mobileImage) || desktopSrc;
+
+  console.log("DynamicWhyUs resolved desktopSrc:", desktopSrc);
 
   return (
     <div className="min-h-screen bg-white py-10 lg:py-20 px-4">
@@ -35,8 +63,9 @@ const DynamicWhyUs = ({ content }) => {
             <div className="max-sm:w-full sm:w-full md:w-[45%]   h-full md:sticky md:top-28 bg-gray-400 rounded-lg flex-shrink-0 relative min-h-[300px]">
               {/* Desktop Image */}
               <div className="hidden md:block w-full h-full relative">
-                <Image
+                <ImageWithFallback
                   src={desktopSrc}
+                  fallbackSrc={placeholder}
                   alt="Why Us"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -46,8 +75,9 @@ const DynamicWhyUs = ({ content }) => {
               </div>
               {/* Mobile Image */}
               <div className="md:hidden w-full h-full relative aspect-square">
-                <Image
+                <ImageWithFallback
                   src={mobileSrc}
+                  fallbackSrc={placeholder}
                   alt="Why Us"
                   fill
                   sizes="100vw"
