@@ -23,6 +23,43 @@ import settingSlice from "./slices/settingSlice";
 import reviewsSlice from "./slices/Reviews";
 import pagesSlice from "./slices/pagesSlice";
 import certificateReducer from "./slices/certificateSlice";
+// Attempt to synchronously hydrate cart state from localStorage on client
+let preloadedState = undefined;
+if (typeof window !== "undefined") {
+  try {
+    const cartRaw = localStorage.getItem("dnd_ecommerce_cart");
+    const buyNowRaw = localStorage.getItem("dnd_ecommerce_buy_now");
+    if (cartRaw) {
+      const parsed = JSON.parse(cartRaw);
+      preloadedState = preloadedState || {};
+      preloadedState.cart = {
+        cartId: parsed.cartId || null,
+        cartItems: Array.isArray(parsed.cartItems) ? parsed.cartItems : [],
+        total: parsed.total || 0,
+        buyNowProduct: buyNowRaw ? JSON.parse(buyNowRaw) : null,
+        loading: false,
+        error: null,
+        isCartOpen: false,
+      };
+    } else if (buyNowRaw) {
+      // no cart data but buy-now exists
+      const parsedBuyNow = JSON.parse(buyNowRaw);
+      preloadedState = preloadedState || {};
+      preloadedState.cart = {
+        cartId: null,
+        cartItems: [],
+        total: 0,
+        buyNowProduct: parsedBuyNow,
+        loading: false,
+        error: null,
+        isCartOpen: false,
+      };
+    }
+  } catch (e) {
+    // ignore parse errors and fall back to default initial state
+  }
+}
+
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -49,6 +86,7 @@ const store = configureStore({
     pages: pagesSlice, // Import and add pagesSlice here
     certificate: certificateReducer,
   },
+  preloadedState,
 });
 
 export default store;

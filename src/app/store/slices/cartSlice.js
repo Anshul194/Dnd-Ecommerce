@@ -446,8 +446,8 @@ const cartSlice = createSlice({
       const payload = action.payload || {};
       const normalized = {
         ...payload,
-        quantity: Number(payload.quantity || 1),
-        price: Number((payload.price === undefined || payload.price === null) ? 0 : payload.price),
+        quantity: Number(payload.quantity) > 0 ? Number(payload.quantity) : 1,
+        price: Number(payload.price === undefined || payload.price === null ? 0 : payload.price) || 0,
       };
       state.buyNowProduct = normalized;
       try {
@@ -463,7 +463,18 @@ const cartSlice = createSlice({
     restoreCartState: (state) => {
       const buyNow = getBuyNowFromLocalStorage();
       if (buyNow) {
-        state.buyNowProduct = buyNow;
+        // Ensure stored buyNow is normalized (avoid zero/undefined price or quantity)
+        const normalized = {
+          ...buyNow,
+          quantity: Number(buyNow.quantity) > 0 ? Number(buyNow.quantity) : 1,
+          price: Number(buyNow.price === undefined || buyNow.price === null ? 0 : buyNow.price) || 0,
+        };
+        state.buyNowProduct = normalized;
+        try {
+          saveBuyNowToLocalStorage(normalized);
+        } catch (e) {
+          // ignore
+        }
       }
       const cart = getCartFromLocalStorage();
       if (cart) {

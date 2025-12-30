@@ -4,4 +4,3 @@ export async function POST(request) {
   // thin wrapper: delegate to controller
   return await webhookController(request);
 }
-  if (!s) return '';
