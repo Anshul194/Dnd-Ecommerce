@@ -27,11 +27,11 @@ export const POST = withUserAuth(async function (req) {
       conn.model("FrequentlyPurchasedProduct", FrequentlyPurchasedProductSchema);
     const Product = conn.models.Product || conn.model("Product", ProductSchema);
     const User = conn.models.User || conn.model("User", userSchema);
-    //console.log("Models registered:", {
-      FrequentlyPurchasedProduct: FrequentlyPurchasedProduct.modelName,
-      Product: Product.modelName,
-      User: User.modelName,
-    });
+    // console.log("Models registered:", {
+    //   FrequentlyPurchasedProduct: FrequentlyPurchasedProduct.modelName,
+    //   Product: Product.modelName,
+    //   User: User.modelName,
+    // });
 
     // Check if user is admin
     const user = req.user;
@@ -122,9 +122,9 @@ export const GET = withUserAuth(async function (req) {
     const FrequentlyPurchasedProduct =
       conn.models.FrequentlyPurchasedProduct ||
       conn.model("FrequentlyPurchasedProduct", FrequentlyPurchasedProductSchema);
-    //console.log("Models registered:", {
-      FrequentlyPurchasedProduct: FrequentlyPurchasedProduct.modelName,
-    });
+    // console.log("Models registered:", {
+    //   FrequentlyPurchasedProduct: FrequentlyPurchasedProduct.modelName,
+    // });
 
     const service = new FrequentlyPurchasedProductService(conn);
 

@@ -45,16 +45,16 @@ export const GET = withUserAuth(async function (request) {
     const Ticket = conn.models.Ticket || conn.model('Ticket', TicketSchema);
     const Lead = conn.models.Lead || conn.model('Lead', leadSchema);
 
-    //console.log('Models registered:', {
-      User: User.modelName,
-      Role: Role.modelName,
-      Order: Order.modelName,
-      Coupon: Coupon.modelName,
-      Product: Product.modelName,
-      Variant: Variant.modelName,
-      Ticket: Ticket.modelName,
-      Lead: Lead.modelName,
-    });
+    // console.log('Models registered:', {
+    //   User: User.modelName,
+    //   Role: Role.modelName,
+    //   Order: Order.modelName,
+    //   Coupon: Coupon.modelName,
+    //   Product: Product.modelName,
+    //   Variant: Variant.modelName,
+    //   Ticket: Ticket.modelName,
+    //   Lead: Lead.modelName,
+    // });
 
     // Check if user has admin role
     const user = await User.findById(request.user._id).select('role').exec();
