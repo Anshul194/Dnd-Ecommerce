@@ -104,7 +104,7 @@ const CartSidebar = () => {
       dispatch(closeCart());
       hasClosedRef.current = true;
     }
-    
+
     dispatch(
       fetchProducts({
         isAddon: true,
@@ -165,10 +165,12 @@ const CartSidebar = () => {
                   >
                     <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
                       <div className="w-12 h-16 bg-white rounded-sm overflow-hidden shadow-sm flex items-center justify-center">
-                        {item?.product && item?.product?.image?.url && item?.product?.image?.url.trim() !== "" ? (
+                        {item?.product && (item?.product?.thumbnail?.url || item?.product?.images?.[0]?.url || item?.product?.image?.url) ? (
                           <Image
-                            src={item?.product?.image?.url}
+                            src={item?.product?.thumbnail?.url || item?.product?.images?.[0]?.url || item?.product?.image?.url}
                             alt={
+                              item?.product?.thumbnail?.alt ||
+                              item?.product?.images?.[0]?.alt ||
                               item?.product?.image?.alt ||
                               item?.product?.name ||
                               "Product Image"
@@ -262,8 +264,8 @@ const CartSidebar = () => {
                   <Link href={`/product-detail/${item?.slug}`} key={index}>
                     <div className="relative w-fit flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
                       <div className="h-20 aspect-square   rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                        {(item?.thumbnail?.url && item?.thumbnail?.url.trim() !== "") || 
-                         (item?.images?.[0]?.url && item?.images?.[0]?.url.trim() !== "") ? (
+                        {(item?.thumbnail?.url && item?.thumbnail?.url.trim() !== "") ||
+                          (item?.images?.[0]?.url && item?.images?.[0]?.url.trim() !== "") ? (
                           <Image
                             src={item?.thumbnail?.url || item?.images?.[0]?.url}
                             alt={item?.thumbnail?.alt || item?.images?.[0]?.alt || "Product"}

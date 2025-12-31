@@ -1330,8 +1330,8 @@ function CheckoutPageContent() {
                   <button
                     onClick={() => setPaymentMethod("prepaid")}
                     className={`p-4 border-2 rounded-xl text-left transition-all relative overflow-hidden ${paymentMethod === "prepaid"
-                        ? "border-green-600 bg-green-50/50"
-                        : "border-gray-200 hover:border-gray-300"
+                      ? "border-green-600 bg-green-50/50"
+                      : "border-gray-200 hover:border-gray-300"
                       }`}
                   >
                     <div className="flex items-center gap-3 mb-2">
@@ -1350,8 +1350,8 @@ function CheckoutPageContent() {
                     disabled={isCODDisabledForCart}
                     onClick={() => setPaymentMethod("cod")}
                     className={`p-4 border-2 rounded-xl text-left transition-all relative overflow-hidden ${paymentMethod === "cod"
-                        ? "border-green-600 bg-green-50/50"
-                        : "border-gray-200 hover:border-gray-300"
+                      ? "border-green-600 bg-green-50/50"
+                      : "border-gray-200 hover:border-gray-300"
                       } ${isCODDisabledForCart ? "opacity-50 cursor-not-allowed bg-gray-50" : ""}`}
                   >
                     <div className="flex items-center gap-3 mb-2">
@@ -1391,10 +1391,10 @@ function CheckoutPageContent() {
                     <div className="flex gap-4">
                       <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 border">
                         <Image
-                          src={buyNowProduct?.product?.image?.url || buyNowProduct?.product?.image || "/Image-not-found.png"}
+                          src={buyNowProduct?.product?.image?.url || buyNowProduct?.product?.thumbnail?.url || buyNowProduct?.product?.images?.[0]?.url || "/Image-not-found.png"}
                           width={64} height={64}
                           className="object-cover w-full h-full"
-                          alt={buyNowProduct?.product?.name || "Product"}
+                          alt={buyNowProduct?.product?.image?.alt || buyNowProduct?.product?.thumbnail?.alt || buyNowProduct?.product?.images?.[0]?.alt || buyNowProduct?.product?.name || "Product"}
                         />
                       </div>
                       <div className="flex-1">
@@ -1410,10 +1410,10 @@ function CheckoutPageContent() {
                       <div key={idx} className="flex gap-4">
                         <div className="w-16 h-16 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 border">
                           <Image
-                            src={item?.product?.image?.url || item?.product?.image?.[0]?.url}
+                            src={item?.product?.thumbnail?.url || item?.product?.images?.[0]?.url || item?.product?.image?.url || "/Image-not-found.png"}
                             width={64} height={64}
                             className="object-cover w-full h-full"
-                            alt={item?.product?.name}
+                            alt={item?.product?.thumbnail?.alt || item?.product?.images?.[0]?.alt || item?.product?.image?.alt || item?.product?.name || "Product"}
                           />
                         </div>
                         <div className="flex-1">
@@ -1527,8 +1527,8 @@ function CheckoutPageContent() {
                     }}
                     disabled={placingOrder || pincodeChecking}
                     className={`w-full py-4 rounded-lg font-bold text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${pinCodeVerified?.success
-                        ? "bg-green-600 hover:bg-green-700 shadow-green-200"
-                        : "bg-blue-600 hover:bg-blue-700 shadow-blue-200"
+                      ? "bg-green-600 hover:bg-green-700 shadow-green-200"
+                      : "bg-blue-600 hover:bg-blue-700 shadow-blue-200"
                       }`}
                   >
                     {placingOrder ? (
