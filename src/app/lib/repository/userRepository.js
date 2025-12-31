@@ -22,7 +22,7 @@ class UserRepository extends CrudRepository {
 
   async findById(id, tenantId = null) {
     try {
-      const query = { _id: id, deleted: { $ne: true } };
+      const query = { _id: id, isDeleted: { $ne: true } };
       if (tenantId) {
         query.tenant = new mongoose.Types.ObjectId(tenantId);
       }
@@ -36,7 +36,7 @@ class UserRepository extends CrudRepository {
 
   async findByEmail(email) {
     try {
-      return await this.model.findOne({ email, deleted: { $ne: true } });
+      return await this.model.findOne({ email, isDeleted: { $ne: true } });
     } catch (error) {
       //consolle.error('UserRepo findByEmail error:', error?.message);
       throw error;
@@ -45,7 +45,7 @@ class UserRepository extends CrudRepository {
 
   async findByPhone(phone) {
     try {
-      return await this.model.findOne({ phone, deleted: { $ne: true } });
+      return await this.model.findOne({ phone, isDeleted: { $ne: true } });
     } catch (error) {
       //consolle.error('UserRepo findByPhone error:', error?.message);
       throw error;
@@ -58,7 +58,7 @@ class UserRepository extends CrudRepository {
       const user = await this.model.findById(id);
       //consolle.log('User found:', user); // ✅ Debug log
 
-      if (!user || user.deleted) return null;
+      if (!user || user.isDeleted) return null;
 
       user.set(data);
       return await user.save();
@@ -73,8 +73,13 @@ class UserRepository extends CrudRepository {
       // ✅ Use `$set` to ensure both fields are updated properly
       const doc = await this.model.findByIdAndUpdate(
         id,
-        { deleted: true },
-        { deletedAt: new Date(), updatedAt: new Date() },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt: new Date(),
+            updatedAt: new Date()
+          }
+        },
         { new: true }
       );
 
