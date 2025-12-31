@@ -48,10 +48,7 @@ export async function POST(request) {
 
     // Documented test numbers that use fixed OTP 123456
     const testNumbers = [
-      "7014628523",
-      "8347496266",
-      "7016292085",
-      "7774010984",
+     
       "7014629750"
     ];
 
@@ -115,11 +112,11 @@ export async function POST(request) {
           );
         } catch (msgError) {
           const errorDetail = msgError?.response?.data || msgError.message;
-          console.error("❌ MSG91 Delivery Error:", errorDetail);
+          console.log("❌ MSG91 Delivery Error:", errorDetail);
 
           // Construct a user-friendly error message based on MSG91 response
           let userMessage = "Failed to send SMS OTP.";
-          if (typeof errorDetail === 'object' && errorDetail.type === 'error') {
+          if (typeof errorDetail == 'object' && errorDetail.type === 'error') {
             userMessage = `SMS Service Error: ${errorDetail.message}`;
           }
 
