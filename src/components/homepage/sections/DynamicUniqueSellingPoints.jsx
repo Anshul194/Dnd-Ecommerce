@@ -66,7 +66,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
           {title || "UNIQUE SELLING POINTS"}
         </h2>
       </div>
-      <AnimatedGradientBorder/>
+      <AnimatedGradientBorder />
 
       {/* Main Section */}
       <div className="flex items-start mx-auto lg:max-w-[80%] flex-col-reverse flex-wrap md:flex-row gap-8 mt-5">
@@ -157,7 +157,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
       </div>
       <center className="mt-7">
         {cta ? (
-          <Link href={cta.link || "/about"}>
+          <Link href={cta.link || "/pages/68fb0ce58b4cf00083b826d2"}>
             <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded text-sm font-medium flex items-center gap-2 transition-colors">
               {cta.title}
               <svg
