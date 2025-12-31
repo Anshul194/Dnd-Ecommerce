@@ -6,18 +6,6 @@ const isBrowser =
 
 const CHECKOUT_STATE_KEY = "dnd_ecommerce_checkout_open";
 
-// Async thunk to submit checkout data (example)
-export const submitCheckout = createAsyncThunk(
-  "checkout/submitCheckout",
-  async (checkoutDetails, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.post("/checkout", checkoutDetails);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
 
 export const setAddress = createAsyncThunk(
   "checkout/setAddress",
@@ -88,18 +76,6 @@ const checkoutSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(submitCheckout.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(submitCheckout.fulfilled, (state, action) => {
-        state.loading = false;
-        state.checkoutData = action.payload;
-      })
-      .addCase(submitCheckout.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
       .addCase(setAddress.pending, (state) => {
         state.loading = true;
         state.error = null;

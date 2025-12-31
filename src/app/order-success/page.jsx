@@ -12,17 +12,29 @@ const OrderSuccessPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderStatus = searchParams.get("Order_status");
-  const [orderNumber] = useState(() => `ORD${Date.now().toString().slice(-8)}`);
+  const queryOrderId = searchParams.get("orderId");
+  const [orderNumber] = useState(() => queryOrderId || `ORD${Date.now().toString().slice(-8)}`);
 
-  // Redirect if not a success status
+  // No longer redirecting to home page as per user request
   useEffect(() => {
     if (!orderStatus || orderStatus !== "success") {
-      router.push("/");
+      // Stay on page or handle error differently
     }
   }, [orderStatus, router]);
 
   if (!orderStatus || orderStatus !== "success") {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">No Order Information Found</h2>
+          <Link href="/search">
+            <button className="bg-[#3C950D] text-white px-6 py-2 rounded-full font-semibold">
+              Continue Shopping
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -59,7 +71,7 @@ const OrderSuccessPage = () => {
           <h1 className="text-4xl md:text-5xl font-black text-gray-800 leading-tight mb-4">
             Order Placed Successfully!
           </h1>
-          
+
           <AnimatedGradientBorder />
 
           <p className="text-lg text-gray-600 mt-6 max-w-2xl mx-auto">
@@ -90,7 +102,7 @@ const OrderSuccessPage = () => {
         {/* What's Next Section */}
         <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 md:p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">What's Next?</h2>
-          
+
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
               <div className="w-8 h-8 bg-[#3C950D] text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
