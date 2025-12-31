@@ -9,8 +9,11 @@ import { ToastContainer } from "react-toastify";
 import CheckoutPopup from "../components/CheckoutPopup";
 // import OrderPopup from "../components/OrderPopup";
 export const metadata = {
-  title: "DND - Ecommerce ",
+  title: "BharatGramUdyogSangh",
   description: "Find the perfect good",
+  icons: {
+    icon: '/logo.webp',
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -19,6 +22,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/logo.webp" type="image/webp" />
+        <link rel="shortcut icon" href="/logo.webp" type="image/webp" />
+        <link rel="apple-touch-icon" href="/logo.webp" />
         <meta
           name="format-detection"
           content="telephone=no, date=no, email=no, address=no"

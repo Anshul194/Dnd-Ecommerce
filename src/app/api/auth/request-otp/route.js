@@ -46,11 +46,24 @@ export async function POST(request) {
     const userService = new UserService(conn);
     const user = await userService.getUserByPhone(phone);
 
-    // Generate OTP
-    const isTestNumber = phone === "7014629750";
+    // Documented test numbers that use fixed OTP 123456
+    const testNumbers = [
+      "7014628523",
+      "8347496266",
+      "7016292085",
+      "7774010984",
+      "7014629750"
+    ];
+
+    const isTestNumber = testNumbers.includes(phone);
     const otp = isTestNumber
       ? "123456"
       : Math.floor(100000 + Math.random() * 900000).toString();
+
+    let deliveryMethod = isTestNumber ? "mock" : "sms";
+    let successMessage = isTestNumber
+      ? `Mock OTP (123456) sent to ${phone}`
+      : `OTP sent to ${phone}`;
 
     // Save OTP in Redis
     if (redisWrapper.isEnabled()) {
@@ -59,59 +72,85 @@ export async function POST(request) {
 
     // 🔴 MSG91 API CALL (Skip for test number)
     if (!isTestNumber) {
-      try {
-       const msg91Payload = {
-  template_id: "694a2080301fbd6fd46bc6a2",
-  short_url: 0,
-  recipients: [
-    {
-      mobiles: `91${phone}`,
-      OTP: otp,
-    },
-  ],
-};
+      const authKey = process.env.MSG91_AUTH_KEY;
+      const templateId = process.env.MSG91_TEMPLATE_ID || "694a2080301fbd6fd46bc6a2";
+      const otpVar = process.env.MSG91_OTP_VAR_NAME || "OTP";
 
-        if (process.env.MSG91_SENDER_ID) {
-          msg91Payload.sender = process.env.MSG91_SENDER_ID;
+      if (!authKey) {
+        console.warn("⚠️ MSG91_AUTH_KEY is missing in environment variables.");
+        // If in development and no auth key, allow code to continue with mock behavior
+        if (process.env.NODE_ENV === "development") {
+          deliveryMethod = "mock";
+          successMessage = `Mock OTP (${otp}) sent to ${phone} (Development Mode)`;
+          console.log(`🛠️ [DEV MODE] Using mock OTP ${otp} for number ${phone} because MSG91 is not configured.`);
+        } else {
+          throw new Error("SMS Service configuration is missing (MSG91_AUTH_KEY).");
         }
+      } else {
+        try {
+          const msg91Payload = {
+            template_id: templateId,
+            short_url: 0,
+            recipients: [
+              {
+                mobiles: `91${phone}`,
+                [otpVar]: otp,
+              },
+            ],
+          };
 
-        await axios.post(
-          "https://api.msg91.com/api/v5/flow/",
-          msg91Payload,
-          {
-            headers: {
-              authkey: process.env.MSG91_AUTH_KEY,
-              "Content-Type": "application/json",
-            },
+          if (process.env.MSG91_SENDER_ID) {
+            msg91Payload.sender = process.env.MSG91_SENDER_ID;
           }
-        );
-      } catch (msgError) {
-        console.error("MSG91 Error Detailed:", msgError?.response?.data || msgError.message);
-        // We still continue even if MSG91 fails during dev? 
-        // No, it's better to fail so user knows OTP wasn't sent.
-        throw msgError;
+
+          await axios.post(
+            "https://api.msg91.com/api/v5/flow/",
+            msg91Payload,
+            {
+              headers: {
+                authkey: authKey,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+        } catch (msgError) {
+          const errorDetail = msgError?.response?.data || msgError.message;
+          console.error("❌ MSG91 Delivery Error:", errorDetail);
+
+          // Construct a user-friendly error message based on MSG91 response
+          let userMessage = "Failed to send SMS OTP.";
+          if (typeof errorDetail === 'object' && errorDetail.type === 'error') {
+            userMessage = `SMS Service Error: ${errorDetail.message}`;
+          }
+
+          const finalError = new Error(userMessage);
+          finalError.details = errorDetail;
+          throw finalError;
+        }
       }
     }
 
     return NextResponse.json(
       {
         success: true,
-        message: `OTP sent to ${phone}`,
+        message: successMessage,
         data: {
           isNewUser: !user,
+          deliveryMethod,
           redisEnabled: redisWrapper.isEnabled(),
         },
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("OTP error:", error?.response?.data || error.message);
+    const errorData = error.details || error?.response?.data || error.message;
+    console.error("OTP request failure:", errorData);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to send OTP",
-        error: error?.response?.data || error.message,
+        message: error.message || "Failed to send OTP",
+        error: errorData,
       },
       { status: 500 }
     );
