@@ -18,7 +18,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { phone } = body;
+    let { phone } = body;
 
     if (!phone) {
       return NextResponse.json(
@@ -27,37 +27,71 @@ export async function POST(request) {
       );
     }
 
+    // Clean phone number - remove all non-digits
+    phone = phone.replace(/\D/g, "");
+
+    // If it has 12 digits and starts with 91, it might already have country code.
+    // Otherwise if it's 10 digits, we'll prefix it later in MSG91 call.
+    if (phone.length > 10 && phone.startsWith("91")) {
+      phone = phone.slice(2);
+    }
+
+    if (phone.length !== 10) {
+      return NextResponse.json(
+        { success: false, message: "Invalid phone number. Please enter a 10-digit number." },
+        { status: 400 }
+      );
+    }
+
     const userService = new UserService(conn);
     const user = await userService.getUserByPhone(phone);
 
     // Generate OTP
-    const otp =
-      phone === "7014629750"
-        ? "123456"
-        : Math.floor(100000 + Math.random() * 900000).toString();
+    const isTestNumber = phone === "7014629750";
+    const otp = isTestNumber
+      ? "123456"
+      : Math.floor(100000 + Math.random() * 900000).toString();
 
     // Save OTP in Redis
     if (redisWrapper.isEnabled()) {
       await redisWrapper.setex(`otp:${phone}`, 300, otp);
     }
 
-    // 🔴 MSG91 API CALL
-    await axios.post(
-      "https://control.msg91.com/api/v5/flow/",
-      {
-        template_id: "694a2080301fbd6fd46bc6a2",
-        sender: process.env.MSG91_SENDER_ID,
-        mobiles: `91${phone}`,
-        OTP: otp,
-      },
-      {
-        headers: {
-          authkey: process.env.MSG91_AUTH_KEY,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+    // 🔴 MSG91 API CALL (Skip for test number)
+    if (!isTestNumber) {
+      try {
+       const msg91Payload = {
+  template_id: "694a2080301fbd6fd46bc6a2",
+  short_url: 0,
+  recipients: [
+    {
+      mobiles: `91${phone}`,
+      OTP: otp,
+    },
+  ],
+};
+
+        if (process.env.MSG91_SENDER_ID) {
+          msg91Payload.sender = process.env.MSG91_SENDER_ID;
+        }
+
+        await axios.post(
+          "https://api.msg91.com/api/v5/flow/",
+          msg91Payload,
+          {
+            headers: {
+              authkey: process.env.MSG91_AUTH_KEY,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (msgError) {
+        console.error("MSG91 Error Detailed:", msgError?.response?.data || msgError.message);
+        // We still continue even if MSG91 fails during dev? 
+        // No, it's better to fail so user knows OTP wasn't sent.
+        throw msgError;
       }
-    );
+    }
 
     return NextResponse.json(
       {

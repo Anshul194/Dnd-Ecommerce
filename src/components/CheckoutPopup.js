@@ -39,7 +39,7 @@ import {
 } from "@/app/store/slices/couponSlice";
 import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { initializeBuyNowFromQuery, getCartItems, restoreCartState } from "@/app/store/slices/cartSlice";
+import { initializeBuyNowFromQuery, getCartItems, restoreCartState, setBuyNowProduct } from "@/app/store/slices/cartSlice";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import { toast } from "react-toastify";
 import { fetchSettings } from "@/app/store/slices/settingSlice";
@@ -714,33 +714,30 @@ export default function CheckoutPopup() {
     }
   };
 
+  const prevPhoneRef = useRef("");
+
   useEffect(() => {
     // Only request OTP when phone transitions to a complete 10-digit number,
     // user is not already authenticated, and OTP hasn't been sent yet.
-    // This prevents multiple requests while the user types.
-    if (!checkoutOpen) return;
-    if (isAuthenticated) return; // no OTP for logged-in users
-    try {
-      if (!this?.__prevPhone) this.__prevPhone = "";
-    } catch (e) {
-      // ignore
-    }
-    // Use a local ref on the function object to track previous phone value
-    const prev = (function () {
-      try {
-        return (typeof window !== "undefined" && window.__checkout_prev_phone) || "";
-      } catch (e) {
-        return "";
-      }
-    })();
+    if (!checkoutOpen || isAuthenticated || otpSended || loading) return;
 
-    if (formData.phone && formData.phone.length === 10 && prev !== formData.phone && !otpSended) {
-      dispatch(sendOtp(formData.phone));
-      try {
-        if (typeof window !== "undefined") window.__checkout_prev_phone = formData.phone;
-      } catch (e) {}
+    if (formData.phone && formData.phone.length === 10) {
+      if (prevPhoneRef.current !== formData.phone) {
+        dispatch(sendOtp(formData.phone));
+        prevPhoneRef.current = formData.phone;
+      }
+    } else {
+      // Reset tracker if user changes the phone number to something else or deletes a digit
+      prevPhoneRef.current = "";
     }
-  }, [formData.phone, dispatch, checkoutOpen, isAuthenticated, otpSended]);
+  }, [formData.phone, dispatch, checkoutOpen, isAuthenticated, otpSended, loading]);
+
+  // Reset tracker when OTP is cleared
+  useEffect(() => {
+    if (!otpSended) {
+      prevPhoneRef.current = "";
+    }
+  }, [otpSended]);
 
   useEffect(() => {
     if (otp.every((digit) => digit !== "")) {
@@ -1373,8 +1370,21 @@ export default function CheckoutPopup() {
                       {/* You can conditionally render a submit button here based on otp length */}
                     </form>
                   </div>
-                  <h2 className="text-xs mt-4 text-center">
-                    Resend OTP via{" "}
+                    <div className="flex items-center justify-center gap-2 text-sm mt-4">
+                      <span>OTP sent to</span>
+                      <span className="font-semibold">{formData.phone}</span>
+                      <button
+                        onClick={() => {
+                          dispatch(setOtpSended(false));
+                        }}
+                        className="text-blue-600 hover:underline text-xs"
+                      >
+                        Edit Number
+                      </button>
+                    </div>
+
+                    <h2 className="text-xs mt-4 text-center">
+                      Resend OTP via{" "}
                     <span
                       onClick={() => {
                         dispatch(sendOtp(formData.phone));
@@ -1435,6 +1445,14 @@ export default function CheckoutPopup() {
                         } outline-none text-md  px-4 w-full border-0 h-full `}
                     />
                   </div>
+                  {formData.phone.length === 10 && !loading && !otpSended && (
+                    <button
+                      onClick={() => dispatch(sendOtp(formData.phone))}
+                      className="mt-2 w-full text-xs text-blue-600 font-medium hover:underline text-center animate-pulse"
+                    >
+                      Wait for OTP OR Click here to send manually
+                    </button>
+                  )}
                   {loading && (
                     <div className="mt-4">
                       <Loading />
