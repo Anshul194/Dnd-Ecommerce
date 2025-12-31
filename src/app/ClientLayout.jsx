@@ -2,10 +2,9 @@
 
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import { useSelector } from "react-redux";
 import useTokenRefresh from "../hooks/useTokenRefresh";
 import React, { useEffect, useState, useRef } from "react";
-import { useDispatch, useSelector as useReduxSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { fetchSettings } from "./store/slices/settingSlice";
 import { fetchCategoryWithSubcategories } from "./store/slices/categorySlice";
 import { closeCart, restoreCartState } from "./store/slices/cartSlice";
@@ -15,7 +14,7 @@ import { usePathname } from "next/navigation";
 export default function ClientLayout({ children }) {
   const { isAuthenticated } = useSelector((state) => state.auth ?? {});
   const dispatch = useDispatch();
-  const { settings, lastFetched } = useReduxSelector((state) => state.setting);
+  const { settings, lastFetched } = useSelector((state) => state.setting);
   const [categories, setCategories] = useState([]);
   const pathname = usePathname();
   const hasInitialized = useRef(false);
