@@ -293,14 +293,13 @@ const Addresses = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
+                Email (optional)
               </label>
               <input
                 type="email"
                 name="email"
                 value={addressForm.email}
                 onChange={handleInputChange}
-                required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>

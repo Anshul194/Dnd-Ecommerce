@@ -21,7 +21,7 @@ const UserSchema = new mongoose.Schema(
   {
     email: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   { timestamps: true }
@@ -2213,7 +2213,7 @@ class OrderService {
   //           'ClientID': process.env.BLUEDART_CLIENT_ID,
   //           'clientSecret': process.env.BLUEDART_CLIENT_SECRET,
   //           'Content-Type': 'application/json'
- 
+
   //         }
   //       }
   //     );
