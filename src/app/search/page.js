@@ -59,7 +59,7 @@ const SearchPage = () => {
     const timer = setTimeout(() => {
       dispatch(fetchProducts(payload));
     }, 0);
-    
+
     return () => clearTimeout(timer);
   }, [
     paramCategories,
@@ -90,7 +90,7 @@ const SearchPage = () => {
                 <p className="text-gray-600 text-sm">
                   Results for
                   <span className="font-semibold ml-2 text-black">
-                    {loading ? "Loading..." : `(${products?.products?.length || products?.length}) products`}
+                    {loading ? "Loading..." : `(${(products?.products || products || []).filter(p => p.variants && p.variants.length > 0).length}) products`}
                   </span>
                 </p>
               </div>
@@ -116,9 +116,10 @@ const SearchPage = () => {
             ) : (
               <>
                 <div className="grid grid-cols-2 max-sm:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 mb-8">
-                  {products?.products?.length > 0 &&
-                    products.products.map((product) => (
-                      <ProductCard key={product._id} product={product} showDes/>
+                  {(products?.products || products || [])
+                    .filter(product => product.variants && product.variants.length > 0)
+                    .map((product) => (
+                      <ProductCard key={product._id} product={product} showDes />
                     ))}
                 </div>
 
