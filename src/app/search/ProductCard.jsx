@@ -271,14 +271,14 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               </button>
             </div>
             {/* Product Image */}
-            <div className="flex h-56 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
+            <div className="flex h-40 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
               {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
               <Image
                 src={product?.thumbnail?.url || product.images?.[0]?.url || "/Image-not-found.png"}
                 alt={product?.thumbnail?.alt || product.images?.[0]?.alt || product?.name || "Product Image"}
                 width={160}
                 height={120}
-                className="object-cover h-full w-full"
+                className="object-contain h-full w-full"
               />
             </div>
           </div>
@@ -311,7 +311,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
             {/* Description */}
             {showDes && (
               <div
-                className="text-sm h-10 text-black poppins-medium mb-3 max-sm:hidden"
+                className="text-sm h-10 text-black poppins-medium max-sm:hidden"
                 dangerouslySetInnerHTML={{
                   __html: product?.description?.slice(0, 50),
                 }}
