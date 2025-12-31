@@ -35,6 +35,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [heartAnimating, setHeartAnimating] = useState(false);
   const [overlayProduct, setOverlayProduct] = useState(null);
+  const [localWishlisted, setLocalWishlisted] = useState(null); // For optimistic UI updates
   const { trackView, trackAddToCart, trackWishlist, trackRemoveWishlist } =
     useTrack();
 
@@ -68,7 +69,9 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
     product.wishlist.some(id => String(id) === String(userId));
 
   // Combine both checks for reliability. Trust Redux exclusively if it's already initialized.
-  const isWishlisted = initialized ? isInReduxWishlist : (isInReduxWishlist || isWishlistedFromProduct);
+  // Use localWishlisted for optimistic UI updates (when not null)
+  const computedWishlisted = initialized ? isInReduxWishlist : (isInReduxWishlist || isWishlistedFromProduct);
+  const isWishlisted = localWishlisted !== null ? localWishlisted : computedWishlisted;
 
   const handleProductClick = () => {
     if (product?._id) {
