@@ -364,11 +364,15 @@ export async function updateCategory(id, data, conn) {
 export async function deleteCategory(id, conn) {
   try {
     const categoryService = new CategoryService(conn);
-    const deleted = await categoryService.deleteCategory(id);
-    if (!deleted) {
+    const result = await categoryService.deleteCategory(id);
+
+    const respStatus = result?.status || 200;
+    const respBody = result?.body || result;
+
+    if (respStatus >= 400) {
       return {
-        status: 404,
-        body: errorResponse("Category not found", 404),
+        status: respStatus,
+        body: respBody,
       };
     }
 
@@ -376,8 +380,8 @@ export async function deleteCategory(id, conn) {
     await refreshCategoriesCache(conn);
 
     return {
-      status: 200,
-      body: successResponse("Category deleted", deleted),
+      status: respStatus,
+      body: respBody,
     };
   } catch (err) {
     //consolle.error("Delete Category error:", err.message);

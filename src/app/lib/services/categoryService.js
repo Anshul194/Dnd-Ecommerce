@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 import { successResponse, errorResponse } from '../../utils/response.js';
 import CategoryRepository from '../repository/categoryRepository.js';
+import { ProductSchema } from '../models/Product.js';
 
 class CategoryService {
   constructor(conn) {
@@ -125,7 +126,16 @@ class CategoryService {
 
   async deleteCategory(id) {
     try {
-      //consolle.log('Service deleteCategory called with:', id);
+      // Check whether any non-deleted products reference this category
+      const Product = this.conn.models.Product || this.conn.model('Product', ProductSchema);
+      const productCount = await Product.countDocuments({ category: id, deletedAt: null });
+      if (productCount > 0) {
+return errorResponse(
+  'This category cannot be deleted because it has associated products.',
+  StatusCodes.CONFLICT
+);
+      }
+
       const deleted = await this.categoryRepo.softDelete(id);
       if (!deleted) {
         return errorResponse('Category not found', StatusCodes.NOT_FOUND);
