@@ -1,5 +1,6 @@
 import { categorySchema } from "../models/Category.js";
 import { attributeSchema } from "../models/Attribute.js";
+import { VariantSchema } from "../models/Variant.js";
 import mongoose from "mongoose";
 
 function normalizeProductBody(body) {
@@ -454,6 +455,61 @@ class ProductController {
           data: null,
         };
       }
+      // Ensure connection/models available
+      if (!conn || !conn.models) {
+        return { success: false, message: "Database connection error", data: null };
+      }
+
+      const models = conn.models;
+
+      // Prevent deletion if there are variants for this product
+      const Variant = models.Variant || conn.model("Variant", VariantSchema);
+      const productId = existing._id;
+      const productIdStr = productId && productId.toString ? productId.toString() : productId;
+      const variantCount = await Variant.countDocuments({ productId: { $in: [productId, productIdStr] }, deletedAt: null });
+      if (variantCount > 0) {
+        return {
+          success: false,
+          message: `Please delete all variants of this product before deleting the product. Variants remaining: ${variantCount}`,
+          data: null,
+        };
+      }
+
+      // Prevent deletion if product references attributes that still exist
+      if (Array.isArray(existing.attributeSet) && existing.attributeSet.length > 0) {
+        const Attribute = models.Attribute || conn.model("Attribute", attributeSchema);
+        const attributeIdsRaw = existing.attributeSet
+          .map((a) => (a && (a.attributeId || a.attribute || a._id)) || null)
+          .filter(Boolean);
+
+        const normalizedAttrIds = [];
+        for (const idVal of attributeIdsRaw) {
+          let candidate = idVal;
+          if (candidate && typeof candidate === "object") {
+            if (candidate._id) candidate = candidate._id;
+            else if (typeof candidate.toString === "function" && candidate.toString() && candidate.toString() !== "[object Object]") candidate = candidate.toString();
+            else continue;
+          }
+
+          if (typeof candidate === "string" && mongoose.Types.ObjectId.isValid(candidate)) {
+            normalizedAttrIds.push(new mongoose.Types.ObjectId(candidate));
+          } else if (mongoose.Types.ObjectId.isValid(candidate)) {
+            normalizedAttrIds.push(new mongoose.Types.ObjectId(candidate));
+          }
+        }
+
+        if (normalizedAttrIds.length > 0) {
+          const existingAttrs = await Attribute.find({ _id: { $in: normalizedAttrIds }, deletedAt: null }).select("_id").lean();
+          if (existingAttrs && existingAttrs.length > 0) {
+            return {
+              success: false,
+              message: `Please delete all attributes used by this product before deleting the product. Attributes remaining: ${existingAttrs.length}`,
+              data: null,
+            };
+          }
+        }
+      }
+
       await this.service.deleteProduct(id, conn);
       return {
         success: true,
