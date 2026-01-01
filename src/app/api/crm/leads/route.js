@@ -51,7 +51,7 @@ export async function POST(request) {
     // Special handling for newsletter subscriptions
     if (body.source === "newsletter") {
       const Lead = conn.models.Lead || conn.model("Lead", (await import("@/app/lib/models/Lead.js")).default);
-      
+
       // Validate email
       if (!body.email || !body.email.trim()) {
         return NextResponse.json(
@@ -100,7 +100,7 @@ export async function POST(request) {
       try {
         const EmailService = (await import("@/app/lib/services/EmailService.js")).default;
         const emailService = new EmailService();
-        
+
         // Try to use a template if it exists
         const templateName = "Newsletter Subscription";
         const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://bharatgramudyogsangh.org';
@@ -201,10 +201,10 @@ export async function POST(request) {
     });
 
     const result = await createLeadService(body, conn);
-    return NextResponse.json(result, { status: 201 });
+    return NextResponse.json({ success: true, data: result }, { status: 201 });
   } catch (error) {
     console.error("Error creating lead:", error);
-    
+
     // Handle duplicate key errors (MongoDB unique index)
     if (error.code === 11000 || error.message?.includes("duplicate")) {
       return NextResponse.json(
@@ -215,7 +215,7 @@ export async function POST(request) {
         { status: 409 }
       );
     }
-    
+
     return NextResponse.json(
       { success: false, message: error.message || "Failed to create lead" },
       { status: 500 }
