@@ -20,9 +20,9 @@ const couponSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  expiresAt: {
-    type: Date
-  },
+ // expiresAt: {
+  //  type: Date
+  //},
   usageLimit: {
     type: Number
   },
