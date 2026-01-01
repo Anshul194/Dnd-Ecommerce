@@ -526,8 +526,11 @@ export default function CheckoutPopup() {
               console.log("Order placed successfully:", orderResult.payload);
               // Mark that order was placed to avoid sending abandonment event
               orderPlacedRef.current = true;
+
+              const orderId = orderResult.payload?.data?.order?._id;
               // Redirect first to prevent page refresh issues
-              router.replace("/order-success?Order_status=success");
+              router.replace(`/order-success?Order_status=success${orderId ? `&orderId=${orderId}` : ""}`);
+
               // Clear cart and close checkout after redirect
               setTimeout(() => {
                 dispatch(setCheckoutClose());
@@ -670,8 +673,11 @@ export default function CheckoutPopup() {
           console.log("COD order placed successfully:", orderResult.payload);
           // Mark that order was placed to avoid sending abandonment event
           orderPlacedRef.current = true;
+
+          const orderId = orderResult.payload?.data?.order?._id;
           // Redirect first to prevent page refresh issues
-          router.replace("/order-success?Order_status=success");
+          router.replace(`/order-success?Order_status=success${orderId ? `&orderId=${orderId}` : ""}`);
+
           // Clear cart and close checkout after redirect
           setTimeout(() => {
             dispatch(setCheckoutClose());
@@ -1085,13 +1091,15 @@ export default function CheckoutPopup() {
     } else {
       // Restore body scroll when popup closes
       document.body.style.overflow = "";
+
       // If we're on checkout-popup page and popup closes, redirect to home
-      if (location === "/checkout-popup") {
+      // Only redirect if an order wasn't just placed to avoid race conditions during redirect to success page
+      if (location === "/checkout-popup" && !orderPlacedRef.current) {
         router.push("/");
       }
     }
 
-    // detect true -> false transition
+    // detect true -> false transition (popup closing)
     if (prevCheckoutOpen.current && !checkoutOpen) {
       if (!orderPlacedRef.current) {
         const productIds = buyNowProduct
@@ -1120,8 +1128,9 @@ export default function CheckoutPopup() {
           //console.error("Failed to send checkout abandoned event:", err);
         });
       }
-      // prepare for next cycle
-      orderPlacedRef.current = false;
+      // Note: We DO NOT reset orderPlacedRef.current = false here because it needs to persist 
+      // until the next time checkoutOpen becomes true. This prevents the "redirect to home" logic 
+      // in the layout's instance from firing during navigation to the success page.
     }
 
     prevCheckoutOpen.current = checkoutOpen;
@@ -2371,8 +2380,8 @@ export default function CheckoutPopup() {
                       setShowVariantModal(null);
                     }}
                     className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                       }`}
                   >
                     <div className="flex items-center justify-between">

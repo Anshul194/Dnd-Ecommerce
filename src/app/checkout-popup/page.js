@@ -13,10 +13,6 @@ export default function CheckoutPopupPage() {
     dispatch(setCheckoutOpen());
   }, [dispatch]);
 
-  return (
-    <React.Suspense fallback={<div>Loading...</div>}>
-      <CheckoutPopup />
-    </React.Suspense>
-  );
+  return null; // The CheckoutPopup is now handled globally in layout.js
 }
 
