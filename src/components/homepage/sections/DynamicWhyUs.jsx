@@ -37,7 +37,6 @@ const DynamicWhyUs = ({ content }) => {
   //   window.addEventListener("resize", checkMobile);
   //   return () => window.removeEventListener("resize", checkMobile);
   // }, []);
-  console.log("why us image ---", image)
 
   const getValidSrc = (img) => {
     if (typeof img === "string" && img.trim() !== "") return img;
@@ -49,7 +48,9 @@ const DynamicWhyUs = ({ content }) => {
   const desktopSrc = getValidSrc(image) || placeholder;
   const mobileSrc = getValidSrc(mobileImage) || desktopSrc;
 
-  console.log("DynamicWhyUs resolved desktopSrc:", desktopSrc);
+  console.log("sdfdsfsd",image);
+  console.log("sdfsdfsd",mobileImage);
+
 
   return (
     <div className="min-h-screen bg-white py-10 lg:py-20 px-4">
@@ -60,7 +61,7 @@ const DynamicWhyUs = ({ content }) => {
         {/* Right content */}
         <div className="">
           <div className="mt-10 flex flex-col md:flex-row gap-6 lg:gap-20">
-            <div className="max-sm:w-full sm:w-full md:w-[45%]   h-full md:sticky md:top-28 bg-gray-400 rounded-lg flex-shrink-0 relative min-h-[300px]">
+            <div className="max-sm:w-full sm:w-full md:w-[45%] h-full md:sticky md:top-28 bg-gray-400 rounded-lg flex-shrink-0 relative md:aspect-square">
               {/* Desktop Image */}
               <div className="hidden md:block w-full h-full relative">
                 <ImageWithFallback

@@ -27,7 +27,37 @@ class CouponService {
       if (!coupon) {
         return { success: false, message: 'Coupon not found', data: null };
       }
-      Object.assign(coupon, data);
+      
+      // Clean date fields - convert empty strings to undefined/null
+      const cleanData = { ...data };
+      if (cleanData.startAt === '' || cleanData.startAt === null) {
+        cleanData.startAt = undefined; // Set to undefined to remove the field
+      } else if (cleanData.startAt) {
+        const startDate = new Date(cleanData.startAt);
+        if (isNaN(startDate.getTime())) {
+          cleanData.startAt = undefined; // Invalid date, remove it
+        } else {
+          cleanData.startAt = startDate;
+        }
+      }
+
+      if (cleanData.endAt === '' || cleanData.endAt === null) {
+        cleanData.endAt = undefined; // Set to undefined to remove the field
+      } else if (cleanData.endAt) {
+        const endDate = new Date(cleanData.endAt);
+        if (isNaN(endDate.getTime())) {
+          cleanData.endAt = undefined; // Invalid date, remove it
+        } else {
+          cleanData.endAt = endDate;
+        }
+      }
+
+      // Validate start/end dates (only if both are provided)
+      if (cleanData.startAt && cleanData.endAt && cleanData.startAt > cleanData.endAt) {
+        throw new Error('startAt must be before endAt');
+      }
+
+      Object.assign(coupon, cleanData);
       await coupon.save();
       return { success: true, message: 'Coupon updated', data: coupon };
     } catch (error) {
@@ -74,18 +104,42 @@ class CouponService {
         throw new Error('Usage limit must be greater than 0');
       }
 
-      // Validate start/end dates
-      if (data.startAt && data.endAt && new Date(data.startAt) > new Date(data.endAt)) {
+      // Clean date fields - convert empty strings to undefined/null
+      const cleanData = { ...data };
+      if (cleanData.startAt === '' || cleanData.startAt === null) {
+        delete cleanData.startAt;
+      } else if (cleanData.startAt) {
+        const startDate = new Date(cleanData.startAt);
+        if (isNaN(startDate.getTime())) {
+          delete cleanData.startAt; // Invalid date, don't include it
+        } else {
+          cleanData.startAt = startDate;
+        }
+      }
+
+      if (cleanData.endAt === '' || cleanData.endAt === null) {
+        delete cleanData.endAt;
+      } else if (cleanData.endAt) {
+        const endDate = new Date(cleanData.endAt);
+        if (isNaN(endDate.getTime())) {
+          delete cleanData.endAt; // Invalid date, don't include it
+        } else {
+          cleanData.endAt = endDate;
+        }
+      }
+
+      // Validate start/end dates (only if both are provided)
+      if (cleanData.startAt && cleanData.endAt && cleanData.startAt > cleanData.endAt) {
         throw new Error('startAt must be before endAt');
       }
 
       // If products provided ensure it's an array
-      if (data.products && !Array.isArray(data.products)) {
+      if (cleanData.products && !Array.isArray(cleanData.products)) {
         throw new Error('products must be an array of product ids');
       }
 
-      // Create coupon
-      const coupon = await this.couponRepository.create(data);
+      // Create coupon with cleaned data
+      const coupon = await this.couponRepository.create(cleanData);
       return {
         success: true,
         message: 'Coupon created successfully',

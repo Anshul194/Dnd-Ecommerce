@@ -103,7 +103,7 @@ function LandingBanner({ content = [] }) {
           >
             <Link href={ctaLinkHref}>
               <Button className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] px-8 py-6 text-lg shadow-2xl hover:shadow-[#3C950D]/50 hover:scale-105 transition-all">
-                {hasCtaTitle}
+              {hasCtaTitle}
               </Button>
             </Link>
           </motion.div>

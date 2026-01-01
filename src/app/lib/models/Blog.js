@@ -35,7 +35,7 @@ BlogSchema.pre('validate', function(next) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
   }
-  next();
+  
 });
 
 const getBlogModel = (conn) => {

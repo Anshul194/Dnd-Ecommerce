@@ -46,7 +46,8 @@ export function HeroSlider({ content }) {
   };
 
   return (
-    <div className="relative  h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
+    <div className="relative  h-[527px] max-h-[527px] overflow-hidden">
+    {/* <div className="relative  h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden"> */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
@@ -54,7 +55,7 @@ export function HeroSlider({ content }) {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.7 }}
-          className="absolute inset-0"
+          className="relative w-full h-full"
         >
           <div
             className="w-full h-full bg-cover bg-center"

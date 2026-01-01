@@ -230,13 +230,13 @@ export default function CheckoutPopup() {
       toast.error("Please fill all required fields");
       return;
     }
-    
+
     try {
-    const data =
-      localStorage.getItem("address") &&
-      JSON.parse(localStorage.getItem("address"));
-    //console.log("checking addressData", data);
-      
+      const data =
+        localStorage.getItem("address") &&
+        JSON.parse(localStorage.getItem("address"));
+      //console.log("checking addressData", data);
+
       const addressPayload = {
         user: user?._id,
         title: addressType?.trim() || "Home",
@@ -255,11 +255,11 @@ export default function CheckoutPopup() {
         },
       };
 
-    if (data && data._id) {
-      //console.log("Updating existing address:", data._id);
+      if (data && data._id) {
+        //console.log("Updating existing address:", data._id);
         const result = await dispatch(
-        updateUserAddress({
-          addressId: data._id,
+          updateUserAddress({
+            addressId: data._id,
             addressData: addressPayload,
           })
         );
@@ -268,7 +268,7 @@ export default function CheckoutPopup() {
           return;
         }
         toast.success("Address updated successfully");
-    } else {
+      } else {
         const result = await dispatch(createUserAddress(addressPayload));
         if (result.type?.endsWith('/rejected')) {
           toast.error(result.payload?.message || "Failed to create address");
@@ -276,11 +276,11 @@ export default function CheckoutPopup() {
         }
         toast.success("Address added successfully");
       }
-      
-    // Structure the address data to match the expected format for display
-    const addressStructure = {
+
+      // Structure the address data to match the expected format for display
+      const addressStructure = {
         title: addressType?.trim() || "Home",
-      address: {
+        address: {
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim(),
           email: formData.email?.trim() || "",
@@ -292,18 +292,18 @@ export default function CheckoutPopup() {
           area: formData.area?.trim() || "",
           city: formData.city?.trim() || "",
           state: formData.state?.trim() || "",
-      },
-    };
-    await dispatch(setAddress(addressStructure));
+        },
+      };
+      await dispatch(setAddress(addressStructure));
 
-    // Refresh user addresses after adding/updating
-    if (isAuthenticated && user?._id) {
-      try {
-        const response = await dispatch(getuserAddresses(user._id));
-        setUserAddresses(response.payload || []);
-      } catch (error) {
-        //console.error("Error fetching user addresses:", error);
-      }
+      // Refresh user addresses after adding/updating
+      if (isAuthenticated && user?._id) {
+        try {
+          const response = await dispatch(getuserAddresses(user._id));
+          setUserAddresses(response.payload || []);
+        } catch (error) {
+          //console.error("Error fetching user addresses:", error);
+        }
       }
     } catch (error) {
       console.error("Error in handleAddAddress:", error);
@@ -386,19 +386,19 @@ export default function CheckoutPopup() {
       //console.log("Error checking payment status:", error);
       const errorMessage = error?.response?.data?.message || error?.message || "Failed to validate order. Please check your address details.";
       toast.error(errorMessage);
-      return { 
-        success: false, 
-        message: errorMessage 
+      return {
+        success: false,
+        message: errorMessage
       };
     }
   };
 
   const handelPayment = async () => {
     console.log("payment function invoked");
-    
+
     // Set loading state immediately when user clicks Place Order
     setPlacingOrder(true);
-    
+
     // Validate postal code first
     if (!formData.pincode || formData.pincode.trim() === "") {
       toast.error("Please enter a valid postal code before placing order");
@@ -408,7 +408,7 @@ export default function CheckoutPopup() {
 
     const check = await checkBeforePayment();
     console.log("check response ", check);
-    
+
     // Check if check returned an error
     if (!check || !check.success) {
       const errorMessage = check?.message || "Order validation failed. Please check your address and try again.";
@@ -416,14 +416,14 @@ export default function CheckoutPopup() {
       setPlacingOrder(false);
       return;
     }
-    
+
     // Additional check for the specific message
     if (check.message && check.message !== "Order is valid" && !check.success) {
       toast.error(check.message || "Order validation failed. Please try again.");
       setPlacingOrder(false);
       return;
     }
-    
+
     console.log("check completed");
     try {
       if (paymentMethod === "prepaid") {
@@ -496,7 +496,7 @@ export default function CheckoutPopup() {
               // Loading state is already set at the start of handelPayment
               const orderResult = await dispatch(placeOrder(payload));
               console.log("Order placement result:", orderResult);
-              
+
               // Check if order placement failed
               if (orderResult.type?.endsWith('/rejected') || orderResult.error) {
                 console.error("Order placement rejected:", orderResult);
@@ -526,8 +526,11 @@ export default function CheckoutPopup() {
               console.log("Order placed successfully:", orderResult.payload);
               // Mark that order was placed to avoid sending abandonment event
               orderPlacedRef.current = true;
+
+              const orderId = orderResult.payload?.data?.order?._id;
               // Redirect first to prevent page refresh issues
-              router.replace("/order-success?Order_status=success");
+              router.replace(`/order-success?Order_status=success${orderId ? `&orderId=${orderId}` : ""}`);
+
               // Clear cart and close checkout after redirect
               setTimeout(() => {
                 dispatch(setCheckoutClose());
@@ -640,7 +643,7 @@ export default function CheckoutPopup() {
           // Loading state is already set at the start of handelPayment
           const orderResult = await dispatch(placeOrder(payload));
           console.log("COD order placement result:", orderResult);
-          
+
           // Check if order placement failed
           if (orderResult.type?.endsWith('/rejected') || orderResult.error) {
             console.error("COD order placement rejected:", orderResult);
@@ -670,12 +673,15 @@ export default function CheckoutPopup() {
           console.log("COD order placed successfully:", orderResult.payload);
           // Mark that order was placed to avoid sending abandonment event
           orderPlacedRef.current = true;
+
+          const orderId = orderResult.payload?.data?.order?._id;
           // Redirect first to prevent page refresh issues
-          router.replace("/order-success?Order_status=success");
+          router.replace(`/order-success?Order_status=success${orderId ? `&orderId=${orderId}` : ""}`);
+
           // Clear cart and close checkout after redirect
           setTimeout(() => {
-          dispatch(setCheckoutClose());
-          dispatch(clearCart());
+            dispatch(setCheckoutClose());
+            dispatch(clearCart());
           }, 100);
         } catch (error) {
           console.error("Error placing order:", error);
@@ -899,10 +905,10 @@ export default function CheckoutPopup() {
       ? buyNowProduct.price * buyNowProduct.quantity
       : cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     //console?.log("totalValue", totalValue);
-    
+
     // Return 0 if cart is empty or totalValue is 0
     if (!totalValue || totalValue === 0) return 0;
-    
+
     if (totalValue > 500) return 0;
 
     if (paymentMethod === "cod") {
@@ -982,7 +988,7 @@ export default function CheckoutPopup() {
     );
     dispatch(fetchPages());
     // Settings are already fetched and cached by ClientLayout - no need to fetch again
-    
+
     // Refresh cart items from server/localStorage on mount to prevent 0 cart value on refresh
     dispatch(getCartItems());
 
@@ -1007,18 +1013,18 @@ export default function CheckoutPopup() {
     : (cartItems?.length > 0 ? cartItems.reduce((acc, item) => acc + (Number(item.price || 0) * Number(item.quantity || 0)), 0) : 0);
 
 
-    console.log("Items Total2:", cartItems);
+  console.log("Items Total2:", cartItems);
 
   // Calculate product discount (original price - sale price)
   const productDiscount = buyNowProduct
     ? 0 // For buy now, we'll need the original price if available
     : cartItems.reduce((acc, item) => {
-        // Assuming item has originalPrice or we calculate from product data
-        const originalPrice = item.product?.variants?.find(v => v._id == item.variant)?.price || item.price;
-        const salePrice = item.product?.variants?.find(v => v._id == item.variant)?.salePrice || item.price;
-        const itemDiscount = originalPrice > salePrice ? (originalPrice - salePrice) * item.quantity : 0;
-        return acc + itemDiscount;
-      }, 0);
+      // Assuming item has originalPrice or we calculate from product data
+      const originalPrice = item.product?.variants?.find(v => v._id == item.variant)?.price || item.price;
+      const salePrice = item.product?.variants?.find(v => v._id == item.variant)?.salePrice || item.price;
+      const itemDiscount = originalPrice > salePrice ? (originalPrice - salePrice) * item.quantity : 0;
+      return acc + itemDiscount;
+    }, 0);
 
   const shipping = calculateShipping();
   const couponDiscount = selectedCoupon?.discount || 0;
@@ -1085,13 +1091,15 @@ export default function CheckoutPopup() {
     } else {
       // Restore body scroll when popup closes
       document.body.style.overflow = "";
+
       // If we're on checkout-popup page and popup closes, redirect to home
-      if (location === "/checkout-popup") {
+      // Only redirect if an order wasn't just placed to avoid race conditions during redirect to success page
+      if (location === "/checkout-popup" && !orderPlacedRef.current) {
         router.push("/");
       }
     }
 
-    // detect true -> false transition
+    // detect true -> false transition (popup closing)
     if (prevCheckoutOpen.current && !checkoutOpen) {
       if (!orderPlacedRef.current) {
         const productIds = buyNowProduct
@@ -1120,8 +1128,9 @@ export default function CheckoutPopup() {
           //console.error("Failed to send checkout abandoned event:", err);
         });
       }
-      // prepare for next cycle
-      orderPlacedRef.current = false;
+      // Note: We DO NOT reset orderPlacedRef.current = false here because it needs to persist 
+      // until the next time checkoutOpen becomes true. This prevents the "redirect to home" logic 
+      // in the layout's instance from firing during navigation to the success page.
     }
 
     prevCheckoutOpen.current = checkoutOpen;
@@ -1145,7 +1154,7 @@ export default function CheckoutPopup() {
   // Helper to find Terms and Conditions page
   const getTermsPageUrl = () => {
     if (!pagesList || !Array.isArray(pagesList)) return null;
-    
+
     for (const group of pagesList) {
       if (group.pages && Array.isArray(group.pages)) {
         const termsPage = group.pages.find(
@@ -1155,7 +1164,7 @@ export default function CheckoutPopup() {
               page.title.toLowerCase().includes("t&c") ||
               page.title.toLowerCase().includes("terms and conditions"))
         );
-        
+
         if (termsPage) {
           return termsPage.redirectBySlug
             ? `/${termsPage.slug}`
@@ -1168,7 +1177,7 @@ export default function CheckoutPopup() {
 
   // If we're on the checkout-popup page, always show the popup (don't check checkoutOpen)
   const isCheckoutPopupPage = location === "/checkout-popup";
-  
+
   if (!checkoutOpen && !isCheckoutPopupPage) return null;
 
   return (
@@ -1370,21 +1379,21 @@ export default function CheckoutPopup() {
                       {/* You can conditionally render a submit button here based on otp length */}
                     </form>
                   </div>
-                    <div className="flex items-center justify-center gap-2 text-sm mt-4">
-                      <span>OTP sent to</span>
-                      <span className="font-semibold">{formData.phone}</span>
-                      <button
-                        onClick={() => {
-                          dispatch(setOtpSended(false));
-                        }}
-                        className="text-blue-600 hover:underline text-xs"
-                      >
-                        Edit Number
-                      </button>
-                    </div>
+                  <div className="flex items-center justify-center gap-2 text-sm mt-4">
+                    <span>OTP sent to</span>
+                    <span className="font-semibold">{formData.phone}</span>
+                    <button
+                      onClick={() => {
+                        dispatch(setOtpSended(false));
+                      }}
+                      className="text-blue-600 hover:underline text-xs"
+                    >
+                      Edit Number
+                    </button>
+                  </div>
 
-                    <h2 className="text-xs mt-4 text-center">
-                      Resend OTP via{" "}
+                  <h2 className="text-xs mt-4 text-center">
+                    Resend OTP via{" "}
                     <span
                       onClick={() => {
                         dispatch(sendOtp(formData.phone));
@@ -1470,8 +1479,8 @@ export default function CheckoutPopup() {
                   <div className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3">
                     <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
                       <Image
-                        src={buyNowProduct?.product?.image?.url || buyNowProduct?.product?.image || "/Image-not-found.png"}
-                        alt={buyNowProduct?.product?.image?.alt || buyNowProduct?.product?.name || "Product"}
+                        src={buyNowProduct?.product?.image?.url || buyNowProduct?.product?.thumbnail?.url || buyNowProduct?.product?.images?.[0]?.url || "/Image-not-found.png"}
+                        alt={buyNowProduct?.product?.image?.alt || buyNowProduct?.product?.thumbnail?.alt || buyNowProduct?.product?.images?.[0]?.alt || buyNowProduct?.product?.name || "Product"}
                         width={56}
                         height={64}
                         className="object-cover h-full w-full"
@@ -1492,7 +1501,7 @@ export default function CheckoutPopup() {
                           onClick={() => setShowVariantModal({ type: 'buyNow', product: buyNowProduct.product, selectedVariant: buyNowProduct.variant })}
                           className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs cursor-pointer hover:bg-blue-50 transition-colors"
                         >
-                        <Plus className="h-3 w-3" />
+                          <Plus className="h-3 w-3" />
                           <h3>{buyNowProduct.product.variants.length} {buyNowProduct.product.variants.length === 1 ? 'option' : 'options'}</h3>
                         </button>
                       )}
@@ -1511,13 +1520,15 @@ export default function CheckoutPopup() {
                         <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
                           <Image
                             src={
+                              item?.product?.thumbnail?.url ||
+                              item?.product?.images?.[0]?.url ||
                               item?.product?.image?.url ||
-                              item?.product?.image?.[0]?.url ||
                               "/Image-not-found.png"
                             }
                             alt={
+                              item?.product?.thumbnail?.alt ||
+                              item?.product?.images?.[0]?.alt ||
                               item?.product?.image?.alt ||
-                              item?.product?.image?.[0]?.alt ||
                               item?.product?.name ||
                               "Product"
                             }
@@ -1540,7 +1551,7 @@ export default function CheckoutPopup() {
                               onClick={() => setShowVariantModal({ type: 'cart', product: item.product, selectedVariant: item.variant, cartItem: item, index: index })}
                               className="flex w-fit ml-auto -mt-3 items-center gap-1 font-medium rounded-sm px-1 py-[2px] border-[1.5px] border-blue-600 text-blue-600 text-xs cursor-pointer hover:bg-blue-50 transition-colors"
                             >
-                            <Plus className="h-3 w-3" />
+                              <Plus className="h-3 w-3" />
                               <h3>{item.product.variants.length} {item.product.variants.length === 1 ? 'option' : 'options'}</h3>
                             </button>
                           )}
@@ -2081,7 +2092,7 @@ export default function CheckoutPopup() {
               <h3 className="font-semibold mb-3">Payment Method</h3>
               <div className="grid grid-cols-2 gap-3">
                 {/* UPI/Card Option */}
-                <div 
+                <div
                   onClick={() => setPaymentMethod("prepaid")}
                   className={`border-2 ${paymentMethod === "prepaid" ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"} rounded-lg p-3 cursor-pointer relative transition-all hover:border-gray-300`}
                 >
@@ -2097,7 +2108,7 @@ export default function CheckoutPopup() {
                   {settings?.prepaidDiscountEnabled && settings?.prepaidDiscountValue > 0 && (
                     <div className="bg-gradient-to-r from-green-100 to-green-50 border border-green-300 text-green-800 text-xs px-2 py-1.5 rounded mb-2 font-semibold flex items-center gap-1">
                       <span className="text-base">🎉</span>
-                      <span>Save ₹{(settings.prepaidDiscountType === 'percentage' 
+                      <span>Save ₹{(settings.prepaidDiscountType === 'percentage'
                         ? ((itemsTotal * settings.prepaidDiscountValue) / 100)
                         : settings.prepaidDiscountValue
                       ).toFixed(0)} ({settings.prepaidDiscountType === 'percentage' ? `${settings.prepaidDiscountValue}% OFF` : 'Flat OFF'})</span>
@@ -2123,15 +2134,14 @@ export default function CheckoutPopup() {
 
                 {/* Cash on Delivery Option */}
                 {!isCODDisabledForCart && (
-                  <div 
+                  <div
                     onClick={() => {
                       if (cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) <= settings?.codLimit) {
                         setPaymentMethod("cod");
                       }
                     }}
-                    className={`border-2 ${paymentMethod === "cod" ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"} rounded-lg p-3 cursor-pointer relative transition-all hover:border-gray-300 ${
-                      cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) > settings?.codLimit && "opacity-50 cursor-not-allowed"
-                    }`}
+                    className={`border-2 ${paymentMethod === "cod" ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"} rounded-lg p-3 cursor-pointer relative transition-all hover:border-gray-300 ${cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) > settings?.codLimit && "opacity-50 cursor-not-allowed"
+                      }`}
                   >
                     <div className={`absolute top-2 right-2 w-5 h-5 rounded-full border-2 ${paymentMethod === "cod" ? "border-green-500" : "border-gray-300"} bg-white flex items-center justify-center`}>
                       {paymentMethod === "cod" && <div className="w-3 h-3 rounded-full bg-green-500"></div>}
@@ -2148,7 +2158,7 @@ export default function CheckoutPopup() {
                   </div>
                 )}
               </div>
-              
+
               {/* Error Messages */}
               {isCODDisabledForCart && (
                 <h2 className="text-red-500 text-xs mt-2">
@@ -2173,12 +2183,12 @@ export default function CheckoutPopup() {
                   <h2>Items ({buyNowProduct ? 1 : cartItems.length})</h2>
                   <h2>₹{itemsTotal}</h2>
                 </div>
-               
-                  <div className="flex justify-between text-sm">
-                    <h2>Product Discount</h2>
-                    <h2 className="font-semibold text-green-600">-₹{productDiscount.toFixed(2)}</h2>
-                  </div>
-               
+
+                <div className="flex justify-between text-sm">
+                  <h2>Product Discount</h2>
+                  <h2 className="font-semibold text-green-600">-₹{productDiscount.toFixed(2)}</h2>
+                </div>
+
                 <div className="flex justify-between text-sm">
                   <h2>Shipping</h2>
                   {shipping === 0 ? (
@@ -2199,7 +2209,7 @@ export default function CheckoutPopup() {
                 {prepaidDiscount > 0 && paymentMethod === 'prepaid' && (
                   <div className="flex justify-between text-sm">
                     <h2 className="flex items-center gap-1">
-                      Prepaid Discount 
+                      Prepaid Discount
                       {settings?.prepaidDiscountType === 'percentage' && (
                         <span className="text-green-600 font-medium">({settings.prepaidDiscountValue}%)</span>
                       )}
@@ -2314,7 +2324,7 @@ export default function CheckoutPopup() {
           )}
           Privacy Policy | IGAZC5
           <br />
-         
+
         </div>
       </div>
 
@@ -2330,14 +2340,14 @@ export default function CheckoutPopup() {
               >
                 <X className="h-5 w-5" />
               </button>
-    </div>
-            
+            </div>
+
             <div className="space-y-2">
               {showVariantModal.product?.variants?.map((variant, index) => {
                 const isSelected = variant._id === showVariantModal.selectedVariant || variant._id?.toString() === showVariantModal.selectedVariant?.toString();
                 const variantPrice = variant.salePrice || variant.price;
                 const originalPrice = variant.salePrice ? variant.price : null;
-                
+
                 return (
                   <div
                     key={variant._id || index}
@@ -2369,11 +2379,10 @@ export default function CheckoutPopup() {
                       }
                       setShowVariantModal(null);
                     }}
-                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                    }`}
+                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -2410,7 +2419,7 @@ export default function CheckoutPopup() {
                 );
               })}
             </div>
-            
+
             {showVariantModal.product?.variants?.length === 0 && (
               <div className="text-center py-4 text-gray-500">
                 No variants available for this product

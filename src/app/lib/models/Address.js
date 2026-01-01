@@ -11,7 +11,7 @@ const addressSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: false,
     trim: true,
   },
   phone: {
@@ -72,7 +72,11 @@ const AddressSchema = new mongoose.Schema(
 );
 
 export const getAddressModel = (conn) => {
-  return conn.models.Address || conn.model("Address", AddressSchema);
+  // During development, we might need to delete the model from cache to apply schema changes
+  if (conn.models.Address) {
+    delete conn.models.Address;
+  }
+  return conn.model("Address", AddressSchema);
 };
 const Address =
   mongoose.models.Address || mongoose.model("Address", AddressSchema);
