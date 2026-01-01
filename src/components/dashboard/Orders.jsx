@@ -108,6 +108,44 @@ const Orders = () => {
     router.push(`${currentPath}?orderId=${orderId}`);
   };
 
+  const openInvoice = (url, doPrint = false) => {
+    if (!url) return;
+    const href = getInvoiceHref(url);
+    const win = window.open(href, "invoiceWindow");
+    if (!win) return;
+    try {
+      win.focus();
+    } catch (e) {}
+    if (doPrint) {
+      const tryPrint = () => {
+        try {
+          const ready = win.document && (win.document.readyState === "complete" || win.document.readyState === "interactive");
+          if (ready) {
+            win.print();
+            return;
+          }
+        } catch (e) {
+          // ignore cross-window access errors until ready
+        }
+        setTimeout(tryPrint, 200);
+      };
+      tryPrint();
+    }
+  };
+
+  const getInvoiceHref = (url) => {
+    try {
+      if (!url) return url;
+      // if url is already relative, return as-is
+      if (url.startsWith("/")) return url;
+      const parsed = new URL(url);
+      // Use only the pathname so request is made against current origin
+      return parsed.pathname + (parsed.search || "");
+    } catch (e) {
+      return url;
+    }
+  };
+
   const handleBackClick = () => {
     const currentPath = window.location.pathname;
     router.push(currentPath); // Remove the orderId parameter
@@ -370,9 +408,33 @@ const Orders = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                      <Download className="w-5 h-5 text-gray-600" />
-                    </button>
+                    {currentOrder?.invoiceUrl ? (
+                      <>
+                        <a
+                          href={currentOrder.invoiceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          <Download className="w-5 h-5 text-gray-600" />
+                        </a>
+                        <button
+                          onClick={() => openInvoice(currentOrder.invoiceUrl, true)}
+                          title="Open and Print"
+                          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          Print Invoice
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        disabled
+                        title="Invoice not ready"
+                        className="p-2 rounded-lg text-gray-300 cursor-not-allowed"
+                      >
+                        <Download className="w-5 h-5" />
+                      </button>
+                    )}
                     <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                       <Share2 className="w-5 h-5 text-gray-600" />
                     </button>
@@ -997,10 +1059,34 @@ const Orders = () => {
                     <Eye size={14} />
                     <span>View Details</span>
                   </button>
-                  <button className="flex items-center space-x-2 px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm">
-                    <Download size={14} />
-                    <span>Download Invoice</span>
-                  </button>
+                  {order?.invoiceUrl ? (
+                    <>
+                      <a
+                        href={order.invoiceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center space-x-2 px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm"
+                      >
+                        <Download size={14} />
+                        <span> Invoice</span>
+                      </a>
+                      <button
+                        onClick={() => openInvoice(order.invoiceUrl, true)}
+                        className="flex items-center space-x-2 px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm"
+                      >
+                        <span>Print</span>
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      disabled
+                      title="Invoice not available"
+                      className="flex items-center space-x-2 px-3 py-2 border border-gray-300 text-gray-300 rounded-md transition-colors text-sm cursor-not-allowed"
+                    >
+                      <Download size={14} />
+                      <span>Download Invoice</span>
+                    </button>
+                  )}
                   {order.status === "delivered" && (
                     <button className="flex items-center space-x-2 px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm">
                       <span>Reorder</span>

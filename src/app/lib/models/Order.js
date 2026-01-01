@@ -97,6 +97,8 @@ const orderSchema = new mongoose.Schema(
     paymentGatewayRate: { type: Number, default: 0 },
     gstAmount: { type: Number, default: 0 },
     paymentGatewayAmount: { type: Number, default: 0 },
+    // URL to the generated invoice HTML (stored after invoice is created)
+    invoiceUrl: { type: String, default: null },
     paymentMode: {
       type: String,
       enum: ["COD", "Prepaid"],

@@ -230,7 +230,7 @@ export async function POST(req) {
       <table class="header-table">
         <tr>
           <td class="logo-cell">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70'%3E%3Ccircle cx='35' cy='35' r='33' fill='%234169e1' stroke='%23000' stroke-width='2'/%3E%3Ctext x='35' y='42' text-anchor='middle' fill='white' font-size='16' font-weight='bold'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Company Logo">
+            <img src="logo.webp' width='70' height='70'%3E%3Ccircle cx='35' cy='35' r='33' fill='%234169e1' stroke='%23000' stroke-width='2'/%3E%3Ctext x='35' y='42' text-anchor='middle' fill='white' font-size='16' font-weight='bold'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Company Logo">
           </td>
           <td class="company-info">
             <div class="company-name">BHARAT GRAM UDYOG</div>
@@ -344,7 +344,114 @@ export async function POST(req) {
 
       const filePath = path.join(invoicesDir, `${invoiceId}.html`);
       await fs.writeFile(filePath, invoiceHtml, "utf8");
-      result.data.invoiceUrl = `${origin}/uploads/invoices/${invoiceId}.html`;
+      const invoiceUrl = `${origin}/uploads/invoices/${invoiceId}.html`;
+      result.data.invoiceUrl = invoiceUrl;
+
+      // Persist invoice URL to the Order document so subsequent reads include it
+      try {
+          // Prefer saving using the same Mongoose document instance returned by create
+          if (order && typeof order.save === "function") {
+            try {
+              order.invoiceUrl = invoiceUrl;
+              const savedOrder = await order.save();
+              console.log("Saved invoiceUrl via document.save():", savedOrder._id, savedOrder.invoiceUrl);
+              result.dbSavedInvoiceUrl = savedOrder.invoiceUrl || null;
+              // reflect saved document in response
+              result.data.order = savedOrder;
+            } catch (docSaveErr) {
+              console.warn("Document.save() failed, falling back to updates:", docSaveErr && docSaveErr.message);
+            }
+          }
+
+        // Resolve possible id locations that different services/controllers may return
+        const possibleIds = [];
+        if (order && order._id) possibleIds.push(order._id);
+        if (result && result.data && result.data._id) possibleIds.push(result.data._id);
+        if (result && result.data && result.data.order && result.data.order._id)
+          possibleIds.push(result.data.order._id);
+        if (result && result.data && result.data.order && result.data.order.id)
+          possibleIds.push(result.data.order.id);
+        if (result && result.data && result.data.orderId) possibleIds.push(result.data.orderId);
+
+        // pick the first non-empty id
+        const saveId = possibleIds.find((v) => !!v);
+        if (saveId) {
+          const idStr = typeof saveId === "string" ? saveId : saveId.toString();
+          console.log("Attempting to persist invoiceUrl", { id: idStr, model: Order.modelName, connName: conn && conn.name });
+          try {
+            // try findByIdAndUpdate first
+            const updated = await Order.findByIdAndUpdate(
+              idStr,
+              { $set: { invoiceUrl } },
+              { new: true }
+            ).exec();
+            if (!updated) {
+              // fallback to updateOne if findByIdAndUpdate didn't match
+              let updateFilter = { _id: idStr };
+              try {
+                if (mongoose.Types.ObjectId.isValid(idStr)) {
+                  updateFilter = { _id: new mongoose.Types.ObjectId(idStr) };
+                }
+              } catch (convErr) {
+                console.warn('ObjectId conversion warning for updateOne:', convErr && convErr.message);
+              }
+              const resUp = await Order.updateOne(updateFilter, { $set: { invoiceUrl } }).exec();
+              console.log("updateOne result:", resUp);
+              if (!resUp || ((resUp.n === 0 || resUp.matchedCount === 0) && !resUp.acknowledged && resUp.matchedCount !== undefined)) {
+                console.warn("Invoice URL update did not match any document for id:", idStr, resUp);
+                result.invoiceSaveWarning = `No order document matched id ${idStr}`;
+              }
+            }
+            // verify by reading back the document
+            try {
+              const saved = await Order.findById(idStr).lean().exec();
+              console.log("Post-update order fetch: ", saved ? { _id: saved._id, invoiceUrl: saved.invoiceUrl } : null);
+              if (saved) result.dbSavedInvoiceUrl = saved.invoiceUrl || null;
+            } catch (fetchErr) {
+              console.error("Failed to fetch order after update:", fetchErr);
+              result.invoiceSaveWarning = result.invoiceSaveWarning || "Updated but failed to verify by fetch";
+            }
+
+            // If invoiceUrl still not present, try native collection update with ObjectId
+            if (!result.dbSavedInvoiceUrl) {
+              try {
+                let objId = null;
+                try {
+                  if (typeof idStr === 'string' && mongoose.Types.ObjectId.isValid(idStr)) {
+                    objId = new mongoose.Types.ObjectId(idStr);
+                  } else if (typeof idStr !== 'string') {
+                    objId = idStr;
+                  }
+                } catch (convErr) {
+                  console.warn('Could not convert id to ObjectId for native update', idStr, convErr && convErr.message);
+                }
+                const filter = objId ? { _id: objId } : { _id: idStr };
+                const nativeRes = await Order.collection.updateOne(filter, { $set: { invoiceUrl } });
+                console.log('Native collection.updateOne result:', nativeRes && (nativeRes.result || nativeRes));
+                // re-fetch
+                const saved2 = await Order.findById(idStr).lean().exec();
+                console.log('Post-native-update fetch:', saved2 ? { _id: saved2._id, invoiceUrl: saved2.invoiceUrl } : null);
+                if (saved2) result.dbSavedInvoiceUrl = saved2.invoiceUrl || null;
+              } catch (nativeErr) {
+                console.error('Native update failed:', nativeErr);
+                result.invoiceSaveError = result.invoiceSaveError || nativeErr.message;
+              }
+            }
+            // also reflect in returned order object
+            result.data.order = { ...result.data.order, invoiceUrl };
+          } catch (innerErr) {
+            console.error("Error updating Order document with invoiceUrl:", innerErr);
+            result.invoiceSaveError = innerErr.message;
+          }
+        } else {
+          console.warn("No order id available to persist invoiceUrl.", { order, resultData: result && result.data });
+          result.invoiceSaveWarning = "No order id available to persist invoiceUrl";
+        }
+      } catch (dbErr) {
+        console.error("Failed to save invoiceUrl to Order document:", dbErr);
+        // don't fail the request; keep invoiceUrl in response but log DB error
+        result.invoiceSaveError = dbErr.message;
+      }
     } catch (err) {
       console.error("Failed to generate invoice file:", err);
       result.invoiceError = err.message;
@@ -393,20 +500,30 @@ export const GET = withUserAuth(async function (request) {
       const origin = (new URL(request.url)).origin;
       const invoicesDir = path.join(process.cwd(), "public", "uploads", "invoices");
       const attachUrl = async (ord) => {
-        if (!ord || !ord._id) return ord;
-        const filePath = path.join(invoicesDir, `${ord._id}.html`);
+        if (!ord) return ord;
+        // Coerce id to string for filename
+        const id = ord._id ? (typeof ord._id === "string" ? ord._id : ord._id.toString()) : null;
+        if (!id) return ord;
+        const filePath = path.join(invoicesDir, `${id}.html`);
         try {
           await fs.access(filePath);
-          ord.invoiceUrl = `${origin}/uploads/invoices/${ord._id}.html`;
+          ord.invoiceUrl = `${origin}/uploads/invoices/${id}.html`;
         } catch (e) {
           // file doesn't exist — skip
         }
         return ord;
       };
+
+      // Support several common shapes returned by services/controllers
       if (Array.isArray(result.data)) {
         await Promise.all(result.data.map((o) => attachUrl(o)));
+      } else if (result.data && Array.isArray(result.data.results)) {
+        await Promise.all(result.data.results.map((o) => attachUrl(o)));
       } else if (result.data && Array.isArray(result.data.orders)) {
         await Promise.all(result.data.orders.map((o) => attachUrl(o)));
+      } else if (result.data && typeof result.data === 'object' && result.data._id) {
+        // single order object
+        await attachUrl(result.data);
       }
     } catch (e) {
       console.error('Error attaching invoice URLs', e);
