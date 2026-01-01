@@ -178,9 +178,10 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     }
   }, [isAuthenticated]);
 
-  if (!product.variants || product.variants.length === 0) {
-    return null; // Don't render if no variants
-  }
+  // Allow rendering even without variants, but some features might be disabled
+  // if (!product.variants || product.variants.length === 0) {
+  //   return null; 
+  // }
 
   return (
     <>

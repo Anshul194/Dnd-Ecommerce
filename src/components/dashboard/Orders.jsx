@@ -115,7 +115,7 @@ const Orders = () => {
     if (!win) return;
     try {
       win.focus();
-    } catch (e) {}
+    } catch (e) { }
     if (doPrint) {
       const tryPrint = () => {
         try {
@@ -574,13 +574,19 @@ const Orders = () => {
                             className="w-20 h-20 object-cover rounded-lg bg-gray-100"
                           />
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-gray-900 mb-1">
-                              {item.product.name}
-                            </h3>
+                            <h3
+                              className="font-medium text-gray-900 mb-1"
+                              dangerouslySetInnerHTML={{ __html: item.product.name }}
+                            />
 
-                            <p className="text-sm text-gray-500 mb-2">
-                              {item.variant.name}
-                            </p>
+                            {item.variant?.attributes && (
+                              <div className="text-sm text-gray-500 mb-2">
+                                {Array.isArray(item.variant.attributes)
+                                  ? item.variant.attributes.map(attr => `${attr.name || attr.label || 'Attribute'}: ${attr.value || attr.option || JSON.stringify(attr)}`).join(", ")
+                                  : Object.entries(item.variant.attributes).map(([k, v]) => `${k}: ${typeof v === 'object' ? v.value || v.name || JSON.stringify(v) : v}`).join(", ")
+                                }
+                              </div>
+                            )}
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-gray-500">
                                 Qty: {item.quantity}
@@ -966,7 +972,7 @@ const Orders = () => {
               <p className="text-gray-600 mb-4">
                 You haven&apos;t placed any orders yet.
               </p>
-              <button 
+              <button
                 onClick={() => router.push("/")}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >

@@ -5,15 +5,23 @@ import { CheckCircle, Package, ShoppingBag, Home, ArrowRight } from "lucide-reac
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import AnimatedGradientBorder from "@/components/ui/AnimatedGradientBorder";
 import leaf from "../../../public/images/leaf.png";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchOrderById } from "../store/slices/orderSlice";
 
 const OrderSuccessPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderStatus = searchParams.get("Order_status");
   const queryOrderId = searchParams.get("orderId");
-  const [orderNumber] = useState(() => queryOrderId || `ORD${Date.now().toString().slice(-8)}`);
+  const { currentOrder, loading: orderLoading } = useSelector((state) => state.order);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (queryOrderId) {
+      dispatch(fetchOrderById(queryOrderId));
+    }
+  }, [queryOrderId, dispatch]);
 
   // No longer redirecting to home page as per user request
   useEffect(() => {
@@ -72,7 +80,7 @@ const OrderSuccessPage = () => {
             Order Placed Successfully!
           </h1>
 
-          <AnimatedGradientBorder />
+
 
           <p className="text-lg text-gray-600 mt-6 max-w-2xl mx-auto">
             Thank you for your order! We've received your order and will begin processing it shortly.
@@ -80,23 +88,77 @@ const OrderSuccessPage = () => {
           </p>
         </div>
 
-        {/* Order Number Card */}
+        {/* Order Details Card */}
         <div className="bg-[#F1FAEE] border-2 border-gray-200 rounded-2xl p-6 md:p-8 mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
                 <Package className="w-6 h-6 text-[#3C950D]" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-1">Order Number</p>
-                <p className="text-2xl font-bold text-gray-800">{orderNumber}</p>
+                <p className="text-sm text-gray-600 mb-1">Order ID</p>
+                <p className="text-xl font-bold text-gray-800">{currentOrder?._id || queryOrderId}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600 mb-1">Estimated Delivery</p>
-              <p className="text-lg font-semibold text-gray-800">3-5 Business Days</p>
+              <p className="text-sm text-gray-600 mb-1">Status</p>
+              <p className="text-lg font-semibold text-[#3C950D] capitalize">{currentOrder?.status || "Processing"}</p>
             </div>
           </div>
+
+          {currentOrder && (
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <ShoppingBag className="w-5 h-5 text-[#3C950D]" />
+                Order Summary
+              </h3>
+              <div className="space-y-4 mb-6">
+                {currentOrder.items?.map((item, index) => (
+                  <div key={index} className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white rounded border border-gray-100 flex-shrink-0 flex items-center justify-center font-bold text-gray-400">
+                        {item.quantity}x
+                      </div>
+                      <span
+                        className="text-gray-700 font-medium"
+                        dangerouslySetInnerHTML={{ __html: item.product?.name || "Product" }}
+                      />
+                    </div>
+                    <span className="text-gray-900 font-bold">₹{item.price * item.quantity}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-white/50 rounded-xl p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="text-gray-800">₹{(currentOrder.total - (currentOrder.shippingCharge || 0)).toFixed(2)}</span>
+                </div>
+                {currentOrder.shippingCharge > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Shipping</span>
+                    <span className="text-gray-800">₹{currentOrder.shippingCharge}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-2 mt-2">
+                  <span className="text-gray-800">Total Amount</span>
+                  <span className="text-[#3C950D]">₹{currentOrder.total}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentOrder?.shippingAddress && (
+            <div className="mt-6 border-t border-gray-200 pt-6">
+              <h3 className="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wider">Shipping Address</h3>
+              <div className="text-sm text-gray-600 space-y-1">
+                <p className="font-semibold text-gray-800">{currentOrder.shippingAddress.fullName}</p>
+                <p>{currentOrder.shippingAddress.addressLine1}</p>
+                {currentOrder.shippingAddress.addressLine2 && <p>{currentOrder.shippingAddress.addressLine2}</p>}
+                <p>{currentOrder.shippingAddress.city}, {currentOrder.shippingAddress.state} {currentOrder.shippingAddress.postalCode}</p>
+                <p className="mt-2 flex items-center gap-2"><span className="text-xs uppercase font-bold px-2 py-0.5 bg-gray-200 rounded">Phone</span> {currentOrder.shippingAddress.phoneNumber}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* What's Next Section */}

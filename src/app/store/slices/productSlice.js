@@ -6,11 +6,12 @@ export const fetchProducts = createAsyncThunk(
   "product/fetchProducts",
   async (payload = {}) => {
     const cacheKey = JSON.stringify(payload);
-    
+
     const quaryParams = new URLSearchParams();
     payload.page && quaryParams.append("page", payload.page);
     payload.limit && quaryParams.append("limit", payload.limit);
     payload.sortBy && quaryParams.append("sortBy", payload.sortBy);
+    payload.sortOrder && quaryParams.append("sortOrder", payload.sortOrder);
 
     if (payload.category) {
       quaryParams.append("category", payload.category);
@@ -41,23 +42,53 @@ export const fetchProducts = createAsyncThunk(
     const response = await axiosInstance.get("/product", {
       params: quaryParams,
     });
-    return { data: response.data.products.data, cacheKey };
+
+    // Robust parsing for Dnd-Ecommerce
+    const apiData = response.data?.products?.data ||
+      response.data?.data?.body?.data ||
+      response.data?.body?.data ||
+      response.data?.products ||
+      response.data?.data ||
+      response.data;
+
+    // Helper to extract number from MongoDB object or raw number
+    const normalizeNum = (val) => {
+      if (!val) return 0;
+      if (typeof val === 'object' && val.$numberInt) return parseInt(val.$numberInt);
+      if (typeof val === 'object' && val.$numberLong) return parseInt(val.$numberLong);
+      return typeof val === 'number' ? val : parseInt(val) || 0;
+    };
+
+    const productsArray = apiData?.products || apiData?.result || (Array.isArray(apiData) ? apiData : []);
+    const pag = apiData?.pagination || apiData || {};
+
+    const normalizedData = {
+      products: productsArray,
+      pagination: {
+        total: normalizeNum(pag.totalItems || pag.totalDocuments || apiData?.totalDocuments || pag.total || pag.total_items || productsArray.length),
+        currentPage: normalizeNum(pag.currentPage || pag.page || payload.page || 1),
+        totalPages: normalizeNum(pag.totalPages || pag.total_pages || 1),
+        itemsPerPage: normalizeNum(pag.itemsPerPage || pag.limit || payload.limit || 20)
+      }
+    };
+
+    return { data: normalizedData, cacheKey };
   },
   {
     condition: (payload = {}, { getState }) => {
       const state = getState();
       const now = Date.now();
       const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-      
+
       // Prevent concurrent calls if already loading
       if (state.product.loading) {
         return false;
       }
-      
+
       // Create cache key from payload
       const cacheKey = JSON.stringify(payload);
       const cachedData = state.product.productCache?.[cacheKey];
-      
+
       // Prevent API call if cache is valid
       if (cachedData && now - cachedData.timestamp < CACHE_DURATION) {
         return false; // Cancel the request
@@ -149,6 +180,12 @@ const productSlice = createSlice({
   initialState: {
     selectedProduct: null,
     products: [],
+    pagination: {
+      total: 0,
+      currentPage: 1,
+      totalPages: 0,
+      itemsPerPage: 20
+    },
     loading: false,
     error: null,
     productCache: {},
@@ -162,15 +199,22 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
+        const responseData = action.payload.data || action.payload;
+
+        // Ensure products and pagination are always extracted correctly
+        state.products = responseData.products || (Array.isArray(responseData) ? responseData : []);
+        state.pagination = responseData.pagination || {
+          total: state.products.length,
+          currentPage: 1,
+          totalPages: 1,
+          itemsPerPage: 20
+        };
+
         if (action.payload.cacheKey) {
-          // Store in cache
           state.productCache[action.payload.cacheKey] = {
-            data: action.payload.data,
+            data: responseData,
             timestamp: Date.now(),
           };
-          state.products = action.payload.data;
-        } else {
-          state.products = action.payload;
         }
       })
       .addCase(fetchProducts.rejected, (state, action) => {

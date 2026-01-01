@@ -2,44 +2,43 @@
 import { useEffect, useState } from "react";
 import { fetchOrders } from "../store/slices/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 
 export default function YourOrders() {
   const [activeTab, setActiveTab] = useState("Orders");
   const { orders, loading } = useSelector((state) => state.order);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-
-  const tabData = {
-    Orders: {
-      count: 7,
-      status: "Product is shipped and will be delivered soon",
-      date: "20/07/2025",
-    },
-    "Buy Again": {
-      count: 3,
-      status: "Available for repurchase",
-      date: "Order again anytime",
-    },
-    "Not Yet Shipped": {
-      count: 2,
-      status: "Order is being prepared for shipment",
-      date: "22/07/2025",
-    },
-    "Cancelled orders": {
-      count: 1,
-      status: "Order was cancelled on your request",
-      date: "Refund processed",
-    },
-  };
+  const router = useRouter();
 
   useEffect(() => {
-    // Fetch orders when the component mounts
-    dispatch(
-      fetchOrders({
-        userId: "6891d1240f35f119d4f7425b",
-      })
-    );
-  }, [dispatch]);
+    // Fetch orders if user is available
+    if (user?._id) {
+      dispatch(
+        fetchOrders({
+          userId: user._id,
+        })
+      );
+    }
+  }, [dispatch, user]);
+
+  const getFilteredOrders = () => {
+    if (!orders) return [];
+    switch (activeTab) {
+      case "Orders":
+        return orders;
+      case "Buy Again":
+        return orders.filter(o => o.status === "completed" || o.status === "shipped");
+      case "Not Yet Shipped":
+        return orders.filter(o => o.status === "pending" || o.status === "paid" || o.status === "confirmed");
+      case "Cancelled orders":
+        return orders.filter(o => o.status === "cancelled");
+      default:
+        return orders;
+    }
+  };
+
+  const filteredOrders = getFilteredOrders();
   //   console.log("Orders:", orders);
   //  console.log("user is ==>", user);
   return (
@@ -61,16 +60,7 @@ export default function YourOrders() {
             >
               Orders
             </button>
-            <button
-              onClick={() => setActiveTab("Buy Again")}
-              className={
-                activeTab === "Buy Again"
-                  ? "text-black font-medium border-b-2 border-black pb-1"
-                  : "text-gray-500 hover:text-black"
-              }
-            >
-              Buy Again
-            </button>
+           
             <button
               onClick={() => setActiveTab("Not Yet Shipped")}
               className={
@@ -95,93 +85,93 @@ export default function YourOrders() {
 
           {/* Orders Count */}
           <p className="text-sm text-black font-medium mb-6">
-            {tabData[activeTab].count} orders found
+            {filteredOrders.length} orders found
           </p>
         </div>
 
-        <div className="border-2 rounded-lg border-gray-300">
-          {/* Order Summary Bar */}
-          <div className="bg-gray-100 rounded-lg p-4 flex flex-col md:flex-row gap-3 justify-between md:items-center">
-            <div className="flex gap-4 justify-between md:justify-start">
-              <div>
-                <div className="text-sm text-gray-600">Orders Placed</div>
-                <div className="text-sm font-medium text-black">
-                  26 May 2025
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Total</div>
-                <div className="text-sm font-medium text-black">₹289.00</div>
-              </div>
+        <div className="space-y-6">
+          {loading ? (
+            <div className="text-center py-12">Loading your orders...</div>
+          ) : filteredOrders.length === 0 ? (
+            <div className="text-center py-12 border-2 border-dashed rounded-lg border-gray-300">
+              <p className="text-gray-500">No orders found in this category.</p>
             </div>
-            <div className="text-start md:text-right">
-              <div className="text-sm text-gray-600">
-                Orders Placed{" "}
-                <span className="text-xs"># order id#5796348, 576315</span>
-              </div>
-              <div className="flex gap-4 justify-between mt-1">
-                <button className="text-blue-600 text-xs hover:underline">
-                  View Order Details
-                </button>
-                <button className="text-blue-600 text-xs hover:underline">
-                  Invoice
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Product Card */}
-          <div className=" rounded-lg p-6">
-            <div className="flex gap-6 flex-col md:flex-row items-start">
-              {/* Product Image Placeholder */}
-              <div className="h-44 md:aspect-square md:max-w-56 w-full bg-gray-200 rounded-lg flex-shrink-0 relative">
-                {/* NEW badge */}
-                <div className="absolute -top-2 -left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                  NEW
-                </div>
-              </div>
-
-              {/* Product Details */}
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold text-black mb-3">
-                  Lorem ipsum dolor sit amet
-                </h2>
-                <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation
-                </p>
-
-                {/* Rating */}
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex text-yellow-400">
-                    <span>★</span>
-                    <span>★</span>
-                    <span>★</span>
-                    <span>★</span>
-                    <span className="text-gray-300">★</span>
+          ) : (
+            filteredOrders.map((order) => (
+              <div key={order._id} className="border-2 rounded-lg border-gray-300 overflow-hidden">
+                {/* Order Summary Bar */}
+                <div className="bg-gray-100 p-4 flex flex-col md:flex-row gap-3 justify-between md:items-center">
+                  <div className="flex gap-4 justify-between md:justify-start">
+                    <div>
+                      <div className="text-sm text-gray-600">Order Placed</div>
+                      <div className="text-sm font-medium text-black">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600">Total</div>
+                      <div className="text-sm font-medium text-black">₹{order.total?.toFixed(2)}</div>
+                    </div>
                   </div>
-                  <span className="text-sm text-gray-600">939 Reviews</span>
+                  <div className="text-start md:text-right">
+                    <div className="text-sm text-gray-600">
+                      Order ID <span className="text-xs font-mono ml-1">#{order._id}</span>
+                    </div>
+                    <div className="flex gap-4 justify-between md:justify-end mt-1">
+                     
+                     
+                    </div>
+                  </div>
                 </div>
 
-                {/* See Button */}
-                <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded text-sm font-medium">
-                  See
-                </button>
-              </div>
-            </div>
+                {/* Product Card for Order Items */}
+                <div className="p-6">
+                  {order.items?.map((item, idx) => (
+                    <div key={idx} className={`flex gap-6 flex-col md:flex-row items-start ${idx > 0 ? "mt-6 pt-6 border-t border-gray-100" : ""}`}>
+                      <div className="h-44 md:aspect-square md:max-w-44 w-full bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden">
+                        {item.product?.images?.[0] ? (
+                          <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
+                        )}
+                      </div>
 
-            {/* Delivery Info */}
-            <div className="flex justify-between items-center mt-6 pt-4 border-t-2 border-gray-200 text-xs text-gray-600">
-              <span>{tabData[activeTab].status}</span>
-              <span>
-                Estimated Delivery date:{" "}
-                <span className="font-medium text-black">
-                  {tabData[activeTab].date}
-                </span>
-              </span>
-            </div>
-          </div>
+                      <div className="flex-1">
+                        <h2
+                          className="text-lg font-semibold text-black mb-1"
+                          dangerouslySetInnerHTML={{ __html: item.product?.name || "Product Name" }}
+                        />
+                        {item.variant?.attributes && (
+                          <div className="text-xs text-gray-500 mb-2">
+                            {Array.isArray(item.variant.attributes)
+                              ? item.variant.attributes.map(attr => `${attr.name || attr.label || 'Attribute'}: ${attr.value || attr.option || JSON.stringify(attr)}`).join(", ")
+                              : Object.entries(item.variant.attributes).map(([k, v]) => `${k}: ${typeof v === 'object' ? v.value || v.name || JSON.stringify(v) : v}`).join(", ")
+                            }
+                          </div>
+                        )}
+                        <div
+                          className="text-xs text-gray-600 mb-4 line-clamp-2"
+                          dangerouslySetInnerHTML={{ __html: item.product?.description || "No description available" }}
+                        />
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-gray-900">Qty: {item.quantity}</span>
+                         
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Delivery Info */}
+                  <div className="flex justify-between items-center mt-6 pt-4 border-t-2 border-gray-200 text-xs text-gray-600">
+                    <span className="capitalize font-medium text-[#3C950D]">Status: {order.status}</span>
+                    <span>
+                      Payment Mode: <span className="font-medium text-black">{order.paymentMode || "Prepaid"}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

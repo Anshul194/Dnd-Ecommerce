@@ -9,19 +9,16 @@ import { fetchProducts } from "../store/slices/productSlice";
 import { LoadingSpinner } from "@/components/common/Loading";
 
 const SearchPage = () => {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState({
     searchTerm: "",
     category: "",
     subcategory: "",
     priceRange: { min: "", max: "" },
-    other: "",
   });
 
-  const [sortBy, setSortBy] = useState("High Price");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const { products, loading } = useSelector((state) => state.product);
-  const searchParams = useSearchParams();
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page")) || 1);
+  const { products, loading, pagination } = useSelector((state) => state.product);
   const dispatch = useDispatch();
 
   const paramCategories = searchParams.get("category");
@@ -36,24 +33,25 @@ const SearchPage = () => {
 
   useEffect(() => {
     const payload = {};
-    if (paramCategories) {
+    if (paramCategories && paramCategories !== "undefined" && paramCategories !== "null") {
       payload.category = paramCategories;
     }
-    if (paramSubcategories) {
+    if (paramSubcategories && paramSubcategories !== "undefined" && paramSubcategories !== "null") {
       payload.subcategory = paramSubcategories;
     }
-    if (minPrice) {
+    if (minPrice && minPrice !== "undefined" && minPrice !== "null") {
       payload.minPrice = minPrice;
     }
-    if (maxPrice) {
+    if (maxPrice && maxPrice !== "undefined" && maxPrice !== "null") {
       payload.maxPrice = maxPrice;
     }
-    if (paramSearchTerm) {
+    if (paramSearchTerm && paramSearchTerm !== "undefined" && paramSearchTerm !== "null") {
       payload.searchTerm = paramSearchTerm;
     }
     payload.page = currentPage;
-    payload.sortBy = sortBy;
-    payload.limit = 20; // Adjust as needed
+    payload.sortBy = "createdAt";
+    payload.sortOrder = "desc";
+    payload.limit = 20;
 
     // Fetch in background without blocking render
     const timer = setTimeout(() => {
@@ -68,7 +66,6 @@ const SearchPage = () => {
     maxPrice,
     paramSearchTerm,
     currentPage,
-    sortBy,
     dispatch,
   ]);
 
@@ -90,7 +87,7 @@ const SearchPage = () => {
                 <p className="text-gray-600 text-sm">
                   Results for
                   <span className="font-semibold ml-2 text-black">
-                    {loading ? "Loading..." : `(${(products?.products || products || []).filter(p => p.variants && p.variants.length > 0).length}) products`}
+                    {loading ? "Loading..." : `(${pagination?.total || (products || []).length}) products`}
                   </span>
                 </p>
               </div>
@@ -116,15 +113,14 @@ const SearchPage = () => {
             ) : (
               <>
                 <div className="grid grid-cols-2 max-sm:grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 mb-8">
-                  {(products?.products || products || [])
-                    .filter(product => product.variants && product.variants.length > 0)
+                  {(products || [])
                     .map((product) => (
                       <ProductCard key={product._id} product={product} showDes />
                     ))}
                 </div>
 
                 {/* No Results */}
-                {products?.products?.length === 0 && (
+                {products?.length === 0 && (
                   <div className="text-center py-12">
                     <p className="text-gray-500 text-lg">
                       No products found matching your criteria.
