@@ -15,6 +15,8 @@ export async function GET(req) {
 
   try {
     const subdomain = getSubdomain(req);
+    console.log(`GET /api/product - Subdomain: ${subdomain}`);
+    console.log(`GET /api/product - Query: ${JSON.stringify(query)}`);
     const conn = await getDbConnection(subdomain);
     if (!conn) {
       return NextResponse.json(
@@ -361,8 +363,13 @@ export async function POST(req) {
     }
 
     ////console.log("Final parsed product body:", JSON.stringify(body, null, 2));
-    const product = await productController.create(body, conn);
-    return NextResponse.json({ success: true, product }, { status: 201 });
+    const result = await productController.create(body, conn);
+
+    if (!result.success) {
+      return NextResponse.json(result, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, product: result }, { status: 201 });
   } catch (error) {
     ////console.error("POST error:", error);
     return NextResponse.json(

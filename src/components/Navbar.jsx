@@ -101,7 +101,7 @@ export default function Navbar({ initialCategories = [] }) {
     if ((!Array.isArray(reduxProducts) || reduxProducts.length === 0) && pathname !== "/search") {
       const payload = {
         page: 1,
-        limit: 10,
+        limit: 20,
         sort: "createdAt",
         order: "desc",
         filters: {},
