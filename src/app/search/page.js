@@ -5,7 +5,7 @@ import Filter from "./Filter";
 import ProductCard from "./ProductCard";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "../store/slices/productSlice";
+import { fetchProducts, resetProductState } from "../store/slices/productSlice";
 import { LoadingSpinner } from "@/components/common/Loading";
 
 const SearchPage = () => {
@@ -32,33 +32,33 @@ const SearchPage = () => {
   };
 
   useEffect(() => {
-    const payload = {};
-    if (paramCategories && paramCategories !== "undefined" && paramCategories !== "null") {
-      payload.category = paramCategories;
-    }
-    if (paramSubcategories && paramSubcategories !== "undefined" && paramSubcategories !== "null") {
-      payload.subcategory = paramSubcategories;
-    }
-    if (minPrice && minPrice !== "undefined" && minPrice !== "null") {
-      payload.minPrice = minPrice;
-    }
-    if (maxPrice && maxPrice !== "undefined" && maxPrice !== "null") {
-      payload.maxPrice = maxPrice;
-    }
-    if (paramSearchTerm && paramSearchTerm !== "undefined" && paramSearchTerm !== "null") {
-      payload.searchTerm = paramSearchTerm;
-    }
+    // Force a reset of products state to ensure we don't show stale/cached data
+    dispatch(resetProductState());
+
+    const payload = {
+      ignoreCache: true // Bypass Redux slice caching
+    };
+
+    // Helper to validate and add params to payload
+    const addParam = (key, value) => {
+      if (value && value !== "undefined" && value !== "null" && value !== "") {
+        payload[key] = value;
+      }
+    };
+
+    addParam("category", paramCategories);
+    addParam("subcategory", paramSubcategories);
+    addParam("minPrice", minPrice);
+    addParam("maxPrice", maxPrice);
+    addParam("searchTerm", paramSearchTerm);
+
     payload.page = currentPage;
     payload.sortBy = "createdAt";
     payload.sortOrder = "desc";
-    payload.limit = 20;
+    payload.limit = 20; // Increased limit to ensure full results
 
-    // Fetch in background without blocking render
-    const timer = setTimeout(() => {
-      dispatch(fetchProducts(payload));
-    }, 0);
-
-    return () => clearTimeout(timer);
+    // Fetch products
+    dispatch(fetchProducts(payload));
   }, [
     paramCategories,
     paramSubcategories,

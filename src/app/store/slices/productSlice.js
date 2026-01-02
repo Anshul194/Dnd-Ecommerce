@@ -80,13 +80,22 @@ export const fetchProducts = createAsyncThunk(
       const now = Date.now();
       const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-      // Prevent concurrent calls if already loading
-      if (state.product.loading) {
-        return false;
+      // If ignoreCache is provided, always proceed
+      if (payload.ignoreCache) {
+        return true;
       }
 
       // Create cache key from payload
       const cacheKey = JSON.stringify(payload);
+
+      // If we are already loading, only block if the PREVIOUS request had the EXACT same payload
+      // This allows the SearchPage to "override" a generic Navbar fetch
+      if (state.product.loading) {
+        // We don't have a clean way to know the *current* loading payload easily without adding it to state,
+        // but typically search page will have distinct params from navbar.
+        // For now, let's allow it if it's not the same as a valid cached entry.
+      }
+
       const cachedData = state.product.productCache?.[cacheKey];
 
       // Prevent API call if cache is valid
@@ -190,7 +199,14 @@ const productSlice = createSlice({
     error: null,
     productCache: {},
   },
-  reducers: {},
+  reducers: {
+    resetProductState: (state) => {
+      state.products = [];
+      state.pagination = null;
+      state.loading = true; // Set to true to show spinner immediately
+      state.productCache = {}; // Also clear cache to be safe
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
@@ -241,6 +257,7 @@ const removeSelectedProduct = (state) => {
   state.product.selectedProduct = null;
 };
 
+export const { resetProductState } = productSlice.actions;
 export { selectSelectedProduct, removeSelectedProduct };
 
 export default productSlice.reducer;

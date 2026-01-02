@@ -95,9 +95,10 @@ export default function Navbar({ initialCategories = [] }) {
         }
       }
     }
-    
-    // Only fetch products if not already in Redux store
-    if (!Array.isArray(reduxProducts) || reduxProducts.length === 0) {
+
+    // Only fetch products if not already in Redux store AND not on the search page
+    // The search page does its own fetching with specific filters.
+    if ((!Array.isArray(reduxProducts) || reduxProducts.length === 0) && pathname !== "/search") {
       const payload = {
         page: 1,
         limit: 10,
@@ -107,12 +108,12 @@ export default function Navbar({ initialCategories = [] }) {
       };
       dispatch(fetchProducts(payload));
     }
-    
+
     // Only fetch wishlist if authenticated and not already fetched
     if (isAuthenticated && (!LikedProducts || LikedProducts.length === 0)) {
       dispatch(fetchWishlist());
     }
-    
+
     // Only fetch blogs if not already fetched
     if (!items || items.length === 0) {
       dispatch(fetchBlogs());
@@ -122,7 +123,7 @@ export default function Navbar({ initialCategories = [] }) {
   useEffect(() => {
     if (!hasInitialized.current) {
       const abortController = new AbortController();
-      
+
       // Wrap initialData call to handle cancellation
       const loadData = async () => {
         try {
@@ -134,9 +135,9 @@ export default function Navbar({ initialCategories = [] }) {
           }
         }
       };
-      
+
       loadData();
-      
+
       return () => {
         abortController.abort(); // Cancel any ongoing requests on unmount
       };
@@ -277,7 +278,7 @@ export default function Navbar({ initialCategories = [] }) {
     <>
       <nav className="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-[999] border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-2 md:px-8 py-2 md:py-2">
-        {/* <div className="container mx-auto px-2 md:px-8 py-2 md:py-2"> */}
+          {/* <div className="container mx-auto px-2 md:px-8 py-2 md:py-2"> */}
           <div className="flex items-center justify-between gap-2 md:gap-6">
             {/* Mobile Menu & Logo */}
             {/* <div className="flex items-center w-2/3 justify-between   gap-2 md:gap-4"> */}
@@ -421,7 +422,7 @@ export default function Navbar({ initialCategories = [] }) {
                   className="rounded-full h-[90px] w-[90px] max-sm:h-[60px] max-sm:w-[60px] object-cover "
                 />
               </Link>
-              
+
             </div>
 
             {/* Desktop Navigation Links */}
