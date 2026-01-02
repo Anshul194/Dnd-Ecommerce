@@ -411,7 +411,7 @@ const Orders = () => {
                     {currentOrder?.invoiceUrl ? (
                       <>
                         <a
-                          href={currentOrder.invoiceUrl}
+                          href={getInvoiceHref(currentOrder.invoiceUrl)}
                           target="_blank"
                           rel="noreferrer"
                           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
