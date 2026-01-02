@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, Send, CheckCircle } from "lucide-react";
+import { Mail, Phone, Send, CheckCircle, MapPin } from "lucide-react";
 import axiosInstance from "@/axiosConfig/axiosInstance";
 
 export default function ContactPage() {
@@ -101,15 +101,33 @@ export default function ContactPage() {
                     Call Us
                   </h3>
                   <a
-                    href="tel:+918708944266"
+                    href="tel:+919205963262"
                     className="text-[#3C950D] hover:text-[#2d7009] font-medium text-xl transition-colors"
                   >
-                    +91-8708944266
+                    +91-9205963262
                   </a>
                 </div>
               </div>
             </div>
-
+            {/* Address Card */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-green-100 hover:border-[#3C950D] group">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-[#3C950D] to-[#2d7009] p-3 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Address
+                  </h3>
+                  <a
+                    href="address:34, VPO, Thaska, Gohana, Sonipat, Haryana, India"
+                    className="text-[#3C950D] hover:text-[#2d7009] font-medium break-all transition-colors"
+                  >
+                    34, VPO, Thaska, Gohana, Sonipat, Haryana, India
+                  </a>
+                </div>
+              </div>
+            </div>
             {/* Decorative Element */}
             <div className="hidden md:block bg-gradient-to-br from-[#3C950D]/10 to-[#2d7009]/5 rounded-2xl p-8 border-2 border-[#3C950D]/20">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
