@@ -63,7 +63,7 @@ class IVRService {
       const callerRaw = body._cr;
       const callId = body._ci;
       const callDuration = body._dr;
-      const durationMs = body._ss;
+      const durationMs = body._ss ? parseInt(body._ss) * 1000 : 0;
       const recordingUrl = body._fu;
       const callStatus = body._ld?.[0]?._ds || "UNKNOWN";
       const disposition = body._ld?.[0]?._ac || null;
@@ -171,6 +171,32 @@ class IVRService {
       return await this.repo.delete(id);
     } catch (error) {
       throw new Error(`Failed to delete user: ${error.message}`);
+    }
+  }
+
+  async getRecordingLink(file) {
+    const token = process.env.MYOPERATOR_API_TOKEN || "dd7e8fe0630104c7a4b6ca226f9fc2aa";
+
+    // Extract filename if it's a URL or has query params
+    let fileName = file;
+    if (file.includes('://') || file.includes('/')) {
+      fileName = file.split('/').pop().split('?')[0] || file;
+    } else {
+      fileName = file.split('?')[0];
+    }
+
+    // Ensure it ends with .mp3 extension and avoid double extension
+    if (!fileName.toLowerCase().endsWith('.mp3')) {
+      fileName = `${fileName}.mp3`;
+    }
+
+    const url = `https://developers.myoperator.co/recordings/link?token=${token}&file=${fileName}`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      throw new Error(`Failed to fetch recording link from API: ${error.message}`);
     }
   }
 }
