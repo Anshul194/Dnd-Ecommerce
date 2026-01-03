@@ -60,7 +60,7 @@ export default function YourOrders() {
             >
               Orders
             </button>
-           
+
             <button
               onClick={() => setActiveTab("Not Yet Shipped")}
               className={
@@ -118,8 +118,8 @@ export default function YourOrders() {
                       Order ID <span className="text-xs font-mono ml-1">#{order._id}</span>
                     </div>
                     <div className="flex gap-4 justify-between md:justify-end mt-1">
-                     
-                     
+
+
                     </div>
                   </div>
                 </div>
@@ -129,8 +129,20 @@ export default function YourOrders() {
                   {order.items?.map((item, idx) => (
                     <div key={idx} className={`flex gap-6 flex-col md:flex-row items-start ${idx > 0 ? "mt-6 pt-6 border-t border-gray-100" : ""}`}>
                       <div className="h-44 md:aspect-square md:max-w-44 w-full bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden">
-                        {item.product?.images?.[0] ? (
-                          <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                        {item.product?.images?.[0] || item.product?.thumbnail ? (
+                          <img
+                            src={
+                              typeof (item.product.images?.[0] || item.product.thumbnail) === 'string'
+                                ? (item.product.images?.[0] || item.product.thumbnail)
+                                : (item.product.images?.[0]?.url || item.product.thumbnail?.url || "/placeholder.png")
+                            }
+                            alt={
+                              typeof (item.product.images?.[0] || item.product.thumbnail) === 'string'
+                                ? item.product.name
+                                : (item.product.images?.[0]?.alt || item.product.thumbnail?.alt || item.product.name)
+                            }
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
                         )}
@@ -155,7 +167,7 @@ export default function YourOrders() {
                         />
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-bold text-gray-900">Qty: {item.quantity}</span>
-                         
+
                         </div>
                       </div>
                     </div>

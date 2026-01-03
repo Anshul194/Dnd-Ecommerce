@@ -279,8 +279,9 @@ const Orders = () => {
               <div className="flex mb-2 items-start space-x-4 p-2 bg-gray-500/5 rounded-lg">
                 <img
                   src={
-                    reviewProduct?.product?.thumbnail?.url ||
-                    reviewProduct?.product?.images?.[0]?.url
+                    (typeof (reviewProduct?.product?.thumbnail || reviewProduct?.product?.images?.[0]) === 'string')
+                      ? (reviewProduct?.product?.thumbnail || reviewProduct?.product?.images?.[0])
+                      : (reviewProduct?.product?.thumbnail?.url || reviewProduct?.product?.images?.[0]?.url || "/placeholder.png")
                   }
                   alt={reviewProduct?.product?.name}
                   className="w-16  h-16   object-cover rounded-lg bg-gray-100"
@@ -567,8 +568,9 @@ const Orders = () => {
                         >
                           <img
                             src={
-                              item?.product?.thumbnail?.url ||
-                              item?.product?.images?.[0]?.url
+                              (typeof (item?.product?.thumbnail || item?.product?.images?.[0]) === 'string')
+                                ? (item?.product?.thumbnail || item?.product?.images?.[0])
+                                : (item?.product?.thumbnail?.url || item?.product?.images?.[0]?.url || "/placeholder.png")
                             }
                             alt={item?.product?.name}
                             className="w-20 h-20 object-cover rounded-lg bg-gray-100"
@@ -886,8 +888,9 @@ const Orders = () => {
                                   product?.images?.[0]?.url ? (
                                   <img
                                     src={
-                                      product?.thumbnail?.url ||
-                                      product?.images?.[0]?.url
+                                      (typeof (product?.thumbnail || product?.images?.[0]) === 'string')
+                                        ? (product?.thumbnail || product?.images?.[0])
+                                        : (product?.thumbnail?.url || product?.images?.[0]?.url || "/placeholder.png")
                                     }
                                     alt={product?.name}
                                     className="w-full h-32 object-cover rounded-lg mb-3"
