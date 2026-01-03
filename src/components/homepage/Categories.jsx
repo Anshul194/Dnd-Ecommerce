@@ -152,7 +152,11 @@ const Categories = ({ dynamicContent = null }) => {
                         <Image
                           width={100}
                           height={100}
-                          src={item?.thumbnail || "/placeholder.png"}
+                          src={
+                            (typeof (item?.thumbnail || item?.image) === 'string')
+                              ? (item?.thumbnail || item?.image)
+                              : (item?.thumbnail?.url || item?.image?.url || "/placeholder.png")
+                          }
                           alt={item?.name || "Category Image"}
                           className="w-full max-sm:h-[248px] sm:max-md:h-[248px] h-full md:object-cover"
                         />
@@ -178,7 +182,11 @@ const Categories = ({ dynamicContent = null }) => {
                           <Image
                             width={100}
                             height={100}
-                            src={item?.thumbnail}
+                            src={
+                              (typeof (item?.thumbnail || item?.image) === 'string')
+                                ? (item?.thumbnail || item?.image)
+                                : (item?.thumbnail?.url || item?.image?.url || "/placeholder.png")
+                            }
                             alt={item?.name || "Category Image"}
                             className="w-full h-44 object-cover"
                           />

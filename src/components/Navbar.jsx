@@ -490,13 +490,26 @@ export default function Navbar({ initialCategories = [] }) {
                                       <div className="w-10 h-10 rounded-lg overflow-hidden bg-white flex-shrink-0">
                                         {category?.image ? (
                                           <Image
-                                            src={category.image}
+                                            src={
+                                              (typeof (category?.image || category?.thumbnail) === 'string')
+                                                ? (category?.image || category?.thumbnail)
+                                                : (category?.image?.url || category?.thumbnail?.url || "/placeholder.png")
+                                            }
                                             alt={category?.name || ''}
                                             width={40}
                                             height={40}
                                             className="w-full h-full object-cover"
                                           />
-                                        ) : null}
+                                        ) : (
+                                          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                            <Image
+                                              src="/placeholder.png"
+                                              alt="Placeholder"
+                                              width={20}
+                                              height={20}
+                                            />
+                                          </div>
+                                        )}
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <h4
@@ -576,14 +589,25 @@ export default function Navbar({ initialCategories = [] }) {
                                                       {subcategory?.image ? (
                                                         <Image
                                                           src={
-                                                            subcategory.image
+                                                            (typeof (subcategory?.image || subcategory?.thumbnail) === 'string')
+                                                              ? (subcategory?.image || subcategory?.thumbnail)
+                                                              : (subcategory?.image?.url || subcategory?.thumbnail?.url || "/placeholder.png")
                                                           }
                                                           alt={subcategory?.name || ''}
                                                           width={48}
                                                           height={48}
                                                           className="w-full h-full object-cover"
                                                         />
-                                                      ) : null}
+                                                      ) : (
+                                                        <div className="w-full h-full bg-gray-50 flex items-center justify-center">
+                                                          <Image
+                                                            src="/placeholder.png"
+                                                            alt="Placeholder"
+                                                            width={24}
+                                                            height={24}
+                                                          />
+                                                        </div>
+                                                      )}
                                                     </div>
                                                     <span className="text-sm font-medium text-gray-700 group-hover/sub:text-[#3C950D] transition-colors">
                                                       {subcategory?.name}
