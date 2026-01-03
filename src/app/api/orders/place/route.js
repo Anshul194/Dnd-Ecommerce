@@ -344,7 +344,8 @@ export async function POST(req) {
 
       const filePath = path.join(invoicesDir, `${invoiceId}.html`);
       await fs.writeFile(filePath, invoiceHtml, "utf8");
-      const invoiceUrl = `${origin}/uploads/invoices/${invoiceId}.html`;
+      // Use relative URL so it works on both localhost and production
+      const invoiceUrl = `/uploads/invoices/${invoiceId}.html`;
       result.data.invoiceUrl = invoiceUrl;
 
       // Persist invoice URL to the Order document so subsequent reads include it
@@ -507,7 +508,8 @@ export const GET = withUserAuth(async function (request) {
         const filePath = path.join(invoicesDir, `${id}.html`);
         try {
           await fs.access(filePath);
-          ord.invoiceUrl = `${origin}/uploads/invoices/${id}.html`;
+          // Use relative URL
+          ord.invoiceUrl = `/uploads/invoices/${id}.html`;
         } catch (e) {
           // file doesn't exist — skip
         }
