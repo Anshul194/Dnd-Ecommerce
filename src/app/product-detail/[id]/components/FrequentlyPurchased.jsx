@@ -60,9 +60,8 @@ export default function FrequentlyPurchased() {
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
-            className={`w-3 h-3 ${
-              i < rating ? "fill-green-500 text-green-500" : "text-gray-300"
-            }`}
+            className={`w-3 h-3 ${i < rating ? "fill-green-500 text-green-500" : "text-gray-300"
+              }`}
           />
         ))}
       </div>
@@ -115,7 +114,9 @@ export default function FrequentlyPurchased() {
             {products?.products?.length > 0 &&
               products.products.map((product) => {
                 const imgSrc =
-                  product?.thumbnail?.url || product?.images?.[0]?.url || null;
+                  (typeof product?.thumbnail === 'string' ? product.thumbnail : product?.thumbnail?.url) ||
+                  (typeof product?.images?.[0] === 'string' ? product.images[0] : product?.images?.[0]?.url) ||
+                  null;
                 return (
                   <Link key={product._id} href={`/product-detail/${product.slug}`}>
                     <div className="bg-white flex-shrink-0 min-w-64 max-w-[300px] w-1/4">

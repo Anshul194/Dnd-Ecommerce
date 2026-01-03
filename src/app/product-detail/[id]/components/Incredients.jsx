@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 
 export default function Ingredient({ data }) {
@@ -19,14 +20,14 @@ export default function Ingredient({ data }) {
       const windowHeight = window.innerHeight;
 
       // Check if we're in the ingredients section
-      if (scrollPosition + windowHeight > containerTop && 
-          scrollPosition < containerTop + containerHeight) {
-        
+      if (scrollPosition + windowHeight > containerTop &&
+        scrollPosition < containerTop + containerHeight) {
+
         ingredientsRef.current.forEach((ref, index) => {
           if (ref) {
             const rect = ref.getBoundingClientRect();
             const isInViewport = rect.top < windowHeight * 0.6 && rect.bottom > windowHeight * 0.4;
-            
+
             if (isInViewport && activeIngredient !== index) {
               setActiveIngredient(index);
             }
@@ -57,11 +58,10 @@ export default function Ingredient({ data }) {
               <div
                 key={index}
                 ref={el => ingredientsRef.current[index] = el}
-                className={`transition-all duration-500 ${
-                  activeIngredient === index 
-                    ? 'opacity-100 transform translate-x-0' 
+                className={`transition-all duration-500 ${activeIngredient === index
+                    ? 'opacity-100 transform translate-x-0'
                     : 'opacity-70 transform translate-x-2'
-                }`}
+                  }`}
               >
                 {/* Ingredient Number */}
                 <div className="flex items-start gap-6 mb-4">
@@ -95,11 +95,12 @@ export default function Ingredient({ data }) {
 
                 {/* Mobile Image (visible only on mobile) */}
                 {ingredient.image && (
-                  <div className="lg:hidden mt-6 rounded-lg w-full h-[250px] overflow-hidden">
-                    <img
-                      src={ingredient.image}
-                      alt={ingredient.alt || ingredient.name}
-                      className="w-full h-full object-cover rounded-lg"
+                  <div className="lg:hidden mt-6 rounded-lg w-full h-[250px] overflow-hidden relative">
+                    <Image
+                      src={typeof ingredient.image === 'string' ? ingredient.image : ingredient.image?.url || "/placeholder.png"}
+                      alt={typeof ingredient.image === 'string' ? ingredient.name : ingredient.image?.alt || ingredient.name}
+                      fill
+                      className="object-cover rounded-lg"
                     />
                   </div>
                 )}
@@ -120,17 +121,18 @@ export default function Ingredient({ data }) {
             <div className="relative">
               <div className="rounded-lg w-full h-[500px] overflow-hidden shadow-lg">
                 {ingredients[activeIngredient]?.image && (
-                  <img
-                    src={ingredients[activeIngredient]?.image}
-                    alt={ingredients[activeIngredient]?.alt || ingredients[activeIngredient]?.name}
-                    className="w-full h-full object-cover rounded-lg transition-all duration-700 ease-in-out transform"
+                  <Image
+                    src={typeof ingredients[activeIngredient].image === 'string' ? ingredients[activeIngredient].image : ingredients[activeIngredient].image?.url || "/placeholder.png"}
+                    alt={typeof ingredients[activeIngredient].image === 'string' ? ingredients[activeIngredient].name : ingredients[activeIngredient].image?.alt || ingredients[activeIngredient].name}
+                    fill
+                    className="object-cover rounded-lg transition-all duration-700 ease-in-out transform"
                     style={{
                       filter: 'brightness(0.95) contrast(1.05)'
                     }}
                   />
                 )}
               </div>
-              
+
               {/* Image Overlay Info */}
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4">
@@ -159,11 +161,10 @@ export default function Ingredient({ data }) {
                 <button
                   key={index}
                   onClick={() => setActiveIngredient(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    activeIngredient === index
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${activeIngredient === index
                       ? 'bg-black scale-125'
                       : 'bg-gray-300 hover:bg-gray-400'
-                  }`}
+                    }`}
                 />
               ))}
             </div>
