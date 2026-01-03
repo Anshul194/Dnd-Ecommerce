@@ -26,7 +26,7 @@ const Categories = ({ dynamicContent = null }) => {
 
   useEffect(() => {
     const isCacheValid = lastFetched && (Date.now() - lastFetched < CACHE_DURATION);
-    
+
     // Fetch categories only once if not already available or cache expired
     if (!hasFetched.current && (!categories || categories.length === 0 || !isCacheValid)) {
       hasFetched.current = true;
@@ -153,7 +153,7 @@ const Categories = ({ dynamicContent = null }) => {
                           width={100}
                           height={100}
                           src={item?.thumbnail || "/placeholder.png"}
-                          alt="Tea product"
+                          alt={item?.name || "Category Image"}
                           className="w-full max-sm:h-[248px] sm:max-md:h-[248px] h-full md:object-cover"
                         />
                         <div className="bg text-white text-sm py-2 px-2 text-center flex items-center justify-center w-full font-medium">
@@ -179,7 +179,7 @@ const Categories = ({ dynamicContent = null }) => {
                             width={100}
                             height={100}
                             src={item?.thumbnail}
-                            alt="Tea product"
+                            alt={item?.name || "Category Image"}
                             className="w-full h-44 object-cover"
                           />
                         </div>

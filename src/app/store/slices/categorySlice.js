@@ -5,7 +5,7 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 export const fetchCategories = createAsyncThunk(
   "category/fetchCategories",
   async (_, { getState }) => {
-    const response = await axiosInstance.get("/category");
+    const response = await axiosInstance.get("/category?limit=100");
     return response.data.data.body.data.result;
   },
   {
@@ -13,12 +13,12 @@ export const fetchCategories = createAsyncThunk(
       const state = getState();
       const now = Date.now();
       const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-      
+
       // Prevent concurrent calls if already loading
       if (state.category.loading) {
         return false;
       }
-      
+
       // Prevent API call if cache is valid
       if (
         state.category.categories?.length > 0 &&
