@@ -26,21 +26,38 @@ export default class CallService {
     return this.conn.models.User || this.conn.model('User', userSchema);
   }
 
- async initiateCall(leadId, tenant) {
-  if (!leadId) throw new Error("leadId required");
+  async initiateCall(leadId, tenant, agentId, directAgentNumber) {
+    if (!leadId) throw new Error("leadId required");
 
-  const conn = this.conn;
-  const Lead = this.getLeadModel();
-  const lead = await Lead.findById(leadId);
+    const conn = this.conn;
+    const Lead = this.getLeadModel();
+    const lead = await Lead.findById(leadId);
 
-  console.log("CallService.initiateCall for lead:", leadId, "found lead:", !!lead);
+    console.log("CallService.initiateCall for lead:", leadId, "found lead:", !!lead);
 
-  if (!lead) throw new Error("Lead not found");
-  if (!lead.phone) throw new Error("Lead has no phone number");
+    if (!lead) throw new Error("Lead not found");
+    if (!lead.phone) throw new Error("Lead has no phone number");
+
 
     // Resolve agent number (the agent who will receive the outbound ring)
-    let agentNumber = null;
-    if (lead.assignedTo) {
+    let agentNumber = directAgentNumber || null;
+
+    // 1. Try specific agent if requested (e.g. current user) and no direct number provided
+    if (!agentNumber && agentId) {
+      const User = this.getUserModel();
+      try {
+        const agent = await User.findById(agentId).lean();
+        if (agent && agent.phone) {
+          agentNumber = agent.phone;
+          console.log("Using requested agent phone:", agentNumber);
+        }
+      } catch (e) {
+        console.warn("Failed to lookup requested agent:", e.message);
+      }
+    }
+
+    // 2. Fallback to assigned agent
+    if (!agentNumber && lead.assignedTo) {
       const User = this.getUserModel();
       try {
         const assignedUser = await User.findById(lead.assignedTo).lean();
@@ -49,22 +66,22 @@ export default class CallService {
         // ignore
       }
     }
-    // fallback to env if present
+    // 3. Fallback to env if present
     agentNumber = agentNumber || process.env.MYOPERATOR_AGENT_NUMBER || null;
     if (!agentNumber) throw new Error("No agent number available to initiate call");
 
     const customerNumber = lead.phone;
 
-     const Setting =
-            conn.models.Setting || conn.model("Setting", SettingSchema);
-          const settings = await Setting.findOne({ tenant }).lean();
+    const Setting =
+      conn.models.Setting || conn.model("Setting", SettingSchema);
+    const settings = await Setting.findOne({ tenant }).lean();
 
     // Build OBD payload
     const obdBody = {
       company_id: settings.myOperatorCompanyId || "683aebae503f2118",
       secret_token:
-              settings.myOperatorSecretToken ||
-              "2a67cfdb278391cf9ae47a7fffd6b0ec8d93494ff0004051c0f328a501553c98",
+        settings.myOperatorSecretToken ||
+        "2a67cfdb278391cf9ae47a7fffd6b0ec8d93494ff0004051c0f328a501553c98",
       type: "1",
       number_2: '+91' + customerNumber,
       number: '+91' + agentNumber,
@@ -117,19 +134,19 @@ export default class CallService {
     //   console.error('CallService: failed to save call log', err.message);
     // }
 
-  // Update lead
-  try {
-    lead.lastCallStatus = "initiated";
-    lead.status = "attempted"; // recommended
-    lead.lastContactedAt = new Date();
-    lead.followUpCount = (lead.followUpCount || 0) + 1;
-    await lead.save();
-  } catch (err) {
-    console.error("CallService: failed to update lead", err.message);
-  }
+    // Update lead
+    try {
+      lead.lastCallStatus = "initiated";
+      lead.status = "attempted"; // recommended
+      lead.lastContactedAt = new Date();
+      lead.followUpCount = (lead.followUpCount || 0) + 1;
+      await lead.save();
+    } catch (err) {
+      console.error("CallService: failed to update lead", err.message);
+    }
 
-  return { callId, lead };
-}
+    return { callId, lead };
+  }
 
 
   // Process webhook body from MyOperator
@@ -222,6 +239,6 @@ export default class CallService {
     }
 
     return { success: true };
-}
+  }
 
 }

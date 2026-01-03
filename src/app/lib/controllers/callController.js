@@ -4,16 +4,16 @@ import { getDbConnection, getSubdomain } from '../tenantDb';
 
 export async function initiateCallController(body, conn, tenant) {
   try {
-    const { leadId } = body || {};
-    if (!leadId) return NextResponse.json({ success: false, message: 'leadId is required' }, { status: 400 });
-    console.log('initiateCallController called with leadId:', leadId);
+    const { leadId, agentId, agentNumber } = body || {};
+    if (!leadId) return { body: { success: false, message: 'leadId is required' }, status: 400 };
+    console.log('initiateCallController called with leadId:', leadId, 'agentId:', agentId, 'agentNumber:', agentNumber);
     const svc = new CallService(conn);
-    const result = await svc.initiateCall(leadId, tenant);
-    return {body: { success: true, data: result }, status: 200 };
+    const result = await svc.initiateCall(leadId, tenant, agentId, agentNumber);
+    return { body: { success: true, data: result }, status: 200 };
   } catch (err) {
     console.error('initiateCallController error:', err.message);
-    return NextResponse.json({ success: false, message: err.message }, { status: 500 });
-}     
+    return { body: { success: false, message: err.message }, status: 500 };
+  }
 }
 
 export async function webhookController(request) {
