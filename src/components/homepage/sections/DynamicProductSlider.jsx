@@ -606,9 +606,7 @@ const DynamicProductSlider = ({ content }) => {
           }
         </div>
       </div>
-      );
-
-   </div>  
-  )
+    </div>
+  );
 }
-    export default DynamicProductSlider;
+export default DynamicProductSlider;
