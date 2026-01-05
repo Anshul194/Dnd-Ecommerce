@@ -10,7 +10,7 @@ import mongoose from "mongoose";
 export async function DELETE(req, context) {
   try {
     // ✅ params is async in App Router
-    const { params } = context;
+    const params = await context.params;
     const { id } = params;
 
     // Normalize & sanitize
