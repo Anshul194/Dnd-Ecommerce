@@ -13,7 +13,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import AnimatedGradientBorder from "./ui/AnimatedGradientBorder";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function BlogSection({ content }) {
   const { items, loading } = useSelector((state) => state.blogs);
@@ -108,9 +110,8 @@ export default function BlogSection({ content }) {
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
-            className={`w-3 h-3 ${
-              i < rating ? "fill-green-500 text-green-500" : "text-gray-300"
-            }`}
+            className={`w-3 h-3 ${i < rating ? "fill-green-500 text-green-500" : "text-gray-300"
+              }`}
           />
         ))}
       </div>
@@ -173,20 +174,20 @@ export default function BlogSection({ content }) {
                 >
                   {/* Product Image */}
                   <div className="relative bg-gray-400 overflow-hidden rounded-t-xl w-full h-48 mb-1 ">
-                    <Image
+                    <img
                       src={
-                        product?.thumbnail?.url ||
-                        product?.images[0]?.url ||
+                        getImageUrl(product?.thumbnail?.url) ||
+                        getImageUrl(product?.images?.[0]?.url) ||
+                        getImageUrl(product?.image?.[0]?.url) ||
                         "/Image-not-found.png"
                       }
                       alt={
                         product?.thumbnail?.alt ||
-                        product?.images[0]?.alt ||
-                        "/Image-not-found.png"
+                        product?.images?.[0]?.alt ||
+                        product?.image?.[0]?.alt ||
+                        "Blog Thumbnail"
                       }
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-md group-hover:scale-[1.05] transition-transform duration-300"
+                      className="w-full h-full object-cover rounded-md group-hover:scale-[1.05] transition-transform duration-300"
                     />
                   </div>
 
