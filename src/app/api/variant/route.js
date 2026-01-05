@@ -57,12 +57,12 @@ export const POST = async (req) => {
         body[key] = value;
       }
     }
-    
+
     // Ensure attributes is always an array
     if (!body.attributes || !Array.isArray(body.attributes)) {
       body.attributes = [];
     }
-    
+
     // Convert numeric fields from strings to numbers
     if (body.price !== undefined && body.price !== null && body.price !== '') {
       body.price = Number(body.price);
@@ -82,10 +82,10 @@ export const POST = async (req) => {
         return toNextResponse({ success: false, message: 'Invalid stock value' }, 400);
       }
     }
-    
+
     // Log the parsed body for debugging
     console.log('Parsed variant body:', JSON.stringify(body, null, 2));
-    
+
     const result = await createVariant({ body }, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
@@ -101,7 +101,9 @@ export const GET = async (req) => {
     if (!conn) {
       return toNextResponse({ success: false, message: 'DB not found' }, 404);
     }
-    const result = await getAllVariants({}, conn);
+    const url = new URL(req.url);
+    const query = Object.fromEntries(url.searchParams.entries());
+    const result = await getAllVariants({ query }, conn);
     return toNextResponse(result.body, result.status);
   } catch (error) {
     return toNextResponse({ success: false, message: error.message }, 500);
