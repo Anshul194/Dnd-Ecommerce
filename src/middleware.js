@@ -26,7 +26,7 @@ export function middleware(request) {
 
   // Add cache headers for static assets
   if (
-    pathname.startsWith('/uploads') ||
+    (pathname.startsWith('/uploads') && !pathname.startsWith('/uploads/invoices')) ||
     pathname.startsWith('/images') ||
     pathname.startsWith('/category-images') ||
     pathname.startsWith('/category-thumbnails') ||

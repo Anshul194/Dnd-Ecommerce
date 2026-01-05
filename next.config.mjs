@@ -64,12 +64,14 @@ const nextConfig = {
   },
 
   async rewrites() {
-    return [
-      {
-        source: "/uploads/invoices/:id.html",
-        destination: "/api/invoice/:id",
-      },
-    ];
+    return {
+      beforeFiles: [
+        {
+          source: "/uploads/invoices/:id.html",
+          destination: "/api/invoice/:id",
+        },
+      ],
+    };
   },
 
   /**
