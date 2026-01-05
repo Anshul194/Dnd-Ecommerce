@@ -43,23 +43,18 @@ export const influencerVideoSchema = new mongoose.Schema(
 );
 
 // Pre-save hook to validate productId and videoType
-influencerVideoSchema.pre('save', function (next) {
-  try {
-    if (this.type === 'product' && !this.productId) {
-      throw new Error('Product ID is required for product type videos');
-    }
-    if (this.type !== 'product' && this.productId) {
-      this.productId = undefined;
-    }
-    if (this.videoType === 'youtube' && !/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/.test(this.videoUrl)) {
-      throw new Error('Video URL must be a valid YouTube URL for videoType youtube');
-    }
-    if (this.videoType === 'upload' && !this.videoUrl.startsWith('/uploads/')) {
-      throw new Error('Video URL must be a local upload path for videoType upload');
-    }
-    next();
-  } catch (error) {
-    next(error);
+influencerVideoSchema.pre('save', function () {
+  if (this.type === 'product' && !this.productId) {
+    throw new Error('Product ID is required for product type videos');
+  }
+  if (this.type !== 'product' && this.productId) {
+    this.productId = undefined;
+  }
+  if (this.videoType === 'youtube' && !/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/.test(this.videoUrl)) {
+    throw new Error('Video URL must be a valid YouTube URL for videoType youtube');
+  }
+  if (this.videoType === 'upload' && !this.videoUrl.startsWith('/uploads/')) {
+    throw new Error('Video URL must be a local upload path for videoType upload');
   }
 });
 

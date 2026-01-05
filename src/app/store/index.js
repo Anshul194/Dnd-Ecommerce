@@ -23,6 +23,7 @@ import settingSlice from "./slices/settingSlice";
 import reviewsSlice from "./slices/Reviews";
 import pagesSlice from "./slices/pagesSlice";
 import certificateReducer from "./slices/certificateSlice";
+import influencerVideoReducer from "./slices/influencerVideoSlice";
 // Attempt to synchronously hydrate cart state from localStorage on client
 let preloadedState = undefined;
 if (typeof window !== "undefined") {
@@ -85,6 +86,7 @@ const store = configureStore({
     reviews: reviewsSlice,
     pages: pagesSlice, // Import and add pagesSlice here
     certificate: certificateReducer,
+    influencerVideo: influencerVideoReducer,
   },
   preloadedState,
 });

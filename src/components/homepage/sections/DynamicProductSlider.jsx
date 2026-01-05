@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
@@ -25,6 +25,15 @@ import { useRouter } from "next/navigation";
 const DynamicProductSlider = ({ content }) => {
   const { title, description, image } = content;
   const { products, loading } = useSelector((state) => state.product);
+
+
+
+
+  // Safely derive stories from products (handling both array and object structure)
+  const rawProducts = Array.isArray(products) ? products : (products?.products || []);
+
+  // Merge Product Stories (Admin)
+  const stories = rawProducts.filter((P) => P?.storyVideoUrl).map(p => ({ ...p, isUserStory: false }));
   const [currentSlide, setCurrentSlide] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(4);
   const [overlayOpen, setOverlayOpen] = useState(false);
@@ -38,13 +47,11 @@ const DynamicProductSlider = ({ content }) => {
   const { trackAddToCart, trackView } = useTrack();
 
   const nextSlide = () => {
-    const stories = products?.products?.filter((P) => P.storyVideoUrl) || [];
     const pages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
     setCurrentSlide((prev) => (prev + 1) % pages);
   };
 
   const prevSlide = () => {
-    const stories = products?.products?.filter((P) => P.storyVideoUrl) || [];
     const pages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
     setCurrentSlide((prev) => (prev - 1 + pages) % pages);
   };
@@ -98,6 +105,7 @@ const DynamicProductSlider = ({ content }) => {
 
   const handleAddToCart = async (e, product) => {
     e.stopPropagation();
+    console.log("HandleAddToCart triggered for:", product);
     // if (!isAuthenticated) {
     //   setShowAuthModal(true);
     //   return;
@@ -106,17 +114,17 @@ const DynamicProductSlider = ({ content }) => {
     const price = product?.variants[0]
       ? product?.variants[0]?.salePrice || product?.variants[0]?.price
       : product?.salePrice || product?.price;
-    
+
     try {
       const resultAction = await dispatch(
         addToCart({
-          product: product._id,
+          product: product.originalProductId || product._id,
           quantity: 1,
           price: price,
           variant: product?.variants[0]?._id,
         })
       );
-      
+
       // Don't immediately call getCartItems() - it can overwrite the cart if server hasn't synced
       // The addToCart action already updates the Redux state and localStorage
       // Only refresh cart from server after a delay to allow server to sync
@@ -129,12 +137,12 @@ const DynamicProductSlider = ({ content }) => {
           }
         }, 500); // 500ms delay to allow server to process
       }
-      
+
       dispatch(toggleCart());
 
       // track
       try {
-        trackAddToCart(product._id);
+        trackAddToCart(product.originalProductId || product._id);
       } catch (err) {
         // non-blocking
       }
@@ -143,85 +151,86 @@ const DynamicProductSlider = ({ content }) => {
     }
   };
 
- const handleBuyNow = async (e, productData) => {
-  e.stopPropagation();
+  const handleBuyNow = async (e, productData) => {
+    e.stopPropagation();
+    console.log("HandleBuyNow triggered for:", productData);
 
-  // 1️⃣ Close cart immediately
-  dispatch(closeCart());
+    // 1ï¸âƒ£ Close cart immediately
+    dispatch(closeCart());
 
-  const price = productData.variants[0];
+    const price = productData.variants[0];
 
-  try {
-    // 2️⃣ Normalize product image
-    const productImage = productData.thumbnail || productData.images?.[0];
-    const imageObj = productImage
-      ? typeof productImage === "string"
-        ? { url: productImage, alt: productData.name }
-        : {
+    try {
+      // 2ï¸âƒ£ Normalize product image
+      const productImage = productData.thumbnail || productData.images?.[0];
+      const imageObj = productImage
+        ? typeof productImage === "string"
+          ? { url: productImage, alt: productData.name }
+          : {
             url: productImage.url || productImage,
             alt: productImage.alt || productData.name,
           }
-      : { url: "/Image-not-found.png", alt: productData.name };
+        : { url: "/Image-not-found.png", alt: productData.name };
 
-    // 3️⃣ Prepare Buy Now payload
-    const buyNowPayload = {
-      product: {
-        _id: productData._id,
-        id: productData._id,
-        name: productData.name,
-        image: imageObj,
-        category: productData.category,
-      },
-      quantity: 1,
-      price: Number(price.salePrice || price.price || 0),
-      variant: productData.variants[0]._id,
-    };
+      // 3ï¸âƒ£ Prepare Buy Now payload
+      const buyNowPayload = {
+        product: {
+          _id: productData.originalProductId || productData._id,
+          id: productData.originalProductId || productData._id,
+          name: productData.name,
+          image: imageObj,
+          category: productData.category,
+        },
+        quantity: 1,
+        price: Number(price.salePrice || price.price || 0),
+        variant: productData.variants[0]._id,
+      };
 
-    // 4️⃣ Update Redux (for UI state)
-    const resultAction = await dispatch(setBuyNowProduct(buyNowPayload));
+      // 4ï¸âƒ£ Update Redux (for UI state)
+      const resultAction = await dispatch(setBuyNowProduct(buyNowPayload));
 
-    if (resultAction.error) {
-      toast.error(
-        resultAction.payload ||
+      if (resultAction.error) {
+        toast.error(
+          resultAction.payload ||
           resultAction.error.message ||
           "Failed to add to cart"
-      );
-      return;
+        );
+        return;
+      }
+
+      // 5ï¸âƒ£ FORCE write to localStorage (client-only)
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "dnd_ecommerce_buy_now",
+          JSON.stringify(buyNowPayload)
+        );
+      }
+
+      // ðŸ”‘ 6ï¸âƒ£ CRITICAL: wait one frame so browser flushes storage
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      // 7ï¸âƒ£ Close overlay (UI cleanup)
+      setOverlayProduct(null);
+
+      // 8ï¸âƒ£ Open checkout state (if used)
+      dispatch(setCheckoutOpen());
+
+      // 9ï¸âƒ£ Navigate AFTER storage is guaranteed
+      router.push("/checkout-popup");
+
+      // ðŸ”Ÿ Tracking (non-blocking)
+      try {
+        trackAddToCart(productData.originalProductId || productData._id);
+        trackEvent("BUY_NOW", {
+          productId: productData.originalProductId || productData._id,
+          variantId: productData.variants[0]._id,
+        });
+      } catch (_) { }
+
+    } catch (error) {
+      toast.error(error?.message || "Failed to add to cart");
     }
-
-    // 5️⃣ FORCE write to localStorage (client-only)
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "dnd_ecommerce_buy_now",
-        JSON.stringify(buyNowPayload)
-      );
-    }
-
-    // 🔑 6️⃣ CRITICAL: wait one frame so browser flushes storage
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-
-    // 7️⃣ Close overlay (UI cleanup)
-    setOverlayProduct(null);
-
-    // 8️⃣ Open checkout state (if used)
-    dispatch(setCheckoutOpen());
-
-    // 9️⃣ Navigate AFTER storage is guaranteed
-    router.push("/checkout-popup");
-
-    // 🔟 Tracking (non-blocking)
-    try {
-      trackAddToCart(productData._id);
-      trackEvent("BUY_NOW", {
-        productId: productData._id,
-        variantId: productData.variants[0]._id,
-      });
-    } catch (_) {}
-
-  } catch (error) {
-    toast.error(error?.message || "Failed to add to cart");
-  }
-};
+  };
 
 
   const openOverlay = (product) => {
@@ -280,12 +289,17 @@ const DynamicProductSlider = ({ content }) => {
     return () => window.removeEventListener("resize", calc);
   }, []);
 
+
+
   // If itemsPerPage changes, ensure currentSlide is within range
   useEffect(() => {
-    const stories = products?.products?.filter((P) => P.storyVideoUrl) || [];
     const pages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
     if (currentSlide > pages - 1) setCurrentSlide(pages - 1);
-  }, [itemsPerPage, products?.products]);
+  }, [itemsPerPage, stories.length]);
+
+  const isVideo = (url) => {
+    return typeof url === 'string' && /\.(mp4|webm|ogg|mov)$/i.test(url);
+  };
 
   // Check if we should show the component
   const hasProducts = products?.length > 0 || products?.products?.length > 0;
@@ -314,11 +328,10 @@ const DynamicProductSlider = ({ content }) => {
           <button
             onClick={() => scroll("left")}
             disabled={!canScrollLeft}
-            className={`hidden sm:flex absolute -left-4 md:-left-5 top-1/2 border border-black/20 transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg items-center justify-center transition-all duration-200 ${
-              canScrollLeft
-                ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
-                : "text-gray-300 cursor-not-allowed opacity-50"
-            }`}
+            className={`hidden sm:flex absolute -left-4 md:-left-5 top-1/2 border border-black/20 transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg items-center justify-center transition-all duration-200 ${canScrollLeft
+              ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
+              : "text-gray-300 cursor-not-allowed opacity-50"
+              }`}
           >
             <svg
               width="18"
@@ -341,11 +354,10 @@ const DynamicProductSlider = ({ content }) => {
           <button
             onClick={() => scroll("right")}
             disabled={!canScrollRight}
-            className={`hidden sm:flex absolute -right-2 md:-right-5 top-1/2 border transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg items-center justify-center transition-all duration-200 ${
-              canScrollRight
-                ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
-                : "text-gray-300 cursor-not-allowed opacity-50"
-            }`}
+            className={`hidden sm:flex absolute -right-2 md:-right-5 top-1/2 border transform -translate-y-1/2 z-30 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white shadow-lg items-center justify-center transition-all duration-200 ${canScrollRight
+              ? "text-gray-700 hover:bg-gray-50 cursor-pointer opacity-100"
+              : "text-gray-300 cursor-not-allowed opacity-50"
+              }`}
           >
             <svg
               width="18"
@@ -401,288 +413,202 @@ const DynamicProductSlider = ({ content }) => {
       `}</style>
 
       <div className="mt-20">
-        <div>
+        <div className="relative">
           <h1 className="text-3xl md:text-5xl w-full font-black text-gray-800 leading-tight mb-2 text-center">
             Story
           </h1>
           <AnimatedGradientBorder />
-        </div>
-        <div className="relative mt-5">
-          {/* Left Arrow */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-8 top-1/2 transform -translate-y-1/2 -translate-x-12 z-10 w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-
-          {/* Right Arrow */}
-          <button
-            onClick={nextSlide}
-            className="absolute right-8 top-1/2 transform -translate-y-1/2 translate-x-12 z-10 w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-          </button>
-
-          {/* Slider Container */}
-          <div className="overflow-hidden">
-            <div
-              className="flex transition-transform duration-500 ease-in-out gap-4"
-              style={{
-                transform: `translateX(-${currentSlide * 100}%)`,
-              }}
+          <div className="relative mt-5">
+            {/* Left Arrow */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-8 top-1/2 transform -translate-y-1/2 -translate-x-12 z-10 w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
             >
-              {products?.products
-                ? products?.products?.map((product, index) => {
-                    if (
-                      !product.storyVideoUrl ||
-                      product.storyVideoUrl === ""
-                    ) {
-                      return null;
-                    }
-                    return (
-                      <div
-                        key={index}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => openOverlay(product)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ")
-                            openOverlay(product);
-                        }}
-                        className="relative cursor-pointer"
-                        style={{
-                          flex: `0 0 ${100 / itemsPerPage}%`,
-                          minWidth: 0,
-                        }}
-                      >
-                        <div className="border border-gray-200 overflow-hidden rounded-2xl h-[307px] flex flex-col group">
-                          {/* Name with green icon */}
-                          <div className="absolute top-4 right-6 flex items-center justify-between mb-6 z-50">
-                            <h3 className="text-md font-bold text-black uppercase tracking-wide">
-                              {product?.userId?.name}
-                            </h3>
-                            <Image
-                              className="h-6 w-6"
-                              src={"/images/heart.webp"}
-                              width={40}
-                              height={40}
-                              alt="heart-icon"
-                            />
-                          </div>
+              <ChevronLeft className="w-5 h-5 text-gray-600" />
+            </button>
 
-                          {/* Gray placeholder box - Fixed height */}
-                          <div className="relative w-full h-[307px] rounded-lg">
-                            {/* Placeholder for image or additional content */}
-                            {product?.storyVideoUrl.includes(".mp4") ? (
-                              <video
-                                src={product?.storyVideoUrl}
-                                className="w-full h-full object-cover"
-                                // controls
-                                autoPlay
-                                muted
-                              />
-                            ) : (
-                              <img
-                                src={product?.storyVideoUrl}
-                                alt="Story Visual"
-                                className="w-full h-full object-cover"
-                              />
-                            )}
-                            {/* Hover Overlay */}
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 max-sm:opacity-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 rounded-b-lg">
-                              <div className="flex gap-2 justify-center">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleBuyNow(e, product);
-                                  }}
-                                  className="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
-                                >
-                                  Buy Now
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAddToCart(e, product);
-                                  }}
-                                  className="border border-white text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-white hover:text-black transition-colors duration-200"
-                                >
-                                  Add to Cart
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                : products?.map((product, index) => {
-                    if (
-                      !product.storyVideoUrl ||
-                      product.storyVideoUrl === ""
-                    ) {
-                      return null;
-                    }
-                    return (
-                      <div
-                        key={index}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => openOverlay(product)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ")
-                            openOverlay(product);
-                        }}
-                        className="relative cursor-pointer"
-                        style={{
-                          flex: `0 0 ${100 / itemsPerPage}%`,
-                          minWidth: 0,
-                        }}
-                      >
-                        <div className="bg-white border border-gray-200 rounded-2xl h-[307px] flex flex-col group">
-                          {/* Name with green icon */}
-                          <div className="absolute top-4 right-6 flex items-center justify-between mb-6 z-50">
-                            <h3 className="text-md font-bold text-black uppercase tracking-wide">
-                              {product?.userId?.name}
-                            </h3>
-                            <Image
-                              className="h-6 w-6"
-                              src={"/images/heart.webp"}
-                              width={40}
-                              height={40}
-                              alt="heart-icon"
-                            />
-                          </div>
-
-                          {/* Gray placeholder box - Fixed height */}
-                          <div className="relative w-full h-[307px] bg-gray-300 rounded-lg">
-                            {/* Placeholder for image or additional content */}
-                            {product?.storyVideoUrl.includes(".mp4") ? (
-                              <video
-                                src={product?.storyVideoUrl}
-                                className="w-full h-full object-cover rounded-2xl"
-                                // controls
-                                autoPlay
-                                muted
-                              />
-                            ) : (
-                              <img
-                                src={product?.storyVideoUrl}
-                                alt="Story Visual"
-                                className="w-full h-full object-cover rounded-2xl"
-                              />
-                            )}
-                            {/* Hover Overlay */}
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 opacity-0 max-sm:opacity-100 group-hover:opacity-100 transition-opacity duration-300 p-4 rounded-b-lg">
-                              <div className="flex gap-2 justify-center">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleBuyNow(e, product);
-                                  }}
-                                  className="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
-                                >
-                                  Buy Now
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAddToCart(e, product);
-                                  }}
-                                  className="border border-white text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-white hover:text-black transition-colors duration-200"
-                                >
-                                  Add to Cart
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-            </div>
-          </div>
-        </div>
-
-        {/* Slider Dots Indicator */}
-        <div className="flex justify-center mt-8 space-x-2">
-          {(() => {
-            const stories =
-              products?.products?.filter((P) => P.storyVideoUrl) || [];
-            const pages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
-            return Array.from({ length: pages }).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                  currentSlide === index ? "bg-green-500" : "bg-gray-300"
-                }`}
-              />
-            ));
-          })()}
-        </div>
-        {/* Overlay for full-page media preview */}
-        {overlayOpen && overlayProduct && (
-          <div
-            className="fixed max-sm:hidden inset-0 z-[99999] flex items-center justify-center bg-black/70 p-4"
-            onClick={closeOverlay}
-            aria-modal="true"
-            role="dialog"
-          >
-            <div
-              className="relative max-h-[80%]  bg-white rounded-lg overflow-hidden shadow-xl"
-              onClick={(e) => e.stopPropagation()}
+            {/* Right Arrow */}
+            <button
+              onClick={nextSlide}
+              className="absolute right-8 top-1/2 transform -translate-y-1/2 translate-x-12 z-10 w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
             >
-              <button
-                onClick={closeOverlay}
-                aria-label="Close preview"
-                className="absolute right-3 top-3 z-50 bg-white rounded-full w-9 h-9 flex items-center justify-center border shadow hover:bg-gray-50"
+              <ChevronRight className="w-5 h-5 text-gray-600" />
+            </button>
+
+            {/* Slider Container */}
+            <div className="overflow-hidden">
+              <div
+                className="flex transition-transform duration-500 ease-in-out gap-4"
+                style={{
+                  transform: `translateX(-${currentSlide * 100}%)`,
+                }}
               >
-                <X className="w-5 h-5 text-gray-600" />
-              </button>
+                {stories.map(
+                  (product, index) => (
+                    <div
+                      key={product._id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => openOverlay(product)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ")
+                          openOverlay(product);
+                      }}
+                      className="relative cursor-pointer"
+                      style={{
+                        flex: `0 0 ${100 / itemsPerPage}%`,
+                        minWidth: 0,
+                      }}
+                    >
+                      <div className="border border-gray-200 overflow-hidden rounded-2xl h-[307px] flex flex-col group">
+                        {/* Name with green icon */}
+                        <div className="absolute top-4 right-6 flex items-center justify-between mb-6 z-50">
+                          <h3 className="text-md font-bold text-black uppercase tracking-wide">
+                            {product?.userId?.name}
+                          </h3>
+                          <Image
+                            className="h-6 w-6"
+                            src={"/images/heart.webp"}
+                            width={40}
+                            height={40}
+                            alt="heart-icon"
+                          />
+                        </div>
 
-              <div className="w-full bg-black flex items-center justify-center">
-                {overlayProduct.storyVideoUrl?.includes(".mp4") ? (
-                  <video
-                    src={overlayProduct.storyVideoUrl}
-                    controls
-                    autoPlay
-                    className="w-fit h-full object-cover bg-black"
-                  />
-                ) : (
-                  <img
-                    src={overlayProduct.storyVideoUrl}
-                    alt={overlayProduct.name || "story media"}
-                    className="w-full h-full object-contain bg-black"
-                  />
+                        {/* Gray placeholder box - Fixed height */}
+                        <div className="relative w-full h-[307px] rounded-lg">
+                          {/* Placeholder for image or additional content */}
+                          {isVideo(product?.storyVideoUrl) ? (
+                            <video
+                              src={product?.storyVideoUrl}
+                              className="w-full h-full object-cover"
+                              // controls
+                              autoPlay
+                              muted
+                              loop
+                              playsInline
+                            />
+                          ) : (
+                            <img
+                              src={product?.storyVideoUrl}
+                              alt="Story Visual"
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          {/* Hover Overlay */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 max-sm:opacity-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 rounded-b-lg">
+                            <h4 className="text-white text-sm font-semibold text-center mb-2 line-clamp-1">
+                              {product.name}
+                            </h4>
+                            <div className="flex gap-2 justify-center">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleBuyNow(e, product);
+                                }}
+                                className="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                              >
+                                Buy Now
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCart(e, product);
+                                }}
+                                className="border border-white text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-white hover:text-black transition-colors duration-200"
+                              >
+                                Add to Cart
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
                 )}
               </div>
-
-              <div className="  absolute bottom-4 left-1/2 max-sm:left-2/3 transform -translate-x-1/2 w-full md:w-auto rounded-lg ">
-                {/* Add to Cart Button */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={(e) => handleBuyNow(e, overlayProduct)}
-                    className="w-32 h-10 mb-2 bg-green-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
-                  >
-                    Buy Now
-                  </button>
-
-                  <button
-                    onClick={(e) => handleAddToCart(e, overlayProduct)}
-                    className="h-10 w-32 text-sm flex justify-center group items-center border hover:bg-[#3C950D]  rounded-lg"
-                  >
-                    Add to cart
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
-export default DynamicProductSlider;
+          {/* Slider Dots Indicator */}
+          < div className="flex justify-center mt-8 space-x-2" >
+            {(() => {
+              const pages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
+              return Array.from({ length: pages }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${currentSlide === index ? "bg-green-500" : "bg-gray-300"
+                    }`}
+                />
+              ));
+            })()}
+          </div >
+          {/* Overlay for full-page media preview */}
+          {
+            overlayOpen && overlayProduct && (
+              <div
+                className="fixed max-sm:hidden inset-0 z-[99999] flex items-center justify-center bg-black/70 p-4"
+                onClick={closeOverlay}
+                aria-modal="true"
+                role="dialog"
+              >
+                <div
+                  className="relative max-h-[80%]  bg-white rounded-lg overflow-hidden shadow-xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={closeOverlay}
+                    aria-label="Close preview"
+                    className="absolute right-3 top-3 z-50 bg-white rounded-full w-9 h-9 flex items-center justify-center border shadow hover:bg-gray-50"
+                  >
+                    <X className="w-5 h-5 text-gray-600" />
+                  </button>
+
+                  <div className="w-full bg-black flex items-center justify-center">
+                    {isVideo(overlayProduct.storyVideoUrl) ? (
+                      <video
+                        src={overlayProduct.storyVideoUrl}
+                        controls
+                        autoPlay
+                        className="w-fit h-full object-cover bg-black"
+                      />
+                    ) : (
+                      <img
+                        src={overlayProduct.storyVideoUrl}
+                        alt={overlayProduct.name || "story media"}
+                        className="w-full h-full object-contain bg-black"
+                      />
+                    )}
+                  </div>
+
+                  <div className="  absolute bottom-4 left-1/2 max-sm:left-2/3 transform -translate-x-1/2 w-full md:w-auto rounded-lg ">
+                    {/* Add to Cart Button */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => handleBuyNow(e, overlayProduct)}
+                        className="w-32 h-10 mb-2 bg-green-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                      >
+                        Buy Now
+                      </button>
+
+                      <button
+                        onClick={(e) => handleAddToCart(e, overlayProduct)}
+                        className="h-10 w-32 text-sm flex justify-center group items-center border hover:bg-[#3C950D]  rounded-lg"
+                      >
+                        Add to cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+        </div>
+      </div>
+      );
+
+   </div>  
+  )
+}
+    export default DynamicProductSlider;
