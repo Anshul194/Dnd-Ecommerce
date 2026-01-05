@@ -46,7 +46,7 @@ const DynamicHomepage = () => {
 
   useEffect(() => {
     const isCacheValid = lastFetched && (Date.now() - lastFetched < CACHE_DURATION);
-    
+
     // Only fetch if we don't already have grouped content or cache expired
     if (
       !hasFetchedRef.current &&
@@ -123,6 +123,10 @@ const DynamicHomepage = () => {
   allSections.sort((a, b) => a.order - b.order);
   heroSections.sort((a, b) => a.order - b.order);
   categoryPickContent.sort((a, b) => a.order - b.order);
+
+  // Extract Genuine Heart Story to render it last
+  const genuineHeartStorySection = allSections.find(s => s.sectionType === 'genuineHeartStory');
+  const otherSections = allSections.filter(s => s.sectionType !== 'genuineHeartStory');
 
   const renderSection = (section, index) => {
     const { sectionType, content, _id } = section;
@@ -224,7 +228,11 @@ const DynamicHomepage = () => {
       </div>
 
       {/* Other sections */}
-      {allSections.map((section, index) => renderSection(section, index))}
+      {/* Other sections */}
+      {otherSections.map((section, index) => renderSection(section, index))}
+
+      {/* Genuine Heart Story (Always Last) */}
+      {genuineHeartStorySection && renderSection(genuineHeartStorySection, 999)}
 
       {/* All Products Section */}
       {/* <div className="max-w-7xl mx-auto px-4">

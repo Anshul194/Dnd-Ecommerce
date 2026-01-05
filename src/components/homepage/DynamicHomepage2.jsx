@@ -26,7 +26,7 @@ function DynamicHomepage2() {
 
   useEffect(() => {
     const isCacheValid = lastFetched && (Date.now() - lastFetched < CACHE_DURATION);
-    
+
     if (
       !hasFetchedRef.current &&
       (!groupedContent ||
@@ -109,7 +109,7 @@ function DynamicHomepage2() {
       case "3V":
         return (
           <div key={_id} className="max-w-7xl mx-auto px-4">
-            <ValidatedSection2 content={content} /> 
+            <ValidatedSection2 content={content} />
           </div>
         );
 
@@ -143,12 +143,16 @@ function DynamicHomepage2() {
     });
   });
 
- 
+
 
   // Sort by order
   allSections.sort((a, b) => a.order - b.order);
   heroSections.sort((a, b) => a.order - b.order);
   categoryPickContent.sort((a, b) => a.order - b.order);
+
+  // Extract Genuine Heart Story to render it last
+  const genuineHeartStorySection = allSections.find(s => s.sectionType === 'genuineHeartStory');
+  const otherSections = allSections.filter(s => s.sectionType !== 'genuineHeartStory');
   return (
     <main className="text-black">
       <HeroSlider content={heroSections} />
@@ -156,7 +160,10 @@ function DynamicHomepage2() {
         <Categories dynamicContent={categoryPickContent[0]?.content || null} />
       </div>
 
-      {allSections.map(renderSection)}
+      {otherSections.map(renderSection)}
+
+      {/* Genuine Heart Story (Always Last) */}
+      {genuineHeartStorySection && renderSection(genuineHeartStorySection)}
       {/* <NewLaunchBanner /> */}
 
       {/* All Products Section */}
