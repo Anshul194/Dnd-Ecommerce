@@ -50,7 +50,7 @@ export async function GET(request, ctx) {
         const Order = conn.models.Order || conn.model("Order", OrderSchema);
 
         // safeId is assumed to be the order _id
-        const order = await Order.findById(safeId).lean();
+        const order = await Order.findById(safeId).populate("items.product").lean();
 
         if (!order) {
             return NextResponse.json(

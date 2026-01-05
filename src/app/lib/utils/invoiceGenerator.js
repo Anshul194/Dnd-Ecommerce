@@ -1,27 +1,27 @@
 
 export const generateInvoiceHtml = (order) => {
-    if (!order) return "";
+  if (!order) return "";
 
-    const formatNumber = (v) => (v == null ? "" : Number(v).toFixed(2));
+  const formatNumber = (v) => (v == null ? "" : Number(v).toFixed(2));
 
-    // Compute GST / CGST / SGST rate values before building item rows
-    const gstRateRaw = Number(order.gstRate ?? order.gst_rate ?? order.gst ?? 0);
-    const cgstRateRaw = gstRateRaw ? gstRateRaw / 2 : (order.cgstRate || 0);
-    const sgstRateRaw = gstRateRaw ? gstRateRaw / 2 : (order.sgstRate || 0);
-    const cgstRate = formatNumber(cgstRateRaw);
-    const sgstRate = formatNumber(sgstRateRaw);
+  // Compute GST / CGST / SGST rate values before building item rows
+  const gstRateRaw = Number(order.gstRate ?? order.gst_rate ?? order.gst ?? 0);
+  const cgstRateRaw = gstRateRaw ? gstRateRaw / 2 : (order.cgstRate || 0);
+  const sgstRateRaw = gstRateRaw ? gstRateRaw / 2 : (order.sgstRate || 0);
+  const cgstRate = formatNumber(cgstRateRaw);
+  const sgstRate = formatNumber(sgstRateRaw);
 
-    const items = (order.items || []).map((it, i) => {
-        const name = it.name || it.product || "";
-        const qty = Number(it.qty || it.quantity || it.count || 0);
-        const rate = Number(it.rate || it.price || 0);
-        const amount = Number(it.total ?? (qty && rate ? qty * rate : 0));
-        const lineAmountRaw = amount;
-        const lineTaxRaw = gstRateRaw ? (lineAmountRaw * gstRateRaw) / 100 : Number(it.taxAmount || 0);
-        const cgstLine = lineTaxRaw / 2;
-        const sgstLine = lineTaxRaw / 2;
-        const lineTotal = lineAmountRaw + cgstLine + sgstLine;
-        return `
+  const items = (order.items || []).map((it, i) => {
+    const name = it.product?.name || it.name || "Product";
+    const qty = Number(it.qty || it.quantity || it.count || 0);
+    const rate = Number(it.rate || it.price || 0);
+    const amount = Number(it.total ?? (qty && rate ? qty * rate : 0));
+    const lineAmountRaw = amount;
+    const lineTaxRaw = gstRateRaw ? (lineAmountRaw * gstRateRaw) / 100 : Number(it.taxAmount || 0);
+    const cgstLine = lineTaxRaw / 2;
+    const sgstLine = lineTaxRaw / 2;
+    const lineTotal = lineAmountRaw + cgstLine + sgstLine;
+    return `
       <tr class="item-row">
         <td class="center">${i + 1}</td>
         <td>${name}</td>
@@ -39,34 +39,34 @@ export const generateInvoiceHtml = (order) => {
         <td class="right">${formatNumber(lineTotal)}</td>
         <td class="right"></td>
       </tr>`;
-    }).join('\n');
+  }).join('\n');
 
-    const gstAmountRaw = Number(order.gstAmount ?? order.gst_amount ?? 0);
-    const totalAfterTaxRaw = Number(order.total ?? 0);
-    const totalBeforeTaxRaw = (gstAmountRaw && totalAfterTaxRaw) ? (totalAfterTaxRaw - gstAmountRaw) : (Number(order.subTotal ?? order.subtotal ?? 0));
-    const totalBeforeTax = formatNumber(totalBeforeTaxRaw);
+  const gstAmountRaw = Number(order.gstAmount ?? order.gst_amount ?? 0);
+  const totalAfterTaxRaw = Number(order.total ?? 0);
+  const totalBeforeTaxRaw = (gstAmountRaw && totalAfterTaxRaw) ? (totalAfterTaxRaw - gstAmountRaw) : (Number(order.subTotal ?? order.subtotal ?? 0));
+  const totalBeforeTax = formatNumber(totalBeforeTaxRaw);
 
-    const cgstAmountRaw = gstAmountRaw ? gstAmountRaw / 2 : Number(order.cgst || 0);
-    const sgstAmountRaw = gstAmountRaw ? gstAmountRaw / 2 : Number(order.sgst || 0);
-    const cgst = formatNumber(cgstAmountRaw);
-    const sgst = formatNumber(sgstAmountRaw);
-    const totalTax = formatNumber((cgstAmountRaw + sgstAmountRaw) || 0);
-    const totalAfterTax = formatNumber(totalAfterTaxRaw || (Number(totalBeforeTaxRaw || 0) + Number(cgstAmountRaw + sgstAmountRaw || 0)));
+  const cgstAmountRaw = gstAmountRaw ? gstAmountRaw / 2 : Number(order.cgst || 0);
+  const sgstAmountRaw = gstAmountRaw ? gstAmountRaw / 2 : Number(order.sgst || 0);
+  const cgst = formatNumber(cgstAmountRaw);
+  const sgst = formatNumber(sgstAmountRaw);
+  const totalTax = formatNumber((cgstAmountRaw + sgstAmountRaw) || 0);
+  const totalAfterTax = formatNumber(totalAfterTaxRaw || (Number(totalBeforeTaxRaw || 0) + Number(cgstAmountRaw + sgstAmountRaw || 0)));
 
-    // Build billing and shipping address HTML from order data
-    const billing = order.billingAddress || {};
-    const shipping = order.shippingAddress || {};
-    const joinParts = (parts) => parts.filter(Boolean).join(', ');
-    const billingAddressLine = joinParts([billing.addressLine1, billing.addressLine2, billing.city, billing.state, billing.postalCode, billing.country]);
-    const shippingAddressLine = joinParts([shipping.addressLine1, shipping.addressLine2, shipping.city, shipping.state, shipping.postalCode, shipping.country]);
+  // Build billing and shipping address HTML from order data
+  const billing = order.billingAddress || {};
+  const shipping = order.shippingAddress || {};
+  const joinParts = (parts) => parts.filter(Boolean).join(', ');
+  const billingAddressLine = joinParts([billing.addressLine1, billing.addressLine2, billing.city, billing.state, billing.postalCode, billing.country]);
+  const shippingAddressLine = joinParts([shipping.addressLine1, shipping.addressLine2, shipping.city, shipping.state, shipping.postalCode, shipping.country]);
 
-    const billingHtml = `\n                    <div><strong>Name:</strong> ${billing.fullName || ''}</div>\n                    <div><strong>Address:</strong> ${billingAddressLine}</div>\n                    <div><strong>Phone:</strong> ${billing.phoneNumber || ''}</div>`;
+  const billingHtml = `\n                    <div><strong>Name:</strong> ${billing.fullName || ''}</div>\n                    <div><strong>Address:</strong> ${billingAddressLine}</div>\n                    <div><strong>Phone:</strong> ${billing.phoneNumber || ''}</div>`;
 
-    const shippingHtml = `\n                    <div><strong>Name:</strong> ${shipping.fullName || ''}</div>\n                    <div><strong>Address:</strong> ${shippingAddressLine}</div>\n                    <div><strong>Phone:</strong> ${shipping.phoneNumber || ''}</div>`;
+  const shippingHtml = `\n                    <div><strong>Name:</strong> ${shipping.fullName || ''}</div>\n                    <div><strong>Address:</strong> ${shippingAddressLine}</div>\n                    <div><strong>Phone:</strong> ${shipping.phoneNumber || ''}</div>`;
 
-    const invoiceId = order._id ? order._id.toString() : "";
+  const invoiceId = order._id ? order._id.toString() : "";
 
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
