@@ -63,6 +63,15 @@ const nextConfig = {
     ];
   },
 
+  async rewrites() {
+    return [
+      {
+        source: "/uploads/invoices/:id.html",
+        destination: "/api/invoice/:id",
+      },
+    ];
+  },
+
   /**
    * 🔧 Webpack fixes (client side only)
    */
