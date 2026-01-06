@@ -28,9 +28,7 @@ const AllProducts = () => {
   };
 
   // Get products array - handle both products.products and products array
-  const productList = (products?.products || products || []).filter(
-    (product) => product.variants && product.variants.length > 0
-  );
+  const productList = (products?.products || products || []);
   const displayedProducts = productList.slice(0, displayLimit);
   const hasMore = displayLimit < productList.length;
 

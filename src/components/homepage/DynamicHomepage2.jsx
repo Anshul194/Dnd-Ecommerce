@@ -167,9 +167,10 @@ function DynamicHomepage2() {
       {/* <NewLaunchBanner /> */}
 
       {/* All Products Section */}
-      {/* <div className="max-w-7xl mx-auto px-4">
+      {/* All Products Section */}
+      <div className="max-w-7xl mx-auto px-4">
         <AllProducts />
-      </div> */}
+      </div>
     </main>
   );
 }
