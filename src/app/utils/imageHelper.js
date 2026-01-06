@@ -6,7 +6,12 @@ export const getImageUrl = (url) => {
     // Remove leading slash if present to avoid double slashes if base has trailing slash
     const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
 
-    // Use environment variable if set (e.g. for CDN), otherwise return relative path
+    // For client-side rendering, use the current origin
+    if (typeof window !== 'undefined') {
+        return `${window.location.origin}/${cleanUrl}`;
+    }
+
+    // For server-side rendering, use environment variable if set, otherwise return relative path
     if (process.env.NEXT_PUBLIC_IMAGE_URL) {
         const baseUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
         const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
