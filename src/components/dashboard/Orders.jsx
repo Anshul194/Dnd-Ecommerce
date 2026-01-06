@@ -31,6 +31,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { addReview, fetchProducts } from "@/app/store/slices/productSlice";
 import { LoadingSpinner } from "../common/Loading";
 import Link from "next/link";
+import { toast } from "react-toastify";
 import ReturnRequestModal from "../orders/ReturnRequestModal";
 import ReturnStatusCard from "../orders/ReturnStatusCard";
 
@@ -210,6 +211,7 @@ const Orders = () => {
       }
       setReviewLoading(true);
       const response = await dispatch(addReview(formData));
+      toast.success("Reviews submitted successfully");
       setReviewPopup(false);
       setReviewProduct(null);
     } catch (error) {
