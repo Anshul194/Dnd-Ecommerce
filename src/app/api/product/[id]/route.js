@@ -145,14 +145,28 @@ export async function PUT(req, context) {
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
 
-      // Initialize arrays as empty to only include what's sent in the request
-      body.images = existingProduct.images || [];
-      body.descriptionImages = existingProduct.descriptionImages || [];
-      body.thumbnail = existingProduct.thumbnail || null;
-      body.ingredients = existingProduct.ingredients || [];
-      body.benefits = existingProduct.benefits || [];
-      body.precautions = existingProduct.precautions || [];
-      body.howToUseSteps = existingProduct.howToUseSteps || [];
+      // Initialize arrays as empty if we are receiving updates for them
+      const arrayFields = [
+        "images",
+        "descriptionImages",
+        "ingredients",
+        "benefits",
+        "precautions",
+        "howToUseSteps",
+        "attributeSet",
+        "searchKeywords",
+        "highlights",
+      ];
+
+      // We'll keep track of which arrays are present in the formData
+      const presentArrays = new Set();
+      const maxIndices = {};
+
+      // Initialize body with existing product fields
+      body = { ...existingProduct };
+
+      // Specifically prepare arrays for potential partial update or full replacement
+      // But we will use maxIndices to truncate them later if they are present.
 
       for (const [key, value] of formData.entries()) {
         //consolle.log(
@@ -247,15 +261,19 @@ export async function PUT(req, context) {
             if (!body[arrKey]) body[arrKey] = [];
             if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
 
-            if (objKey === "image" && value instanceof File) {
-              try {
-                const url = await saveFile(value, "Uploads/Product");
-                body[arrKey][arrIdx].image = url;
-                //consolle.log(`${arrKey}[${arrIdx}] image updated: ${url}`);
-              } catch (error) {
-                //consolle.error(`Error saving ${arrKey} image:`, error.message);
+            if (objKey === "image") {
+              if (value instanceof File) {
+                try {
+                  const url = await saveFile(value, "Uploads/Product");
+                  body[arrKey][arrIdx].image = url;
+                } catch (error) {
+                  // console.error(`Error saving ${arrKey} image:`, error.message);
+                }
+              } else if (typeof value === "string") {
+                // If value is a string, it could be the existing URL or an empty string to clear it
+                body[arrKey][arrIdx].image = value;
               }
-            } else if (objKey && objKey !== "image") {
+            } else if (objKey) {
               body[arrKey][arrIdx][objKey] = value;
             }
           } else if (arrKey === "attributeSet") {
@@ -348,7 +366,26 @@ export async function PUT(req, context) {
         } else {
           body[key] = value;
         }
+
+        // Track max indices for arrays to handle truncation/deletion
+        const match = key.match(/^(\w+)\[(\d+)\]/);
+        if (match) {
+          const arrKey = match[1];
+          const arrIdx = parseInt(match[2]);
+          presentArrays.add(arrKey);
+          if (maxIndices[arrKey] === undefined || arrIdx > maxIndices[arrKey]) {
+            maxIndices[arrKey] = arrIdx;
+          }
+        }
       }
+
+      // Handle truncation for arrays that were present in the request
+      presentArrays.forEach((arrKey) => {
+        if (Array.isArray(body[arrKey]) && maxIndices[arrKey] !== undefined) {
+          // Truncate the array to the max index found + 1
+          body[arrKey] = body[arrKey].slice(0, maxIndices[arrKey] + 1);
+        }
+      });
 
       // Clean up arrays - remove entries with no valid url
       if (body.images) {
