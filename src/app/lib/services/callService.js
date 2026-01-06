@@ -39,6 +39,7 @@ export default class CallService {
     if (!lead.phone) throw new Error("Lead has no phone number");
 
 
+
     // Resolve agent number (the agent who will receive the outbound ring)
     let agentNumber = directAgentNumber || null;
 
@@ -72,6 +73,17 @@ export default class CallService {
 
     const customerNumber = lead.phone;
 
+    // Helper function to normalize phone numbers
+    const normalizePhone = (phoneStr) => {
+      if (!phoneStr) return '';
+      // Remove all non-digit characters except +
+      let cleaned = String(phoneStr).replace(/[^\d+]/g, '');
+      // Remove existing +91 or 91 prefix
+      cleaned = cleaned.replace(/^\+91/, '').replace(/^91/, '');
+      // Return only the 10-digit number
+      return cleaned.slice(-10);
+    };
+
     const Setting =
       conn.models.Setting || conn.model("Setting", SettingSchema);
     const settings = await Setting.findOne({ tenant }).lean();
@@ -83,12 +95,13 @@ export default class CallService {
         settings.myOperatorSecretToken ||
         "2a67cfdb278391cf9ae47a7fffd6b0ec8d93494ff0004051c0f328a501553c98",
       type: "1",
-      number_2: '+91' + customerNumber,
-      number: '+91' + agentNumber,
+      number_2: '+91' + normalizePhone(customerNumber),
+      number: '+91' + normalizePhone(agentNumber),
       public_ivr_id: settings.myOperatorpeertopeerId || null,
     };
 
     console.log("CallService.initiateCall obdBody:", obdBody);
+
 
     if (!obdBody.company_id || !obdBody.secret_token) {
       throw new Error('Missing MyOperator OBD company_id or secret_token in environment');
@@ -125,12 +138,16 @@ export default class CallService {
       throw new Error('Failed to reach MyOperator OBD API: ' + err.message);
     }
 
-    // Extract call ID safely
-    const callId = responseBody?.call_id || responseBody?.callId || responseBody?.data?.call_id || null;
+    // Extract call ID safely - MyOperator returns unique_id for successful requests
+    const callId = responseBody?.call_id ||
+      responseBody?.callId ||
+      responseBody?.data?.call_id ||
+      responseBody?.unique_id ||
+      null;
 
     // Log warning if callId is null
     if (!callId) {
-      console.warn('WARNING: MyOperator did not return a call_id. Response:', responseBody);
+      console.warn('WARNING: MyOperator did not return a call_id or unique_id. Response:', responseBody);
     }
 
     // // Save CallLog
