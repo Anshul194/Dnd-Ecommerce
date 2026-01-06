@@ -1,7 +1,7 @@
 import callLogRepository from '../repository/CallLogRepository.js';
 import leadSchema from '../models/Lead.js';
 import userSchema from '../models/User.js';
-import SettingSchema from '../models/Setting.js';
+import { SettingSchema } from '../models/Setting.js';
 import mongoose from 'mongoose';
 
 // Using MyOperator OBD endpoint for outbound dialing
@@ -95,6 +95,7 @@ export default class CallService {
     }
 
     let responseBody = null;
+    let httpStatus = null;
     try {
       const res = await fetch(MYOPERATOR_URL, {
         method: 'POST',
@@ -104,18 +105,33 @@ export default class CallService {
         },
         body: JSON.stringify(obdBody),
       });
+
+      httpStatus = res.status;
+      console.log('MyOperator HTTP Status:', res.status, res.statusText);
+
       try {
         responseBody = await res.json();
       } catch (err) {
         responseBody = { raw: await res.text() };
       }
-      console.log('MyOperator OBD response:', responseBody);
+      console.log('MyOperator OBD response:', JSON.stringify(responseBody, null, 2));
+
+      // Log if response is not successful
+      if (!res.ok) {
+        console.error('MyOperator API returned error status:', httpStatus, responseBody);
+      }
     } catch (err) {
+      console.error('Failed to reach MyOperator OBD API:', err.message);
       throw new Error('Failed to reach MyOperator OBD API: ' + err.message);
     }
 
     // Extract call ID safely
     const callId = responseBody?.call_id || responseBody?.callId || responseBody?.data?.call_id || null;
+
+    // Log warning if callId is null
+    if (!callId) {
+      console.warn('WARNING: MyOperator did not return a call_id. Response:', responseBody);
+    }
 
     // // Save CallLog
     // try {
@@ -136,7 +152,7 @@ export default class CallService {
 
     // Update lead
     try {
-      lead.lastCallStatus = "initiated";
+      lead.lastCallStatus = callId ? "initiated" : "failed";
       lead.status = "attempted"; // recommended
       lead.lastContactedAt = new Date();
       lead.followUpCount = (lead.followUpCount || 0) + 1;
@@ -145,7 +161,12 @@ export default class CallService {
       console.error("CallService: failed to update lead", err.message);
     }
 
-    return { callId, lead };
+    return {
+      callId,
+      lead,
+      myOperatorResponse: responseBody,
+      httpStatus
+    };
   }
 
 
