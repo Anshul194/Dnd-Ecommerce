@@ -833,11 +833,11 @@ const Orders = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center space-x-2">
                         <Phone className="w-4 h-4" />
-                        <span>1800-XXX-XXXX</span>
+                        <span>+91- 9205963262</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Mail className="w-4 h-4" />
-                        <span>support@yourstore.com</span>
+                        <span>support@bharatgramudyogsangh.org</span>
                       </div>
                     </div>
                     <button className="mt-4 w-full bg-white text-green-600 py-2 px-4 rounded-lg font-medium hover:bg-green-50 transition-colors">
