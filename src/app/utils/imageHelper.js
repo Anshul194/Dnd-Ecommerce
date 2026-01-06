@@ -1,5 +1,12 @@
 export const getImageUrl = (url) => {
-    if (!url) return null;
+    if (!url) return url;
+
+    // If it's an object with a url property, use that
+    if (typeof url === 'object' && url.url) {
+        url = url.url;
+    }
+
+    if (typeof url !== 'string') return url;
     if (url.startsWith("http") || url.startsWith("https")) return url;
     if (url.startsWith("data:")) return url;
 

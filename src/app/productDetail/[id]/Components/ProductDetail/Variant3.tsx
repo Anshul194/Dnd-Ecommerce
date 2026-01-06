@@ -18,6 +18,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 interface Variant3Props {
   productData?: any;
@@ -94,22 +95,22 @@ function Variant3({ productData: propProductData }: Variant3Props) {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    
+
     // Check if productData is loaded
     if (!productData) {
       toast.error("Product data is not loaded yet. Please wait...");
       return;
     }
-    
+
     const price = productData?.variants?.find(
       (variant) => variant._id === selectedVariant
     );
-    
+
     if (!price) {
       toast.error("Please select a valid variant");
       return;
     }
-    
+
     // Get product ID - try multiple possible field names
     const productId = productData?._id || productData?.id || productData?.productId || productData?.product?._id || productData?.product?.id;
     if (!productId) {
@@ -118,7 +119,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
       toast.error("Product ID is not available. Please refresh the page.");
       return;
     }
-    
+
     try {
       const resultAction = await dispatch(
         addToCart({
@@ -128,17 +129,17 @@ function Variant3({ productData: propProductData }: Variant3Props) {
           variant: selectedVariant,
         })
       );
-      
+
       if (resultAction.error) {
         // Show backend error (payload) if present, else generic
         toast.error(
           resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          resultAction.error.message ||
+          "Failed to add to cart"
         );
         return;
       }
-      
+
       // Only call getCartItems() if the server successfully added the item
       // If addToCart fell back to localStorage (server failed), don't fetch from server
       // because it won't have the item yet and will overwrite local state
@@ -152,7 +153,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
           }
         }, 500); // 500ms delay to allow server to process
       }
-      
+
       try {
         trackEvent("ADD_TO_CART", {
           productId: productId,
@@ -181,7 +182,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
           product: {
             id: productData._id,
             name: productData.name,
-            image: productData.thumbnail || productData.images?.[0],
+            image: getImageUrl(productData.thumbnail || productData.images?.[0]),
             variant: selectedVariant,
             slug: productData.slug,
           },
@@ -214,7 +215,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
             {/* Product Image */}
             <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
               <img
-                src={productData.thumbnail || productData.images?.[0]}
+                src={getImageUrl(productData.thumbnail || productData.images?.[0])}
                 alt={productData.name}
                 className="w-full h-full object-cover"
               />
@@ -267,7 +268,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
           {productData.name}
         </h1>
 
-       
+
 
         {/* Price Section */}
         <div className="mb-6">
@@ -301,13 +302,13 @@ function Variant3({ productData: propProductData }: Variant3Props) {
               const discountPercent = variant.salePrice && variant.price && variant.price > variant.salePrice
                 ? Math.round(((variant.price - variant.salePrice) / variant.price) * 100)
                 : 0;
-              
+
               return (
                 <button
                   key={variant._id}
                   className={`relative p-4 border-2 rounded-xl text-center transition-all ${selectedVariant === variant._id
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
+                    ? "border-green-500 bg-green-50"
+                    : "border-gray-200 hover:border-gray-300"
                     }`}
                   onClick={() => setSelectedVariant(variant._id)}
                 >
@@ -404,8 +405,8 @@ function Variant3({ productData: propProductData }: Variant3Props) {
                 key={tab.key}
                 onClick={() => toggleSection(tab.key)}
                 className={`flex-1 py-4 px-6 text-sm font-medium border-b-2 transition-colors ${expandedSection === tab.key
-                    ? "border-green-500 text-green-600"
-                    : "border-transparent text-gray-600 hover:text-gray-900"
+                  ? "border-green-500 text-green-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
                   }`}
               >
                 {tab.label}

@@ -11,6 +11,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 function Variant1() {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
@@ -49,22 +50,22 @@ function Variant1() {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    
+
     // Check if productData is loaded
     if (!productData) {
       toast.error("Product data is not loaded yet. Please wait...");
       return;
     }
-    
+
     const price = productData.variants?.find(
       (variant) => variant._id === selectedVariant
     );
-    
+
     if (!price) {
       toast.error("Please select a valid variant");
       return;
     }
-    
+
     // Get product ID - try multiple possible field names
     const productId = productData._id || productData.id || productData.productId || productData.product?._id || productData.product?.id;
     if (!productId) {
@@ -73,7 +74,7 @@ function Variant1() {
       toast.error("Product ID is not available. Please refresh the page.");
       return;
     }
-    
+
     try {
       const resultAction = await dispatch(
         addToCart({
@@ -87,12 +88,12 @@ function Variant1() {
         // Show backend error (payload) if present, else generic
         toast.error(
           resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          resultAction.error.message ||
+          "Failed to add to cart"
         );
         return;
       }
-      
+
       // Only call getCartItems() if the server successfully added the item
       // If addToCart fell back to localStorage (server failed), don't fetch from server
       // because it won't have the item yet and will overwrite local state
@@ -106,7 +107,7 @@ function Variant1() {
           }
         }, 500); // 500ms delay to allow server to process
       }
-      
+
       try {
         trackEvent("ADD_TO_CART", {
           productId: productId,
@@ -137,7 +138,7 @@ function Variant1() {
           product: {
             id: productData._id,
             name: productData.name,
-            image: productData.thumbnail || productData.images[0],
+            image: getImageUrl(productData.thumbnail || productData.images?.[0]),
             variant: selectedVariant,
             slug: productData.slug,
           },
@@ -150,8 +151,8 @@ function Variant1() {
         // Show backend error (payload) if present, else generic
         toast.error(
           resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          resultAction.error.message ||
+          "Failed to add to cart"
         );
         return;
       }
@@ -191,11 +192,10 @@ function Variant1() {
             <Star
               key={i}
               size={16}
-              className={`${
-                i < Math.round(productData?.reviews?.Average || 0)
-                  ? "fill-orange-400 text-orange-400"
-                  : "text-gray-300"
-              }`}
+              className={`${i < Math.round(productData?.reviews?.Average || 0)
+                ? "fill-orange-400 text-orange-400"
+                : "text-gray-300"
+                }`}
             />
           ))}
         </div>
@@ -231,27 +231,25 @@ function Variant1() {
             productData?.variants?.map((variant, index) => (
               <div
                 key={index}
-                className={`relative flex-1 border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                  selectedVariant === variant._id
-                    ? "border-green-600 bg-green-50"
-                    : "border-gray-300 hover:border-gray-400"
-                }`}
+                className={`relative flex-1 border-2 rounded-lg p-4 cursor-pointer transition-all ${selectedVariant === variant._id
+                  ? "border-green-600 bg-green-50"
+                  : "border-gray-300 hover:border-gray-400"
+                  }`}
                 onClick={() => setSelectedVariant(variant._id)}
               >
                 <div
-                  className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${
-                    variant.color === "green"
-                      ? "bg-green-600"
-                      : variant.color === "orange"
+                  className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${variant.color === "green"
+                    ? "bg-green-600"
+                    : variant.color === "orange"
                       ? "bg-orange-500"
                       : "bg-blue-500"
-                  }`}
+                    }`}
                 >
                   {(variant.salePrice - variant.price) / variant.price
                     ? `-${Math.round(
-                        ((variant.price - variant.salePrice) / variant.price) *
-                          100
-                      )}%`
+                      ((variant.price - variant.salePrice) / variant.price) *
+                      100
+                    )}%`
                     : ""}
                 </div>
                 <div className="text-center">
@@ -259,11 +257,10 @@ function Variant1() {
                     {variant.title}
                   </div>
                   <div
-                    className={`font-semibold ${
-                      productData?.variants[0]?._id === variant._id
-                        ? "text-green-600"
-                        : "text-gray-900"
-                    }`}
+                    className={`font-semibold ${productData?.variants[0]?._id === variant._id
+                      ? "text-green-600"
+                      : "text-gray-900"
+                      }`}
                   >
                     ₹{variant.salePrice}
                   </div>
@@ -328,44 +325,39 @@ function Variant1() {
         <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           <button
             onClick={() => toggleSection("details")}
-            className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
-              expandedSection === "details"
-                ? "bg-green-50 hover:bg-green-100"
-                : "hover:bg-gray-50"
-            }`}
+            className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "details"
+              ? "bg-green-50 hover:bg-green-100"
+              : "hover:bg-gray-50"
+              }`}
           >
             <span
-              className={`font-semibold text-base ${
-                expandedSection === "details"
-                  ? "text-green-700"
-                  : "text-green-600"
-              }`}
+              className={`font-semibold text-base ${expandedSection === "details"
+                ? "text-green-700"
+                : "text-green-600"
+                }`}
             >
               Product Details
             </span>
             <div
-              className={`p-1 rounded-full transition-all duration-300 ${
-                expandedSection === "details"
-                  ? "bg-green-200 rotate-180"
-                  : "bg-gray-100"
-              }`}
+              className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "details"
+                ? "bg-green-200 rotate-180"
+                : "bg-gray-100"
+                }`}
             >
               <ChevronDown
-                className={`transition-colors duration-200 ${
-                  expandedSection === "details"
-                    ? "text-green-700"
-                    : "text-gray-600"
-                }`}
+                className={`transition-colors duration-200 ${expandedSection === "details"
+                  ? "text-green-700"
+                  : "text-gray-600"
+                  }`}
                 size={18}
               />
             </div>
           </button>
           <div
-            className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
-              expandedSection === "details"
-                ? "max-h-96 opacity-100"
-                : "max-h-0 opacity-0"
-            } overflow-hidden`}
+            className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "details"
+              ? "max-h-96 opacity-100"
+              : "max-h-0 opacity-0"
+              } overflow-hidden`}
           >
             <div
               className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50"
@@ -382,44 +374,39 @@ function Variant1() {
             <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
               <button
                 onClick={() => toggleSection("ingredients")}
-                className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
-                  expandedSection === "ingredients"
-                    ? "bg-green-50 hover:bg-green-100"
-                    : "hover:bg-gray-50"
-                }`}
+                className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "ingredients"
+                  ? "bg-green-50 hover:bg-green-100"
+                  : "hover:bg-gray-50"
+                  }`}
               >
                 <span
-                  className={`font-semibold text-base ${
-                    expandedSection === "ingredients"
-                      ? "text-green-700"
-                      : "text-green-600"
-                  }`}
+                  className={`font-semibold text-base ${expandedSection === "ingredients"
+                    ? "text-green-700"
+                    : "text-green-600"
+                    }`}
                 >
                   Ingredients
                 </span>
                 <div
-                  className={`p-1 rounded-full transition-all duration-300 ${
-                    expandedSection === "ingredients"
-                      ? "bg-green-200 rotate-180"
-                      : "bg-gray-100"
-                  }`}
+                  className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "ingredients"
+                    ? "bg-green-200 rotate-180"
+                    : "bg-gray-100"
+                    }`}
                 >
                   <ChevronDown
-                    className={`transition-colors duration-200 ${
-                      expandedSection === "ingredients"
-                        ? "text-green-700"
-                        : "text-gray-600"
-                    }`}
+                    className={`transition-colors duration-200 ${expandedSection === "ingredients"
+                      ? "text-green-700"
+                      : "text-gray-600"
+                      }`}
                     size={18}
                   />
                 </div>
               </button>
               <div
-                className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
-                  expandedSection === "ingredients"
-                    ? "max-h-96 opacity-100"
-                    : "max-h-0 opacity-0"
-                } overflow-hidden`}
+                className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "ingredients"
+                  ? "max-h-96 opacity-100"
+                  : "max-h-0 opacity-0"
+                  } overflow-hidden`}
               >
                 <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
                   <ul className="space-y-2">
@@ -451,44 +438,39 @@ function Variant1() {
             <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
               <button
                 onClick={() => toggleSection("benefits")}
-                className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
-                  expandedSection === "benefits"
-                    ? "bg-green-50 hover:bg-green-100"
-                    : "hover:bg-gray-50"
-                }`}
+                className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "benefits"
+                  ? "bg-green-50 hover:bg-green-100"
+                  : "hover:bg-gray-50"
+                  }`}
               >
                 <span
-                  className={`font-semibold text-base ${
-                    expandedSection === "benefits"
-                      ? "text-green-700"
-                      : "text-green-600"
-                  }`}
+                  className={`font-semibold text-base ${expandedSection === "benefits"
+                    ? "text-green-700"
+                    : "text-green-600"
+                    }`}
                 >
                   Benefits
                 </span>
                 <div
-                  className={`p-1 rounded-full transition-all duration-300 ${
-                    expandedSection === "benefits"
-                      ? "bg-green-200 rotate-180"
-                      : "bg-gray-100"
-                  }`}
+                  className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "benefits"
+                    ? "bg-green-200 rotate-180"
+                    : "bg-gray-100"
+                    }`}
                 >
                   <ChevronDown
-                    className={`transition-colors duration-200 ${
-                      expandedSection === "benefits"
-                        ? "text-green-700"
-                        : "text-gray-600"
-                    }`}
+                    className={`transition-colors duration-200 ${expandedSection === "benefits"
+                      ? "text-green-700"
+                      : "text-gray-600"
+                      }`}
                     size={18}
                   />
                 </div>
               </button>
               <div
-                className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
-                  expandedSection === "benefits"
-                    ? "max-h-96 opacity-100"
-                    : "max-h-0 opacity-0"
-                } overflow-hidden`}
+                className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "benefits"
+                  ? "max-h-96 opacity-100"
+                  : "max-h-0 opacity-0"
+                  } overflow-hidden`}
               >
                 <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
                   <ul className="space-y-2">
@@ -520,44 +502,39 @@ function Variant1() {
             <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
               <button
                 onClick={() => toggleSection("precautions")}
-                className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
-                  expandedSection === "precautions"
-                    ? "bg-green-50 hover:bg-green-100"
-                    : "hover:bg-gray-50"
-                }`}
+                className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "precautions"
+                  ? "bg-green-50 hover:bg-green-100"
+                  : "hover:bg-gray-50"
+                  }`}
               >
                 <span
-                  className={`font-semibold text-base ${
-                    expandedSection === "precautions"
-                      ? "text-green-700"
-                      : "text-green-600"
-                  }`}
+                  className={`font-semibold text-base ${expandedSection === "precautions"
+                    ? "text-green-700"
+                    : "text-green-600"
+                    }`}
                 >
                   Precautions
                 </span>
                 <div
-                  className={`p-1 rounded-full transition-all duration-300 ${
-                    expandedSection === "precautions"
-                      ? "bg-green-200 rotate-180"
-                      : "bg-gray-100"
-                  }`}
+                  className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "precautions"
+                    ? "bg-green-200 rotate-180"
+                    : "bg-gray-100"
+                    }`}
                 >
                   <ChevronDown
-                    className={`transition-colors duration-200 ${
-                      expandedSection === "precautions"
-                        ? "text-green-700"
-                        : "text-gray-600"
-                    }`}
+                    className={`transition-colors duration-200 ${expandedSection === "precautions"
+                      ? "text-green-700"
+                      : "text-gray-600"
+                      }`}
                     size={18}
                   />
                 </div>
               </button>
               <div
-                className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
-                  expandedSection === "precautions"
-                    ? "max-h-96 opacity-100"
-                    : "max-h-0 opacity-0"
-                } overflow-hidden`}
+                className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "precautions"
+                  ? "max-h-96 opacity-100"
+                  : "max-h-0 opacity-0"
+                  } overflow-hidden`}
               >
                 <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
                   <ul className="space-y-2">
@@ -586,44 +563,39 @@ function Variant1() {
         <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           <button
             onClick={() => toggleSection("usage")}
-            className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${
-              expandedSection === "usage"
-                ? "bg-green-50 hover:bg-green-100"
-                : "hover:bg-gray-50"
-            }`}
+            className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "usage"
+              ? "bg-green-50 hover:bg-green-100"
+              : "hover:bg-gray-50"
+              }`}
           >
             <span
-              className={`font-semibold text-base ${
-                expandedSection === "usage"
-                  ? "text-green-700"
-                  : "text-green-600"
-              }`}
+              className={`font-semibold text-base ${expandedSection === "usage"
+                ? "text-green-700"
+                : "text-green-600"
+                }`}
             >
               How to use
             </span>
             <div
-              className={`p-1 rounded-full transition-all duration-300 ${
-                expandedSection === "usage"
-                  ? "bg-green-200 rotate-180"
-                  : "bg-gray-100"
-              }`}
+              className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "usage"
+                ? "bg-green-200 rotate-180"
+                : "bg-gray-100"
+                }`}
             >
               <ChevronDown
-                className={`transition-colors duration-200 ${
-                  expandedSection === "usage"
-                    ? "text-green-700"
-                    : "text-gray-600"
-                }`}
+                className={`transition-colors duration-200 ${expandedSection === "usage"
+                  ? "text-green-700"
+                  : "text-gray-600"
+                  }`}
                 size={18}
               />
             </div>
           </button>
           <div
-            className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${
-              expandedSection === "usage"
-                ? "max-h-96 opacity-100"
-                : "max-h-0 opacity-0"
-            } overflow-hidden`}
+            className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "usage"
+              ? "max-h-96 opacity-100"
+              : "max-h-0 opacity-0"
+              } overflow-hidden`}
           >
             <div className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50">
               Add a pinch to warm milk or tea. Can be used in cooking and

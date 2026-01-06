@@ -26,6 +26,7 @@ import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { addToWishlist } from "@/app/store/slices/wishlistSlice";
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const Base_Url = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -45,7 +46,7 @@ function Variant5({ detailSettings }) {
           productId: productData._id,
           user: isAuthenticated ? userId : "guest",
         });
-      } catch (err) {}
+      } catch (err) { }
     }
   }, [productData?._id, isAuthenticated, userId]);
 
@@ -62,20 +63,20 @@ function Variant5({ detailSettings }) {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    
+
     // Check if productData is loaded
     if (!productData) {
       toast.error("Product data is not loaded yet. Please wait...");
       return;
     }
-    
+
     if (!productData.variants || !productData.variants[selectedVariant]) {
       toast.error("Please select a valid variant");
       return;
     }
-    
+
     const price = productData.variants[selectedVariant];
-    
+
     // Get product ID - try multiple possible field names
     const productId = productData._id || productData.id || productData.productId || productData.product?._id || productData.product?.id;
     if (!productId) {
@@ -84,10 +85,10 @@ function Variant5({ detailSettings }) {
       toast.error("Product ID is not available. Please refresh the page.");
       return;
     }
-    
+
     // Extract variant ID
     const variantId = productData.variants[selectedVariant]?._id;
-    
+
     try {
       const resultAction = await dispatch(
         addToCart({
@@ -101,12 +102,12 @@ function Variant5({ detailSettings }) {
         // Show backend error (payload) if present, else generic
         toast.error(
           resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          resultAction.error.message ||
+          "Failed to add to cart"
         );
         return;
       }
-      
+
       // Only call getCartItems() if the server successfully added the item
       // If addToCart fell back to localStorage (server failed), don't fetch from server
       // because it won't have the item yet and will overwrite local state
@@ -120,7 +121,7 @@ function Variant5({ detailSettings }) {
           }
         }, 500); // 500ms delay to allow server to process
       }
-      
+
       try {
         trackEvent("ADD_TO_CART", {
           productId: productId,
@@ -128,7 +129,7 @@ function Variant5({ detailSettings }) {
           quantity,
           user: isAuthenticated ? userId : "guest",
         });
-      } catch (err) {}
+      } catch (err) { }
       dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -147,7 +148,7 @@ function Variant5({ detailSettings }) {
           product: {
             id: productData._id,
             name: productData.name,
-            image: productData.thumbnail || productData.images[0],
+            image: getImageUrl(productData.thumbnail || productData.images?.[0]),
             variant: productData.variants[selectedVariant],
             slug: productData.slug,
           },
@@ -160,8 +161,8 @@ function Variant5({ detailSettings }) {
         // Show backend error (payload) if present, else generic
         toast.error(
           resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          resultAction.error.message ||
+          "Failed to add to cart"
         );
         return;
       }
@@ -173,7 +174,7 @@ function Variant5({ detailSettings }) {
           quantity,
           user: isAuthenticated ? userId : "guest",
         });
-      } catch (err) {}
+      } catch (err) { }
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {
@@ -208,11 +209,10 @@ function Variant5({ detailSettings }) {
                   <Star
                     key={i}
                     size={18}
-                    className={`${
-                      i < Math.round(productData?.reviews?.Average || 0)
-                        ? "fill-orange-400 text-orange-400"
-                        : "text-gray-300"
-                    }`}
+                    className={`${i < Math.round(productData?.reviews?.Average || 0)
+                      ? "fill-orange-400 text-orange-400"
+                      : "text-gray-300"
+                      }`}
                   />
                 ))}
               </div>
@@ -330,11 +330,10 @@ function Variant5({ detailSettings }) {
                   <button
                     key={variant._id}
                     onClick={() => setSelectedVariant(index)}
-                    className={`w-full p-3 border-2 rounded-lg text-left transition-all ${
-                      selectedVariant === index
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`w-full p-3 border-2 rounded-lg text-left transition-all ${selectedVariant === index
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                      }`}
                   >
                     <div className="flex justify-between items-center">
                       <div>

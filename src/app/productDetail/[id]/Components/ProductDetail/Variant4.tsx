@@ -21,6 +21,7 @@ import {
 import { toast } from "react-toastify";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 function Variant4() {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
@@ -44,7 +45,7 @@ function Variant4() {
           productId: productData._id,
           user: isAuthenticated ? userId : "guest",
         });
-      } catch (err) {}
+      } catch (err) { }
     }
   }, [productData?._id, isAuthenticated, userId]);
 
@@ -57,22 +58,22 @@ function Variant4() {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    
+
     // Check if productData is loaded
     if (!productData) {
       toast.error("Product data is not loaded yet. Please wait...");
       return;
     }
-    
+
     const price = productData.variants?.find(
       (variant) => variant._id === selectedVariant?._id
     );
-    
+
     if (!price) {
       toast.error("Please select a valid variant");
       return;
     }
-    
+
     // Get product ID - try multiple possible field names
     const productId = productData._id || productData.id || productData.productId || productData.product?._id || productData.product?.id;
     if (!productId) {
@@ -81,10 +82,10 @@ function Variant4() {
       toast.error("Product ID is not available. Please refresh the page.");
       return;
     }
-    
+
     // Extract variant ID - handle both object and string cases
     const variantId = selectedVariant?._id || selectedVariant;
-    
+
     try {
       const resultAction = await dispatch(
         addToCart({
@@ -98,12 +99,12 @@ function Variant4() {
         // Show backend error (payload) if present, else generic
         toast.error(
           resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          resultAction.error.message ||
+          "Failed to add to cart"
         );
         return;
       }
-      
+
       // Only call getCartItems() if the server successfully added the item
       // If addToCart fell back to localStorage (server failed), don't fetch from server
       // because it won't have the item yet and will overwrite local state
@@ -117,7 +118,7 @@ function Variant4() {
           }
         }, 500); // 500ms delay to allow server to process
       }
-      
+
       try {
         trackEvent("ADD_TO_CART", {
           productId: productId,
@@ -125,7 +126,7 @@ function Variant4() {
           quantity,
           user: isAuthenticated ? userId : "guest",
         });
-      } catch (err) {}
+      } catch (err) { }
       dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -146,7 +147,7 @@ function Variant4() {
           product: {
             id: productData._id,
             name: productData.name,
-            image: productData.thumbnail || productData.images[0],
+            image: getImageUrl(productData.thumbnail || productData.images?.[0]),
             variant: selectedVariant,
             slug: productData.slug,
           },
@@ -159,8 +160,8 @@ function Variant4() {
         // Show backend error (payload) if present, else generic
         toast.error(
           resultAction.payload ||
-            resultAction.error.message ||
-            "Failed to add to cart"
+          resultAction.error.message ||
+          "Failed to add to cart"
         );
         return;
       }
@@ -172,7 +173,7 @@ function Variant4() {
           quantity,
           user: isAuthenticated ? userId : "guest",
         });
-      } catch (err) {}
+      } catch (err) { }
       dispatch(setCheckoutOpen(true));
       // dispatch(toggleCart());
     } catch (error) {
@@ -186,7 +187,7 @@ function Variant4() {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {productData.name} 
+              {productData.name}
             </h1>
             <p className="text-md text-gray-600">{productData.subtitle}</p>
           </div>
@@ -200,11 +201,10 @@ function Variant4() {
                 <Star
                   key={i}
                   size={20}
-                  className={`${
-                    i < Math.floor(productData?.reviews?.Average || 0)
-                      ? "fill-orange-400 text-orange-400"
-                      : "text-gray-300"
-                  }`}
+                  className={`${i < Math.floor(productData?.reviews?.Average || 0)
+                    ? "fill-orange-400 text-orange-400"
+                    : "text-gray-300"
+                    }`}
                 />
               ))}
             </div>
@@ -258,11 +258,10 @@ function Variant4() {
           {productData.variants.map((variant) => (
             <button
               key={variant._id}
-              className={`relative p-4 border-2 rounded-2xl text-left transition-all hover:shadow-lg ${
-                selectedVariant?._id === variant._id
-                  ? "border-orange-400 bg-orange-50 shadow-md"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
+              className={`relative p-4 border-2 rounded-2xl text-left transition-all hover:shadow-lg ${selectedVariant?._id === variant._id
+                ? "border-orange-400 bg-orange-50 shadow-md"
+                : "border-gray-200 hover:border-gray-300"
+                }`}
               onClick={() => setSelectedVariant(variant)}
             >
               <div className="flex items-center justify-between">
@@ -290,11 +289,10 @@ function Variant4() {
                   </div>
                 </div>
                 <div
-                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                    selectedVariant._id === variant._id
-                      ? "border-orange-400 bg-orange-400"
-                      : "border-gray-300"
-                  }`}
+                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedVariant._id === variant._id
+                    ? "border-orange-400 bg-orange-400"
+                    : "border-gray-300"
+                    }`}
                 >
                   {selectedVariant._id === variant._id && (
                     <Check size={14} className="text-white" />
