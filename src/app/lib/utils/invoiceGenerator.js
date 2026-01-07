@@ -1,5 +1,5 @@
 
-export const generateInvoiceHtml = (order) => {
+export const generateInvoiceHtml = (order, baseUrl = "") => {
   if (!order) return "";
 
   const formatNumber = (v) => (v == null ? "" : Number(v).toFixed(2));
@@ -105,7 +105,7 @@ export const generateInvoiceHtml = (order) => {
   <table class="header-table">
     <tr>
       <td class="logo-cell">
-        <img src="/logo.webp" width="70" height="70" alt="Company Logo">
+        <img src="${baseUrl}/logo.webp" width="70" height="70" alt="Company Logo">
       </td>
       <td class="company-info">
         <div class="company-name">BHARAT GRAM UDYOG</div>

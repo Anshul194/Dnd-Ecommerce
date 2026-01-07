@@ -59,7 +59,8 @@ export async function GET(request, ctx) {
             );
         }
 
-        const htmlContent = generateInvoiceHtml(order);
+        const baseUrl = request.nextUrl.origin;
+        const htmlContent = generateInvoiceHtml(order, baseUrl);
 
         // Optionally save it back to disk for next time (fire and forget)
         try {
