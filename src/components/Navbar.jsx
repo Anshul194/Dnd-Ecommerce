@@ -44,6 +44,7 @@ import Image from "next/image";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import { fetchBlogs } from "@/app/store/slices/blogSclie";
 import axiosInstance from "@/axiosConfig/axiosInstance";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function Navbar({ initialCategories = [] }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -490,11 +491,7 @@ export default function Navbar({ initialCategories = [] }) {
                                       <div className="w-10 h-10 rounded-lg overflow-hidden bg-white flex-shrink-0">
                                         {category?.image ? (
                                           <Image
-                                            src={
-                                              (typeof (category?.image || category?.thumbnail) === 'string')
-                                                ? (category?.image || category?.thumbnail)
-                                                : (category?.image?.url || category?.thumbnail?.url || "/placeholder.png")
-                                            }
+                                            src={getImageUrl(category?.image || category?.thumbnail) || "/placeholder.png"}
                                             alt={category?.name || ''}
                                             width={40}
                                             height={40}
@@ -588,11 +585,7 @@ export default function Navbar({ initialCategories = [] }) {
                                                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
                                                       {subcategory?.image ? (
                                                         <Image
-                                                          src={
-                                                            (typeof (subcategory?.image || subcategory?.thumbnail) === 'string')
-                                                              ? (subcategory?.image || subcategory?.thumbnail)
-                                                              : (subcategory?.image?.url || subcategory?.thumbnail?.url || "/placeholder.png")
-                                                          }
+                                                          src={getImageUrl(subcategory?.image || subcategory?.thumbnail) || "/placeholder.png"}
                                                           alt={subcategory?.name || ''}
                                                           width={48}
                                                           height={48}
@@ -687,9 +680,10 @@ export default function Navbar({ initialCategories = [] }) {
                       <div className="grid grid-cols-5 gap-4 max-h-[400px] overflow-y-auto">
                         {(() => {
                           const displayProducts = (Array.isArray(products) && products.length > 0) ? products : reduxProducts;
-                          return (Array.isArray(displayProducts) ? displayProducts : []).map((product) => {
-                            if (product?.variants?.length == 0) return null;
-                            return (
+                          return (Array.isArray(displayProducts) ? displayProducts : [])
+                            .filter(product => product?.variants?.length > 0) // Filter first
+                            .slice(0, 10) // Then slice to exactly 10
+                            .map((product) => (
                               <Link
                                 key={product._id}
                                 href={`/productDetail/${product.slug}`}
@@ -742,8 +736,7 @@ export default function Navbar({ initialCategories = [] }) {
                                   )}
                                 </div>
                               </Link>
-                            );
-                          });
+                            ))
                         })()}
                       </div>
 

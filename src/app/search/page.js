@@ -6,6 +6,7 @@ import ProductCard from "./ProductCard";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts, resetProductState } from "../store/slices/productSlice";
+import { fetchCategories } from "../store/slices/categorySlice";
 import { LoadingSpinner } from "@/components/common/Loading";
 
 const SearchPage = () => {
@@ -19,6 +20,7 @@ const SearchPage = () => {
 
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page")) || 1);
   const { products, loading, pagination } = useSelector((state) => state.product);
+  const { categories } = useSelector((state) => state.category);
   const dispatch = useDispatch();
 
   const paramCategories = searchParams.get("category");
@@ -26,6 +28,15 @@ const SearchPage = () => {
   const minPrice = searchParams.get("min");
   const maxPrice = searchParams.get("max");
   const paramSearchTerm = searchParams.get("search");
+
+  useEffect(() => {
+    if (!categories || categories.length === 0) {
+      dispatch(fetchCategories());
+    }
+  }, [dispatch, categories]);
+
+  const selectedCategory = categories.find(c => c._id === paramCategories || c.slug === paramCategories);
+  const selectedSubcategory = selectedCategory?.subcategories?.find(s => s._id === paramSubcategories || s.slug === paramSubcategories);
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
@@ -86,6 +97,17 @@ const SearchPage = () => {
               <div className="mb-2 sm:mb-0">
                 <p className="text-gray-600 text-sm">
                   Results for
+                  {selectedCategory && (
+                    <span className="text-black font-bold mx-1">
+                      {selectedCategory.name}
+                      {selectedSubcategory && ` > ${selectedSubcategory.name}`}
+                    </span>
+                  )}
+                  {paramSearchTerm && (
+                    <span className="text-black font-bold mx-1">
+                      "{paramSearchTerm}"
+                    </span>
+                  )}
                   <span className="font-semibold ml-2 text-black">
                     {loading ? "Loading..." : `(${pagination?.total || (products || []).length}) products`}
                   </span>

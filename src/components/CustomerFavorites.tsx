@@ -36,21 +36,39 @@ const itemVariants = {
   },
 };
 
-export function CustomerFavorites({ content }) {
-  const { products } = useSelector((state) => state.product);
-  const dispatch = useDispatch();
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const userId = useSelector((state) => state.auth.user?._id); // get logged-in user id
+// Define types for the state parts we use
+interface ProductState {
+  products: any;
+}
+interface AuthState {
+  isAuthenticated: boolean;
+  user: { _id: string } | null;
+}
+interface WishlistState {
+  items: any[];
+  initialized: boolean;
+}
+interface RootState {
+  product: ProductState;
+  auth: AuthState;
+  wishlist: WishlistState;
+}
+
+export function CustomerFavorites({ content }: { content: any }) {
+  const { products } = useSelector((state: RootState) => state.product);
+  const dispatch = useDispatch<any>();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const userId = useSelector((state: RootState) => state.auth.user?._id); // get logged-in user id
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [heartAnimating, setHeartAnimating] = useState(false);
 
   // Selector for Redux wishlist items
-  const { items: wishlistItems, initialized } = useSelector((state) => state.wishlist);
+  const { items: wishlistItems, initialized } = useSelector((state: RootState) => state.wishlist);
 
   // Function to check if a specific product is wishlisted
-  const getIsWishlisted = (product) => {
-    const isInReduxWishlist = wishlistItems.some((item) => {
+  const getIsWishlisted = (product: any) => {
+    const isInReduxWishlist = wishlistItems.some((item: any) => {
       const itemProduct = item.product;
       const itemProductId = String(
         (typeof itemProduct === "object"
@@ -78,7 +96,7 @@ export function CustomerFavorites({ content }) {
       isAuthenticated &&
       userId &&
       Array.isArray(product.wishlist) &&
-      product.wishlist.some((id) => String(id) === String(userId));
+      product.wishlist.some((id: any) => String(id) === String(userId));
 
     // Trust Redux exclusively if initialized, otherwise merge/fallback
     return initialized
@@ -86,7 +104,7 @@ export function CustomerFavorites({ content }) {
       : isInReduxWishlist || isWishlistedFromProduct;
   };
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = (product: any) => {
     // if (!isAuthenticated) {
     //   setShowAuthModal(true);
     //   return;
@@ -96,7 +114,7 @@ export function CustomerFavorites({ content }) {
       ? product?.variants[0]?.salePrice || product?.variants[0]?.price
       : product?.salePrice || product?.price;
     dispatch(
-      addToCart({
+      (addToCart as any)({
         product: {
           id: product._id,
           name: product.name,
@@ -115,9 +133,9 @@ export function CustomerFavorites({ content }) {
   useEffect(() => {
     // console.log("CustomerFavorites content is ===> ", content);
     dispatch(
-      fetchProducts({
+      (fetchProducts as any)({
         page: 1,
-        limit: 8,
+        limit: 10,
         sortBy: "rating",
         order: "desc",
         category: content?.category || "",
@@ -153,7 +171,7 @@ export function CustomerFavorites({ content }) {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           {products &&
-            products?.products?.map((product, index) => (
+            products?.products?.map((product: any, index: number) => (
               <Link href={`/productDetail/${product.slug}`} key={product._id}>
                 <motion.div key={product._id} variants={itemVariants}>
                   <Card className="relative group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg overflow-hidden">
@@ -174,7 +192,7 @@ export function CustomerFavorites({ content }) {
                           if (currentlyLiked) {
                             try {
                               await dispatch(
-                                removeFromWishlist({
+                                (removeFromWishlist as any)({
                                   productId: product._id,
                                   variantId: product?.variants[0]?._id,
                                 })
@@ -186,7 +204,7 @@ export function CustomerFavorites({ content }) {
                             setHeartAnimating(true);
                             try {
                               await dispatch(
-                                addToWishlist({
+                                (addToWishlist as any)({
                                   product: product._id,
                                   variant: product?.variants[0]?._id,
                                 })

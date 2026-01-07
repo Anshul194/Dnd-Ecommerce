@@ -268,6 +268,7 @@ const DynamicProductSlider = ({ content }) => {
     dispatch(
       fetchProducts({
         frequentlyPurchased: true,
+        limit: 10,
       })
     );
   }, []);

@@ -32,7 +32,7 @@ class CategoryService {
   async getAllCategories(query) {
     try {
       //consolle.log("Query Parameters category:", query);
-      const { page = 1, limit = 10, filters = "{}", searchFields = "{}", sort = "{}" } = query;
+      const { page = 1, limit = 10, filters = "{}", searchFields = "{}", sort = "{}", sortBy, sortOrder } = query;
 
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
@@ -41,7 +41,23 @@ class CategoryService {
       // Parse JSON strings from query parameters to objects
       const parsedFilters = JSON.parse(filters);
       const parsedSearchFields = JSON.parse(searchFields);
-      const parsedSort = JSON.parse(sort);
+
+      let sortConditions = {};
+
+      if (sortBy) {
+        sortConditions[sortBy] = sortOrder === "asc" ? 1 : -1;
+      } else {
+        try {
+          const parsedSort = JSON.parse(sort);
+          for (const [field, direction] of Object.entries(parsedSort)) {
+            sortConditions[field] = direction === "asc" ? 1 : -1;
+          }
+        } catch (e) { }
+      }
+
+      if (Object.keys(sortConditions).length === 0) {
+        sortConditions = { createdAt: -1 };
+      }
 
       // Build filter conditions for multiple fields
       const filterConditions = { deletedAt: null };
@@ -59,11 +75,6 @@ class CategoryService {
         filterConditions.$or = searchConditions;
       }
 
-      // Build sort conditions
-      const sortConditions = {};
-      for (const [field, direction] of Object.entries(parsedSort)) {
-        sortConditions[field] = direction === "asc" ? 1 : -1;
-      }
 
       // Execute query with dynamic filters, sorting, and pagination
       const courseCategories = await this.categoryRepo.getAll(filterConditions, sortConditions, pageNum, limitNum);
@@ -130,10 +141,10 @@ class CategoryService {
       const Product = this.conn.models.Product || this.conn.model('Product', ProductSchema);
       const productCount = await Product.countDocuments({ category: id, deletedAt: null });
       if (productCount > 0) {
-return errorResponse(
-  'This category cannot be deleted because it has associated products.',
-  StatusCodes.CONFLICT
-);
+        return errorResponse(
+          'This category cannot be deleted because it has associated products.',
+          StatusCodes.CONFLICT
+        );
       }
 
       const deleted = await this.categoryRepo.softDelete(id);
@@ -149,4 +160,3 @@ return errorResponse(
 }
 
 export default CategoryService;
-     

@@ -15,6 +15,7 @@ import "swiper/css/pagination";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AnimatedGradientBorder from "@/components/ui/AnimatedGradientBorder";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const Categories = ({ dynamicContent = null }) => {
   const { categories, lastFetched } = useSelector((state) => state.category);
@@ -148,24 +149,18 @@ const Categories = ({ dynamicContent = null }) => {
                       href={`/search?category=${item._id}`}
                       className="block cursor-pointer"
                     >
-                      <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-lg flex flex-col overflow-hidden hover:shadow-md transition-shadow  h-72">
-                        <Image
-                          width={100}
-                          height={100}
-                          src={
-                            (typeof (item?.thumbnail || item?.image) === 'string')
-                              ? (item?.thumbnail || item?.image)
-                              : (item?.thumbnail?.url || item?.image?.url || "/placeholder.png")
-                          }
-                          alt={item?.name || "Category Image"}
-                          className="w-full max-sm:h-[248px] sm:max-md:h-[248px] h-full md:object-cover"
-                        />
-                        <div className="bg text-white text-sm py-2 px-2 text-center flex items-center justify-center w-full font-medium">
+                      <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-lg flex flex-col overflow-hidden hover:shadow-md transition-shadow h-72">
+                        <div className="flex-1 relative w-full">
+                          <Image
+                            fill
+                            src={getImageUrl(item?.thumbnail || item?.image) || "/placeholder.png"}
+                            alt={item?.name || "Category Image"}
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="bg text-white text-xs py-3 px-2 text-center flex items-center justify-center w-full font-bold uppercase tracking-widest">
                           {item?.name}
                         </div>
-                        {/* <div className="bg h-20 px-2 text-white text-sm py-2 flex  justify-center w-full font-medium">
-                          {item?.name}
-                        </div> */}
                       </div>
                     </Link>
                   </SwiperSlide>
@@ -176,22 +171,17 @@ const Categories = ({ dynamicContent = null }) => {
               <div className="grid grid-cols-2 md:flex md:flex-row md:justify-center flex-wrap gap-4 justify-items-center">
                 {categories.length > 0 &&
                   categories.map((item, index) => (
-                    <Link href={`/search?category=${item.slug}`} key={index}>
+                    <Link href={`/search?category=${item._id}`} key={index}>
                       <div className="border-2 border-gray-200 shadow-sm w-[45%] max-sm:w-[160px] md:w-56 min-h-48 rounded-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="flex-1 flex items-center h-full justify-center p-2">
+                        <div className="flex-1 relative w-full h-44">
                           <Image
-                            width={100}
-                            height={100}
-                            src={
-                              (typeof (item?.thumbnail || item?.image) === 'string')
-                                ? (item?.thumbnail || item?.image)
-                                : (item?.thumbnail?.url || item?.image?.url || "/placeholder.png")
-                            }
+                            fill
+                            src={getImageUrl(item?.thumbnail || item?.image) || "/placeholder.png"}
                             alt={item?.name || "Category Image"}
-                            className="w-full h-44 object-cover"
+                            className="object-cover"
                           />
                         </div>
-                        <div className="bg text-white text-sm py-2 px-2 text-center flex items-center justify-center w-full font-medium">
+                        <div className="bg text-white text-xs py-3 px-2 text-center flex items-center justify-center w-full font-bold uppercase tracking-widest">
                           {item?.name}
                         </div>
                       </div>
