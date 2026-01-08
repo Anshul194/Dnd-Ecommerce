@@ -105,7 +105,7 @@ export const generateInvoiceHtml = (order, baseUrl = "") => {
   <table class="header-table">
     <tr>
       <td class="logo-cell">
-        <img src="${baseUrl}/logo.webp" width="70" height="70" alt="Company Logo">
+        <img src="${baseUrl ? baseUrl : ''}/logo.webp" width="70" height="70" alt="Company Logo">
       </td>
       <td class="company-info">
         <div class="company-name">BHARAT GRAM UDYOG</div>
