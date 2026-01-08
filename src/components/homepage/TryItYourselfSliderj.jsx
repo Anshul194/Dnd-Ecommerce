@@ -272,7 +272,7 @@ const TryItYourselfSlider = memo(() => {
                     <ImageWithFallback
                       src={product?.thumbnail?.url || product?.images?.[0]?.url}
                       alt={product?.thumbnail?.alt || product?.images?.[0]?.alt || product.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
                 </div>

@@ -336,6 +336,27 @@ export default function Footer() {
                 </div>
               ))}
             </div> */}
+
+            <div className="mt-8">
+              <h3 className="mb-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Available On</h3>
+              <div className="flex gap-4">
+                {[
+                  { name: 'Flipkart', src: '/images/flipkart.png' },
+                  { name: 'Amazon', src: '/images/amazon.png' },
+                  { name: 'Tata 1mg', src: '/images/tata1mg.png' }
+                ].map((store) => (
+                  <div key={store.name} className="bg-white p-2 rounded-lg hover:scale-105 transition-transform cursor-pointer">
+                    <Image
+                      src={store.src}
+                      alt={store.name}
+                      width={80}
+                      height={30}
+                      className="h-6 w-auto object-contain"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
 
 
@@ -379,7 +400,7 @@ export default function Footer() {
           className="border-t border-gray-800 pt-4 text-center text-sm text-gray-400"
         >
           <p>
-            &copy; 2025 TeaHaven. All rights reserved. Made with 💚 for tea
+            &copy; 2025 BharatGramUdyogSangh. All rights reserved. Made with 💚 for tea
             lovers. footer one
           </p>
         </motion.div>

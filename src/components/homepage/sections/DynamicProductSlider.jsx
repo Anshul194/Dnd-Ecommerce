@@ -312,29 +312,7 @@ const DynamicProductSlider = ({ content }) => {
   return (
     <div className="flex relative flex-col gap-4 justify-between w-full h-fit py-20 px-4 lg:px-0">
       {/* Background Image */}
-      <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
-        {/* Desktop Image */}
-        <div className="hidden md:block absolute -left-[10%] top-1/2 -translate-y-1/2 w-[60%] h-[140%] opacity-20 rotate-12">
-          {(content?.image || teaOne) && <Image
-            src={getImageUrl(content?.image) || teaOne}
-            alt="Background Decoration"
-            fill
-            className="object-contain"
-            priority
-          />}
-        </div>
 
-        {/* Mobile Image */}
-        <div className="block md:hidden absolute -left-10 top-0 w-[80%] h-[80%] opacity-10 rotate-12">
-          {(content?.mobileImage || teaOne) && <Image
-            src={getImageUrl(content?.mobileImage) || teaOne}
-            alt="Background Decoration"
-            fill
-            className="object-contain"
-            priority
-          />}
-        </div>
-      </div>
 
       {/* Left Content - Dynamic from API */}
       <div className="flex-1 relative mb-8 lg:mb-0 lg:mr-8 z-20 text-center">
