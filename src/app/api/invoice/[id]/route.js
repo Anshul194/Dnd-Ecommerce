@@ -59,7 +59,7 @@ export async function GET(request, ctx) {
             );
         }
 
-        const baseUrl = request.nextUrl.origin;
+        const baseUrl = "https://bharatgramudyogsangh.com";
         const htmlContent = generateInvoiceHtml(order, baseUrl);
 
         // Optionally save it back to disk for next time (fire and forget)

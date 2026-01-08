@@ -13,14 +13,10 @@ export const getImageUrl = (url) => {
     // Remove leading slash if present to avoid double slashes if base has trailing slash
     const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
 
-    // For client-side rendering, return a relative path
-    if (typeof window !== 'undefined') {
-        return `/${cleanUrl}`;
-    }
+    // Get the base URL from environment variable
+    const baseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || "";
 
-    // For server-side rendering, use environment variable if set, otherwise return relative path
-    if (process.env.NEXT_PUBLIC_IMAGE_URL) {
-        const baseUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
+    if (baseUrl) {
         const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
         return `${cleanBaseUrl}/${cleanUrl}`;
     }
