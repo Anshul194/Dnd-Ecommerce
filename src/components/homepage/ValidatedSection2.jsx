@@ -81,7 +81,7 @@ export default function ValidatedSection2({ content }) {
                 {certificatesForUI.map((item, index) => (
                   <div
                     key={`a-${index}`}
-                    className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-2 border-[#3C950D] bg-white"
+                    className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-2 border-[#07490C] bg-white"
                   >
                     <Image
                       src={
@@ -105,7 +105,7 @@ export default function ValidatedSection2({ content }) {
                 {certificatesForUI.map((item, index) => (
                   <div
                     key={`b-${index}`}
-                    className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-2 border-[#3C950D] bg-white"
+                    className="w-32 h-32 md:w-40 md:h-40 lg:w-[30vh] lg:h-[30vh] flex-shrink-0 rounded-full border-2 border-[#07490C] bg-white"
                   >
                     <Image
                       src={

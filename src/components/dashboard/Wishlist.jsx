@@ -120,7 +120,7 @@ const Wishlist = () => {
             Start adding items you love to your wishlist
           </p>
           <Link href="/search">
-            <button className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+            <button className="px-4 py-2 greenOne text-white rounded-md hover:bg-green-700 transition-colors">
               Continue Shopping
             </button>
           </Link>

@@ -214,7 +214,7 @@ function Variant4() {
             <span className="text-gray-500">({productData?.reviews?.Reviews.length})</span>
           </div>
           <div className="h-4 w-px bg-gray-300"></div>
-          {/* <div className="flex items-center gap-2 text-green-600">
+          {/* <div className="flex items-center gap-2 text-[#07490C]">
             <Users size={16} />
             <span className="font-medium">{productData.soldCount}</span>
           </div> */}
@@ -332,14 +332,14 @@ function Variant4() {
       <div className="flex gap-4">
         <button
           onClick={handleAddToCart}
-          className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-8 rounded-2xl font-bold hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105 flex items-center justify-center gap-3 shadow-lg"
+          className="flex-1 greenOne text-white py-4 px-8 rounded-2xl font-bold transition-all transform hover:scale-105 flex items-center justify-center gap-3 shadow-lg"
         >
           <ShoppingCart size={22} />
           Add to Cart
         </button>
         <button
           onClick={handleBuyNow}
-          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-8 rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 shadow-lg"
+          className="greenTwo text-white py-4 px-8 rounded-2xl font-bold transition-all transform hover:scale-105 shadow-lg"
         >
           Buy Now
         </button>
@@ -355,7 +355,7 @@ function Variant4() {
               className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm border border-gray-100"
             >
               <div className="p-2 bg-green-100 rounded-lg">
-                <Icon size={20} className="text-green-600" />
+                <Icon size={20} className="text-[#07490C]" />
               </div>
               <div>
                 <div className="font-semibold text-gray-900 text-sm">

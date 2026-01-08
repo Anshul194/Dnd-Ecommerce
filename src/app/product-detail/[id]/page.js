@@ -309,7 +309,7 @@ function ProductPage({ params }) {
                           <div
                             key={index}
                             className={`w-2 h-2 rounded-full transition-all ${selectedImage === index
-                                ? "bg-green-500"
+                                ? "greenOne"
                                 : "bg-white/50"
                               }`}
                           />
@@ -368,7 +368,7 @@ function ProductPage({ params }) {
                     placeholder="Enter pincode"
                     className="flex-1 px-3 py-2 border text-black border-gray-300 rounded text-sm"
                   />
-                  <button className="bg-green-600 text-white py-2 px-4 rounded text-sm font-medium hover:bg-green-700 transition-colors">
+                  <button className="greenOne text-white py-2 px-4 rounded text-sm font-medium hover:bg-green-700 transition-colors">
                     Check
                   </button>
                 </div>
@@ -466,7 +466,7 @@ function ProductPage({ params }) {
                 </button>
                 <button
                   onClick={handleBuyNow}
-                  className="flex-1 w-1/2 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
+                  className="flex-1 w-1/2 greenOne text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
                 >
                   Buy Now
                 </button>
@@ -569,7 +569,7 @@ function ProductPage({ params }) {
                                   key={item._id || idx}
                                   className="flex items-start gap-2"
                                 >
-                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                                  <div className="w-1.5 h-1.5 greenOne rounded-full mt-2 flex-shrink-0"></div>
                                   <div
                                     dangerouslySetInnerHTML={{
                                       __html: item.description,
@@ -633,7 +633,7 @@ function ProductPage({ params }) {
                                   key={item._id || idx}
                                   className="flex items-start gap-2"
                                 >
-                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                                  <div className="w-1.5 h-1.5 greenOne rounded-full mt-2 flex-shrink-0"></div>
                                   <div
                                     className="leading-relaxed"
                                     dangerouslySetInnerHTML={{
@@ -755,7 +755,7 @@ function ProductPage({ params }) {
                         <ul className="space-y-2">
                           {data.howToUseSteps.map((step, idx) => (
                             <li key={idx} className="flex items-start gap-2">
-                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                              <div className="w-1.5 h-1.5 greenOne rounded-full mt-2 flex-shrink-0"></div>
                               <div>
                                 {step.title && (
                                   <div className="font-semibold mb-1">{step.title}</div>
@@ -812,7 +812,7 @@ function ProductPage({ params }) {
             </button>
             <button
               onClick={handleBuyNow}
-              className="flex-1 w-1/2 bg-green-600 text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
+              className="flex-1 w-1/2 greenOne text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
             >
               Buy Now
             </button>

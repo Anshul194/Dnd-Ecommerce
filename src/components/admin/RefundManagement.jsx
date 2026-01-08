@@ -296,7 +296,7 @@ const RefundManagement = () => {
                                         <button
                                             onClick={() => handleApproveReturn(order._id, order.total)}
                                             disabled={processing}
-                                            className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+                                            className="flex-1 px-6 py-3 greenOne text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
                                         >
                                             <CheckCircle className="inline mr-2" size={18} />
                                             Approve Return

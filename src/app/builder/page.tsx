@@ -2458,7 +2458,7 @@ export default function ProductPageBuilder() {
                   </div>
                   <button
                     onClick={addColumn}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 greenOne text-white rounded-lg hover:greenOne transition-colors"
                   >
                     <Plus size={20} />
                     Add Column
@@ -2517,7 +2517,7 @@ export default function ProductPageBuilder() {
               </button>
               <button
                 onClick={handleSave}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 greenOne text-white rounded-lg hover:greenOne transition-colors"
               >
                 <Save size={20} />
                 Save

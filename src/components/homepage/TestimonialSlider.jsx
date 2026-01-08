@@ -113,7 +113,7 @@ export default function TestimonialSlider({ content }) {
                 className="px-3"
                 style={{ flex: `0 0 ${slideWidth}%` }}
               >
-                <div className="bg-white border border-gray-200 rounded-2xl p-4 h-fit flex flex-col">
+                <div className="bg-white border border-gray-200 max-w-[280px] rounded-2xl p-4 h-fit flex flex-col">
                   {/* Name with green icon */}
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-md font-bold text-black uppercase tracking-wide">
@@ -158,7 +158,7 @@ export default function TestimonialSlider({ content }) {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-colors duration-300 ${currentSlide === index ? "bg-green-500" : "bg-gray-300"
+            className={`w-2 h-2 rounded-full transition-colors duration-300 ${currentSlide === index ? "greenOne" : "bg-gray-300"
               }`}
           />
         ))}

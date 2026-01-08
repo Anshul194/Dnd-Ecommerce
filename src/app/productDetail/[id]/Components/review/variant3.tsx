@@ -118,7 +118,7 @@ export default function RenderListVariant() {
 
           <div className="bg-gray-100 rounded-3xl p-8 flex flex-col justify-center">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-4 bg-green-600 rounded-full px-6 py-3 mb-4">
+              <div className="inline-flex items-center gap-4 greenOne rounded-full px-6 py-3 mb-4">
                 <span className="text-3xl font-bold text-white">
                   {productData?.reviews?.Average?.toFixed(1)}
                 </span>
@@ -135,7 +135,7 @@ export default function RenderListVariant() {
                   </span>
                   <div className="flex-1 bg-gray-200 rounded-full h-3 relative overflow-hidden">
                     <div
-                      className="bg-green-600 h-full rounded-full transition-all duration-700 ease-out"
+                      className="greenOne h-full rounded-full transition-all duration-700 ease-out"
                       style={{
                         width: `${item.percentage}%`,
                         animationDelay: `${index * 0.1}s`,
@@ -205,7 +205,7 @@ export default function RenderListVariant() {
                       </div>
                     )}
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="w-14 h-14 bg-green-600 rounded-full flex items-center justify-center">
+                      <div className="w-14 h-14 greenOne rounded-full flex items-center justify-center">
                         <span className="text-white font-bold text-xl">
                           {review.userId.name.charAt(0)}
                         </span>
@@ -247,13 +247,13 @@ export default function RenderListVariant() {
               {/* Navigation Buttons */}
               <button
                 onClick={handlePrev}
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-green-600 text-white p-2 rounded-full"
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 greenOne text-white p-2 rounded-full"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
               <button
                 onClick={handleNext}
-                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-600 text-white p-2 rounded-full"
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 greenOne text-white p-2 rounded-full"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
@@ -263,7 +263,7 @@ export default function RenderListVariant() {
                   <div
                     key={index}
                     className={`w-3 h-3 rounded-full ${
-                      index === currentSlide ? "bg-green-600" : "bg-gray-300"
+                      index === currentSlide ? "greenOne" : "bg-gray-300"
                     }`}
                   ></div>
                 ))}
@@ -304,7 +304,7 @@ export default function RenderListVariant() {
                     </div>
                   )}
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 bg-green-600 rounded-full flex items-center justify-center">
+                    <div className="w-14 h-14 greenOne rounded-full flex items-center justify-center">
                       <span className="text-white font-bold text-xl">
                         {review.userId.name.charAt(0)}
                       </span>
@@ -358,7 +358,7 @@ export default function RenderListVariant() {
           >
             Help others discover quality products through your honest feedback
           </p>
-          <button className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700 transition-colors">
+          <button className="greenOne text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700 transition-colors">
             Write a Review
           </button>
         </div>

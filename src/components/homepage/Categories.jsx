@@ -53,7 +53,7 @@ const Categories = ({ dynamicContent = null }) => {
         }
 
         .categories-swiper .swiper-pagination-bullet {
-          background: #22c55e;
+          background: #07490C;
         }
 
         .categories-swiper .swiper-pagination {

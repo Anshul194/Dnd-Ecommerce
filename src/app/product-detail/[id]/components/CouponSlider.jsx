@@ -133,7 +133,7 @@ const CouponSlider = () => {
               <div className="absolute -right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white rounded-full border-2 border-green-300" />
 
               {/* Discount Badge */}
-              <div className="absolute -top-2 -right-2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+              <div className="absolute -top-2 -right-2 greenOne text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
                 {coupon.type === "percent"
                   ? `${coupon.value}% OFF`
                   : `₹${coupon.value} OFF`}

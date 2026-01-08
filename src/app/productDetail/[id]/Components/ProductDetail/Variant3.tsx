@@ -246,14 +246,14 @@ function Variant3({ productData: propProductData }: Variant3Props) {
             <div className="md:flex block gap-2">
               <button
                 onClick={handleAddToCart}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-1 text-sm max-md:mb-2"
+                className="greenOne text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 text-sm max-md:mb-2"
               >
                 <ShoppingCart size={16} />
                 Add to Cart
               </button>
               <button
                 onClick={handleBuyNow}
-                className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors text-sm max-md:w-full"
+                className="greenTwo text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm max-md:w-full"
               >
                 Buy Now
               </button>
@@ -307,7 +307,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
                 <button
                   key={variant._id}
                   className={`relative p-4 border-2 rounded-xl text-center transition-all ${selectedVariant === variant._id
-                    ? "border-green-500 bg-green-50"
+                    ? "customBorder bg-blue-50"
                     : "border-gray-200 hover:border-gray-300"
                     }`}
                   onClick={() => setSelectedVariant(variant._id)}
@@ -333,7 +333,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
         <div className="flex items-center gap-4 mb-6">
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-gray-700">Quantity:</span>
-            <div className="flex items-center border border-gray-300 rounded-lg">
+            <div className="flex items-center customBorder border-gray-300 rounded-lg">
               <button
                 onClick={() => handleQuantityChange(-1)}
                 className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 transition-colors"
@@ -355,14 +355,14 @@ function Variant3({ productData: propProductData }: Variant3Props) {
         <div ref={actionButtonsRef} className="flex gap-3 mb-6">
           <button
             onClick={handleAddToCart}
-            className="flex-1 bg-green-600 text-white py-4 px-6 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 greenOne text-white py-4 px-6 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
           >
             <ShoppingCart size={20} className="max-sm:hidden" />
             Add to Cart
           </button>
           <button
             onClick={handleBuyNow}
-            className="bg-orange-500 text-white py-4 px-8 rounded-xl font-semibold hover:bg-orange-600 transition-colors"
+            className="greenTwo text-white py-4 px-8 rounded-xl font-semibold transition-colors"
           >
             Buy Now
           </button>
@@ -371,19 +371,19 @@ function Variant3({ productData: propProductData }: Variant3Props) {
         {/* Features */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="flex items-center gap-3 text-sm text-gray-600">
-            <Truck size={18} className="text-green-600" />
+            <Truck size={18} className="text-[#07490C]" />
             <span>Free Delivery</span>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-600">
-            <RotateCcw size={18} className="text-green-600" />
+            <RotateCcw size={18} className="text-[#07490C]" />
             <span>Easy Returns</span>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-600">
-            <Shield size={18} className="text-green-600" />
+            <Shield size={18} className="text-[#07490C]" />
             <span>Secure Payment</span>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-600">
-            <Clock size={18} className="text-green-600" />
+            <Clock size={18} className="text-[#07490C]" />
             <span>7-8 Days Delivery</span>
           </div>
         </div>
@@ -405,7 +405,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
                 key={tab.key}
                 onClick={() => toggleSection(tab.key)}
                 className={`flex-1 py-4 px-6 text-sm font-medium border-b-2 transition-colors ${expandedSection === tab.key
-                  ? "border-green-500 text-green-600"
+                  ? "border-green-500 text-[#07490C]"
                   : "border-transparent text-gray-600 hover:text-gray-900"
                   }`}
               >
@@ -429,7 +429,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
             <div className="space-y-3">
               {productData.ingredients.map((item: any) => (
                 <div key={item._id} className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 greenOne rounded-full mt-2 flex-shrink-0"></div>
                   <span
                     dangerouslySetInnerHTML={{
                       __html: item.description,
@@ -446,7 +446,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
               {productData.benefits.map((item, idx) => (
                 <div key={item._id} className="flex flex-col items-start gap-3">
                   <span className="flex gap-2">
-                    <div className="w-2 h-2  bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="w-2 h-2  greenOne rounded-full mt-2 flex-shrink-0"></div>
                     <strong>
                       {idx + 1}. {item.title}
                     </strong>

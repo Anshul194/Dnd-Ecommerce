@@ -184,7 +184,7 @@ export default function FrequentlyPurchased() {
 
       {/* Green Circle Button */}
       {/* <div className="fixed bottom-8 right-8">
-        <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg cursor-pointer">
+        <div className="w-12 h-12 greenOne rounded-full flex items-center justify-center shadow-lg cursor-pointer">
           <span className="text-white text-lg">→</span>
         </div>
       </div> */}

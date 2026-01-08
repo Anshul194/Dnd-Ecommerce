@@ -191,7 +191,7 @@ function Variant2() {
             placeholder="Enter pincode"
             className="flex-1 px-3 py-2 border text-black border-gray-300 rounded text-sm"
           />
-          <button className="bg-green-600 text-white py-2 px-4 rounded text-sm font-medium hover:bg-green-700 transition-colors">
+          <button className="greenOne text-white py-2 px-4 rounded text-sm font-medium hover:bg-green-700 transition-colors">
             Check
           </button>
         </div>
@@ -215,7 +215,7 @@ function Variant2() {
             >
               <div
                 className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${variant?.color === "green"
-                  ? "bg-green-600"
+                  ? "greenOne"
                   : variant?.color === "orange"
                     ? "bg-orange-500"
                     : "bg-blue-500"
@@ -376,7 +376,7 @@ function Variant2() {
                     key={item._id || idx}
                     className="flex items-start b-10 gap-2"
                   >
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 greenOne rounded-full mt-2 flex-shrink-0"></div>
                     <span
                       dangerouslySetInnerHTML={{
                         __html: item.description,
@@ -432,7 +432,7 @@ function Variant2() {
               <ul className="space-y-2">
                 {productData.benefits.map((item, idx) => (
                   <li key={item._id || idx} className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 greenOne rounded-full mt-2 flex-shrink-0"></div>
                     <span
                       dangerouslySetInnerHTML={{
                         __html: item.description,

@@ -179,7 +179,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
       >
         <div
           className={`${showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
-            } bg-white flex flex-col justify-between border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-80 lg:w-80 shrink-0`}
+            } bg-white flex flex-col justify-between border border-[#92BD78] rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-80 lg:w-80 shrink-0`}
         >
           <div className="relative bg-white rounded-t-2xl">
             <div className="absolute top-2 right-2 z-10">
@@ -328,7 +328,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                   <button
                     type="button"
                     onClick={(e) => handleBuyNow(e)}
-                    className="w-4/3 h-10 max-sm:h-9 mb-2 bg-green-600 text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                    className="w-4/3 h-10 max-sm:h-9 mb-2 greenOne text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                   >
                     Buy Now
                   </button>
@@ -344,7 +344,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
               ) : (
                 <button
                   onClick={(e) => handleAddToCart(e)}
-                  className="w-full bg-green-600 text-white py-2.5 max-sm:py-2 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                  className="w-full greenOne text-white py-2.5 max-sm:py-2 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                   type="button"
                 >
                   Add to cart

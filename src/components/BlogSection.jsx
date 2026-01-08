@@ -200,7 +200,7 @@ export default function BlogSection({ content }) {
                       <h2 className="text-black text-sm font-semibold">
                         View More
                       </h2>
-                      <div className="h-6 px-3 flex justify-center items-center border-2 group-hover:bg-gray-100  transition-colors duration-300 border-green-500 bg-green-500 rounded-full">
+                      <div className="h-6 px-3 flex justify-center items-center border-2 group-hover:bg-gray-100  transition-colors duration-300 border-green-500 greenOne rounded-full">
                         <ArrowUpRight className="w-4 h-4 text-white group-hover:text-green-500 transition-colors duration-300" />
                       </div>
                     </div>
@@ -225,7 +225,7 @@ export default function BlogSection({ content }) {
                 scrollToTop();
               }
             }}
-            className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg cursor-pointer"
+            className="w-12 h-12 greenOne rounded-full flex items-center justify-center shadow-lg cursor-pointer"
           >
             <ChevronUp className="w-6 h-6 text-white" />
           </div>

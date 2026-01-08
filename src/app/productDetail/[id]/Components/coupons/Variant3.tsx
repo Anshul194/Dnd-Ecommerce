@@ -43,7 +43,7 @@ function Variant3({ coupons }) {
               onClick={() => handleSelectCoupon(coupon)}
             >
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="w-2 h-2 greenOne rounded-full"></div>
                 <div>
                   <span className="font-semibold text-gray-900">
                     {coupon.code}

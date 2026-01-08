@@ -96,7 +96,7 @@ function Variant1({ coupons, couponSettings }) {
                       {/* Selection indicator */}
                       {selectedCoupon?._id === coupon._id && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <div className="w-3 h-3 greenOne rounded-full"></div>
                         </div>
                       )}
 
@@ -146,7 +146,7 @@ function Variant1({ coupons, couponSettings }) {
           <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="w-2 h-2 greenOne rounded-full"></div>
                 <span className="text-sm font-medium text-green-700">
                   Coupon {selectedCoupon.code} selected -{" "}
                   {selectedCoupon.type === "percent"
@@ -171,7 +171,7 @@ function Variant1({ coupons, couponSettings }) {
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`w-2 h-2 rounded-full transition-colors ${
-                currentSlide === index ? "bg-green-600" : "bg-gray-300"
+                currentSlide === index ? "greenOne" : "bg-gray-300"
               }`}
             />
           ))}

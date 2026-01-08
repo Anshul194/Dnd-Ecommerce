@@ -1718,7 +1718,7 @@ export default function CheckoutPage() {
                     value="method2"
                     checked={paymentMethod === "prepaid"}
                     onChange={() => setPaymentMethod("prepaid")}
-                    className="checked:bg-green-600 h-4 w-4"
+                    className="checked:greenOne h-4 w-4"
                   />
                   <label htmlFor="payment-method-2">Prepaid</label>
                 </div>
@@ -1744,7 +1744,7 @@ export default function CheckoutPage() {
                       }
                       checked={paymentMethod === "cod"}
                       onChange={() => setPaymentMethod("cod")}
-                      className={`checked:bg-green-600 h-4 w-4 `}
+                      className={`checked:greenOne h-4 w-4 `}
                     />
                     <label htmlFor="payment-method-1">Cash on delivery</label>
                   </div>
@@ -1816,7 +1816,7 @@ export default function CheckoutPage() {
               onClick={pinCodeVerified?.success ? handelPayment : checkPincode}
               className={`w-full mt-4  text-sm ${pinCodeVerified?.success
                 ? "bg-blue-600 hover:bg-blue-700"
-                : " bg-green-600 hover:bg-green-700"
+                : " greenOne hover:bg-green-700"
                 } text-white py-3 rounded-md  transition-colors`}
             >
               {pincodeChecking

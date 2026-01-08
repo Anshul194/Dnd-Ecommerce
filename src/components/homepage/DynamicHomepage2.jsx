@@ -15,6 +15,7 @@ import Categories from "./Categories";
 import { LoadingSpinner } from "../common/Loading";
 import ValidatedSection2 from "./ValidatedSection2";
 import AllProducts from "./sections/AllProducts";
+import BlogSection from "../BlogSection";
 
 function DynamicHomepage2() {
   const { groupedContent, loading, error, lastFetched } = useSelector(
@@ -110,6 +111,13 @@ function DynamicHomepage2() {
         return (
           <div key={_id} className="max-w-7xl mx-auto px-4">
             <ValidatedSection2 content={content} />
+          </div>
+        );
+
+      case "blogs":
+        return (
+          <div key={_id} className="max-w-7xl mx-auto px-4">
+            <BlogSection content={content} />
           </div>
         );
 

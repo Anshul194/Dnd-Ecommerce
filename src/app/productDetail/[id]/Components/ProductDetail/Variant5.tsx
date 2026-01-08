@@ -193,7 +193,7 @@ function Variant5({ detailSettings }) {
               {productData.brand}
             </span>
             <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-            <span className="text-green-600 font-medium">
+            <span className="text-[#07490C] font-medium">
               ✓ {productData.availability}
             </span>
           </div>
@@ -224,7 +224,7 @@ function Variant5({ detailSettings }) {
               </span>
             </div>
             <div className="h-4 w-px bg-gray-300"></div>
-            {/* <div className="flex items-center gap-2 text-green-600">
+            {/* <div className="flex items-center gap-2 text-[#07490C]">
               <Users size={16} />
               <span className="font-medium">{productData.soldCount}</span>
             </div> */}
@@ -310,7 +310,7 @@ function Variant5({ detailSettings }) {
                       </span>
                     ) : null;
                   })()}
-                  <span className="text-green-600 text-sm font-medium">
+                  <span className="text-[#07490C] text-sm font-medium">
                     Save ₹
                     {productData.variants[selectedVariant].price -
                       productData.variants[selectedVariant].salePrice}
@@ -331,7 +331,7 @@ function Variant5({ detailSettings }) {
                     key={variant._id}
                     onClick={() => setSelectedVariant(index)}
                     className={`w-full p-3 border-2 rounded-lg text-left transition-all ${selectedVariant === index
-                      ? "border-blue-500 bg-blue-50"
+                      ? "customBorder bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
                       }`}
                   >
@@ -364,7 +364,7 @@ function Variant5({ detailSettings }) {
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-900">Quantity</h3>
               <div className="flex items-center gap-3">
-                <div className="flex items-center border border-gray-300 rounded-lg">
+                <div className="flex items-center customBorder border-gray-300 rounded-lg">
                   <button
                     onClick={() => handleQuantityChange(-1)}
                     className="p-3 hover:bg-gray-50"
@@ -395,14 +395,14 @@ function Variant5({ detailSettings }) {
             <div className="space-y-3">
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-green-600 text-white py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                className="w-full greenOne text-white py-4 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 <ShoppingCart size={20} />
                 Add to Cart
               </button>
               <button
                 onClick={handleBuyNow}
-                className="w-full bg-orange-500 text-white py-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+                className="greenTwo w-full text-white py-4 rounded-lg font-semibold transition-colors"
               >
                 Buy Now
               </button>
@@ -441,7 +441,7 @@ function Variant5({ detailSettings }) {
             {/* Trust Badges */}
             <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200">
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Shield size={16} className="text-green-600" />
+                <Shield size={16} className="text-[#07490C]" />
                 <span>Secure Payment</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">

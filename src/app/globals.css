@@ -149,23 +149,50 @@ button{
   cursor: pointer;
 }
 
+/* h2{
+  color: #07490C;
+} */
+h1{
+  color: #07490C;
+}
+
+.greenOne{
+  background-color: #92BD78;
+}
+.greenTwo{
+  background-color: #07490C;
+}
+.greenThree{
+  background-color: #C7F169;
+}
+.accentOne{
+  background-color: #EA8932;
+}
+.accentTwo{
+  background-color: #2DA9E8;
+}
+
+.customBorder{
+  border: 2px solid #2DA9E8;
+}
+
 .bg {
-  background: #3C950D;
+  background: #92BD78;
 }
 .text {
   color: #3C950D;
 }
 .border{
-  border: 2px solid #3C950D;
+  border: 2px solid #92BD78;
 }
 .shadow{
   box-shadow: 0 5px 8px #3d950d27;
 }
 .btn {
-  background-color: #3C950D;
+  background-color: #07490C;
 }
 .cream {
-  background-color: #fefaf5;
+  background-color: #EFF3E4;
 }
 /* Hide scrollbar for all elements */
 * {

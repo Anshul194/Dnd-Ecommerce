@@ -457,7 +457,7 @@ export function ProductDetails({
               )}
             </div>
             <div className="flex items-center gap-2 ml-auto">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-2 h-2 greenOne rounded-full"></div>
               <span className="text-sm font-medium text-green-700">
                 {productData.availability}
               </span>
@@ -682,7 +682,7 @@ export function ProductDetails({
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-1 text-green-600 mb-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 greenOne rounded-full animate-pulse"></div>
                   <span className="text-sm font-medium">In Stock</span>
                 </div>
                 <p className="text-xs text-gray-600">Fast & Free Shipping</p>
@@ -1005,7 +1005,7 @@ export function HowToUse({
       {/* Summary */}
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
         <div className="flex items-center gap-3 text-center justify-center">
-          <div className="p-2 bg-green-500 rounded-xl">
+          <div className="p-2 greenOne rounded-xl">
             <Users size={20} className="text-white" />
           </div>
           <div>
