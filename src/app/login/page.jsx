@@ -103,9 +103,15 @@ export function SignupPage() {
                               </Link>
                                TEABOX</div>
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 leading-tight">
-              Welcome to the World of Fresh Indian Tea's!
+            <h1 className="text-2xl sm:text-xl lg:text-2xl font-bold mb-3 lg:mb-4 leading-tight">
+              Trusted Indian (Ayurvedic) products for everyday families, from Kisan source to home.
             </h1>
+            <p className="text-white/90 text-sm sm:text-base lg:text-lg mb-6 lg:mb-2">
+              Login or Sign up to explore authentic Ayurvedic and Swadeshi
+              products, quality-driven from Kisan sources to your home,
+              supporting India’s rural traditions.
+            </p>
+
           </div>
 
           {/* Feature Cards */}
@@ -114,7 +120,7 @@ export function SignupPage() {
               <div className="flex items-center">
                 <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 mr-2 flex-shrink-0" />
                 <h3 className="font-semibold text-base sm:text-lg">
-                  Fresh Teas Direct from Source
+                  Authentic Swadeshi Products
                 </h3>
               </div>
             </div>
@@ -123,7 +129,7 @@ export function SignupPage() {
               <div className="flex items-center">
                 <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 mr-2 flex-shrink-0" />
                 <h3 className="font-semibold text-base sm:text-lg">
-                  Shipped to over 125+ countries
+                  Made by kisan
                 </h3>
               </div>
             </div>
@@ -132,7 +138,15 @@ export function SignupPage() {
               <div className="flex items-center">
                 <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 mr-2 flex-shrink-0" />
                 <h3 className="font-semibold text-base sm:text-lg">
-                  Approved by 10k+ tea lovers
+                  Made for daily use
+                </h3>
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-5 lg:p-6 border border-white/20">
+              <div className="flex items-center">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-300 mr-2 flex-shrink-0" />
+                <h3 className="font-semibold text-base sm:text-lg">
+                  Trusted by 8 Lakh+ Customers Across India
                 </h3>
               </div>
             </div>
