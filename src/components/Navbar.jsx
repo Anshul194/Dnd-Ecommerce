@@ -692,11 +692,7 @@ export default function Navbar({ initialCategories = [] }) {
                                 <div className="group cursor-pointer">
                                   <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 mb-3">
                                     <Image
-                                      src={
-                                        product?.thumbnail?.url ||
-                                        product.images?.[0]?.url ||
-                                        "/Image-not-found.png"
-                                      }
+                                      src={getImageUrl(product?.thumbnail || product.images?.[0]) || "/Image-not-found.png"}
                                       alt={
                                         product?.thumbnail?.alt ||
                                         product.images?.[0]?.alt ||
@@ -875,11 +871,11 @@ export default function Navbar({ initialCategories = [] }) {
                           className="border-2 cursor-pointer p-2 rounded-md flex gap-2 border-gray-200"
                         >
                           <Image
-                            src={blog?.thumbnail?.url || blog?.images?.[0]?.url}
+                            src={getImageUrl(blog?.thumbnail || blog?.images?.[0])}
                             alt={blog?.thumbnail?.alt || blog?.images?.[0]?.alt}
                             width={100}
                             height={60}
-                            className="w-24 h-16 max-sm:w-20 max-sm:h-14 objec0t-cover rounded-md"
+                            className="w-24 h-16 max-sm:w-20 max-sm:h-14 object-cover rounded-md"
                           />
                           <h3 className="text-gray-800 w-20 line-clamp-2 text-xs font-medium">
                             {blog.title}
@@ -907,27 +903,17 @@ export default function Navbar({ initialCategories = [] }) {
                           key={product._id}
                         >
                           <div className="border-2 cursor-pointer p-2 rounded-md flex gap-2 border-gray-200">
-                            {/* Only render Image if src is a non-empty string */}
-                            {typeof (
-                              product?.thumbnail?.url ||
-                              product?.images?.[0]?.url
-                            ) === "string" &&
-                              (product?.thumbnail?.url ||
-                                product?.images?.[0]?.url) !== "" && (
-                                <Image
-                                  src={
-                                    product?.thumbnail?.url ||
-                                    product?.images?.[0]?.url
-                                  }
-                                  alt={
-                                    product?.thumbnail?.alt ||
-                                    product?.images?.[0]?.alt ||
-                                    "Product Image"
-                                  }
-                                  width={100}
-                                  height={60}
-                                  className="w-24 h-16 max-sm:w-20 max-sm:h-14 object-cover rounded-md"
-                                />
+                            <Image
+                              src={getImageUrl(product?.thumbnail || product?.images?.[0])}
+                              alt={
+                                product?.thumbnail?.alt ||
+                                product?.images?.[0]?.alt ||
+                                "Product Image"
+                              }
+                              width={100}
+                              height={60}
+                              className="w-24 h-16 max-sm:w-20 max-sm:h-14 object-cover rounded-md"
+                            />
                               )}
 
                             <div>

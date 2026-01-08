@@ -25,6 +25,7 @@ import { toast } from "react-toastify";
 
 import { trackEvent } from "../lib/tracking/trackEvent";
 import { useTrack } from "../lib/tracking/useTrack";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const TrySectionCard = ({ product, showDes, buyNow }) => {
   const router = useRouter();
@@ -252,7 +253,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
             </div>
             <div className="flex h-56 max-sm:h-44 w-full justify-center items-center overflow-hidden">
               <Image
-                src={product?.thumbnail?.url || product.images?.[0]?.url || "/Image-not-found.png"}
+                src={getImageUrl(product?.thumbnail || product.images?.[0]) || "/Image-not-found.png"}
                 alt={product?.thumbnail?.alt || product.images?.[0]?.alt || product?.name || "Product Image"}
                 width={160}
                 height={120}

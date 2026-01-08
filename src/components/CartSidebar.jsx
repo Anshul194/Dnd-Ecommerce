@@ -17,6 +17,7 @@ import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { fetchProducts } from "@/app/store/slices/productSlice";
 import Link from "next/link";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const CartSidebar = () => {
   const dispatch = useDispatch();
@@ -167,7 +168,7 @@ const CartSidebar = () => {
                       <div className="w-12 h-16 bg-white rounded-sm overflow-hidden shadow-sm flex items-center justify-center">
                         {item?.product && (item?.product?.thumbnail?.url || item?.product?.images?.[0]?.url || item?.product?.image?.url) ? (
                           <Image
-                            src={item?.product?.thumbnail?.url || item?.product?.images?.[0]?.url || item?.product?.image?.url}
+                            src={getImageUrl(item?.product?.thumbnail || item?.product?.images?.[0] || item?.product?.image)}
                             alt={
                               item?.product?.thumbnail?.alt ||
                               item?.product?.images?.[0]?.alt ||
@@ -267,7 +268,7 @@ const CartSidebar = () => {
                         {(item?.thumbnail?.url && item?.thumbnail?.url.trim() !== "") ||
                           (item?.images?.[0]?.url && item?.images?.[0]?.url.trim() !== "") ? (
                           <Image
-                            src={item?.thumbnail?.url || item?.images?.[0]?.url}
+                            src={getImageUrl(item?.thumbnail || item?.images?.[0])}
                             alt={item?.thumbnail?.alt || item?.images?.[0]?.alt || "Product"}
                             width={56}
                             height={64}
@@ -317,14 +318,7 @@ const CartSidebar = () => {
                                     handleSelectVariant(
                                       {
                                         id: item?._id,
-                                        image: {
-                                          url:
-                                            item?.thumbnail?.url ||
-                                            item?.images?.[0]?.url,
-                                          alt:
-                                            item?.thumbnail?.alt ||
-                                            item?.images?.[0]?.alt,
-                                        },
+                                        image: getImageUrl(item?.thumbnail || item?.images?.[0]),
                                         name: item?.name,
                                         slug: item?.slug,
                                         variant: variant?._id,

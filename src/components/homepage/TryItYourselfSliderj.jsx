@@ -7,6 +7,7 @@ import { fetchProducts } from '@/app/store/slices/productSlice';
 import { addToWishlist, removeFromWishlist } from '@/app/store/slices/wishlistSlice';
 import { addToCart, toggleCart } from '@/app/store/slices/cartSlice';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { getImageUrl } from '@/app/utils/imageHelper';
 
 const TryItYourselfSlider = memo(() => {
   const sliderRef = useRef(null);
@@ -270,7 +271,7 @@ const TryItYourselfSlider = memo(() => {
 
                   <div className="flex h-40 pt-2 justify-center">
                     <ImageWithFallback
-                      src={product?.thumbnail?.url || product?.images?.[0]?.url}
+                      src={getImageUrl(product?.thumbnail || product?.images?.[0])}
                       alt={product?.thumbnail?.alt || product?.images?.[0]?.alt || product.name}
                       className="w-full h-full object-cover"
                     />

@@ -14,6 +14,7 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "@/app/store/slices/wishlistSlice";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -244,9 +245,7 @@ export function CustomerFavorites({ content }: { content: any }) {
                     <CardContent className="p-0">
                       <div className="relative overflow-hidden">
                         <ImageWithFallback
-                          src={
-                            product?.thumbnail?.url || product?.images[0]?.url
-                          }
+                          src={getImageUrl(product?.thumbnail || product?.images[0])}
                           alt={
                             product?.thumbnail?.alt ||
                             product?.images[0]?.alt ||
