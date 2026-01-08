@@ -30,9 +30,9 @@ const DynamicWhyUs = ({ content }) => {
   const { title, description, points, image, mobileImage } = content;
   // console.log("DynamicWhyUs content:", content);
 
-  const placeholder = "/images/why-us-placeholder.webp";
-  const desktopSrc = getImageUrl(image) || placeholder;
-  const mobileSrc = getImageUrl(mobileImage) || desktopSrc;
+  const placeholder = "/images/teabanner.webp"; // Using an existing image as fallback
+  const desktopSrc = image ? getImageUrl(image) : placeholder;
+  const mobileSrc = mobileImage ? getImageUrl(mobileImage) : desktopSrc;
 
   console.log("sdfdsfsd", image);
   console.log("sdfsdfsd", mobileImage);
