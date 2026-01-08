@@ -914,7 +914,7 @@ export default function Navbar({ initialCategories = [] }) {
                               height={60}
                               className="w-24 h-16 max-sm:w-20 max-sm:h-14 object-cover rounded-md"
                             />
-                              )}
+                              
 
                             <div>
                               <h3 className="text-gray-800 w-20 text-xs font-medium">
