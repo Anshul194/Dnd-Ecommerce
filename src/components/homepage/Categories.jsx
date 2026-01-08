@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import leaf from "../../../public/images/leaf.png";
+
 import Image from "next/image";
 import heart from "../../../public/images/heart.png";
 import { useSelector } from "react-redux";
@@ -68,15 +68,7 @@ const Categories = ({ dynamicContent = null }) => {
         }
       `}</style>
       <div className="flex relative flex-col gap-8 justify-between w-full h-fit py-20 md:px-4 lg:px-0">
-        <div className="absolute -left-30 md:-left-1/4 top-3/4 transform -translate-y-1/2 -z-0">
-          <Image
-            className="w-[40vh] md:w-[50vh] rotate-[140deg] max-h-[600px]"
-            src={leaf}
-            alt="Leaf"
-            width="auto"
-            height="auto"
-          />
-        </div>
+
         <div className="flex-1 flex  flex-col relative mb-8 lg:mb-0 ">
           <h1 className="text-4xl  md:text-5xl font-black text-gray-800 leading-tight mb-2 text-center">
             {dynamicContent?.title || "WHAT'S YOUR PICK?"}
