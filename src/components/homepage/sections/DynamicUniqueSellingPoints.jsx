@@ -110,7 +110,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
               <SwiperSlide key={idx}>
                 <div
                   className={` min-h-[480px] w-full rounded-lg overflow-hidden ${idx % 2 === 0
-                    ? "bg-green-500 p-8 flex flex-col text-black"
+                    ? "greenOne p-8 flex flex-col text-black"
                     : "bg-green-800 p-8 flex flex-col text-white"
                     }`}
                 >
@@ -158,7 +158,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
       <center className="mt-7">
         {cta ? (
           <Link href={cta.link || "/pages/68fb0ce58b4cf00083b826d2"}>
-            <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded text-sm font-medium flex items-center gap-2 transition-colors">
+            <button className="greenOne hover:bg-green-700 text-white px-6 py-3 rounded text-sm font-medium flex items-center gap-2 transition-colors">
               {cta.title}
               <svg
                 className="w-4 h-4"
@@ -176,7 +176,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
             </button>
           </Link>
         ) : (
-          <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded text-sm font-medium flex items-center gap-2 transition-colors">
+          <button className="greenOne hover:bg-green-700 text-white px-6 py-3 rounded text-sm font-medium flex items-center gap-2 transition-colors">
             Learn More
             <svg
               className="w-4 h-4"

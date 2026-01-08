@@ -58,7 +58,7 @@ export default function ModernIngredientsUI({ data }) {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-green-50 py-20 px-4 md:px-8"
+      className="min-h-screen cream py-20 px-4 md:px-8"
     >
       {/* Header Section */}
       <div className="max-w-7xl mx-auto mb-16">
@@ -119,7 +119,7 @@ export default function ModernIngredientsUI({ data }) {
                       <div
                         className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold transition-all duration-300 ${
                           activeIngredient === index
-                            ? "bg-green-500 text-white scale-110"
+                            ? "greenOne text-white scale-110"
                             : "bg-gray-100 text-gray-400"
                         }`}
                       >
@@ -169,7 +169,7 @@ export default function ModernIngredientsUI({ data }) {
                   {/* Indicator */}
                   {activeIngredient === index && (
                     <div className="mt-6 flex items-center gap-2 text-green-600 font-semibold animate-pulse">
-                      <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                      <div className="w-2 h-2 greenOne rounded-full"></div>
                       <span className="text-sm">Currently viewing</span>
                     </div>
                   )}
@@ -227,7 +227,7 @@ export default function ModernIngredientsUI({ data }) {
                     }}
                     className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${
                       activeIngredient === index
-                        ? "ring-4 ring-green-500 scale-105"
+                        ? "ring-4 ring-[#07490C] scale-105"
                         : "ring-2 ring-gray-200 hover:ring-gray-300 opacity-60 hover:opacity-100"
                     }`}
                   >

@@ -371,14 +371,14 @@ const Orders = () => {
                 {reviewLLoading ? (
                   <button
                     disabled
-                    className="bg-green-500 mt-4 text-white px-6 py-2 pt-3 opacity-80  rounded-lg  transition-colors"
+                    className="greenOne mt-4 text-white px-6 py-2 pt-3 opacity-80  rounded-lg  transition-colors"
                   >
                     <Loading color="bg-white" scale="scale-75" />
                   </button>
                 ) : (
                   <button
                     onClick={handleReviewSubmit}
-                    className="bg-green-500 mt-4 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                    className="greenOne mt-4 text-white px-6 py-2 rounded-lg hover:greenOne transition-colors"
                   >
                     Submit Review
                   </button>
@@ -634,7 +634,7 @@ const Orders = () => {
                     {/* Order Timeline */}
                     <div className="relative">
                       <div className="flex items-center space-x-4">
-                        <div className="flex items-center justify-center w-8 h-8 bg-green-500 rounded-full">
+                        <div className="flex items-center justify-center w-8 h-8 greenOne rounded-full">
                           <Package className="w-4 h-4 text-white" />
                         </div>
                         <div className="flex-1">
@@ -923,7 +923,7 @@ const Orders = () => {
                                     </span>
                                   </div>
                                 )}
-                                <button className="w-full mt-3 bg-green-500 text-white text-sm py-2 rounded hover:bg-green-600 transition-colors">
+                                <button className="w-full mt-3 greenOne text-white text-sm py-2 rounded hover:greenOne transition-colors">
                                   View Product
                                 </button>
                               </div>

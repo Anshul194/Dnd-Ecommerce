@@ -1340,7 +1340,7 @@ function CheckoutPageContent() {
                     </div>
                     <p className="text-xs text-gray-500">Pay securely with UPI, Credit/Debit Card, or Netbanking</p>
                     {paymentMethod === "prepaid" && (
-                      <div className="absolute top-4 right-4 w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+                      <div className="absolute top-4 right-4 w-4 h-4 greenOne rounded-full flex items-center justify-center">
                         <div className="w-2 h-2 bg-white rounded-full" />
                       </div>
                     )}
@@ -1360,7 +1360,7 @@ function CheckoutPageContent() {
                     </div>
                     <p className="text-xs text-gray-500">Pay with cash when your order is delivered to you</p>
                     {paymentMethod === "cod" && (
-                      <div className="absolute top-4 right-4 w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+                      <div className="absolute top-4 right-4 w-4 h-4 greenOne rounded-full flex items-center justify-center">
                         <div className="w-2 h-2 bg-white rounded-full" />
                       </div>
                     )}
@@ -1527,7 +1527,7 @@ function CheckoutPageContent() {
                     }}
                     disabled={placingOrder || pincodeChecking}
                     className={`w-full py-4 rounded-lg font-bold text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${pinCodeVerified?.success
-                      ? "bg-green-600 hover:bg-green-700 shadow-green-200"
+                      ? "greenOne hover:bg-green-700 shadow-green-200"
                       : "bg-blue-600 hover:bg-blue-700 shadow-blue-200"
                       }`}
                   >

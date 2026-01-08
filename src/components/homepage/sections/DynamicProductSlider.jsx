@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
@@ -156,13 +156,13 @@ const DynamicProductSlider = ({ content }) => {
     e.stopPropagation();
     console.log("HandleBuyNow triggered for:", productData);
 
-    // 1ï¸âƒ£ Close cart immediately
+    // 1️⃣ Close cart immediately
     dispatch(closeCart());
 
     const price = productData.variants[0];
 
     try {
-      // 2ï¸âƒ£ Normalize product image
+      // 2️⃣ Normalize product image
       const productImage = productData.thumbnail || productData.images?.[0];
       const imageObj = productImage
         ? typeof productImage === "string"
@@ -173,7 +173,7 @@ const DynamicProductSlider = ({ content }) => {
           }
         : { url: "/Image-not-found.png", alt: productData.name };
 
-      // 3ï¸âƒ£ Prepare Buy Now payload
+      // 3️⃣ Prepare Buy Now payload
       const buyNowPayload = {
         product: {
           _id: productData.originalProductId || productData._id,
@@ -187,7 +187,7 @@ const DynamicProductSlider = ({ content }) => {
         variant: productData.variants[0]._id,
       };
 
-      // 4ï¸âƒ£ Update Redux (for UI state)
+      // 4️⃣ Update Redux (for UI state)
       const resultAction = await dispatch(setBuyNowProduct(buyNowPayload));
 
       if (resultAction.error) {
@@ -199,7 +199,7 @@ const DynamicProductSlider = ({ content }) => {
         return;
       }
 
-      // 5ï¸âƒ£ FORCE write to localStorage (client-only)
+      // 5️⃣ FORCE write to localStorage (client-only)
       if (typeof window !== "undefined") {
         localStorage.setItem(
           "dnd_ecommerce_buy_now",
@@ -207,19 +207,19 @@ const DynamicProductSlider = ({ content }) => {
         );
       }
 
-      // ðŸ”‘ 6ï¸âƒ£ CRITICAL: wait one frame so browser flushes storage
+      // 🔑 6️⃣ CRITICAL: wait one frame so browser flushes storage
       await new Promise((resolve) => requestAnimationFrame(resolve));
 
-      // 7ï¸âƒ£ Close overlay (UI cleanup)
+      // 7️⃣ Close overlay (UI cleanup)
       setOverlayProduct(null);
 
-      // 8ï¸âƒ£ Open checkout state (if used)
+      // 8️⃣ Open checkout state (if used)
       dispatch(setCheckoutOpen());
 
-      // 9ï¸âƒ£ Navigate AFTER storage is guaranteed
+      // 9️⃣ Navigate AFTER storage is guaranteed
       router.push("/checkout-popup");
 
-      // ðŸ”Ÿ Tracking (non-blocking)
+      // 🔟 Tracking (non-blocking)
       try {
         trackAddToCart(productData.originalProductId || productData._id);
         trackEvent("BUY_NOW", {
@@ -338,7 +338,8 @@ const DynamicProductSlider = ({ content }) => {
 
       {/* Left Content - Dynamic from API */}
       <div className="flex-1 relative mb-8 lg:mb-0 lg:mr-8 z-20 text-center">
-        <h1 className="text-4xl w-full font-black text-gray-800 leading-tight mb-2">
+        <h1 className="text-4xl  md:text-5xl font-black text-gray-800 leading-tight mb-2 text-center">
+        {/* <h1 className="text-4xl w-full font-black text-gray-800 leading-tight mb-2"> */}
           {title}
         </h1>
         <AnimatedGradientBorder />
@@ -533,7 +534,7 @@ const DynamicProductSlider = ({ content }) => {
                                   e.stopPropagation();
                                   handleBuyNow(e, product);
                                 }}
-                                className="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                                className="greenOne text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
                               >
                                 Buy Now
                               </button>
@@ -565,7 +566,7 @@ const DynamicProductSlider = ({ content }) => {
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${currentSlide === index ? "bg-green-500" : "bg-gray-300"
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${currentSlide === index ? "greenOne" : "bg-gray-300"
                     }`}
                 />
               ));
@@ -614,7 +615,7 @@ const DynamicProductSlider = ({ content }) => {
                     <div className="flex gap-2">
                       <button
                         onClick={(e) => handleBuyNow(e, overlayProduct)}
-                        className="w-32 h-10 mb-2 bg-green-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                        className="w-32 h-10 mb-2 greenOne text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
                       >
                         Buy Now
                       </button>

@@ -243,7 +243,7 @@ function ProdDetTwo() {
                       key={variant._id}
                       className={`relative p-4 border-2 rounded-xl text-center transition-all ${
                         selectedPack === variant._id
-                          ? "border-green-500 bg-green-50"
+                          ?"customBorder bg-blue-50"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                       onClick={() => setSelectedPack(variant._id)}
@@ -270,7 +270,7 @@ function ProdDetTwo() {
                   <span className="text-sm font-medium text-gray-700">
                     Quantity:
                   </span>
-                  <div className="flex items-center border border-gray-300 rounded-lg">
+                  <div className="flex items-center customBorder border-gray-300 rounded-lg">
                     <button
                       onClick={() => handleQuantityChange(-1)}
                       className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 transition-colors"
@@ -294,12 +294,12 @@ function ProdDetTwo() {
               <div className="flex gap-3 mb-6">
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-green-600 text-white py-4 px-6 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 greenOne text-white py-4 px-6 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={20} />
                   Add to Cart
                 </button>
-                <button className="bg-orange-500 text-white py-4 px-8 rounded-xl font-semibold hover:bg-orange-600 transition-colors">
+                <button className="greenTwo text-white py-4 px-8 rounded-xl font-semibold transition-colors">
                   Buy Now
                 </button>
               </div>
@@ -307,19 +307,19 @@ function ProdDetTwo() {
               {/* Features */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Truck size={18} className="text-green-600" />
+                  <Truck size={18} className="text-[#07490C]" />
                   <span>Free Delivery</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <RotateCcw size={18} className="text-green-600" />
+                  <RotateCcw size={18} className="text-[#07490C]" />
                   <span>Easy Returns</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Shield size={18} className="text-green-600" />
+                  <Shield size={18} className="text-[#07490C]" />
                   <span>Secure Payment</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Clock size={18} className="text-green-600" />
+                  <Clock size={18} className="text-[#07490C]" />
                   <span>7-8 Days Delivery</span>
                 </div>
               </div>
@@ -343,7 +343,7 @@ function ProdDetTwo() {
                           {coupon.discount} on orders above {coupon.minOrder}
                         </span>
                       </div>
-                      <button className="text-green-600 text-sm font-medium hover:text-green-700">
+                      <button className="text-[#07490C] text-sm font-medium hover:text-green-700">
                         Copy
                       </button>
                     </div>
@@ -367,7 +367,7 @@ function ProdDetTwo() {
                       onClick={() => toggleSection(tab.key)}
                       className={`flex-1 py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
                         expandedSection === tab.key
-                          ? "border-green-500 text-green-600"
+                          ? "border-green-500 text-[#07490C]"
                           : "border-transparent text-gray-600 hover:text-gray-900"
                       }`}
                     >
@@ -396,7 +396,7 @@ function ProdDetTwo() {
                   <div className="space-y-3">
                     {productData.ingredients.map((item) => (
                       <div key={item._id} className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 greenOne rounded-full mt-2 flex-shrink-0"></div>
                         <span className="text-gray-700">
                           {item.description}
                         </span>
@@ -409,7 +409,7 @@ function ProdDetTwo() {
                   <div className="space-y-3">
                     {productData.benefits.map((item) => (
                       <div key={item._id} className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="w-2 h-2 greenOne rounded-full mt-2 flex-shrink-0"></div>
                         <span className="text-gray-700">
                           {item.description}
                         </span>

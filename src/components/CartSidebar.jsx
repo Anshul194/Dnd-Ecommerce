@@ -130,11 +130,11 @@ const CartSidebar = () => {
       {/* Cart Sidebar */}
       <div className="w-full max-w-md bg-white text-black h-full flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="bg-green-500 text-white px-6 py-4 flex items-center justify-between">
+        <div className="greenOne text-white px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">MY CART</h2>
           <button
             onClick={handelCartToggle}
-            className="p-1 hover:bg-green-600 rounded-full transition-colors"
+            className="p-1 hover:greenOne rounded-full transition-colors"
           >
             <X size={20} />
           </button>
@@ -425,7 +425,7 @@ const CartSidebar = () => {
                 route.push("/checkout-popup");
               }
             }}
-            className="w-full bg-green-500 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors"
+            className="w-full greenOne text-white py-4 rounded-lg font-semibold text-lg hover:greenOne transition-colors"
           >
             Proceed to Checkout 🔒
           </button>

@@ -236,7 +236,7 @@ const Filter = ({ onFilterChange = () => {} }) => {
             onChange={handleSearchChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
-          <button className="absolute right-0 top-0 h-full px-3 bg-green-600 text-white rounded-r-md hover:bg-green-700 transition-colors">
+          <button className="absolute right-0 top-0 h-full px-3 greenOne text-white rounded-r-md hover:bg-green-700 transition-colors">
             <svg
               width="16"
               height="16"
@@ -380,7 +380,7 @@ const Filter = ({ onFilterChange = () => {} }) => {
           />
           <button
             onClick={handlePriceSubmit}
-            className="w-full bg-green-600 text-white py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
+            className="w-full greenOne text-white py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
           >
             Submit
           </button>

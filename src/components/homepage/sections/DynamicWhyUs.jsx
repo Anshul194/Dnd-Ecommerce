@@ -94,7 +94,7 @@ const DynamicWhyUs = ({ content }) => {
               )}
 
               <Link
-                className="w-fit text-[16px] underline font-medium hover:text-green-600 text-green-500"
+                className="w-fit text-[16px] underline font-medium hover:text-greenTwo text-black"
                 href={content?.cta?.link || "/pages/68fb0ce58b4cf00083b826d2"}
               >
                 {content?.cta?.title || "View More"}{" "}

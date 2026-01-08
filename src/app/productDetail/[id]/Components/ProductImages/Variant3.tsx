@@ -15,7 +15,7 @@ const RenderVariant3 = () => {
     <div className="space-y-6 h-fit sticky top-20">
       {/* Main Image with Floating Elements */}
       <div className="relative group">
-        <div className="aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-orange-100 to-yellow-100 relative">
+        <div className="aspect-square rounded-3xl overflow-hidden cream relative">
           <Image
             src={productData.images[selectedImage].url}
             alt="Product"
@@ -69,7 +69,7 @@ const RenderVariant3 = () => {
             key={index}
             className={`relative w-20 h-20 rounded-2xl overflow-hidden transition-all transform hover:scale-105 ${
               selectedImage === index
-                ? "ring-4 ring-orange-400 shadow-lg"
+                ? "ring-4 ring-[#EA8932] shadow-lg"
                 : "ring-2 ring-gray-200 hover:ring-gray-300"
             }`}
             onClick={() => setSelectedImage(index)}
@@ -80,7 +80,7 @@ const RenderVariant3 = () => {
               className="w-full h-full object-cover"
             />
             {selectedImage === index && (
-              <div className="absolute inset-0 bg-orange-400/20"></div>
+              <div className="absolute inset-0 bg-[#EA8932]/20"></div>
             )}
           </button>
         ))}

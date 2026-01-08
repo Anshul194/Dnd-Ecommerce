@@ -186,7 +186,7 @@ function ProdDetThree() {
           <div className="space-y-6 h-fit sticky top-20">
             {/* Main Image with Floating Elements */}
             <div className="relative group">
-              <div className="aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-orange-100 to-yellow-100 relative">
+              <div className="aspect-square rounded-3xl overflow-hidden cream relative">
                 <img
                   src={productData.images[selectedImage]}
                   alt="Product"
@@ -242,7 +242,7 @@ function ProdDetThree() {
                   key={index}
                   className={`relative w-20 h-20 rounded-2xl overflow-hidden transition-all transform hover:scale-105 ${
                     selectedImage === index
-                      ? "ring-4 ring-orange-400 shadow-lg"
+                      ? "ring-4 ring-[#EA8932] shadow-lg"
                       : "ring-2 ring-gray-200 hover:ring-gray-300"
                   }`}
                   onClick={() => setSelectedImage(index)}
@@ -253,7 +253,7 @@ function ProdDetThree() {
                     className="w-full h-full object-cover"
                   />
                   {selectedImage === index && (
-                    <div className="absolute inset-0 bg-orange-400/20"></div>
+                    <div className="absolute inset-0 bg-[#EA8932]/20"></div>
                   )}
                 </button>
               ))}
@@ -318,7 +318,7 @@ function ProdDetThree() {
                 <span className="text-xl text-gray-500 line-through">
                   ₹{selectedVariantData?.originalPrice}
                 </span>
-                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full text-sm font-bold">
+                <div className="bg-gradient-to-r from-[#07490C] to-green-600 text-white px-4 py-2 rounded-full text-sm font-bold">
                   Save {selectedVariantData?.discount}%
                 </div>
               </div>
@@ -576,7 +576,7 @@ function ProdDetThree() {
                       key={index}
                       className="flex items-start gap-3 p-4 bg-green-50 rounded-xl"
                     >
-                      <div className="p-1 bg-green-500 rounded-full mt-1">
+                      <div className="p-1 greenOne rounded-full mt-1">
                         <Check size={12} className="text-white" />
                       </div>
                       <span className="text-gray-700 font-medium">

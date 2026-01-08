@@ -166,7 +166,7 @@ export function SignupPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email address"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#07490C] focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
                   required
                 />
               </div>
@@ -187,7 +187,7 @@ export function SignupPage() {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Enter your password"
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#07490C] focus:border-transparent transition duration-200 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
                     required
                   />
                   <button
@@ -207,7 +207,7 @@ export function SignupPage() {
                   id="terms"
                   checked={acceptTerms}
                   onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 flex-shrink-0"
+                  className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-[#07490C] flex-shrink-0"
                 />
                 <label
                   htmlFor="terms"
@@ -236,7 +236,7 @@ export function SignupPage() {
               <button
                 type="submit"
                 disabled={!acceptTerms}
-                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                className="w-full greenOne text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 focus:ring-2 focus:ring-[#07490C] focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 Login
               </button>

@@ -10,7 +10,7 @@ const AuthRequiredModal = ({ open, onClose, onLogin, onSignup }) => {
         <div className="flex flex-col gap-2">
           <button
             onClick={onLogin}
-            className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 font-semibold"
+            className="w-full greenOne text-white py-2 rounded hover:greenOne font-semibold"
           >
             Login
           </button>

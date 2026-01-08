@@ -75,7 +75,7 @@ const RenderVariant1 = () => {
                   <div
                     key={index}
                     className={`w-2 h-2 rounded-full transition-all ${
-                      selectedImage === index ? "bg-green-500" : "bg-white/50"
+                      selectedImage === index ? "greenOne" : "bg-white/50"
                     }`}
                   />
                 ))}

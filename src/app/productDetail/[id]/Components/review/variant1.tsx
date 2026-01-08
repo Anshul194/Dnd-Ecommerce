@@ -111,7 +111,7 @@ export default function RenderCardsVariant() {
                 </div>
                 <div className="flex-1 bg-gray-200 rounded-full h-2 relative">
                   <div
-                    className="bg-green-500 h-2 rounded-full"
+                    className="greenOne h-2 rounded-full"
                     style={{ width: `${item.percentage}%` }}
                   ></div>
                 </div>

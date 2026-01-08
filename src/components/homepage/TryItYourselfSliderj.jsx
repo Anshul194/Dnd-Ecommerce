@@ -306,7 +306,7 @@ const TryItYourselfSlider = memo(() => {
                   {/* Add to Cart Button */}
                   <button
                     onClick={(e) => handleAddToCart(e, product)}
-                    className="w-full bg-green-600 text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                    className="w-full greenOne text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                   >
                     ADD TO CART
                   </button>

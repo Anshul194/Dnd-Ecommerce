@@ -225,7 +225,7 @@ export default function RenderTestimonialVariant() {
                   </div>
                   <div className="flex-1 bg-gray-200 rounded-full h-2 relative overflow-hidden">
                     <div
-                      className="bg-green-500 h-2 rounded-full transition-all duration-1000 ease-out"
+                      className="greenOne h-2 rounded-full transition-all duration-1000 ease-out"
                       style={{
                         width: animateStats ? `${item.percentage}%` : "0%",
                         transitionDelay: `${index * 100}ms`,
@@ -265,7 +265,7 @@ export default function RenderTestimonialVariant() {
                     onClick={() => setSelectedFilter(filter.key)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
                       selectedFilter === filter.key
-                        ? "bg-green-500 text-white border-green-500 shadow-md"
+                        ? "greenOne text-white border-green-500 shadow-md"
                         : "bg-white text-gray-600 border-gray-300 hover:border-gray-400 hover:shadow-sm"
                     }`}
                   >
@@ -319,7 +319,7 @@ export default function RenderTestimonialVariant() {
                 </div>
 
                 {review.verified && (
-                  <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="w-5 h-5 greenOne rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">✓</span>
                   </div>
                 )}
@@ -389,7 +389,7 @@ export default function RenderTestimonialVariant() {
           <div className="text-center">
             <button
               onClick={() => setVisibleReviews((prev) => prev + 6)}
-              className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200"
+              className="greenOne hover:greenOne text-white px-8 py-3 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200"
             >
               Show More Reviews ({filteredReviews.length - visibleReviews}{" "}
               remaining)

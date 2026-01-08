@@ -59,11 +59,11 @@ export function Features({ content }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-12 md:hidden block"
         >
-          <h2 className="text-3xl md:text-4xl mb-4 bg-gradient-to-r from-[#3C950D] to-[#2d7009] bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl mb-4 bg-gradient-to-r from-[#3C950D] to-[#2d7009] bg-clip-text text-transparent">
             {content?.title || "Why Choose Us?"}
-          </h2>
+          </h1>
           <p className="text-gray-600">
             {content?.description ||
               "Discover what makes us the preferred choice for tea lovers"}

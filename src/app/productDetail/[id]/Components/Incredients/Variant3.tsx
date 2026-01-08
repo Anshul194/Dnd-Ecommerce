@@ -50,7 +50,7 @@ export default function PremiumIngredientsUI({ data }) {
     >
       {/* Floating Background Elements */}
       <div className=" inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-500/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 greenOne/10 rounded-full blur-3xl animate-float"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-green-400/10 rounded-full blur-3xl animate-float-delayed"></div>
       </div>
 
@@ -59,7 +59,7 @@ export default function PremiumIngredientsUI({ data }) {
         <div className="text-center mb-20">
           <div className="inline-block mb-6">
             <div className="flex items-center gap-3 px-6 py-3 bg-green-50 backdrop-blur-sm border border-green-200 rounded-full">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 greenOne rounded-full animate-pulse"></div>
               <span className="text-sm font-semibold tracking-widest uppercase text-green-700">
                 Premium Selection
               </span>

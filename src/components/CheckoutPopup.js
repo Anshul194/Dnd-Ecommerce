@@ -1260,7 +1260,7 @@ export default function CheckoutPopup() {
               <div className="flex gap-2  justify-between items-center rounded-xl bg-white py-3 px-4">
                 <div className="flex-1 relative ">
                   <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                    <div className="w-4 h-4 bg-green-500 rounded-full text-white text-xs flex items-center justify-center">
+                    <div className="w-4 h-4 greenOne rounded-full text-white text-xs flex items-center justify-center">
                       %
                     </div>
                   </div>
@@ -2097,7 +2097,7 @@ export default function CheckoutPopup() {
                   className={`border-2 ${paymentMethod === "prepaid" ? "border-green-500 bg-green-50" : "border-gray-200 bg-white"} rounded-lg p-3 cursor-pointer relative transition-all hover:border-gray-300`}
                 >
                   <div className={`absolute top-2 right-2 w-5 h-5 rounded-full border-2 ${paymentMethod === "prepaid" ? "border-green-500" : "border-gray-300"} bg-white flex items-center justify-center`}>
-                    {paymentMethod === "prepaid" && <div className="w-3 h-3 rounded-full bg-green-500"></div>}
+                    {paymentMethod === "prepaid" && <div className="w-3 h-3 rounded-full greenOne"></div>}
                   </div>
                   <div className="text-sm font-semibold text-gray-900 mb-1">
                     ⚡ UPI / Card
@@ -2144,7 +2144,7 @@ export default function CheckoutPopup() {
                       }`}
                   >
                     <div className={`absolute top-2 right-2 w-5 h-5 rounded-full border-2 ${paymentMethod === "cod" ? "border-green-500" : "border-gray-300"} bg-white flex items-center justify-center`}>
-                      {paymentMethod === "cod" && <div className="w-3 h-3 rounded-full bg-green-500"></div>}
+                      {paymentMethod === "cod" && <div className="w-3 h-3 rounded-full greenOne"></div>}
                     </div>
                     <div className="text-sm font-semibold text-gray-900 mb-1">
                       💵 Cash on Delivery
@@ -2250,7 +2250,7 @@ export default function CheckoutPopup() {
               disabled={placingOrder || pincodeChecking}
               className={`w-full mt-4  text-sm ${pinCodeVerified?.success
                 ? "bg-blue-600 hover:bg-blue-700"
-                : " bg-green-600 hover:bg-green-700"
+                : " greenOne hover:bg-green-700"
                 } text-white py-3 rounded-md  transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
             >
               {placingOrder ? (
