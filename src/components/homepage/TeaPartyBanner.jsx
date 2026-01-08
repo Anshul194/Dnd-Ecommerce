@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function TeaPartyBanner({ content }) {
   // console.log("secondaryBanner content:", content);
@@ -15,19 +16,19 @@ export default function TeaPartyBanner({ content }) {
     <>
       {/* Desktop / large screens image  */}
       <Image
-        src={content?.image || "/images/teabanner.webp"}
+        src={getImageUrl(content?.image) || "/images/teabanner.webp"}
         alt="Tea Party Banner"
         fill
-        style={{ objectFit: "cover" }}
+        style={{ objectFit: "cover", color: "transparent" }}
         className="rounded-2xl hidden md:block z-0"
       />
 
       {/* Mobile image (shown on small screens) */}
       <Image
-        src={content?.mobileImage || "/images/teabanner.webp"}
+        src={getImageUrl(content?.mobileImage) || "/images/teabanner.webp"}
         alt="Tea Party Banner Mobile"
         fill
-        style={{ objectFit: "cover" }}
+        style={{ objectFit: "cover", color: "transparent" }}
         className="rounded-2xl block md:hidden z-0"
       />
     </>
