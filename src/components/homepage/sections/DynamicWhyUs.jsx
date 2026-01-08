@@ -24,32 +24,18 @@ const ImageWithFallback = ({ src, fallbackSrc, alt, ...props }) => {
   );
 };
 
+import { getImageUrl } from "@/app/utils/imageHelper";
+
 const DynamicWhyUs = ({ content }) => {
   const { title, description, points, image, mobileImage } = content;
-  console.log("DynamicWhyUs content:", content);
-
-  // const [isMobile, setIsMobile] = useState(false);
-
-  // useEffect(() => {
-  //   if (typeof window === "undefined") return;
-  //   const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-  //   checkMobile();
-  //   window.addEventListener("resize", checkMobile);
-  //   return () => window.removeEventListener("resize", checkMobile);
-  // }, []);
-
-  const getValidSrc = (img) => {
-    if (typeof img === "string" && img.trim() !== "") return img;
-    if (img && typeof img === "object" && img.url) return img.url;
-    return null;
-  };
+  // console.log("DynamicWhyUs content:", content);
 
   const placeholder = "/images/why-us-placeholder.webp";
-  const desktopSrc = getValidSrc(image) || placeholder;
-  const mobileSrc = getValidSrc(mobileImage) || desktopSrc;
+  const desktopSrc = getImageUrl(image) || placeholder;
+  const mobileSrc = getImageUrl(mobileImage) || desktopSrc;
 
-  console.log("sdfdsfsd",image);
-  console.log("sdfsdfsd",mobileImage);
+  console.log("sdfdsfsd", image);
+  console.log("sdfsdfsd", mobileImage);
 
 
   return (
