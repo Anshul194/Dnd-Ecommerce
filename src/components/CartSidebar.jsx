@@ -143,7 +143,7 @@ const CartSidebar = () => {
         {/* Trust Badge */}
         <div className="bg-gray-100 px-6 py-3 flex items-center justify-between border-b">
           <span className="text-sm text-gray-700">
-            Trusted by 4 Lakh+ Customers
+            Trusted by 8 Lakh+ Customers
           </span>
           <span className="text-gray-400">▶</span>
         </div>
