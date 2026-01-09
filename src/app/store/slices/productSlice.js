@@ -110,6 +110,27 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
+export const fetchAddons = createAsyncThunk(
+  "product/fetchAddons",
+  async () => {
+    const quaryParams = new URLSearchParams();
+    quaryParams.append("isAddon", "true");
+    quaryParams.append("onlyWithVariants", "true");
+    quaryParams.append("limit", "10");
+
+    const response = await axiosInstance.get("/product", {
+      params: quaryParams,
+    });
+
+    const apiData = response.data?.products?.data?.products ||
+      response.data?.products?.data ||
+      response.data?.products ||
+      [];
+
+    return Array.isArray(apiData) ? apiData : [];
+  }
+);
+
 export const fetchProductById = createAsyncThunk(
   "product/fetchProductById",
   async (id) => {
@@ -203,6 +224,7 @@ const productSlice = createSlice({
     loading: false,
     error: null,
     productCache: {},
+    addons: [],
   },
   reducers: {
     resetProductState: (state) => {
@@ -253,6 +275,9 @@ const productSlice = createSlice({
       .addCase(fetchProductById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+      .addCase(fetchAddons.fulfilled, (state, action) => {
+        state.addons = action.payload;
       });
   },
 });

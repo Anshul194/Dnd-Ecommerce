@@ -14,7 +14,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
-import { fetchProducts } from "@/app/store/slices/productSlice";
+import { fetchProducts, fetchAddons } from "@/app/store/slices/productSlice";
 import Link from "next/link";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
@@ -30,7 +30,7 @@ const CartSidebar = () => {
   } = useSelector((state) => state.cart);
 
   const route = useRouter();
-  const { products } = useSelector((state) => state.product);
+  const { products, addons } = useSelector((state) => state.product);
   const [SelectedProduct, setSelectedProduct] = useState(null);
   const hasClosedRef = useRef(false);
   const shipping = 65;
@@ -106,11 +106,7 @@ const CartSidebar = () => {
       hasClosedRef.current = true;
     }
 
-    dispatch(
-      fetchProducts({
-        isAddon: true,
-      })
-    );
+    dispatch(fetchAddons());
   }, [dispatch]);
 
   // Only show cart if it's explicitly open, regardless of loading state
@@ -260,8 +256,8 @@ const CartSidebar = () => {
               <h3 className="font-semibold mb-3">More Products</h3>
             </div>
             <div className="text-sm flex gap-2 overflow-auto">
-              {products?.products?.length > 0 &&
-                products.products.map((item, index) => (
+              {addons?.length > 0 &&
+                addons.map((item, index) => (
                   <Link href={`/product-detail/${item?.slug}`} key={index}>
                     <div className="relative w-fit flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
                       <div className="h-20 aspect-square   rounded-sm overflow-hidden mb-2 flex items-center justify-center">
