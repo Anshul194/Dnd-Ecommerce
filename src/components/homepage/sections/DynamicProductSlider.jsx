@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
@@ -486,7 +486,7 @@ const DynamicProductSlider = ({ content }) => {
                           {/* Placeholder for image or additional content */}
                           {isVideo(product?.storyVideoUrl) ? (
                             <video
-                              src={product?.storyVideoUrl}
+                              src={getImageUrl(product?.storyVideoUrl)}
                               className="w-full h-full object-cover"
                               // controls
                               autoPlay
@@ -496,7 +496,7 @@ const DynamicProductSlider = ({ content }) => {
                             />
                           ) : (
                             <img
-                              src={product?.storyVideoUrl}
+                              src={getImageUrl(product?.storyVideoUrl)}
                               alt="Story Visual"
                               className="w-full h-full object-cover"
                             />
@@ -574,14 +574,14 @@ const DynamicProductSlider = ({ content }) => {
                   <div className="w-full bg-black flex items-center justify-center">
                     {isVideo(overlayProduct.storyVideoUrl) ? (
                       <video
-                        src={overlayProduct.storyVideoUrl}
+                        src={getImageUrl(overlayProduct.storyVideoUrl)}
                         controls
                         autoPlay
                         className="w-fit h-full object-cover bg-black"
                       />
                     ) : (
                       <img
-                        src={overlayProduct.storyVideoUrl}
+                        src={getImageUrl(overlayProduct.storyVideoUrl)}
                         alt={overlayProduct.name || "story media"}
                         className="w-full h-full object-contain bg-black"
                       />
