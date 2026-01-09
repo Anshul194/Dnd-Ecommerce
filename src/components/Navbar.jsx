@@ -416,7 +416,7 @@ export default function Navbar({ initialCategories = [] }) {
             <div className="flex items-center gap-2">
               <Link href="/" className="text-black">
                 <Image
-                  src="/logo.webp"
+                  src="/logo.png"
                   alt="TeaHaven Logo"
                   width={100}
                   height={100}

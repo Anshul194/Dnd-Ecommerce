@@ -5,6 +5,7 @@ import { Settings } from "lucide-react";
 import { COMPONENT_TYPES, ComponentRenderer } from "./ComponentVariants";
 import { fetchProductById } from "../store/slices/productSlice";
 import { useDispatch } from "react-redux";
+import { getImageUrl } from "../utils/imageHelper";
 
 // Column width configurations (updated for 3 columns)
 const COLUMN_WIDTHS = {

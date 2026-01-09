@@ -6,6 +6,14 @@ export default function DescriptionLayoutTwo({ data }) {
     return match ? match[1] : url;
   };
 
+  // Inline getImageUrl helper
+  const getImageUrl = (url) => {
+    if (!url) return "/placeholder.png";
+    if (url.startsWith("http")) return url;
+    const baseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || "http://localhost:3000";
+    return `${baseUrl}${url.startsWith("/") ? url : "/" + url}`;
+  };
+
   // Static data with real images and video
   const staticData = {
     description: `<p>Discover the revolutionary approach to modern workspace design that combines functionality with aesthetic appeal. Our innovative solutions transform ordinary spaces into extraordinary environments that inspire creativity and productivity.</p>`,
@@ -74,7 +82,7 @@ export default function DescriptionLayoutTwo({ data }) {
               <div
                 className="aspect-[4/3] bg-gray-200"
                 style={{
-                  backgroundImage: `url(${displayData?.descriptionImages?.[0]?.url})`,
+                  backgroundImage: `url(${getImageUrl(displayData?.descriptionImages?.[0]?.url)})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -87,7 +95,7 @@ export default function DescriptionLayoutTwo({ data }) {
                 <div
                   className="aspect-square bg-gray-200"
                   style={{
-                    backgroundImage: `url(${displayData?.descriptionImages?.[1]?.url})`,
+                    backgroundImage: `url(${getImageUrl(displayData?.descriptionImages?.[1]?.url)})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -97,7 +105,7 @@ export default function DescriptionLayoutTwo({ data }) {
                 <div
                   className="aspect-square bg-gray-200"
                   style={{
-                    backgroundImage: `url(${displayData?.descriptionImages?.[2]?.url})`,
+                    backgroundImage: `url(${getImageUrl(displayData?.descriptionImages?.[2]?.url)})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -111,7 +119,7 @@ export default function DescriptionLayoutTwo({ data }) {
                 <div
                   className="aspect-square bg-gray-200"
                   style={{
-                    backgroundImage: `url(${displayData?.descriptionImages?.[3]?.url})`,
+                    backgroundImage: `url(${getImageUrl(displayData?.descriptionImages?.[3]?.url)})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -121,7 +129,7 @@ export default function DescriptionLayoutTwo({ data }) {
                 <div
                   className="aspect-square bg-gray-200"
                   style={{
-                    backgroundImage: `url(${displayData?.descriptionImages?.[4]?.url})`,
+                    backgroundImage: `url(${getImageUrl(displayData?.descriptionImages?.[4]?.url)})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -131,7 +139,7 @@ export default function DescriptionLayoutTwo({ data }) {
                 <div
                   className="aspect-square bg-gray-200"
                   style={{
-                    backgroundImage: `url(${displayData?.descriptionImages?.[5]?.url})`,
+                    backgroundImage: `url(${getImageUrl(displayData?.descriptionImages?.[5]?.url)})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}

@@ -2,6 +2,7 @@ import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { ChevronLeft, ChevronRight, Eye, Heart, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
 const RenderVariant4 = ({ imageSettings }) => {
@@ -24,7 +25,7 @@ const RenderVariant4 = ({ imageSettings }) => {
     <div className="space-y-6">
       <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100">
         <img
-          src={productData.images[selectedImage].url}
+          src={getImageUrl(productData.images[selectedImage].url)}
           alt="Main product"
           className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -80,7 +81,7 @@ const RenderVariant4 = ({ imageSettings }) => {
               onClick={() => setSelectedImage(idx)}
             >
               <img
-                src={img.url}
+                src={getImageUrl(img.url)}
                 alt={`Product view ${idx + 1}`}
                 className="w-16 h-16 object-cover transition-transform duration-300 group-hover:scale-110"
               />

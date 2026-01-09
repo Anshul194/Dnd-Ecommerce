@@ -10,6 +10,7 @@ import {
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function RenderTestimonialVariant() {
   const [selectedFilter, setSelectedFilter] = useState("all");
@@ -339,7 +340,7 @@ export default function RenderTestimonialVariant() {
                       className="bg-gray-200 rounded h-16 w-16 border border-gray-300"
                     >
                       <Image
-                        src={`${review.images[imgIndex]}`}
+                        src={getImageUrl(`${review.images[imgIndex]}`)}
                         alt={`Review Image ${imgIndex + 1}`}
                         className="w-full h-full object-cover rounded"
                         width={64}

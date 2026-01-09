@@ -8,6 +8,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function ProductReview({ productData }) {
   const [data, setData] = useState({
@@ -200,7 +201,7 @@ export default function ProductReview({ productData }) {
                             className="w-16 h-16 bg-gray-200 rounded-xl"
                           >
                             <img
-                              src={image.url}
+                              src={getImageUrl(image.url)}
                               alt={`Review Image ${idx + 1}`}
                               className="w-full h-full object-cover rounded-xl"
                             />
@@ -305,7 +306,7 @@ export default function ProductReview({ productData }) {
                           className="w-16 h-16 bg-gray-200 rounded-xl"
                         >
                           <img
-                            src={productData?.images?.[0]?.url || image.url}
+                            src={getImageUrl(productData?.images?.[0]?.url || image.url)}
                             alt={`Review Image ${idx + 1}`}
                             className="w-full h-full object-cover rounded-xl"
                           />

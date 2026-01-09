@@ -34,6 +34,7 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import ReturnRequestModal from "../orders/ReturnRequestModal";
 import ReturnStatusCard from "../orders/ReturnStatusCard";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const Orders = () => {
   const { orders, loading, currentOrder } = useSelector((state) => state.order);
@@ -280,11 +281,11 @@ const Orders = () => {
               </div>
               <div className="flex mb-2 items-start space-x-4 p-2 bg-gray-500/5 rounded-lg">
                 <img
-                  src={
+                  src={getImageUrl(
                     (typeof (reviewProduct?.product?.thumbnail || reviewProduct?.product?.images?.[0]) === 'string')
                       ? (reviewProduct?.product?.thumbnail || reviewProduct?.product?.images?.[0])
                       : (reviewProduct?.product?.thumbnail?.url || reviewProduct?.product?.images?.[0]?.url || "/placeholder.png")
-                  }
+                  )}
                   alt={reviewProduct?.product?.name}
                   className="w-16  h-16   object-cover rounded-lg bg-gray-100"
                 />
@@ -569,11 +570,11 @@ const Orders = () => {
                           className="flex items-start space-x-4 p-4 bg-gray-500/5 rounded-lg"
                         >
                           <img
-                            src={
+                            src={getImageUrl(
                               (typeof (item?.product?.thumbnail || item?.product?.images?.[0]) === 'string')
                                 ? (item?.product?.thumbnail || item?.product?.images?.[0])
                                 : (item?.product?.thumbnail?.url || item?.product?.images?.[0]?.url || "/placeholder.png")
-                            }
+                            )}
                             alt={item?.product?.name}
                             className="w-20 h-20 object-cover rounded-lg bg-gray-100"
                           />

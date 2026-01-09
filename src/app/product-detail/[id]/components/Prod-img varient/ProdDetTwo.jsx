@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Clock,
 } from "lucide-react";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 function ProdDetTwo() {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -142,7 +143,7 @@ function ProdDetTwo() {
               <div className="relative mb-4">
                 <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative group">
                   <img
-                    src={productData.images[selectedImage]}
+                    src={getImageUrl(productData.images[selectedImage])}
                     alt="Product"
                     className="w-full h-full object-cover"
                   />
@@ -195,7 +196,7 @@ function ProdDetTwo() {
                     onClick={() => setSelectedImage(index)}
                   >
                     <img
-                      src={img}
+                      src={getImageUrl(img)}
                       alt={`View ${index + 1}`}
                       className="w-full h-full object-cover"
                     />

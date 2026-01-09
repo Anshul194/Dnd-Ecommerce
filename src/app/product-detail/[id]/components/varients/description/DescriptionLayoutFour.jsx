@@ -6,6 +6,14 @@ export default function DescriptionLayoutFour({ data }) {
     return match ? match[1] : url;
   };
 
+  // Inline getImageUrl helper
+  const getImageUrl = (url) => {
+    if (!url) return "/placeholder.png";
+    if (url.startsWith("http")) return url;
+    const baseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || "http://localhost:3000";
+    return `${baseUrl}${url.startsWith("/") ? url : "/" + url}`;
+  };
+
   // Static data with real images and video
   const staticData = {
     description: `<p>Transform your business with cutting-edge solutions designed for the modern enterprise. Our comprehensive platform delivers unmatched performance, scalability, and reliability.</p>
@@ -70,7 +78,7 @@ export default function DescriptionLayoutFour({ data }) {
             <div
               className="aspect-[2/1] rounded-lg bg-gray-200"
               style={{
-                backgroundImage: `url(${displayData?.descriptionImages?.[0]?.url})`,
+                backgroundImage: `url(${getImageUrl(displayData?.descriptionImages?.[0]?.url)})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
@@ -84,7 +92,7 @@ export default function DescriptionLayoutFour({ data }) {
                 <div
                   className="aspect-[4/3] rounded-lg bg-gray-200"
                   style={{
-                    backgroundImage: `url(${image.url})`,
+                    backgroundImage: `url(${getImageUrl(image.url)})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}

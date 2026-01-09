@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Heart, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
 
@@ -29,7 +30,7 @@ const RenderVariant2 = () => {
         <div className="relative mb-4">
           <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative group">
             <Image
-              src={productData.images[selectedImage].url}
+              src={getImageUrl(productData.images[selectedImage].url)}
               alt="Product"
               className="w-full h-full object-cover"
               layout="fill"
@@ -84,7 +85,7 @@ const RenderVariant2 = () => {
               onClick={() => setSelectedImage(index)}
             >
               <img
-                src={img.url}
+                src={getImageUrl(img.url)}
                 alt={`View ${index + 1}`}
                 className="w-full h-full object-cover"
               />

@@ -1,6 +1,7 @@
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function ModernIngredientsUI({ data }) {
   const [activeIngredient, setActiveIngredient] = useState(0);
@@ -9,7 +10,8 @@ export default function ModernIngredientsUI({ data }) {
   const containerRef = useRef(null);
   const productData = useSelector(selectSelectedProduct);
 
-  const ingredients = productData?.ingredients || [];
+  // Use passed data if provided, otherwise fallback to productData
+  const ingredients = data || productData?.ingredients || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,7 +26,7 @@ export default function ModernIngredientsUI({ data }) {
       const progress = Math.min(
         Math.max(
           (scrollPosition - containerTop + windowHeight) /
-            (containerHeight + windowHeight),
+          (containerHeight + windowHeight),
           0
         ),
         1
@@ -95,17 +97,16 @@ export default function ModernIngredientsUI({ data }) {
               <div
                 key={index}
                 ref={(el) => (ingredientsRef.current[index] = el)}
-                className={`bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-500 transform ${
-                  activeIngredient === index
+                className={`bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-500 transform ${activeIngredient === index
                     ? "scale-100 opacity-100 shadow-2xl"
                     : "scale-95 opacity-60"
-                }`}
+                  }`}
               >
                 {/* Mobile Image */}
                 <div className="lg:hidden h-64 overflow-hidden">
                   {ingredient.image && (
                     <img
-                      src={ingredient.image}
+                      src={getImageUrl(ingredient.image)}
                       alt={ingredient.alt || ingredient.name}
                       className="w-full h-full object-cover"
                     />
@@ -117,11 +118,10 @@ export default function ModernIngredientsUI({ data }) {
                   <div className="flex items-start gap-4 mb-4">
                     <div className="flex-shrink-0">
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold transition-all duration-300 ${
-                          activeIngredient === index
+                        className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold transition-all duration-300 ${activeIngredient === index
                             ? "greenOne text-white scale-110"
                             : "bg-gray-100 text-gray-400"
-                        }`}
+                          }`}
                       >
                         {index + 1}
                       </div>
@@ -185,7 +185,7 @@ export default function ModernIngredientsUI({ data }) {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl h-[500px] bg-gray-100">
                 {ingredients[activeIngredient]?.image && (
                   <img
-                    src={ingredients[activeIngredient].image}
+                    src={getImageUrl(ingredients[activeIngredient].image)}
                     alt={
                       ingredients[activeIngredient].alt ||
                       ingredients[activeIngredient].name
@@ -225,15 +225,14 @@ export default function ModernIngredientsUI({ data }) {
                         block: "center",
                       });
                     }}
-                    className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${
-                      activeIngredient === index
+                    className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${activeIngredient === index
                         ? "ring-4 ring-[#07490C] scale-105"
                         : "ring-2 ring-gray-200 hover:ring-gray-300 opacity-60 hover:opacity-100"
-                    }`}
+                      }`}
                   >
                     {ingredient.image && (
                       <img
-                        src={ingredient.image}
+                        src={getImageUrl(ingredient.image)}
                         alt={ingredient.alt || ingredient.name}
                         className="w-full h-full object-cover"
                       />

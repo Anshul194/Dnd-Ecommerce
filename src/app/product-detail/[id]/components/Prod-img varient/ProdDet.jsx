@@ -8,6 +8,7 @@ import {
   Star,
   ShoppingCart,
 } from "lucide-react";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 function ProdDet() {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -493,7 +494,7 @@ function ProdDet() {
                   </button>
 
                   <img
-                    src={productData.images[selectedImage]}
+                    src={getImageUrl(productData.images[selectedImage])}
                     alt="Product Image"
                     className="w-full h-full object-cover"
                   />
@@ -525,7 +526,7 @@ function ProdDet() {
                     onClick={() => setSelectedImage(index)}
                   >
                     <img
-                      src={img}
+                      src={getImageUrl(img)}
                       alt={`Product view ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
