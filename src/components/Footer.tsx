@@ -5,6 +5,7 @@ import {
   Twitter,
   Instagram,
   Youtube,
+  Linkedin,
   Mail,
   Phone,
   MapPin,
@@ -171,10 +172,17 @@ export default function Footer() {
               Trusted Indian (Ayurvedic) products for everyday families, from Kisan source to home.
             </p>
             <div className="flex gap-3">
-              {[Facebook, Twitter, Instagram, Youtube].map((Icon, index) => (
+              {[
+                { Icon: Facebook, href: "https://www.facebook.com/bhratgramudyogsangh" },
+                { Icon: Instagram, href: "https://www.instagram.com/bharatgramudyogsangh" },
+                { Icon: Linkedin, href: "https://www.linkedin.com/company/bharat-gram-udyog-sangh" },
+                { Icon: Youtube, href: "https://youtube.com/@bharatgramudyogsangh.?si=KO_t6qu1t0Z9WP0M", }
+              ].map(({ Icon, href }, index) => (
                 <motion.a
                   key={index}
-                  href="#"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={{ scale: 1.2, rotate: 5 }}
                   transition={{ duration: 0.2 }}
                   className="w-10 h-10 bg-gray-800 hover:bg-gradient-to-br hover:from-[#3C950D] hover:to-[#2d7009] rounded-full flex items-center justify-center transition-all shadow-lg"
