@@ -39,6 +39,7 @@ class ProductService {
       name,
       sortBy,
       sortOrder,
+      onlyWithVariants,
     } = query;
 
     const pageNum = parseInt(page);
@@ -95,7 +96,7 @@ class ProductService {
     const maxQuery =
       maxPrice || query.max || query.max_price || query.maxprice || null;
 
-    if (minQuery || maxQuery) {
+    if (minQuery || maxQuery || onlyWithVariants === "true") {
       const minVal = minQuery ? parseFloat(minQuery) : null;
       const maxVal = maxQuery ? parseFloat(maxQuery) : null;
 
@@ -103,43 +104,42 @@ class ProductService {
       // If both min and max are provided, we require the field (price or salePrice) to be between min and max.
       const variantFilters = { deletedAt: null };
 
-      if (minVal != null && maxVal != null) {
-        // Match variants where price is between min and max OR salePrice is between min and max
-        variantFilters.$or = [
-          { price: { $gte: minVal, $lte: maxVal } },
-          { salePrice: { $gte: minVal, $lte: maxVal } },
-        ];
-      } else if (minVal != null) {
-        variantFilters.$or = [
-          { price: { $gte: minVal } },
-          { salePrice: { $gte: minVal } },
-        ];
-      } else if (maxVal != null) {
-        variantFilters.$or = [
-          { price: { $lte: maxVal } },
-          { salePrice: { $lte: maxVal } },
-        ];
+      if (minVal != null || maxVal != null) {
+        if (minVal != null && maxVal != null) {
+          // Match variants where price is between min and max OR salePrice is between min and max
+          variantFilters.$or = [
+            { price: { $gte: minVal, $lte: maxVal } },
+            { salePrice: { $gte: minVal, $lte: maxVal } },
+          ];
+        } else if (minVal != null) {
+          variantFilters.$or = [
+            { price: { $gte: minVal } },
+            { salePrice: { $gte: minVal } },
+          ];
+        } else if (maxVal != null) {
+          variantFilters.$or = [
+            { price: { $lte: maxVal } },
+            { salePrice: { $lte: maxVal } },
+          ];
+        }
       }
-
-      // Debug logging to help diagnose why price filters might not match
-      //consolle.log("Price filter - minQuery:", minQuery, "maxQuery:", maxQuery);
-      //consolle.log("Computed minVal:", minVal, "maxVal:", maxVal);
-      //consolle.log("Variant filters:", JSON.stringify(variantFilters));
 
       // Register Variant model for the tenant-specific connection
       const Variant =
         conn.models.Variant || conn.model("Variant", VariantSchema);
+
       const matchingVariants = await Variant.find(variantFilters).distinct(
         "productId"
       );
-      //consolle.log(
-      //   "Matching variant productIds count:",
-      //   matchingVariants.length
-      // );
 
-      // If there are no matching variants, enforce a clause that yields no products
+      // If we are filtering by variants, apply the intersection
       if (Array.isArray(matchingVariants) && matchingVariants.length > 0) {
-        filterConditions._id = { $in: matchingVariants };
+        // If there's an existing _id filter (from some other logic, though unlikely here), merge them
+        if (filterConditions._id) {
+          filterConditions._id = { $all: [filterConditions._id, { $in: matchingVariants }] };
+        } else {
+          filterConditions._id = { $in: matchingVariants };
+        }
       } else {
         // No matching variants -> no products should be returned. Use a false condition.
         filterConditions._id = { $in: [] };

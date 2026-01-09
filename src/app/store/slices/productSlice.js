@@ -39,6 +39,9 @@ export const fetchProducts = createAsyncThunk(
       quaryParams.append("frequentlyPurchased", payload.frequentlyPurchased);
     }
 
+    // Always only show products with variants on frontend
+    quaryParams.append("onlyWithVariants", "true");
+
     const response = await axiosInstance.get("/product", {
       params: quaryParams,
     });
@@ -173,6 +176,8 @@ export const fetchFrequentlyPurchasedProducts = createAsyncThunk(
       if (payload.frequentlyPurchased) {
         quaryParams.append("frequentlyPurchased", payload.frequentlyPurchased);
       }
+
+      quaryParams.append("onlyWithVariants", "true");
 
       const response = await axiosInstance.get("/product", {
         params: quaryParams,
