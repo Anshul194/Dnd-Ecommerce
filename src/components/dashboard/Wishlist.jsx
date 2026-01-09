@@ -11,6 +11,8 @@ import { addToCart, toggleCart } from "@/app/store/slices/cartSlice";
 import Link from "next/link";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 
+import { getImageUrl } from "@/app/utils/imageHelper";
+
 const Wishlist = () => {
   const dispatch = useDispatch();
   const wishlistItems = useSelector((state) => state.wishlist.items);
@@ -127,26 +129,32 @@ const Wishlist = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {wishlistItems.map((item, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
-            >
-              {/* Product Image */}
-              <div className="relative">
-                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                  {item?.product?.thumbnail?.url ? (
-                    <img
-                      src={item?.product?.thumbnail?.url}
-                      alt={item?.product?.thumbnail?.alt}
-                      className="object-cover h-full w-full"
-                    />
-                  ) : (
-                    <span className="text-gray-400 text-sm">Product Image</span>
-                  )}
-                </div>
-                {/* Discount Badge */}
-                {/* {item.product.originalPrice > item.product.price && (
+          {wishlistItems.map((item, index) => {
+            const imgSrc =
+              (typeof item?.product?.thumbnail === 'string' ? item.product.thumbnail : item?.product?.thumbnail?.url) ||
+              (typeof item?.product?.images?.[0] === 'string' ? item.product.images[0] : item?.product?.images?.[0]?.url) ||
+              null;
+
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+              >
+                {/* Product Image */}
+                <div className="relative">
+                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                    {imgSrc ? (
+                      <img
+                        src={getImageUrl(imgSrc)}
+                        alt={item?.product?.thumbnail?.alt || item?.product?.name}
+                        className="object-cover h-full w-full"
+                      />
+                    ) : (
+                      <span className="text-gray-400 text-sm">Product Image</span>
+                    )}
+                  </div>
+                  {/* Discount Badge */}
+                  {/* {item.product.originalPrice > item.product.price && (
                   <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md">
                     {calculateSavings(
                       item.product.originalPrice,
@@ -155,102 +163,103 @@ const Wishlist = () => {
                     % OFF
                   </div>
                 )} */}
-                {/* Stock Status */}
-                {/* {!item.product.inStock && (
+                  {/* Stock Status */}
+                  {/* {!item.product.inStock && (
                   <div className="absolute top-2 right-2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md">
                     Out of Stock
                   </div>
                 )} */}
-                {/* Remove from Wishlist */}
-                <button
-                  onClick={() => handleRemoveItemFromWishlist(item)}
-                  className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow group"
-                >
-                  <Heart
-                    className="text-red-500 fill-current group-hover:scale-110 transition-transform"
-                    size={16}
-                  />
-                </button>
-              </div>
-              {/* Product Info */}
-              <div className="p-4">
-                <div className="mb-2">
-                  {/* <span className="text-xs text-gray-500 uppercase tracking-wide">
+                  {/* Remove from Wishlist */}
+                  <button
+                    onClick={() => handleRemoveItemFromWishlist(item)}
+                    className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-shadow group"
+                  >
+                    <Heart
+                      className="text-red-500 fill-current group-hover:scale-110 transition-transform"
+                      size={16}
+                    />
+                  </button>
+                </div>
+                {/* Product Info */}
+                <div className="p-4">
+                  <div className="mb-2">
+                    {/* <span className="text-xs text-gray-500 uppercase tracking-wide">
                     {item?.product?.category}
                   </span> */}
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                  {item?.product?.name}
-                </h3>
-                {/* Rating */}
-                {item?.product?.rating > 0 && (
-                  <div className="flex items-center justify-between mb-3">
-                    {renderStars(item?.product?.rating)}
-                    <span className="text-xs text-gray-500">
-                      {item?.product?.reviewCount} reviews
-                    </span>
                   </div>
-                )}
-                {/* Price */}
-                <div className="flex items-center space-x-2 mb-3">
-                  {item?.variant?.salePrice ? (
-                    <>
-                      <span className="text-lg font-bold text-gray-900">
-                        ₹{item?.variant?.salePrice}
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                    {item?.product?.name}
+                  </h3>
+                  {/* Rating */}
+                  {item?.product?.rating > 0 && (
+                    <div className="flex items-center justify-between mb-3">
+                      {renderStars(item?.product?.rating)}
+                      <span className="text-xs text-gray-500">
+                        {item?.product?.reviewCount} reviews
                       </span>
-                      <span className="text-lg line-through font-bold text-gray-900">
+                    </div>
+                  )}
+                  {/* Price */}
+                  <div className="flex items-center space-x-2 mb-3">
+                    {item?.variant?.salePrice ? (
+                      <>
+                        <span className="text-lg font-bold text-gray-900">
+                          ₹{item?.variant?.salePrice}
+                        </span>
+                        <span className="text-lg line-through font-bold text-gray-900">
+                          ₹{item?.variant?.price}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-lg font-bold text-gray-900">
                         ₹{item?.variant?.price}
                       </span>
-                    </>
-                  ) : (
-                    <span className="text-lg font-bold text-gray-900">
-                      ₹{item?.variant?.price}
-                    </span>
-                  )}
-                </div>
-                {/* Added Date */}
-                <p className="text-xs text-gray-500 mb-4">
-                  Added on{" "}
-                  {item.addedAt
-                    ? new Date(item.addedAt).toLocaleDateString()
-                    : ""}
-                </p>
-                {/* Actions */}
-                <div className="space-y-2">
-                  <button
-                    onClick={() => addToCartHandler(item)}
-                    disabled={!item.product}
-                    className={`w-full px-4 py-2 rounded-md transition-colors flex items-center justify-center space-x-2  ₹{
+                    )}
+                  </div>
+                  {/* Added Date */}
+                  <p className="text-xs text-gray-500 mb-4">
+                    Added on{" "}
+                    {item.addedAt
+                      ? new Date(item.addedAt).toLocaleDateString()
+                      : ""}
+                  </p>
+                  {/* Actions */}
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => addToCartHandler(item)}
+                      disabled={!item.product}
+                      className={`w-full px-4 py-2 rounded-md transition-colors flex items-center justify-center space-x-2  ₹{
                       item.product
                         ? "bg-red-600 text-white hover:bg-red-700"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
-                  >
-                    <ShoppingCart size={16} />
-                    <span>{item.product ? "Add to Cart" : "Out of Stock"}</span>
-                  </button>
-                  <div className="flex space-x-2">
-                    <Link
-                      href={`/productDetail/${item?.product?.slug}`}
-                      className="w-1/2"
                     >
-                      <button className="flex-1 px-3 py-2 border w-full border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 text-sm">
-                        <Eye size={14} />
-                        <span>View</span>
-                      </button>
-                    </Link>
-                    <button
-                      onClick={() => handleRemoveItemFromWishlist(item)}
-                      className="flex-1 w-1/2 px-3 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors flex items-center justify-center space-x-2 text-sm"
-                    >
-                      <Trash2 size={14} />
-                      <span>Remove</span>
+                      <ShoppingCart size={16} />
+                      <span>{item.product ? "Add to Cart" : "Out of Stock"}</span>
                     </button>
+                    <div className="flex space-x-2">
+                      <Link
+                        href={`/productDetail/${item?.product?.slug}`}
+                        className="w-1/2"
+                      >
+                        <button className="flex-1 px-3 py-2 border w-full border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 text-sm">
+                          <Eye size={14} />
+                          <span>View</span>
+                        </button>
+                      </Link>
+                      <button
+                        onClick={() => handleRemoveItemFromWishlist(item)}
+                        className="flex-1 w-1/2 px-3 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors flex items-center justify-center space-x-2 text-sm"
+                      >
+                        <Trash2 size={14} />
+                        <span>Remove</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
       {/* Wishlist Actions */}
