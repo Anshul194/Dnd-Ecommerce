@@ -104,7 +104,7 @@ const RenderVariant3 = () => {
               onClick={() => setSelectedImage(index)}
             >
               <img
-                src={img.url}
+                src={getImageUrl(img.url)}
                 alt={`View ${index + 1}`}
                 className="w-full h-full object-cover"
               />
