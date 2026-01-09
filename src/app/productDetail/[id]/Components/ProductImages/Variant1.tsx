@@ -2,6 +2,7 @@ import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const RenderVariant1 = () => {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -35,7 +36,7 @@ const RenderVariant1 = () => {
                 onClick={() => setSelectedImage(index)}
               >
                 <img
-                  src={img.url}
+                  src={getImageUrl(img.url)}
                   alt={productData.name}
                   className="w-full h-full object-cover"
                 />
@@ -62,7 +63,7 @@ const RenderVariant1 = () => {
 
             {productData?.images?.[selectedImage] ? (
               <img
-                src={productData.images[selectedImage].url}
+                src={getImageUrl(productData.images[selectedImage].url)}
                 alt="Product Image"
                 className="w-full h-full object-cover"
               />

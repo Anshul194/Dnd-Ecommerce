@@ -5,6 +5,7 @@ import { Heart, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function FrequentlyPurchased() {
   const { products } = useSelector((state) => state.product);
@@ -124,7 +125,7 @@ export default function FrequentlyPurchased() {
                       <div className="relative bg-gray-400 rounded-lg aspect-square mb-4">
                         {imgSrc ? (
                           <img
-                            src={imgSrc}
+                            src={getImageUrl(imgSrc)}
                             alt={
                               product?.thumbnail?.alt ||
                               product?.images?.[0]?.alt ||

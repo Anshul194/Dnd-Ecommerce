@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { getImageUrl } from '@/app/utils/imageHelper';
 
 
 export default function Ingredient({ data }) {
@@ -97,7 +98,7 @@ export default function Ingredient({ data }) {
                 {ingredient.image && (
                   <div className="lg:hidden mt-6 rounded-lg w-full h-[250px] overflow-hidden relative">
                     <Image
-                      src={typeof ingredient.image === 'string' ? ingredient.image : ingredient.image?.url || "/placeholder.png"}
+                      src={getImageUrl(typeof ingredient.image === 'string' ? ingredient.image : ingredient.image?.url || "/placeholder.png")}
                       alt={typeof ingredient.image === 'string' ? ingredient.name : ingredient.image?.alt || ingredient.name}
                       fill
                       className="object-cover rounded-lg"
@@ -122,7 +123,7 @@ export default function Ingredient({ data }) {
               <div className="rounded-lg w-full h-[500px] overflow-hidden shadow-lg">
                 {ingredients[activeIngredient]?.image && (
                   <Image
-                    src={typeof ingredients[activeIngredient].image === 'string' ? ingredients[activeIngredient].image : ingredients[activeIngredient].image?.url || "/placeholder.png"}
+                    src={getImageUrl(typeof ingredients[activeIngredient].image === 'string' ? ingredients[activeIngredient].image : ingredients[activeIngredient].image?.url || "/placeholder.png")}
                     alt={typeof ingredients[activeIngredient].image === 'string' ? ingredients[activeIngredient].name : ingredients[activeIngredient].image?.alt || ingredients[activeIngredient].name}
                     fill
                     className="object-cover rounded-lg transition-all duration-700 ease-in-out transform"

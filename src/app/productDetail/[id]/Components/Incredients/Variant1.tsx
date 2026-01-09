@@ -1,15 +1,16 @@
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
-export default function RenderScrollingVariant() {
+export default function RenderScrollingVariant({ data }: { data?: any[] }) {
   const productData = useSelector(selectSelectedProduct);
   const [activeIngredient, setActiveIngredient] = useState(0);
   const ingredientsRef = useRef([]);
   const containerRef = useRef(null);
 
-  // Use only actual data.ingredients, no fallback sample data
-  const ingredients = productData?.ingredients || [];
+  // Use passed data if provided, otherwise fallback to productData
+  const ingredients = data || productData?.ingredients || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,11 +62,10 @@ export default function RenderScrollingVariant() {
               <div
                 key={index}
                 ref={(el) => (ingredientsRef.current[index] = el)}
-                className={`transition-all duration-500 ${
-                  activeIngredient === index
+                className={`transition-all duration-500 ${activeIngredient === index
                     ? "opacity-100 transform translate-x-0"
                     : "opacity-70 transform translate-x-2"
-                }`}
+                  }`}
               >
                 {/* Ingredient Number */}
                 <div className="flex items-start gap-6 mb-4">
@@ -103,7 +103,7 @@ export default function RenderScrollingVariant() {
                 {ingredient.image && (
                   <div className="lg:hidden mt-6 rounded-lg w-full h-[250px] overflow-hidden">
                     <img
-                      src={ingredient.image}
+                      src={getImageUrl(ingredient.image)}
                       alt={ingredient.alt || ingredient.name}
                       className="w-full h-full object-cover rounded-lg"
                     />
@@ -127,7 +127,7 @@ export default function RenderScrollingVariant() {
               <div className="rounded-lg w-full h-[500px] overflow-hidden shadow-lg">
                 {ingredients[activeIngredient]?.image && (
                   <img
-                    src={ingredients[activeIngredient]?.image}
+                    src={getImageUrl(ingredients[activeIngredient]?.image)}
                     alt={
                       ingredients[activeIngredient]?.alt ||
                       ingredients[activeIngredient]?.name
@@ -168,11 +168,10 @@ export default function RenderScrollingVariant() {
                 <button
                   key={index}
                   onClick={() => setActiveIngredient(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    activeIngredient === index
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${activeIngredient === index
                       ? "bg-black scale-125"
                       : "bg-gray-300 hover:bg-gray-400"
-                  }`}
+                    }`}
                 />
               ))}
             </div>

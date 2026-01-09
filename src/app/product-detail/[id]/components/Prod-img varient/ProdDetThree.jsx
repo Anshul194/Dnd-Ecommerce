@@ -26,6 +26,7 @@ import {
   Gift,
   Sparkles,
 } from "lucide-react";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 function ProdDetThree() {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -188,7 +189,7 @@ function ProdDetThree() {
             <div className="relative group">
               <div className="aspect-square rounded-3xl overflow-hidden cream relative">
                 <img
-                  src={productData.images[selectedImage]}
+                  src={getImageUrl(productData.images[selectedImage])}
                   alt="Product"
                   className="w-full h-full object-cover"
                 />
@@ -248,7 +249,7 @@ function ProdDetThree() {
                   onClick={() => setSelectedImage(index)}
                 >
                   <img
-                    src={img}
+                    src={getImageUrl(img)}
                     alt={`View ${index + 1}`}
                     className="w-full h-full object-cover"
                   />

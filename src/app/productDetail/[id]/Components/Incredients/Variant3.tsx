@@ -1,6 +1,7 @@
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function PremiumIngredientsUI({ data }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -9,7 +10,8 @@ export default function PremiumIngredientsUI({ data }) {
   const itemRefs = useRef([]);
   const productData = useSelector(selectSelectedProduct);
 
-  const ingredients = productData?.ingredients || [];
+  // Use passed data if provided, otherwise fallback to productData
+  const ingredients = data || productData?.ingredients || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,7 +67,7 @@ export default function PremiumIngredientsUI({ data }) {
               </span>
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl pb-2 font-black bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 bg-clip-text text-transparent uppercase" style={{fontFamily: "Poppins, sans-serif" }} >
+          <h1 className="text-4xl md:text-5xl pb-2 font-black bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 bg-clip-text text-transparent uppercase" style={{ fontFamily: "Poppins, sans-serif" }} >
             Ingredients
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -90,57 +92,50 @@ export default function PremiumIngredientsUI({ data }) {
                 <div
                   key={index}
                   ref={(el) => (itemRefs.current[index] = el)}
-                  className={`relative flex flex-col md:flex-row items-center gap-8 ${
-                    isLeft ? "md:flex-row-reverse" : ""
-                  }`}
+                  className={`relative flex flex-col md:flex-row items-center gap-8 ${isLeft ? "md:flex-row-reverse" : ""
+                    }`}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 >
                   {/* Timeline Dot */}
                   <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 z-20">
                     <div
-                      className={`w-6 h-6 rounded-full border-4 border-white transition-all duration-500 ${
-                        isActive
+                      className={`w-6 h-6 rounded-full border-4 border-white transition-all duration-500 ${isActive
                           ? "bg-gradient-to-r from-green-400 to-green-500 scale-150 shadow-lg"
                           : "bg-gray-200"
-                      }`}
+                        }`}
                     >
                       <div
-                        className={`absolute inset-0 rounded-full transition-all duration-500 ${
-                          isActive
+                        className={`absolute inset-0 rounded-full transition-all duration-500 ${isActive
                             ? "bg-gradient-to-r from-green-400 to-green-500 animate-ping opacity-75"
                             : ""
-                        }`}
+                          }`}
                       ></div>
                     </div>
                   </div>
 
                   {/* Content Card */}
                   <div
-                    className={`w-full md:w-[calc(50%-4rem)] transition-all duration-700 ${
-                      isActive ? "scale-100 opacity-100" : "scale-95 opacity-40"
-                    }`}
+                    className={`w-full md:w-[calc(50%-4rem)] transition-all duration-700 ${isActive ? "scale-100 opacity-100" : "scale-95 opacity-40"
+                      }`}
                   >
                     <div
-                      className={`relative group cursor-pointer transition-all duration-500 ${
-                        isHovered ? "transform -translate-y-2" : ""
-                      }`}
+                      className={`relative group cursor-pointer transition-all duration-500 ${isHovered ? "transform -translate-y-2" : ""
+                        }`}
                     >
                       {/* Card Background */}
                       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white rounded-3xl backdrop-blur-sm border border-gray-200 shadow-xl transition-all duration-500">
                         <div
-                          className={`absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 opacity-0 transition-opacity duration-500 rounded-3xl ${
-                            isActive || isHovered ? "opacity-5" : ""
-                          }`}
+                          className={`absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 opacity-0 transition-opacity duration-500 rounded-3xl ${isActive || isHovered ? "opacity-5" : ""
+                            }`}
                         ></div>
                       </div>
 
                       <div className="relative p-8">
                         {/* Number Badge */}
                         <div
-                          className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6 bg-gradient-to-r from-green-400 to-green-500 shadow-lg transition-all duration-500 ${
-                            isActive ? "scale-110" : "scale-100"
-                          }`}
+                          className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6 bg-gradient-to-r from-green-400 to-green-500 shadow-lg transition-all duration-500 ${isActive ? "scale-110" : "scale-100"
+                            }`}
                         >
                           <span className="text-2xl font-black text-white">
                             {String(index + 1).padStart(2, "0")}
@@ -148,7 +143,7 @@ export default function PremiumIngredientsUI({ data }) {
                         </div>
 
                         {/* Ingredient Name */}
-                        <h3 className="text-3xl md:text-4xl font-black mb-3 text-gray-900" style={{fontFamily: "Poppins, sans-serif" }}>
+                        <h3 className="text-3xl md:text-4xl font-black mb-3 text-gray-900" style={{ fontFamily: "Poppins, sans-serif" }}>
                           {ingredient.name}
                         </h3>
 
@@ -190,9 +185,8 @@ export default function PremiumIngredientsUI({ data }) {
 
                         {/* Decorative Corner */}
                         <div
-                          className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400 to-green-500 opacity-0 blur-2xl transition-opacity duration-500 ${
-                            isActive || isHovered ? "opacity-20" : ""
-                          }`}
+                          className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400 to-green-500 opacity-0 blur-2xl transition-opacity duration-500 ${isActive || isHovered ? "opacity-20" : ""
+                            }`}
                         ></div>
                       </div>
                     </div>
@@ -200,16 +194,15 @@ export default function PremiumIngredientsUI({ data }) {
 
                   {/* Image */}
                   <div
-                    className={`w-full md:w-[calc(50%-4rem)] transition-all duration-700 ${
-                      isActive ? "scale-100 opacity-100" : "scale-90 opacity-30"
-                    }`}
+                    className={`w-full md:w-[calc(50%-4rem)] transition-all duration-700 ${isActive ? "scale-100 opacity-100" : "scale-90 opacity-30"
+                      }`}
                   >
                     <div className="relative group cursor-pointer">
                       {/* Image Container */}
                       <div className="relative aspect-square rounded-3xl overflow-hidden shadow-xl border border-gray-200">
                         {ingredient.image && (
                           <img
-                            src={ingredient.image}
+                            src={getImageUrl(ingredient.image)}
                             alt={ingredient.alt || ingredient.name}
                             className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
                           />
@@ -217,17 +210,15 @@ export default function PremiumIngredientsUI({ data }) {
 
                         {/* Gradient Overlay */}
                         <div
-                          className={`absolute inset-0 bg-gradient-to-t from-green-500 to-green-600 opacity-10 mix-blend-multiply transition-opacity duration-500 ${
-                            isActive ? "opacity-20" : "opacity-5"
-                          }`}
+                          className={`absolute inset-0 bg-gradient-to-t from-green-500 to-green-600 opacity-10 mix-blend-multiply transition-opacity duration-500 ${isActive ? "opacity-20" : "opacity-5"
+                            }`}
                         ></div>
 
                         {/* Corner Accent */}
                         <div className="absolute top-6 right-6">
                           <div
-                            className={`w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center backdrop-blur-sm shadow-lg transition-all duration-500 ${
-                              isActive ? "scale-110" : "scale-100"
-                            }`}
+                            className={`w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center backdrop-blur-sm shadow-lg transition-all duration-500 ${isActive ? "scale-110" : "scale-100"
+                              }`}
                           >
                             <span className="text-xl font-black text-white">
                               {index + 1}
@@ -238,9 +229,8 @@ export default function PremiumIngredientsUI({ data }) {
 
                       {/* Glow Effect */}
                       <div
-                        className={`absolute -inset-4 bg-gradient-to-r from-green-400 to-green-500 rounded-3xl blur-2xl opacity-0 transition-opacity duration-500 -z-10 ${
-                          isActive || isHovered ? "opacity-20" : ""
-                        }`}
+                        className={`absolute -inset-4 bg-gradient-to-r from-green-400 to-green-500 rounded-3xl blur-2xl opacity-0 transition-opacity duration-500 -z-10 ${isActive || isHovered ? "opacity-20" : ""
+                          }`}
                       ></div>
                     </div>
                   </div>
@@ -262,13 +252,11 @@ export default function PremiumIngredientsUI({ data }) {
                   block: "center",
                 });
               }}
-              className={`transition-all duration-300 ${
-                activeIndex === index ? "w-12 h-3" : "w-3 h-3 hover:w-6"
-              } rounded-full bg-gradient-to-r from-green-400 to-green-500 ${
-                activeIndex === index
+              className={`transition-all duration-300 ${activeIndex === index ? "w-12 h-3" : "w-3 h-3 hover:w-6"
+                } rounded-full bg-gradient-to-r from-green-400 to-green-500 ${activeIndex === index
                   ? "opacity-100"
                   : "opacity-30 hover:opacity-60"
-              }`}
+                }`}
             />
           ))}
         </div>

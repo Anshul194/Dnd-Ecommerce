@@ -1,9 +1,16 @@
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import React from "react";
 import { useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
-function Variant3() {
-  const productData = useSelector(selectSelectedProduct);
+type Props = {
+  descriptionData?: any;
+};
+
+function Variant3({ descriptionData: propData }: Props) {
+  const reduxProductData = useSelector(selectSelectedProduct);
+  const productData = propData || reduxProductData;
+
   const extractVideoId = (url: string) => {
     const regex =
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
@@ -21,8 +28,8 @@ function Variant3() {
         {/* Top Section - Video and Description Side by Side */}
         <div className={`${productData?.descriptionVideo ? "grid" : ""} lg:grid-cols-5 gap-8 mb-16`}>
           {/* Video - Takes 3 columns */}
-          <div className="lg:col-span-3">
-            {productData?.descriptionVideo && (
+          {productData?.descriptionVideo && (
+            <div className="lg:col-span-3">
               <div className="aspect-video sticky top-10 rounded-lg overflow-hidden bg-black">
                 <iframe
                   src={`https://www.youtube.com/embed/${extractVideoId(
@@ -35,15 +42,15 @@ function Variant3() {
                   onError={(e) => console.error("Iframe error:", e)}
                 />
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Description - Takes 2 columns */}
-          <div className="lg:col-span-2 flex items-center">
+          <div className={`${productData?.descriptionVideo ? "lg:col-span-2" : "lg:col-span-5"} flex items-center`}>
             <div
               className="text-black poppins-medium leading-relaxed text-lg"
               dangerouslySetInnerHTML={{
-                __html: productData?.description,
+                __html: productData?.description || "",
               }}
             />
           </div>
@@ -57,7 +64,7 @@ function Variant3() {
               <div
                 className="aspect-[2/1] rounded-lg bg-gray-200"
                 style={{
-                  backgroundImage: `url(${productData?.descriptionImages?.[0]?.url})`,
+                  backgroundImage: `url(${getImageUrl(productData?.descriptionImages?.[0]?.url)})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -69,12 +76,12 @@ function Variant3() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {productData?.descriptionImages
               ?.slice(1, 5)
-              .map((image, index) => (
+              .map((image: any, index: number) => (
                 <div key={index}>
                   <div
                     className="aspect-[4/3] rounded-lg bg-gray-200"
                     style={{
-                      backgroundImage: `url(${image.url})`,
+                      backgroundImage: `url(${getImageUrl(image.url)})`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}

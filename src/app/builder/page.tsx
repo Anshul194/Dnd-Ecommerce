@@ -48,6 +48,7 @@ import {
 } from "./ComponentVariants";
 import { fetchProductById } from "../store/slices/productSlice";
 import { useDispatch } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 // Sample product data
 const sampleProduct = {
@@ -308,7 +309,7 @@ function ProductImages({
         } ${isFullWidth ? "" : "mx-auto"}`}
       >
         <img
-          src={product.images[0]}
+          src={getImageUrl(product.images[0])}
           alt="Main product"
           className="w-full h-auto rounded-lg object-cover"
         />
@@ -323,7 +324,7 @@ function ProductImages({
           {product.images.slice(1).map((img, idx) => (
             <img
               key={idx}
-              src={img}
+              src={getImageUrl(img)}
               alt={`Product ${idx + 2}`}
               className="w-8 h-8 rounded object-cover flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
             />
@@ -337,7 +338,7 @@ function ProductImages({
     <div className="grid grid-cols-2 gap-2">
       <div className="col-span-2">
         <img
-          src={product.images[0]}
+          src={getImageUrl(product.images[0])}
           alt="Main product"
           className="w-full h-auto rounded-lg object-cover"
         />
@@ -345,7 +346,7 @@ function ProductImages({
       {product.images.slice(1, 3).map((img, idx) => (
         <img
           key={idx}
-          src={img}
+          src={getImageUrl(img)}
           alt={`Product ${idx + 2}`}
           className="w-full h-24 rounded object-cover cursor-pointer hover:opacity-80 transition-opacity"
         />
@@ -357,7 +358,7 @@ function ProductImages({
     <div className="space-y-3">
       <div className="relative">
         <img
-          src={product.images[0]}
+          src={getImageUrl(product.images[0])}
           alt="Main product"
           className="w-full h-64 rounded-lg object-cover"
         />
@@ -370,7 +371,7 @@ function ProductImages({
           {product.images.slice(1).map((img, idx) => (
             <img
               key={idx}
-              src={img}
+              src={getImageUrl(img)}
               alt={`Product ${idx + 2}`}
               className="w-16 h-16 rounded border-2 border-transparent hover:border-blue-500 object-cover cursor-pointer transition-all"
             />

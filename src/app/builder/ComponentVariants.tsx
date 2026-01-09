@@ -20,6 +20,7 @@ import {
   Truck,
   Gift,
 } from "lucide-react";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 // Component types
 export const COMPONENT_TYPES = {
@@ -138,7 +139,7 @@ export function ProductImages({
     <div className="space-y-4">
       <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100">
         <img
-          src={images[0]}
+          src={getImageUrl(images[0])}
           alt="Main product"
           className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -168,7 +169,7 @@ export function ProductImages({
               className="relative group cursor-pointer overflow-hidden rounded-xl bg-gray-100"
             >
               <img
-                src={img}
+                src={getImageUrl(img)}
                 alt={`Product view ${idx + 2}`}
                 className="w-16 h-16 object-cover transition-transform duration-300 group-hover:scale-110"
               />
@@ -186,7 +187,7 @@ export function ProductImages({
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2 relative group overflow-hidden rounded-xl">
           <img
-            src={images[0]}
+            src={getImageUrl(images[0])}
             alt="Main product"
             className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
           />
@@ -211,7 +212,7 @@ export function ProductImages({
         {images.slice(1, 3).map((img: string, idx: number) => (
           <div key={idx} className="relative group overflow-hidden rounded-xl">
             <img
-              src={img}
+              src={getImageUrl(img)}
               alt={`Product ${idx + 2}`}
               className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-110"
             />
@@ -256,7 +257,7 @@ export function ProductImages({
 
           <div className="relative group">
             <img
-              src={images[0]}
+              src={getImageUrl(images[0])}
               alt="Showcase product"
               className="w-full h-72 object-cover rounded-2xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
             />
@@ -291,7 +292,7 @@ export function ProductImages({
             <div key={idx} className="relative group cursor-pointer">
               <div className="w-20 h-20 rounded-2xl overflow-hidden border-3 border-transparent group-hover:border-blue-200 transition-colors duration-300">
                 <img
-                  src={img}
+                  src={getImageUrl(img)}
                   alt={`Showcase ${idx + 2}`}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />

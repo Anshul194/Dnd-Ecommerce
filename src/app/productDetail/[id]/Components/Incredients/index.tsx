@@ -34,44 +34,7 @@ export function Ingredients({
       component.variant || settings[component.id]?.variant || "scrolling",
   };
 
-  const ingredients = [
-    {
-      id: 1,
-      name: "Fresh Tomatoes",
-      description:
-        "Vine-ripened tomatoes, carefully selected for their rich flavor and vibrant color. These premium tomatoes form the base of our signature sauce.",
-      image:
-        "https://in.teabox.com/cdn/shop/files/TurmericGingerTulsiGreenTea_Monocarton_CarouselImage_02.jpg?v=1755320737&width=1000",
-      details: "Organic, locally sourced",
-    },
-    {
-      id: 2,
-      name: "Extra Virgin Olive Oil",
-      description:
-        "Cold-pressed olive oil from Mediterranean groves, providing a smooth, fruity flavor that enhances every dish with its golden richness.",
-      image:
-        "https://in.teabox.com/cdn/shop/files/TurmericGingerTulsiGreenTea_Monocarton_CarouselImage_03.jpg?v=1755320737&width=1000",
-      details: "First cold press, Mediterranean origin",
-    },
-    {
-      id: 3,
-      name: "Fresh Basil",
-      description:
-        "Hand-picked basil leaves with their distinctive aroma and peppery flavor. This herb adds the perfect aromatic finish to our creations.",
-      image:
-        "https://in.teabox.com/cdn/shop/files/TurmericGingerTulsiGreenTea_Monocarton_CarouselImage_04.jpg?v=1755320737&width=1000",
-      details: "Locally grown, pesticide-free",
-    },
-    {
-      id: 4,
-      name: "Sea Salt",
-      description:
-        "Pure sea salt harvested from pristine coastal waters, providing the perfect mineral balance to enhance natural flavors.",
-      image:
-        "https://in.teabox.com/cdn/shop/files/TurmericGingerTulsiGreenTea_Monocarton_CarouselImage_05.jpg?v=1755320737&width=1000",
-      details: "Unrefined, mineral-rich",
-    },
-  ];
+  const ingredients = product?.ingredients || [];
 
   const renderVariant = () => {
     switch (ingredientSettings.variant) {
@@ -89,11 +52,10 @@ export function Ingredients({
 
   return (
     <div
-      className={`${
-        isPreviewMode
+      className={`${isPreviewMode
           ? "bg-transparent"
           : "bg-white rounded-2xl shadow-xl border border-gray-100"
-      } ${isPreviewMode ? "" : "p-6 mb-4"} ${isFullWidth ? "w-full" : ""}`}
+        } ${isPreviewMode ? "" : "p-6 mb-4"} ${isFullWidth ? "w-full" : ""}`}
     >
       {!isPreviewMode && (
         <div className="flex justify-between items-center mb-6">

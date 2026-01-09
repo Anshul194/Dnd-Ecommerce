@@ -3,6 +3,7 @@ import { Eye, Heart, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
 
@@ -17,7 +18,7 @@ const RenderVariant3 = () => {
       <div className="relative group">
         <div className="aspect-square rounded-3xl overflow-hidden cream relative">
           <Image
-            src={productData.images[selectedImage].url}
+            src={getImageUrl(productData.images[selectedImage].url)}
             alt="Product"
             className="w-full h-full object-cover"
             layout="fill"
@@ -75,7 +76,7 @@ const RenderVariant3 = () => {
             onClick={() => setSelectedImage(index)}
           >
             <img
-              src={img.url}
+              src={getImageUrl(img.url)}
               alt={`View ${index + 1}`}
               className="w-full h-full object-cover"
             />

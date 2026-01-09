@@ -7,6 +7,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useAuthRedirect from "@/hooks/useAuthRedirect";
+import { getImageUrl } from "@/app/utils/imageHelper";
 import {
   addToWishlist,
   removeFromWishlist,
@@ -198,9 +199,8 @@ export default function RenderSliderVariant() {
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
-            className={`w-3 h-3 ${
-              i < rating ? "fill-green-500 text-green-500" : "text-gray-300"
-            }`}
+            className={`w-3 h-3 ${i < rating ? "fill-green-500 text-green-500" : "text-gray-300"
+              }`}
           />
         ))}
       </div>
@@ -251,7 +251,7 @@ export default function RenderSliderVariant() {
               products.map((product) => {
                 if (product._id === selectedProducts?._id) return null;
                 const imgSrc =
-                  product?.thumbnail?.url || product?.images?.[0]?.url || null;
+                  product?.thumbnail?.url || product?.images?.[0]?.url || product?.thumbnail || product?.images?.[0];
 
                 return (
                   <div
@@ -289,10 +289,10 @@ export default function RenderSliderVariant() {
                           {imgSrc ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={imgSrc}
+                              src={getImageUrl(imgSrc)}
                               alt={
-                                product?.thumbnail?.alt ||
-                                product?.images?.[0]?.alt ||
+                                (typeof product?.thumbnail === 'object' ? product?.thumbnail?.alt : null) ||
+                                (typeof product?.images?.[0] === 'object' ? product?.images?.[0]?.alt : null) ||
                                 "Product"
                               }
                               className="w-full h-full object-cover rounded-lg"
