@@ -101,7 +101,7 @@ export function SignupPage() {
                                   className="rounded-full h-[70px] w-[70px] max-sm:h-[60px] max-sm:w-[60px] object-cover "
                                 />
                               </Link>
-                               TEABOX</div>
+                               </div>
             </div>
             <h1 className="text-2xl sm:text-xl lg:text-2xl font-bold mb-3 lg:mb-4 leading-tight">
               Trusted Indian (Ayurvedic) products for everyday families, from Kisan source to home.

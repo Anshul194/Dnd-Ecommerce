@@ -168,8 +168,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-              Your trusted source for premium organic teas from the finest
-              gardens of India.
+              Trusted Indian (Ayurvedic) products for everyday families, from Kisan source to home.
             </p>
             <div className="flex gap-3">
               {[Facebook, Twitter, Instagram, Youtube].map((Icon, index) => (
@@ -400,8 +399,7 @@ export default function Footer() {
           className="border-t border-gray-800 pt-4 text-center text-sm text-gray-400"
         >
           <p>
-            &copy; 2025 BharatGramUdyogSangh. All rights reserved. Made with 💚 for tea
-            lovers. footer one
+            &copy; 2025 BharatGramUdyogSangh. All rights reserved.
           </p>
         </motion.div>
       </div>
