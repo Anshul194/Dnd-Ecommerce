@@ -39,15 +39,16 @@ function Variant3({ productData: propProductData }: Variant3Props) {
   const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
   const userId = useSelector((state: any) => state.auth.user?._id);
 
+  // Ensure selectedVariant is set if variants exist
   React.useEffect(() => {
     if (productData?.variants?.length > 0 && !selectedVariant) {
       setSelectedVariant(productData.variants[0]._id);
     }
   }, [productData, selectedVariant]);
 
-  // Add early return if productData is not available
+  // Early return if no product data
   if (!productData) {
-    return <div className="lg:col-span-6 p-6">Loading product details...</div>;
+    return <div className="p-4 text-center text-gray-500">Loading product details...</div>;
   }
 
   // Normalize reviews if it's an array
@@ -216,7 +217,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
             <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
               <img
                 src={getImageUrl(productData.thumbnail || productData.images?.[0])}
-                alt={productData.name}
+                alt={productData?.name}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -265,7 +266,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-6 w-full">
         {/* Title & Rating */}
         <h1 className="text-3xl font-bold text-gray-900 mb-3">
-          {productData.name}
+          {productData?.name}
         </h1>
 
 

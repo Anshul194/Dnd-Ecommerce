@@ -30,14 +30,25 @@ import { getImageUrl } from "@/app/utils/imageHelper";
 
 const Base_Url = process.env.NEXT_PUBLIC_BASE_URL;
 
-function Variant5({ detailSettings }) {
+interface Variant5Props {
+  productData?: any;
+  detailSettings?: any;
+}
+
+function Variant5({ productData: propProductData, detailSettings }: Variant5Props) {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
   const [quantity, setQuantity] = React.useState<number>(1);
   const [selectedVariant, setSelectedVariant] = React.useState<number>(0);
-  const productData = useSelector(selectSelectedProduct);
+  const reduxProductData = useSelector(selectSelectedProduct);
+  const productData = propProductData || reduxProductData;
   const dispatch = useDispatch();
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const userId = useSelector((state) => state.auth.user?._id);
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+  const userId = useSelector((state: any) => state.auth.user?._id);
+
+  // Early return if no product data
+  if (!productData) {
+    return <div className="p-4 text-center text-gray-500">Loading product details...</div>;
+  }
 
   React.useEffect(() => {
     if (productData?._id) {
@@ -141,7 +152,7 @@ function Variant5({ detailSettings }) {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const priceObj = productData.variants[selectedVariant];
+    const priceObj = productData?.variants?.[selectedVariant];
     try {
       const resultAction = await dispatch(
         setBuyNowProduct({
@@ -199,7 +210,7 @@ function Variant5({ detailSettings }) {
           </div>
 
           <h1 className="text-3xl font-bold text-gray-900">
-            {productData.name}
+            {productData?.name}
           </h1>
 
           <div className="flex items-center gap-6">
@@ -285,7 +296,7 @@ function Variant5({ detailSettings }) {
         <div className="bg-white border border-gray-200 rounded-xl p-6 sticky top-6">
           <div className="space-y-6">
             {/* Price */}
-            {productData.variants[selectedVariant] && (
+            {productData?.variants?.[selectedVariant] && (
               <div className="space-y-3">
                 <div className="flex items-baseline gap-3">
                   <span className="text-3xl font-bold text-gray-900">
@@ -326,7 +337,7 @@ function Variant5({ detailSettings }) {
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-900">Choose Size</h3>
               <div className="space-y-2">
-                {productData.variants.map((variant, index) => (
+                {productData?.variants?.map((variant, index) => (
                   <button
                     key={variant._id}
                     onClick={() => setSelectedVariant(index)}

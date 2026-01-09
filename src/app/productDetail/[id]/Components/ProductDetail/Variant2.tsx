@@ -12,16 +12,27 @@ import { toast } from "react-toastify";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
 
-function Variant2() {
+interface Variant2Props {
+  productData?: any;
+  detailSettings?: any;
+}
+
+function Variant2({ productData: propProductData, detailSettings }: Variant2Props) {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
   const [quantity, setQuantity] = React.useState<number>(1);
-  const productData = useSelector(selectSelectedProduct);
+  const reduxProductData = useSelector(selectSelectedProduct);
+  const productData = propProductData || reduxProductData;
   const dispatch = useDispatch();
   const [selectedVariant, setSelectedVariant] = React.useState<number>(
-    productData?.variants[0]?._id || 0
+    productData?.variants?.[0]?._id || 0
   );
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const userId = useSelector((state) => state.auth.user?._id);
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+  const userId = useSelector((state: any) => state.auth.user?._id);
+
+  // Early return if no product data
+  if (!productData) {
+    return <div className="p-4 text-center text-gray-500">Loading product details...</div>;
+  }
 
   React.useEffect(() => {
     if (productData?._id) {
@@ -121,7 +132,7 @@ function Variant2() {
 
   // If you add a Buy Now button, use this logic:
   const handleBuyNow = async () => {
-    const priceObj = productData.variants.find(
+    const priceObj = productData?.variants?.find(
       (variant) => variant._id === selectedVariant
     );
     try {
@@ -159,7 +170,7 @@ function Variant2() {
       {/* Product Title and Rating */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          {productData.name}
+          {productData?.name}
         </h1>
       </div>
 
@@ -204,7 +215,7 @@ function Variant2() {
       <div className="mb-6 relative">
         <h3 className="font-semibold text-black mb-3">Select Pack</h3>
         <div className="flex gap-3">
-          {productData.variants.map((variant, index) => (
+          {productData?.variants?.map((variant, index) => (
             <div
               key={index}
               onClick={() => setSelectedVariant(variant._id)}
