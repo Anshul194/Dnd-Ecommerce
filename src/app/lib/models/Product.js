@@ -18,7 +18,6 @@ const productSchema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      unique: true,
       lowercase: true,
     },
     description: {
@@ -202,6 +201,10 @@ productSchema.pre("findOneAndUpdate", function () {
     update.slug = slugify(update.name, { lower: true, strict: true });
   }
 });
+
+// Create a partial unique index on `slug` so soft-deleted products
+// (where `deletedAt` is not null) don't block duplicate slugs.
+productSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { deletedAt: null } });
 
 export const ProductSchema = productSchema;
 export const ProductModel =
