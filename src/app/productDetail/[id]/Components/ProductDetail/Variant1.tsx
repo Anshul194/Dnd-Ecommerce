@@ -13,16 +13,27 @@ import { toast } from "react-toastify";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
 
-function Variant1() {
+interface Variant1Props {
+  productData?: any;
+  detailSettings?: any;
+}
+
+function Variant1({ productData: propProductData, detailSettings }: Variant1Props) {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
   const [quantity, setQuantity] = React.useState<number>(1);
-  const productData = useSelector(selectSelectedProduct);
+  const reduxProductData = useSelector(selectSelectedProduct);
+  const productData = propProductData || reduxProductData;
   const dispatch = useDispatch();
   const [selectedVariant, setSelectedVariant] = React.useState<number>(
-    productData?.variants[0]?._id || 0
+    productData?.variants?.[0]?._id || 0
   );
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const userId = useSelector((state) => state.auth.user?._id);
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+  const userId = useSelector((state: any) => state.auth.user?._id);
+
+  // Early return if no product data
+  if (!productData) {
+    return <div className="p-4 text-center text-gray-500">Loading product details...</div>;
+  }
 
   React.useEffect(() => {
     if (productData?._id) {
@@ -129,7 +140,7 @@ function Variant1() {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const priceObj = productData.variants.find(
+    const priceObj = productData?.variants?.find(
       (variant) => variant._id === selectedVariant
     );
     try {

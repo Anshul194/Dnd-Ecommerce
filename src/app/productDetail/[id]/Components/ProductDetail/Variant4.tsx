@@ -23,20 +23,31 @@ import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
 
-function Variant4() {
+interface Variant4Props {
+  productData?: any;
+  detailSettings?: any;
+}
+
+function Variant4({ productData: propProductData, detailSettings }: Variant4Props) {
   const [expandedSection, setExpandedSection] = React.useState<string>("");
   const [quantity, setQuantity] = React.useState<number>(1);
-  const productData = useSelector(selectSelectedProduct);
-  const [selectedVariant, setSelectedVariant] = React.useState<number>(
-    productData?.variants[0] || null
+  const reduxProductData = useSelector(selectSelectedProduct);
+  const productData = propProductData || reduxProductData;
+  const [selectedVariant, setSelectedVariant] = React.useState<any>(
+    productData?.variants?.[0] || null
   );
+
+  // Early return if no product data
+  if (!productData) {
+    return <div className="p-4 text-center text-gray-500">Loading product details...</div>;
+  }
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
   };
   const dispatch = useDispatch();
 
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const userId = useSelector((state) => state.auth.user?._id);
+  const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
+  const userId = useSelector((state: any) => state.auth.user?._id);
 
   React.useEffect(() => {
     if (productData?._id) {
@@ -87,14 +98,14 @@ function Variant4() {
     const variantId = selectedVariant?._id || selectedVariant;
 
     try {
-      const resultAction = await dispatch(
+      const resultAction = (await (dispatch as any)(
         addToCart({
           product: productId, // Pass just the ID string like main page
           quantity,
           price: price.salePrice || price.price,
           variant: variantId,
         })
-      );
+      )) as any;
       if (resultAction.error) {
         // Show backend error (payload) if present, else generic
         toast.error(
@@ -112,7 +123,7 @@ function Variant4() {
       if (serverSuccess === true) {
         setTimeout(async () => {
           try {
-            await dispatch(getCartItems());
+            await (dispatch as any)(getCartItems());
           } catch (err) {
             // Silently fail - cart is already updated locally
           }
@@ -138,11 +149,11 @@ function Variant4() {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const priceObj = productData.variants.find(
-      (variant) => variant._id === selectedVariant._id
+    const priceObj = productData?.variants?.find(
+      (variant) => variant._id === (selectedVariant?._id || selectedVariant)
     );
     try {
-      const resultAction = await dispatch(
+      const resultAction = (await (dispatch as any)(
         setBuyNowProduct({
           product: {
             id: productData._id,
@@ -155,7 +166,7 @@ function Variant4() {
           price: priceObj.salePrice || priceObj.price,
           variant: selectedVariant,
         })
-      );
+      )) as any;
       if (resultAction.error) {
         // Show backend error (payload) if present, else generic
         toast.error(
@@ -187,7 +198,7 @@ function Variant4() {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {productData.name}
+              {productData?.name}
             </h1>
             <p className="text-md text-gray-600">{productData.subtitle}</p>
           </div>
@@ -255,7 +266,7 @@ function Variant4() {
           Choose Your Pack
         </h3>
         <div className="grid grid-cols-1 gap-3">
-          {productData.variants.map((variant) => (
+          {productData?.variants?.map((variant) => (
             <button
               key={variant._id}
               className={`relative p-4 border-2 rounded-2xl text-left transition-all hover:shadow-lg ${selectedVariant?._id === variant._id
