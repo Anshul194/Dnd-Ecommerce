@@ -1,7 +1,7 @@
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
-import { Eye, Heart, Share2 } from "lucide-react";
+import { Eye, Heart, Share2, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
 
 const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
@@ -10,12 +10,25 @@ const RenderVariant3 = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const productData = useSelector(selectSelectedProduct);
+  
+  // Ref for the scrollable container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 120; // Adjust scroll amount as needed
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6 h-fit sticky top-20">
       {/* Main Image with Floating Elements */}
       <div className="relative group">
-        <div className="aspect-square rounded-3xl overflow-hidden cream relative">
+        <div className="aspect-square lg:max-w-[45vw] rounded-3xl overflow-hidden cream relative">
           <Image
             src={productData.images[selectedImage].url}
             alt="Product"
@@ -63,27 +76,52 @@ const RenderVariant3 = () => {
       </div>
 
       {/* Enhanced Thumbnails */}
-      <div className="flex gap-4 justify-center">
-        {productData.images.map((img, index) => (
-          <button
-            key={index}
-            className={`relative w-20 h-20 rounded-2xl overflow-hidden transition-all transform hover:scale-105 ${
-              selectedImage === index
-                ? "ring-4 ring-[#EA8932] shadow-lg"
-                : "ring-2 ring-gray-200 hover:ring-gray-300"
-            }`}
-            onClick={() => setSelectedImage(index)}
-          >
-            <img
-              src={img.url}
-              alt={`View ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-            {selectedImage === index && (
-              <div className="absolute inset-0 bg-[#EA8932]/20"></div>
-            )}
-          </button>
-        ))}
+      <div className="relative flex items-center justify-center gap-2 lg:max-w-[45vw]">
+        
+        {/* Left Arrow */}
+        <button 
+          onClick={() => scroll("left")}
+          className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 text-gray-700 z-10 transition-colors border border-gray-100 hidden sm:flex"
+          aria-label="Scroll Left"
+        >
+          <ChevronLeft size={20} />
+        </button>
+
+        {/* Scrollable Container */}
+        <div 
+          ref={scrollContainerRef}
+          className="flex gap-4 overflow-x-auto scrollbar-hide py-2 px-1 scroll-smooth"
+        >
+          {productData.images.map((img, index) => (
+            <button
+              key={index}
+              className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all transform hover:scale-105 ${
+                selectedImage === index
+                  ? "ring-4 ring-[#EA8932] shadow-lg"
+                  : "ring-2 ring-gray-200 hover:ring-gray-300"
+              }`}
+              onClick={() => setSelectedImage(index)}
+            >
+              <img
+                src={img.url}
+                alt={`View ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+              {selectedImage === index && (
+                <div className="absolute inset-0 bg-[#EA8932]/20"></div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Right Arrow */}
+        <button 
+          onClick={() => scroll("right")}
+          className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 text-gray-700 z-10 transition-colors border border-gray-100 hidden sm:flex"
+          aria-label="Scroll Right"
+        >
+          <ChevronRight size={20} />
+        </button>
       </div>
     </div>
   );

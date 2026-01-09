@@ -106,6 +106,9 @@ const COLUMN_WIDTHS: Record<
   number,
   { label: string; class: string; flex: string }
 > = {
+  //  1: { label: "1/3", class: "w-1/2", flex: "flex-[1]" },
+  //  2: { label: "2/3", class: "w-1/2", flex: "flex-[2]" },
+  //  3: { label: "3/3", class: "w-1/2", flex: "flex-[3]" },
   1: { label: "1/3", class: "w-1/3", flex: "flex-[1]" },
   2: { label: "2/3", class: "w-2/3", flex: "flex-[2]" },
   3: { label: "3/3", class: "w-full", flex: "flex-[3]" },
@@ -181,7 +184,7 @@ function DroppableColumn({
         isPreviewMode ? "min-h-0" : "min-h-96"
       } ${
         isPreviewMode ? "" : "p-2 border-2 border-dashed"
-      } transition-colors text-black w-full ${
+      } transition-colors text-black w-full  ${
         !isPreviewMode && isEmpty
           ? "border-gray-300 bg-gray-50"
           : !isPreviewMode && !isEmpty

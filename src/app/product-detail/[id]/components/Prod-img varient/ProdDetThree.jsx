@@ -186,7 +186,7 @@ function ProdDetThree() {
           <div className="space-y-6 h-fit sticky top-20">
             {/* Main Image with Floating Elements */}
             <div className="relative group">
-              <div className="aspect-square rounded-3xl overflow-hidden cream relative">
+              <div className="aspect-square rounded-xl overflow-hidden cream relative">
                 <img
                   src={productData.images[selectedImage]}
                   alt="Product"
@@ -237,10 +237,10 @@ function ProdDetThree() {
 
             {/* Enhanced Thumbnails */}
             <div className="flex gap-4 justify-center">
-              {productData.images.map((img, index) => (
+              {/* {productData.images.map((img, index) => (
                 <button
                   key={index}
-                  className={`relative w-20 h-20 rounded-2xl overflow-hidden transition-all transform hover:scale-105 ${
+                  className={`relative w-20 h-20 rounded-lg overflow-hidden transition-all transform hover:scale-105 ${
                     selectedImage === index
                       ? "ring-4 ring-[#EA8932] shadow-lg"
                       : "ring-2 ring-gray-200 hover:ring-gray-300"
@@ -256,7 +256,7 @@ function ProdDetThree() {
                     <div className="absolute inset-0 bg-[#EA8932]/20"></div>
                   )}
                 </button>
-              ))}
+              ))} */}
             </div>
           </div>
 

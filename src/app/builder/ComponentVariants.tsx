@@ -289,7 +289,7 @@ export function ProductImages({
         <div className="flex gap-4 justify-center">
           {images.slice(1, 4).map((img: string, idx: number) => (
             <div key={idx} className="relative group cursor-pointer">
-              <div className="w-20 h-20 rounded-2xl overflow-hidden border-3 border-transparent group-hover:border-blue-200 transition-colors duration-300">
+              <div className="w-20 h-20 rounded-lg overflow-hidden border-3 border-transparent group-hover:border-blue-200 transition-colors duration-300">
                 <img
                   src={img}
                   alt={`Showcase ${idx + 2}`}
