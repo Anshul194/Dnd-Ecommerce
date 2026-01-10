@@ -46,12 +46,7 @@ export default function RenderCardsVariant() {
   return (
     // attach ref to the main wrapper so we measure the actual component width
     <div ref={wrapperRef} className="py-10 lg:py-20 px-4">
-      {/* badge showing measured width */}
-      <div className="absolute top-4 right-4 z-50">
-        <span className="bg-black/70 text-white text-xs rounded px-2 py-1">
-          {width}px
-        </span>
-      </div>
+      
 
       {/* top layout: force column on narrow component */}
       <div
@@ -76,52 +71,7 @@ export default function RenderCardsVariant() {
           </p>
         </div>
 
-        {/* Right Column - Rating Overview */}
-        <div
-          className={
-            isMobileWidth
-              ? "flex flex-col items-start gap-6 w-full"
-              : "flex items-start justify-between max-w-sm w-full gap-8"
-          }
-        >
-          {/* Rating Circle */}
-          <div className="relative">
-            <div className="w-20 h-20 rounded-full border-4 border-green-500 flex items-center justify-center bg-white">
-              <span className="text-2xl font-bold text-black">
-                {productData?.reviews?.Average?.toFixed(1) || 0}
-              </span>
-            </div>
-          </div>
-
-          {/* Rating Bars */}
-          <div className="flex-1 space-y-1">
-            {productData?.reviews?.ratingBreakdown?.map((item, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-3 h-3 ${
-                        i < item.rating
-                          ? "fill-green-500 text-green-500"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <div className="flex-1 bg-gray-200 rounded-full h-2 relative">
-                  <div
-                    className="greenOne h-2 rounded-full"
-                    style={{ width: `${item.percentage}%` }}
-                  ></div>
-                </div>
-                <span className="text-xs text-gray-500 w-8 text-right">
-                  {item.percentage}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Rating overview removed as requested - only review cards remain */}
       </div>
 
       {/* Review Cards: force 1 column if component is narrow */}
