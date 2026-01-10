@@ -236,7 +236,7 @@ const CartSidebar = () => {
                         </button>
                       </div>
                       <span className="text-lg font-semibold">
-                        ₹ {item?.price?.toLocaleString()}
+                        ₹{item?.price?.toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -284,20 +284,21 @@ const CartSidebar = () => {
                         <div className="text-xs w-40  min-h-7 text-gray-600 mb-1">
                           {item?.name}
                         </div>
-                        {item?.variants?.[0]?.salePrice ? (
-                          <>
-                            <span className="font-extrabold text-sm text-black">
-                              ₹{item?.variants?.[0]?.salePrice}
-                            </span>
-                            <span className="font-extrabold line-through ml-1 opacity-75 text-sm text-black">
-                              ₹{item?.variants?.[0]?.price}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="font-extrabold text-sm ">
-                            ₹{item?.variants?.[0]?.price || "500"}
-                          </span>
-                        )}
+                        {(() => {
+                          const { salePrice, originalPrice, hasSale } = getDisplayPrice(item);
+                          return (
+                            <>
+                              <span className="font-extrabold text-sm text-black">
+                                ₹{salePrice}
+                              </span>
+                              {hasSale && (
+                                <span className="font-extrabold line-through ml-1 opacity-75 text-sm text-black">
+                                  ₹{originalPrice}
+                                </span>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
 
                       {SelectedProduct?._id === item._id && (
@@ -327,16 +328,12 @@ const CartSidebar = () => {
                                   className="cursor-pointer hover:font-semibold "
                                 >
                                   <h2 className="text-xs capitalize">
-                                    {variant.title} - {"₹" + variant.salePrice}{" "}
-                                    <span
-                                      className={
-                                        variant.salePrice
-                                          ? "line-through opacity-75  text-gray-500"
-                                          : ""
-                                      }
-                                    >
-                                      ₹{variant.price}
-                                    </span>
+                                    {variant.title} - {"₹" + (variant.salePrice || variant.price)}{" "}
+                                    {variant.salePrice && (
+                                      <span className="line-through opacity-75 text-gray-500">
+                                        ₹{variant.price}
+                                      </span>
+                                    )}
                                   </h2>
                                 </div>
                               ))}
@@ -388,7 +385,7 @@ const CartSidebar = () => {
           {/* Total */}
           <div className="flex justify-between items-center text-xl font-semibold">
             <span>Total</span>
-            <span>₹ {total.toLocaleString()}</span>
+            <span>₹{total.toLocaleString()}</span>
           </div>
 
           {/* Checkout Button */}

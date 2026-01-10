@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
+import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 interface Variant4Props {
   productData?: any;
@@ -44,7 +45,7 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? "" : section);
   };
-  const dispatch = useDispatch();
+  const dispatch = useDispatch() as any;
 
   const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
   const userId = useSelector((state: any) => state.auth.user?._id);
@@ -76,11 +77,9 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
       return;
     }
 
-    const price = productData.variants?.find(
-      (variant) => variant._id === selectedVariant?._id
-    );
+    const { salePrice } = getDisplayPrice(productData, selectedVariant?._id);
 
-    if (!price) {
+    if (!salePrice && salePrice !== 0) {
       toast.error("Please select a valid variant");
       return;
     }
@@ -99,10 +98,10 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
 
     try {
       const resultAction = (await (dispatch as any)(
-        addToCart({
+        (addToCart as any)({
           product: productId, // Pass just the ID string like main page
           quantity,
-          price: price.salePrice || price.price,
+          price: salePrice,
           variant: variantId,
         })
       )) as any;
@@ -149,12 +148,10 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const priceObj = productData?.variants?.find(
-      (variant) => variant._id === (selectedVariant?._id || selectedVariant)
-    );
+    const { salePrice } = getDisplayPrice(productData, selectedVariant?._id || selectedVariant);
     try {
       const resultAction = (await (dispatch as any)(
-        setBuyNowProduct({
+        (setBuyNowProduct as any)({
           product: {
             id: productData._id,
             name: productData.name,
@@ -163,7 +160,7 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
             slug: productData.slug,
           },
           quantity,
-          price: priceObj.salePrice || priceObj.price,
+          price: salePrice,
           variant: selectedVariant,
         })
       )) as any;
@@ -185,7 +182,7 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
           user: isAuthenticated ? userId : "guest",
         });
       } catch (err) { }
-      dispatch(setCheckoutOpen(true));
+      dispatch(setCheckoutOpen());
       // dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -235,25 +232,26 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
       {/* Price Section with Animation */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-2xl border border-green-200">
         <div className="flex items-baseline gap-4 mb-2">
-          <span className="text-4xl font-bold text-gray-900">
-            ₹{selectedVariant?.salePrice}
-          </span>
-          <span className="text-xl text-gray-500 line-through">
-            ₹{selectedVariant?.price}
-          </span>
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full text-sm font-bold">
-            Save{" "}
-            {(() => {
-              const v =
-                productData?.variants?.find(
-                  (v) => v._id === selectedVariant._id
-                ) ?? productData?.variants?.[0];
-              const price = v?.price ?? 0;
-              const sale = v?.salePrice ?? 0;
-              return price > 0 ? Math.round(((price - sale) / price) * 100) : 0;
-            })()}
-            %
-          </div>
+          {(() => {
+            const { salePrice, originalPrice, hasSale, discount } = getDisplayPrice(productData, selectedVariant?._id);
+            return (
+              <>
+                <span className="text-4xl font-bold text-gray-900">
+                  ₹{salePrice}
+                </span>
+                {hasSale && (
+                  <>
+                    <span className="text-xl text-gray-500 line-through">
+                      ₹{originalPrice}
+                    </span>
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full text-sm font-bold">
+                      Save {discount}%
+                    </div>
+                  </>
+                )}
+              </>
+            );
+          })()}
         </div>
         <p className="text-sm text-gray-600">
           Free shipping • Easy returns • Best price guaranteed
@@ -292,11 +290,13 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-lg font-bold text-gray-900">
-                      ₹{variant.salePrice}
+                      ₹{variant.salePrice || variant.price}
                     </span>
-                    <span className="text-sm text-gray-500 line-through">
-                      ₹{variant.price}
-                    </span>
+                    {variant.salePrice && (
+                      <span className="text-sm text-gray-500 line-through">
+                        ₹{variant.price}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div

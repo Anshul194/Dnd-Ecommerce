@@ -26,6 +26,7 @@ import { toast } from "react-toastify";
 import { trackEvent } from "../lib/tracking/trackEvent";
 import { useTrack } from "../lib/tracking/useTrack";
 import { getImageUrl } from "@/app/utils/imageHelper";
+import { getDisplayPrice } from "../utils/priceHelper";
 
 const TrySectionCard = ({ product, showDes, buyNow }) => {
   const router = useRouter();
@@ -84,7 +85,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
     e.stopPropagation();
     e.preventDefault();
     dispatch(closeCart());
-    const price = product.variants[0];
+    const { salePrice } = getDisplayPrice(product);
     try {
       const productImage = product.thumbnail || product.images?.[0];
       const imageObj = productImage
@@ -103,7 +104,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
             category: product.category,
           },
           quantity: 1,
-          price: price.salePrice || price.price,
+          price: salePrice,
           variant: product.variants[0]._id,
         })
       );
@@ -128,16 +129,15 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
     e.stopPropagation();
     e.preventDefault();
 
-    const price = product?.variants[0]
-      ? product?.variants[0]?.salePrice || product?.variants[0]?.price
-      : product?.salePrice || product?.price;
+
+    const { salePrice } = getDisplayPrice(product);
 
     try {
       const resultAction = await dispatch(
         addToCart({
           product: product._id,
           quantity: 1,
-          price: price,
+          price: salePrice,
           variant: product?.variants[0]?._id,
         })
       );
@@ -299,29 +299,21 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
             <div>
               <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-4">
                 <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
-                  {product?.variants?.[0]?.price ? (
-                    <>
-                      {product?.variants[0]?.salePrice && (
-                        <span className="text-lg  max-sm:text-base font-bold text-gray-800">
-                          Rs {product?.variants[0]?.salePrice}
-                        </span>
-                      )}
-                      <span className="text-xs text-gray-400 h-5 line-through">
-                        Rs {product?.variants[0]?.price}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      {product?.salePrice && (
+                  {(() => {
+                    const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
+                    return (
+                      <>
                         <span className="text-lg max-sm:text-base font-bold text-gray-800">
-                          Rs {product?.salePrice}
+                          ₹{salePrice}
                         </span>
-                      )}
-                      <span className="text-xs  max-sm:text-md text-gray-400 h-5  line-through">
-                        Rs {product?.price}
-                      </span>
-                    </>
-                  )}
+                        {hasSale && (
+                          <span className="text-xs text-gray-400 h-5 line-through">
+                            ₹{originalPrice}
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
               {buyNow ? (

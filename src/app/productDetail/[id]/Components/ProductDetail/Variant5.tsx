@@ -27,6 +27,7 @@ import { addToWishlist } from "@/app/store/slices/wishlistSlice";
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
+import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 const Base_Url = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -41,7 +42,7 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
   const [selectedVariant, setSelectedVariant] = React.useState<number>(0);
   const reduxProductData = useSelector(selectSelectedProduct);
   const productData = propProductData || reduxProductData;
-  const dispatch = useDispatch();
+  const dispatch = useDispatch() as any;
   const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
   const userId = useSelector((state: any) => state.auth.user?._id);
 
@@ -86,7 +87,7 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
       return;
     }
 
-    const price = productData.variants[selectedVariant];
+    const { salePrice } = getDisplayPrice(productData, productData.variants[selectedVariant]?._id);
 
     // Get product ID - try multiple possible field names
     const productId = productData._id || productData.id || productData.productId || productData.product?._id || productData.product?.id;
@@ -102,10 +103,10 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
 
     try {
       const resultAction = await dispatch(
-        addToCart({
+        (addToCart as any)({
           product: productId, // Pass just the ID string like main page
           quantity,
-          price: price.salePrice || price.price,
+          price: salePrice,
           variant: variantId,
         })
       );
@@ -152,10 +153,10 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const priceObj = productData?.variants?.[selectedVariant];
+    const { salePrice } = getDisplayPrice(productData, productData.variants[selectedVariant]?._id);
     try {
       const resultAction = await dispatch(
-        setBuyNowProduct({
+        (setBuyNowProduct as any)({
           product: {
             id: productData._id,
             name: productData.name,
@@ -164,7 +165,7 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
             slug: productData.slug,
           },
           quantity,
-          price: priceObj.salePrice || priceObj.price,
+          price: salePrice,
           variant: productData.variants[selectedVariant],
         })
       );
@@ -186,7 +187,7 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
           user: isAuthenticated ? userId : "guest",
         });
       } catch (err) { }
-      dispatch(setCheckoutOpen(true));
+      dispatch(setCheckoutOpen());
       // dispatch(toggleCart());
     } catch (error) {
       toast.error(error?.message || "Failed to add to cart");
@@ -296,42 +297,38 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
         <div className="bg-white border border-gray-200 rounded-xl p-6 sticky top-6">
           <div className="space-y-6">
             {/* Price */}
-            {productData?.variants?.[selectedVariant] && (
-              <div className="space-y-3">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-3xl font-bold text-gray-900">
-                    ₹{productData.variants[selectedVariant].salePrice}
-                  </span>
-                  <span className="text-xl text-gray-500 line-through">
-                    ₹{productData.variants[selectedVariant].price}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  {(() => {
-                    const variant = productData.variants[selectedVariant] || {};
-                    const price = Number(variant.price) || 0;
-                    const salePrice = Number(variant.salePrice ?? price) || 0;
-                    const discount =
-                      price > 0
-                        ? Math.round(((price - salePrice) / price) * 100)
-                        : 0;
-                    return discount > 0 ? (
+            {(() => {
+              const { salePrice, originalPrice, hasSale, discount } = getDisplayPrice(productData, productData.variants[selectedVariant]?._id);
+              return (
+                <div className="space-y-3">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-3xl font-bold text-gray-900">
+                      ₹{salePrice}
+                    </span>
+                    {hasSale && (
+                      <span className="text-xl text-gray-500 line-through">
+                        ₹{originalPrice}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {hasSale && (
                       <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                         {discount}% OFF
                       </span>
-                    ) : null;
-                  })()}
-                  <span className="text-[#07490C] text-sm font-medium">
-                    Save ₹
-                    {productData.variants[selectedVariant].price -
-                      productData.variants[selectedVariant].salePrice}
-                  </span>
+                    )}
+                    {hasSale && (
+                      <span className="text-[#07490C] text-sm font-medium">
+                        Save ₹{originalPrice - salePrice}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Inclusive of all taxes • Free shipping
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600">
-                  Inclusive of all taxes • Free shipping
-                </p>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Variant Selection */}
             <div className="space-y-3">
@@ -359,11 +356,13 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-gray-900">
-                          ₹{variant.salePrice}
+                          ₹{variant.salePrice || variant.price}
                         </div>
-                        <div className="text-sm text-gray-500 line-through">
-                          ₹{variant.price}
-                        </div>
+                        {variant.salePrice && (
+                          <div className="text-sm text-gray-500 line-through">
+                            ₹{variant.price}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -394,10 +393,10 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
                 </div>
                 <div className="text-sm text-gray-600">
                   Total: ₹
-                  {(
-                    (productData.variants[selectedVariant].salePrice ||
-                      productData.variants[selectedVariant].price) * quantity
-                  ).toLocaleString()}
+                  {(() => {
+                    const { salePrice } = getDisplayPrice(productData, productData.variants[selectedVariant]?._id);
+                    return (salePrice * quantity).toLocaleString();
+                  })()}
                 </div>
               </div>
             </div>
@@ -420,12 +419,12 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
               <div className="flex gap-2">
                 <button
                   onClick={async () => {
-                    await dispatch(
-                      addToWishlist({
-                        product: productData._id,
-                        variant: productData.variants[selectedVariant]._id,
-                      })
-                    );
+                      await dispatch(
+                        (addToWishlist as any)({
+                          product: productData._id,
+                          variant: productData.variants[selectedVariant]._id,
+                        })
+                      );
                     try {
                       trackEvent("ADD_TO_WISHLIST", {
                         productId: productData._id,

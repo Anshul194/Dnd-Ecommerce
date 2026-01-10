@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
+import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 interface Variant2Props {
   productData?: any;
@@ -22,7 +23,7 @@ function Variant2({ productData: propProductData, detailSettings }: Variant2Prop
   const [quantity, setQuantity] = React.useState<number>(1);
   const reduxProductData = useSelector(selectSelectedProduct);
   const productData = propProductData || reduxProductData;
-  const dispatch = useDispatch();
+  const dispatch = useDispatch() as any;
   const [selectedVariant, setSelectedVariant] = React.useState<number>(
     productData?.variants?.[0]?._id || 0
   );
@@ -65,11 +66,9 @@ function Variant2({ productData: propProductData, detailSettings }: Variant2Prop
       return;
     }
 
-    const price = productData.variants?.find(
-      (variant) => variant._id === selectedVariant
-    );
+    const { salePrice } = getDisplayPrice(productData, selectedVariant);
 
-    if (!price) {
+    if (!salePrice && salePrice !== 0) {
       toast.error("Please select a valid variant");
       return;
     }
@@ -85,10 +84,10 @@ function Variant2({ productData: propProductData, detailSettings }: Variant2Prop
 
     try {
       const resultAction = await dispatch(
-        addToCart({
+        (addToCart as any)({
           product: productId, // Pass just the ID string like main page
           quantity,
-          price: price.salePrice || price.price,
+          price: salePrice,
           variant: selectedVariant,
         })
       );
@@ -132,12 +131,10 @@ function Variant2({ productData: propProductData, detailSettings }: Variant2Prop
 
   // If you add a Buy Now button, use this logic:
   const handleBuyNow = async () => {
-    const priceObj = productData?.variants?.find(
-      (variant) => variant._id === selectedVariant
-    );
+    const { salePrice } = getDisplayPrice(productData, selectedVariant);
     try {
       const resultAction = await dispatch(
-        setBuyNowProduct({
+        (setBuyNowProduct as any)({
           product: {
             id: productData._id,
             name: productData.name,
@@ -146,7 +143,7 @@ function Variant2({ productData: propProductData, detailSettings }: Variant2Prop
             slug: productData.slug,
           },
           quantity,
-          price: priceObj.salePrice || priceObj.price,
+          price: salePrice,
           variant: selectedVariant,
         })
       );
@@ -244,16 +241,18 @@ function Variant2({ productData: propProductData, detailSettings }: Variant2Prop
                   {variant.title}
                 </div>
                 <div
-                  className={`font-semibold ${productData.variants[0]._id === variant._id
+                  className={`font-semibold ${selectedVariant === variant._id
                     ? "text-green-600"
                     : "text-gray-900"
                     }`}
                 >
-                  ₹{variant.salePrice}
+                  ₹{variant.salePrice || variant.price}
                 </div>
-                <div className="text-sm text-gray-500 line-through">
-                  ₹{variant.price}
-                </div>
+                {variant.salePrice && (
+                  <div className="text-sm text-gray-500 line-through">
+                    ₹{variant.price}
+                  </div>
+                )}
               </div>
             </div>
           ))}

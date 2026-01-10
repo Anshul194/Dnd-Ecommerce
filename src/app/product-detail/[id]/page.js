@@ -92,13 +92,13 @@ function ProductPage({ params }) {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const price = data.variants.find((variant) => variant._id === selectedPack);
+    const { salePrice } = getDisplayPrice(data, selectedPack);
     try {
       const resultAction = await dispatch(
         addToCart({
           product: data._id,
           quantity,
-          price: price.salePrice || price.price,
+          price: salePrice,
           variant: selectedPack,
         })
       );
@@ -147,7 +147,7 @@ function ProductPage({ params }) {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const price = data.variants.find((variant) => variant._id === selectedPack);
+    const { salePrice } = getDisplayPrice(data, selectedPack);
     try {
       // Ensure image has proper structure
       const productImage = data.thumbnail || data.images?.[0];
@@ -167,7 +167,7 @@ function ProductPage({ params }) {
             category: data.category,
           },
           quantity,
-          price: price.salePrice || price.price,
+          price: salePrice,
           variant: selectedPack,
         })
       );
@@ -259,8 +259,8 @@ function ProductPage({ params }) {
                       <div
                         key={index}
                         className={`w-20 h-20 border-2 rounded-lg cursor-pointer overflow-hidden transition-all ${selectedImage === index
-                            ? "border-green-500 shadow-md"
-                            : "border-gray-200 hover:border-gray-300"
+                          ? "border-green-500 shadow-md"
+                          : "border-gray-200 hover:border-gray-300"
                           }`}
                         onClick={() => setSelectedImage(index)}
                       >
@@ -309,8 +309,8 @@ function ProductPage({ params }) {
                           <div
                             key={index}
                             className={`w-2 h-2 rounded-full transition-all ${selectedImage === index
-                                ? "greenOne"
-                                : "bg-white/50"
+                              ? "greenOne"
+                              : "bg-white/50"
                               }`}
                           />
                         ))}
@@ -342,8 +342,8 @@ function ProductPage({ params }) {
                         key={i}
                         size={16}
                         className={`${i < Math.floor(data?.rating || 0)
-                            ? "fill-orange-400 text-orange-400"
-                            : "fill-gray-200 text-gray-200"
+                          ? "fill-orange-400 text-orange-400"
+                          : "fill-gray-200 text-gray-200"
                           }`}
                       />
                     ))}
@@ -392,8 +392,8 @@ function ProductPage({ params }) {
                         <div
                           key={variant._id}
                           className={`relative flex-1 min-w-[140px] border-2 rounded-lg p-4 cursor-pointer transition-all ${selectedPack === variant._id
-                              ? "border-green-600 bg-green-50"
-                              : "border-gray-300 hover:border-gray-400"
+                            ? "border-green-600 bg-green-50"
+                            : "border-gray-300 hover:border-gray-400"
                             }`}
                           onClick={() => setSelectedPack(variant._id)}
                         >
@@ -408,8 +408,8 @@ function ProductPage({ params }) {
                             </div>
                             <div
                               className={`font-semibold text-lg ${selectedPack === variant._id
-                                  ? "text-green-600"
-                                  : "text-gray-900"
+                                ? "text-green-600"
+                                : "text-gray-900"
                                 }`}
                             >
                               ₹{variant.salePrice || variant.price}
@@ -479,28 +479,28 @@ function ProductPage({ params }) {
                   <button
                     onClick={() => toggleSection("details")}
                     className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "details"
-                        ? "bg-green-50 hover:bg-green-100"
-                        : "hover:bg-gray-50"
+                      ? "bg-green-50 hover:bg-green-100"
+                      : "hover:bg-gray-50"
                       }`}
                   >
                     <span
                       className={`font-semibold text-base ${expandedSection === "details"
-                          ? "text-green-700"
-                          : "text-green-600"
+                        ? "text-green-700"
+                        : "text-green-600"
                         }`}
                     >
                       Product Details
                     </span>
                     <div
                       className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "details"
-                          ? "bg-green-200 rotate-180"
-                          : "bg-gray-100"
+                        ? "bg-green-200 rotate-180"
+                        : "bg-gray-100"
                         }`}
                     >
                       <ChevronDown
                         className={`transition-colors duration-200 ${expandedSection === "details"
-                            ? "text-green-700"
-                            : "text-gray-600"
+                          ? "text-green-700"
+                          : "text-gray-600"
                           }`}
                         size={18}
                       />
@@ -508,8 +508,8 @@ function ProductPage({ params }) {
                   </button>
                   <div
                     className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "details"
-                        ? "max-h-96 opacity-100"
-                        : "max-h-0 opacity-0"
+                      ? "max-h-96 opacity-100"
+                      : "max-h-0 opacity-0"
                       } overflow-hidden`}
                   >
                     <div
@@ -528,28 +528,28 @@ function ProductPage({ params }) {
                       <button
                         onClick={() => toggleSection("ingredients")}
                         className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "ingredients"
-                            ? "bg-green-50 hover:bg-green-100"
-                            : "hover:bg-gray-50"
+                          ? "bg-green-50 hover:bg-green-100"
+                          : "hover:bg-gray-50"
                           }`}
                       >
                         <span
                           className={`font-semibold text-base ${expandedSection === "ingredients"
-                              ? "text-green-700"
-                              : "text-green-600"
+                            ? "text-green-700"
+                            : "text-green-600"
                             }`}
                         >
                           Ingredients
                         </span>
                         <div
                           className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "ingredients"
-                              ? "bg-green-200 rotate-180"
-                              : "bg-gray-100"
+                            ? "bg-green-200 rotate-180"
+                            : "bg-gray-100"
                             }`}
                         >
                           <ChevronDown
                             className={`transition-colors duration-200 ${expandedSection === "ingredients"
-                                ? "text-green-700"
-                                : "text-gray-600"
+                              ? "text-green-700"
+                              : "text-gray-600"
                               }`}
                             size={18}
                           />
@@ -557,8 +557,8 @@ function ProductPage({ params }) {
                       </button>
                       <div
                         className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "ingredients"
-                            ? "max-h-96 opacity-100"
-                            : "max-h-0 opacity-0"
+                          ? "max-h-96 opacity-100"
+                          : "max-h-0 opacity-0"
                           } overflow-hidden`}
                       >
                         <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
@@ -592,28 +592,28 @@ function ProductPage({ params }) {
                       <button
                         onClick={() => toggleSection("benefits")}
                         className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "benefits"
-                            ? "bg-green-50 hover:bg-green-100"
-                            : "hover:bg-gray-50"
+                          ? "bg-green-50 hover:bg-green-100"
+                          : "hover:bg-gray-50"
                           }`}
                       >
                         <span
                           className={`font-semibold text-base ${expandedSection === "benefits"
-                              ? "text-green-700"
-                              : "text-green-600"
+                            ? "text-green-700"
+                            : "text-green-600"
                             }`}
                         >
                           Benefits
                         </span>
                         <div
                           className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "benefits"
-                              ? "bg-green-200 rotate-180"
-                              : "bg-gray-100"
+                            ? "bg-green-200 rotate-180"
+                            : "bg-gray-100"
                             }`}
                         >
                           <ChevronDown
                             className={`transition-colors duration-200 ${expandedSection === "benefits"
-                                ? "text-green-700"
-                                : "text-gray-600"
+                              ? "text-green-700"
+                              : "text-gray-600"
                               }`}
                             size={18}
                           />
@@ -621,8 +621,8 @@ function ProductPage({ params }) {
                       </button>
                       <div
                         className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "benefits"
-                            ? "max-h-96 opacity-100"
-                            : "max-h-0 opacity-0"
+                          ? "max-h-96 opacity-100"
+                          : "max-h-0 opacity-0"
                           } overflow-hidden`}
                       >
                         <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
@@ -656,28 +656,28 @@ function ProductPage({ params }) {
                       <button
                         onClick={() => toggleSection("precautions")}
                         className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "precautions"
-                            ? "bg-green-50 hover:bg-green-100"
-                            : "hover:bg-gray-50"
+                          ? "bg-green-50 hover:bg-green-100"
+                          : "hover:bg-gray-50"
                           }`}
                       >
                         <span
                           className={`font-semibold text-base ${expandedSection === "precautions"
-                              ? "text-green-700"
-                              : "text-green-600"
+                            ? "text-green-700"
+                            : "text-green-600"
                             }`}
                         >
                           Precautions
                         </span>
                         <div
                           className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "precautions"
-                              ? "bg-green-200 rotate-180"
-                              : "bg-gray-100"
+                            ? "bg-green-200 rotate-180"
+                            : "bg-gray-100"
                             }`}
                         >
                           <ChevronDown
                             className={`transition-colors duration-200 ${expandedSection === "precautions"
-                                ? "text-green-700"
-                                : "text-gray-600"
+                              ? "text-green-700"
+                              : "text-gray-600"
                               }`}
                             size={18}
                           />
@@ -685,8 +685,8 @@ function ProductPage({ params }) {
                       </button>
                       <div
                         className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "precautions"
-                            ? "max-h-96 opacity-100"
-                            : "max-h-0 opacity-0"
+                          ? "max-h-96 opacity-100"
+                          : "max-h-0 opacity-0"
                           } overflow-hidden`}
                       >
                         <div className="px-5 py-4 text-sm text-gray-700 bg-gray-50">
@@ -718,28 +718,28 @@ function ProductPage({ params }) {
                     <button
                       onClick={() => toggleSection("usage")}
                       className={`w-full px-5 py-4 text-left flex items-center justify-between transition-all duration-200 ${expandedSection === "usage"
-                          ? "bg-green-50 hover:bg-green-100"
-                          : "hover:bg-gray-50"
+                        ? "bg-green-50 hover:bg-green-100"
+                        : "hover:bg-gray-50"
                         }`}
                     >
                       <span
                         className={`font-semibold text-base ${expandedSection === "usage"
-                            ? "text-green-700"
-                            : "text-green-600"
+                          ? "text-green-700"
+                          : "text-green-600"
                           }`}
                       >
                         How to use
                       </span>
                       <div
                         className={`p-1 rounded-full transition-all duration-300 ${expandedSection === "usage"
-                            ? "bg-green-200 rotate-180"
-                            : "bg-gray-100"
+                          ? "bg-green-200 rotate-180"
+                          : "bg-gray-100"
                           }`}
                       >
                         <ChevronDown
                           className={`transition-colors duration-200 ${expandedSection === "usage"
-                              ? "text-green-700"
-                              : "text-gray-600"
+                            ? "text-green-700"
+                            : "text-gray-600"
                             }`}
                           size={18}
                         />
@@ -747,8 +747,8 @@ function ProductPage({ params }) {
                     </button>
                     <div
                       className={`border-t border-gray-100 transition-all duration-300 ease-in-out ${expandedSection === "usage"
-                          ? "max-h-96 opacity-100"
-                          : "max-h-0 opacity-0"
+                        ? "max-h-96 opacity-100"
+                        : "max-h-0 opacity-0"
                         } overflow-hidden`}
                     >
                       <div className="px-5 py-4 text-sm text-gray-700 leading-relaxed bg-gray-50">

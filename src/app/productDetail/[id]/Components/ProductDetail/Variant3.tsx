@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
+import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 interface Variant3Props {
   productData?: any;
@@ -103,11 +104,9 @@ function Variant3({ productData: propProductData }: Variant3Props) {
       return;
     }
 
-    const price = productData?.variants?.find(
-      (variant) => variant._id === selectedVariant
-    );
+    const { salePrice } = getDisplayPrice(productData, selectedVariant);
 
-    if (!price) {
+    if (!salePrice && salePrice !== 0) {
       toast.error("Please select a valid variant");
       return;
     }
@@ -122,14 +121,14 @@ function Variant3({ productData: propProductData }: Variant3Props) {
     }
 
     try {
-      const resultAction = await dispatch(
-        addToCart({
+      const resultAction = (await (dispatch as any)(
+        (addToCart as any)({
           product: productId, // Pass just the ID string like main page
           quantity,
-          price: price?.salePrice || price?.price,
+          price: salePrice,
           variant: selectedVariant,
         })
-      );
+      )) as any;
 
       if (resultAction.error) {
         // Show backend error (payload) if present, else generic
@@ -174,12 +173,10 @@ function Variant3({ productData: propProductData }: Variant3Props) {
     //   setAuthModalOpen(true);
     //   return;
     // }
-    const price = productData?.variants?.find(
-      (variant) => variant._id === selectedVariant
-    );
+    const { salePrice } = getDisplayPrice(productData, selectedVariant);
     try {
-      await dispatch(
-        setBuyNowProduct({
+      await (dispatch as any)(
+        (setBuyNowProduct as any)({
           product: {
             id: productData._id,
             name: productData.name,
@@ -188,7 +185,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
             slug: productData.slug,
           },
           quantity,
-          price: price?.salePrice || price?.price,
+          price: salePrice,
           variant: selectedVariant,
         })
       );
@@ -201,7 +198,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
           user: isAuthenticated ? userId : "guest",
         });
       } catch (err) { }
-      dispatch(setCheckoutOpen(true));
+      dispatch(setCheckoutOpen());
       // dispatch(toggleCart());
     } catch (error) {
       toast.error("Failed to add to cart");
@@ -228,18 +225,21 @@ function Variant3({ productData: propProductData }: Variant3Props) {
                 {productData.name}
               </h3>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-lg font-bold text-gray-900">
-                  ₹
-                  {productData.variants?.find(
-                    (variant) => variant._id === selectedVariant
-                  )?.salePrice || productData.variants?.[0]?.salePrice}
-                </span>
-                <span className="text-sm text-gray-500 line-through">
-                  ₹
-                  {productData.variants?.find(
-                    (variant) => variant._id === selectedVariant
-                  )?.price || productData.variants?.[0]?.price}
-                </span>
+                {(() => {
+                  const { salePrice, originalPrice, hasSale } = getDisplayPrice(productData, selectedVariant);
+                  return (
+                    <>
+                      <span className="text-lg font-bold text-gray-900">
+                        ₹{salePrice}
+                      </span>
+                      {hasSale && (
+                        <span className="text-sm text-gray-500 line-through">
+                          ₹{originalPrice}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
@@ -274,20 +274,26 @@ function Variant3({ productData: propProductData }: Variant3Props) {
         {/* Price Section */}
         <div className="mb-6">
           <div className="flex items-baseline gap-3 mb-2">
-            <span className="text-3xl font-bold text-gray-900">
-              ₹
-              {currentVariant?.salePrice || currentVariant?.price || productData.price}
-            </span>
-            {(currentVariant?.price && currentVariant?.salePrice && currentVariant.price > currentVariant.salePrice) ? (
-              <>
-                <span className="text-xl text-gray-500 line-through">
-                  ₹{currentVariant.price}
-                </span>
-                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                  {Math.round(((currentVariant.price - currentVariant.salePrice) / currentVariant.price) * 100)}% OFF
-                </span>
-              </>
-            ) : null}
+            {(() => {
+              const { salePrice, originalPrice, hasSale, discount } = getDisplayPrice(productData, selectedVariant);
+              return (
+                <>
+                  <span className="text-3xl font-bold text-gray-900">
+                    ₹{salePrice}
+                  </span>
+                  {hasSale && (
+                    <>
+                      <span className="text-xl text-gray-500 line-through">
+                        ₹{originalPrice}
+                      </span>
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                        {discount}% OFF
+                      </span>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </div>
           <p className="text-sm text-gray-600">Inclusive of all taxes</p>
         </div>

@@ -3,11 +3,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { getImageUrl } from "@/app/utils/imageHelper";
 
-export default function ModernIngredientsUI({ data }) {
+export default function ModernIngredientsUI({ data }: { data?: any }) {
   const [activeIngredient, setActiveIngredient] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const ingredientsRef = useRef([]);
-  const containerRef = useRef(null);
+  const ingredientsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const productData = useSelector(selectSelectedProduct);
 
   // Use passed data if provided, otherwise fallback to productData
@@ -38,24 +38,28 @@ export default function ModernIngredientsUI({ data }) {
         scrollPosition + windowHeight > containerTop &&
         scrollPosition < containerTop + containerHeight
       ) {
-        ingredientsRef.current.forEach((ref, index) => {
-          if (ref) {
-            const rect = ref.getBoundingClientRect();
-            const isInCenter =
-              rect.top < windowHeight * 0.5 && rect.bottom > windowHeight * 0.3;
-
-            if (isInCenter && activeIngredient !== index) {
-              setActiveIngredient(index);
-            }
-          }
+        // Find the index of the first ingredient that is in the center view
+        const activeIndex = ingredientsRef.current.findIndex((ref) => {
+          if (!ref) return false;
+          const rect = ref.getBoundingClientRect();
+          // Check if element overlaps comfortably with the center area
+          return rect.top < windowHeight * 0.5 && rect.bottom > windowHeight * 0.3;
         });
+
+        if (activeIndex !== -1) {
+          setActiveIngredient((prev) => (prev !== activeIndex ? activeIndex : prev));
+        }
       }
     };
 
     window.addEventListener("scroll", handleScroll);
+    // Call once to set initial state if data is loaded
     handleScroll();
+
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [activeIngredient]);
+    // Depend on ingredients length so we re-attach/re-run when data loads, 
+    // but NOT on activeIngredient to avoid loops.
+  }, [ingredients.length]);
 
   return (
     <div
@@ -98,8 +102,8 @@ export default function ModernIngredientsUI({ data }) {
                 key={index}
                 ref={(el) => (ingredientsRef.current[index] = el)}
                 className={`bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-500 transform ${activeIngredient === index
-                    ? "scale-100 opacity-100 shadow-2xl"
-                    : "scale-95 opacity-60"
+                  ? "scale-100 opacity-100 shadow-2xl"
+                  : "scale-95 opacity-60"
                   }`}
               >
                 {/* Mobile Image */}
@@ -119,8 +123,8 @@ export default function ModernIngredientsUI({ data }) {
                     <div className="flex-shrink-0">
                       <div
                         className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold transition-all duration-300 ${activeIngredient === index
-                            ? "greenOne text-white scale-110"
-                            : "bg-gray-100 text-gray-400"
+                          ? "greenOne text-white scale-110"
+                          : "bg-gray-100 text-gray-400"
                           }`}
                       >
                         {index + 1}
@@ -226,8 +230,8 @@ export default function ModernIngredientsUI({ data }) {
                       });
                     }}
                     className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${activeIngredient === index
-                        ? "ring-4 ring-[#07490C] scale-105"
-                        : "ring-2 ring-gray-200 hover:ring-gray-300 opacity-60 hover:opacity-100"
+                      ? "ring-4 ring-[#07490C] scale-105"
+                      : "ring-2 ring-gray-200 hover:ring-gray-300 opacity-60 hover:opacity-100"
                       }`}
                   >
                     {ingredient.image && (

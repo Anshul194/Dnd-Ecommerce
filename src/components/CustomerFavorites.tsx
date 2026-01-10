@@ -15,6 +15,7 @@ import {
   removeFromWishlist,
 } from "@/app/store/slices/wishlistSlice";
 import { getImageUrl } from "@/app/utils/imageHelper";
+import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -111,9 +112,7 @@ export function CustomerFavorites({ content }: { content: any }) {
     //   return;
     // }
 
-    const price = product?.variants[0]
-      ? product?.variants[0]?.salePrice || product?.variants[0]?.price
-      : product?.salePrice || product?.price;
+    const { salePrice } = getDisplayPrice(product);
     dispatch(
       (addToCart as any)({
         product: {
@@ -124,7 +123,7 @@ export function CustomerFavorites({ content }: { content: any }) {
           slug: product.slug,
         },
         quantity: 1,
-        price: price,
+        price: salePrice,
         variant: product?.variants[0]?._id,
       })
     );
@@ -274,20 +273,19 @@ export function CustomerFavorites({ content }: { content: any }) {
                         >
                           <span className="text-[#3C950D]">
                             <div className="text-lg font-bold text-gray-800">
-                              {product.variants[0]?.salePrice ? (
-                                <div>
-                                  ₹
-                                  {product.variants[0]?.salePrice ||
-                                    product.variants[0]?.price ||
-                                    "N/A"}
-                                  <span className="ml-2 line-through opacity-50">
-                                    {" "}
-                                    ₹{product.variants[0]?.price}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div></div>
-                              )}
+                              {(() => {
+                                const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
+                                return (
+                                  <div>
+                                    ₹{salePrice}
+                                    {hasSale && (
+                                      <span className="ml-2 line-through opacity-50">
+                                        ₹{originalPrice}
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           </span>
                           <Button

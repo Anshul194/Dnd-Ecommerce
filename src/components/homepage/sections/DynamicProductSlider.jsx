@@ -22,6 +22,7 @@ import { useTrack } from "@/app/lib/tracking/useTrack";
 import AnimatedGradientBorder from "@/components/ui/AnimatedGradientBorder";
 import { useRouter } from "next/navigation";
 import { getImageUrl } from "@/app/utils/imageHelper";
+import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 const DynamicProductSlider = ({ content }) => {
   const { title, description, image } = content;
@@ -112,16 +113,15 @@ const DynamicProductSlider = ({ content }) => {
     //   return;
     // }
 
-    const price = product?.variants[0]
-      ? product?.variants[0]?.salePrice || product?.variants[0]?.price
-      : product?.salePrice || product?.price;
+
+    const { salePrice } = getDisplayPrice(product);
 
     try {
       const resultAction = await dispatch(
         addToCart({
           product: product.originalProductId || product._id,
           quantity: 1,
-          price: price,
+          price: salePrice,
           variant: product?.variants[0]?._id,
         })
       );
@@ -159,7 +159,8 @@ const DynamicProductSlider = ({ content }) => {
     // 1️⃣ Close cart immediately
     dispatch(closeCart());
 
-    const price = productData.variants[0];
+
+    const { salePrice } = getDisplayPrice(productData);
 
     try {
       // 2️⃣ Normalize product image
@@ -183,7 +184,7 @@ const DynamicProductSlider = ({ content }) => {
           category: productData.category,
         },
         quantity: 1,
-        price: Number(price.salePrice || price.price || 0),
+        price: Number(salePrice || 0),
         variant: productData.variants[0]._id,
       };
 
@@ -317,7 +318,7 @@ const DynamicProductSlider = ({ content }) => {
       {/* Left Content - Dynamic from API */}
       <div className="flex-1 relative mb-8 lg:mb-0 lg:mr-8 z-20 text-center">
         <h1 className="text-4xl  md:text-5xl font-black text-gray-800 leading-tight mb-2 text-center">
-        {/* <h1 className="text-4xl w-full font-black text-gray-800 leading-tight mb-2"> */}
+          {/* <h1 className="text-4xl w-full font-black text-gray-800 leading-tight mb-2"> */}
           {title}
         </h1>
         <AnimatedGradientBorder />

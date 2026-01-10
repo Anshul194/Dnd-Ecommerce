@@ -707,29 +707,23 @@ export default function Navbar({ initialCategories = [] }) {
                                   <h4 className="font-medium text-gray-900 text-sm mb-1 group-hover:text-[#3C950D] transition-colors line-clamp-2">
                                     {product.name}
                                   </h4>
-                                  {product?.variants?.[0]?.price ? (
-                                    <div className="flex items-center gap-2">
-                                      {product?.variants[0]?.salePrice && (
-                                        <span className="text-[#3C950D] font-semibold text-sm">
-                                          Rs {product?.variants[0]?.salePrice}
-                                        </span>
-                                      )}
-                                      <span className="text-black/50 font-semibold text-xs line-through">
-                                        Rs {product?.variants[0]?.price}
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center gap-2">
-                                      {product?.salePrice && (
-                                        <span className="text-[#3C950D] font-semibold text-sm">
-                                          Rs {product?.salePrice}
-                                        </span>
-                                      )}
-                                      <span className="text-black/50 font-semibold text-xs line-through">
-                                        Rs {product?.price}
-                                      </span>
-                                    </div>
-                                  )}
+                                  <div className="flex items-center gap-2">
+                                    {(() => {
+                                      const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
+                                      return (
+                                        <>
+                                          <span className="text-[#3C950D] font-semibold text-sm">
+                                            ₹{salePrice}
+                                          </span>
+                                          {hasSale && (
+                                            <span className="text-black/50 font-semibold text-xs line-through">
+                                              ₹{originalPrice}
+                                            </span>
+                                          )}
+                                        </>
+                                      );
+                                    })()}
+                                  </div>
                                 </div>
                               </Link>
                             ))
@@ -914,7 +908,7 @@ export default function Navbar({ initialCategories = [] }) {
                               height={60}
                               className="w-24 h-16 max-sm:w-20 max-sm:h-14 object-cover rounded-md"
                             />
-                              
+
 
                             <div>
                               <h3 className="text-gray-800 w-20 text-xs font-medium">
