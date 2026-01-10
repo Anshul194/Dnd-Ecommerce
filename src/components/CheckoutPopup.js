@@ -47,6 +47,7 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 import { LoadingSpinner } from "./common/Loading";
 import { useTrack } from "@/app/lib/tracking/useTrack";
 import { fetchPages } from "@/app/store/slices/pagesSlice";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function CheckoutPopup() {
   const checkoutOpen = useSelector((state) => state.checkout.checkoutOpen);
@@ -1478,13 +1479,34 @@ export default function CheckoutPopup() {
                 <div className="flex gap-3 w-full overflow-x-scroll">
                   <div className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3">
                     <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                      <Image
-                        src={buyNowProduct?.product?.image?.url || buyNowProduct?.product?.thumbnail?.url || buyNowProduct?.product?.images?.[0]?.url || "/Image-not-found.png"}
-                        alt={buyNowProduct?.product?.image?.alt || buyNowProduct?.product?.thumbnail?.alt || buyNowProduct?.product?.images?.[0]?.alt || buyNowProduct?.product?.name || "Product"}
-                        width={56}
-                        height={64}
-                        className="object-cover h-full w-full"
-                      />
+                      {(() => {
+                        // Find the selected variant to check if it has its own image
+                        const selectedVariant = buyNowProduct?.product?.variants?.find(
+                          (v) => v._id === buyNowProduct?.variant || v.id === buyNowProduct?.variant
+                        );
+                        
+                        // Prioritize variant image, then product images
+                        const imageSource = 
+                          (selectedVariant?.images?.[0]) ||
+                          buyNowProduct?.product?.image ||
+                          buyNowProduct?.product?.thumbnail ||
+                          buyNowProduct?.product?.images?.[0] ||
+                          "/Image-not-found.png";
+                        
+                        const imageAlt = 
+                          buyNowProduct?.product?.name ||
+                          "Product";
+                        
+                        return (
+                          <Image
+                            src={getImageUrl(imageSource)}
+                            alt={imageAlt}
+                            width={56}
+                            height={64}
+                            className="object-cover h-full w-full"
+                          />
+                        );
+                      })()}
                     </div>
                     <div className="w-fit">
                       <p className="text-xs w-40 text-gray-600 mb-1">
@@ -1518,24 +1540,34 @@ export default function CheckoutPopup() {
                         className="rel flex border-[1px] border-black/10 gap-2 rounded-lg p-3"
                       >
                         <div className="w-14 h-full  rounded-sm overflow-hidden mb-2 flex items-center justify-center">
-                          <Image
-                            src={
-                              item?.product?.thumbnail?.url ||
-                              item?.product?.images?.[0]?.url ||
-                              item?.product?.image?.url ||
-                              "/Image-not-found.png"
-                            }
-                            alt={
-                              item?.product?.thumbnail?.alt ||
-                              item?.product?.images?.[0]?.alt ||
-                              item?.product?.image?.alt ||
+                          {(() => {
+                            // Find the selected variant to check if it has its own image
+                            const selectedVariant = item?.product?.variants?.find(
+                              (v) => v._id === item?.variant || v.id === item?.variant
+                            );
+                            
+                            // Prioritize variant image, then product images
+                            const imageSource = 
+                              (selectedVariant?.images?.[0]) ||
+                              item?.product?.thumbnail ||
+                              item?.product?.images?.[0] ||
+                              item?.product?.image ||
+                              "/Image-not-found.png";
+                            
+                            const imageAlt = 
                               item?.product?.name ||
-                              "Product"
-                            }
-                            width={56}
-                            height={64}
-                            className="object-cover h-full w-full"
-                          />
+                              "Product";
+                            
+                            return (
+                              <Image
+                                src={getImageUrl(imageSource)}
+                                alt={imageAlt}
+                                width={56}
+                                height={64}
+                                className="object-cover h-full w-full"
+                              />
+                            );
+                          })()}
                         </div>
                         <div className="w-fit">
                           <p className="text-xs w-40 text-gray-600 mb-1">
