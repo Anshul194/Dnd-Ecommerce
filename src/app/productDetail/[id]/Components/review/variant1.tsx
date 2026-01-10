@@ -70,9 +70,9 @@ export default function RenderCardsVariant() {
             PRODUCT REVIEW
           </h1>
           <p className="text-black relative max-w-sm poppins-medium leading-tight text-lg mb-8">
-            Lorem ipsum dolor{" "}
-            <span className="text font-semibold">consectetur</span> eiusmod
-            tempor incididunt ut consectetur.
+            See what our verified buyers are saying.{" "}
+            <span className="text font-semibold">Read authentic reviews</span>{" "}
+            and share your own experience with us.
           </p>
         </div>
 

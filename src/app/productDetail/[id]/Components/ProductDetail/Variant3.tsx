@@ -263,7 +263,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6 w-full">
+      <div className="bg-white rounded-2xl sm:p-6 shadow-sm mb-6 w-full">
         {/* Title & Rating */}
         <h1 className="text-3xl font-bold text-gray-900 mb-3">
           {productData?.name}
@@ -297,7 +297,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
           <h3 className="text-lg font-semibold text-gray-900 mb-3">
             Choose Size
           </h3>
-          <div className="grid grid-cols-3 max-sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 max-sm:grid-cols-3 gap-3">
             {variants.map((variant: any) => {
               // Calculate discount percentage
               const discountPercent = variant.salePrice && variant.price && variant.price > variant.salePrice

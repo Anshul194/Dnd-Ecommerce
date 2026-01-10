@@ -212,14 +212,13 @@ export default function RenderSliderVariant() {
     <div className="px-4">
       {/* Header Section */}
       <div className="mb-8">
-        <h1 className="text-4xl md:text-5xl text-black mb-4 md:mb-0 text-center font-black">
-          FREQUENTLY PURCHASED
+        <h1 className="text-3xl md:text-5xl text-black mb-4 md:mb-0 text-center font-black">
+          Frequently Purchased
         </h1>
         <p className="text-black lg:max-w-[80%] mx-auto text-center relative poppins-medium leading-tight text-lg mb-8">
-          Lorem ipsum dolor sit amet,{" "}
-          <span className="text font-semibold">consectetur</span> eiusmod tempor
-          incididunt ut labore et dolor magna aliquaLorem ipsum dolor sit amet,
-          consectetur.
+          Customers who bought this item also loved these.{" "}
+          <span className="text font-semibold">Explore our top picks</span> and
+          find the perfect addition to your collection.
         </p>
       </div>
 
