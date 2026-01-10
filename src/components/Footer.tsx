@@ -348,9 +348,11 @@ export default function Footer() {
               <h3 className="mb-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Available On</h3>
               <div className="flex gap-4">
                 {[
-                  { name: 'Flipkart', src: '/images/flipkart.png' },
-                  { name: 'Amazon', src: '/images/amazon.png' },
-                  { name: 'Tata 1mg', src: '/images/tata1mg.png' }
+                    { name: 'Flipkart', src: '/images/flipkart.png' },
+                    { name: 'Amazon', src: '/images/amazon.png' },
+                    { name: 'Tata 1mg', src: '/images/tata1mg.png' },
+                    { name: 'Meesho', src: '/images/meesho.png' },
+                    { name: 'Snapdeal', src: '/images/snapdeal.png' }
                 ].map((store) => (
                   <div key={store.name} className="bg-white p-2 rounded-lg hover:scale-105 transition-transform cursor-pointer">
                     <Image
