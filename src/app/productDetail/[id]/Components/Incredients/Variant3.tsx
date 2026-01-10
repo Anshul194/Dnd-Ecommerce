@@ -59,14 +59,6 @@ export default function PremiumIngredientsUI({ data }) {
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-20">
-          <div className="inline-block mb-6">
-            <div className="flex items-center gap-3 px-6 py-3 bg-green-50 backdrop-blur-sm border border-green-200 rounded-full">
-              <div className="w-2 h-2 greenOne rounded-full animate-pulse"></div>
-              <span className="text-sm font-semibold tracking-widest uppercase text-green-700">
-                Premium Selection
-              </span>
-            </div>
-          </div>
           <h1 className="text-4xl md:text-5xl pb-2 font-black bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 bg-clip-text text-transparent uppercase" style={{ fontFamily: "Poppins, sans-serif" }} >
             Ingredients
           </h1>
