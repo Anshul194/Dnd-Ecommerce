@@ -18,10 +18,9 @@ function Variant1() {
             HOW TO USE
           </h2>
           <p className="text-black lg:max-w-[80%] mx-auto text-center relative poppins-medium leading-tight text-lg mb-8">
-            Lorem ipsum dolor sit amet,{" "}
-            <span className="text font-semibold">consectetur</span> eiusmod
-            tempor incididunt ut labore et dolor magna aliquaLorem ipsum dolor
-            sit amet, consectetur.
+            Unlock the full potential of your product with our easy-to-follow guide.{" "}
+            <span className="text font-semibold">Watch the tutorial</span> or
+            read the step-by-step instructions below to ensure the best results.
           </p>
         </div>
 

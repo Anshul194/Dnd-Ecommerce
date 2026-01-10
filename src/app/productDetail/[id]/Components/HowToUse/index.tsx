@@ -39,25 +39,25 @@ export function HowToUse({
         number: "01",
         title: "Get Started",
         description:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.",
+          "Begin by unboxing your product and checking that all components are present and intact.",
       },
       {
         number: "02",
-        title: "Configure Settings",
+        title: "Setup",
         description:
-          "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.",
+          "Follow the quick start guide to set up your device or prepare the product for its first use.",
       },
       {
         number: "03",
-        title: "Launch & Monitor",
+        title: "Usage",
         description:
-          "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+          "Use the product as directed. Refer to the manual for specific operating modes and safety instructions.",
       },
       {
         number: "04",
-        title: "Optimize Results",
+        title: "Maintenance",
         description:
-          "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.",
+          "Regular maintenance ensures longevity. Clean after use and store in a cool, dry place.",
       },
     ],
   };
