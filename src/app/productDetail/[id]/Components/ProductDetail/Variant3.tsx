@@ -5,7 +5,7 @@ import {
   toggleCart,
 } from "@/app/store/slices/cartSlice";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
-import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import { selectSelectedProduct, setCurrentVariantImage } from "@/app/store/slices/productSlice";
 import {
   Clock,
   RotateCcw,
@@ -317,7 +317,17 @@ function Variant3({ productData: propProductData }: Variant3Props) {
                     ? "customBorder bg-blue-50"
                     : "border-gray-200 hover:border-gray-300"
                     }`}
-                  onClick={() => setSelectedVariant(variant._id)}
+                  onClick={() => {
+                    setSelectedVariant(variant._id);
+                    // Dispatch the variant image if available
+                    if (variant.image) {
+                      dispatch(setCurrentVariantImage(variant.image));
+                    } else if (variant.images && variant.images.length > 0) {
+                      dispatch(setCurrentVariantImage(variant.images[0]));
+                    } else {
+                      dispatch(setCurrentVariantImage(null));
+                    }
+                  }}
                 >
                   <div className="font-semibold max-sm:text-sm text-gray-900">
                     {variant.title}

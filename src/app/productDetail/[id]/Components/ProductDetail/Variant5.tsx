@@ -24,7 +24,7 @@ import {
 import { toast } from "react-toastify";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 import { addToWishlist } from "@/app/store/slices/wishlistSlice";
-import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import { selectSelectedProduct, setCurrentVariantImage } from "@/app/store/slices/productSlice";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
 import { getDisplayPrice } from "@/app/utils/priceHelper";
@@ -337,7 +337,21 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
                 {productData?.variants?.map((variant, index) => (
                   <button
                     key={variant._id}
-                    onClick={() => setSelectedVariant(index)}
+                    onClick={() => {
+                      setSelectedVariant(index);
+                      // Dispatch the variant image if available
+                      if (variant.image) {
+                        dispatch(setCurrentVariantImage(variant.image));
+                      } else if (variant.images && variant.images.length > 0) {
+                        dispatch(setCurrentVariantImage(variant.images[0]));
+                      } else {
+                        // If no variant specific image, potentially reset or keep current? 
+                        // Let's reset to null so it falls back to main images if wanted, 
+                        // or maybe we just don't dispatch if we want to keep last selection.
+                        // User wants "shows the uploaded image", so if there is one, show it.
+                        dispatch(setCurrentVariantImage(null));
+                      }
+                    }}
                     className={`w-full p-3 border-2 rounded-lg text-left transition-all ${selectedVariant === index
                       ? "customBorder bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
@@ -419,12 +433,12 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
               <div className="flex gap-2">
                 <button
                   onClick={async () => {
-                      await dispatch(
-                        (addToWishlist as any)({
-                          product: productData._id,
-                          variant: productData.variants[selectedVariant]._id,
-                        })
-                      );
+                    await dispatch(
+                      (addToWishlist as any)({
+                        product: productData._id,
+                        variant: productData.variants[selectedVariant]._id,
+                      })
+                    );
                     try {
                       trackEvent("ADD_TO_WISHLIST", {
                         productId: productData._id,

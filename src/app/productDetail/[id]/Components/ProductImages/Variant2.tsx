@@ -1,4 +1,4 @@
-import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import { selectSelectedProduct, selectCurrentVariantImage } from "@/app/store/slices/productSlice";
 import { ChevronLeft, ChevronRight, Heart, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -11,6 +11,10 @@ const RenderVariant2 = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const productData = useSelector(selectSelectedProduct);
+  const currentVariantImage = useSelector(selectCurrentVariantImage);
+
+  const mainImage = currentVariantImage ? getImageUrl(currentVariantImage) : (productData?.images?.[selectedImage] ? getImageUrl(productData.images[selectedImage].url) : "");
+
 
   const nextImage = () => {
     setSelectedImage((prev) =>
@@ -30,7 +34,7 @@ const RenderVariant2 = () => {
         <div className="relative mb-4">
           <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative group">
             <Image
-              src={getImageUrl(productData.images[selectedImage].url)}
+              src={mainImage}
               alt="Product"
               className="w-full h-full object-cover"
               layout="fill"
@@ -54,11 +58,10 @@ const RenderVariant2 = () => {
             <div className="absolute top-4 right-4 flex gap-2">
               <button
                 onClick={() => setIsWishlisted(!isWishlisted)}
-                className={`w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-all ${
-                  isWishlisted
+                className={`w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-all ${isWishlisted
                     ? "bg-red-500 text-white"
                     : "bg-white text-gray-600 hover:text-red-500"
-                }`}
+                  }`}
               >
                 <Heart
                   size={18}
@@ -77,11 +80,10 @@ const RenderVariant2 = () => {
           {productData.images.map((img, index) => (
             <button
               key={index}
-              className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                selectedImage === index
+              className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
                   ? "border-green-500 shadow-md"
                   : "border-gray-200 hover:border-gray-300"
-              }`}
+                }`}
               onClick={() => setSelectedImage(index)}
             >
               <img

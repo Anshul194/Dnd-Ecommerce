@@ -225,6 +225,7 @@ const productSlice = createSlice({
     error: null,
     productCache: {},
     addons: [],
+    currentVariantImage: null, // Add this line
   },
   reducers: {
     resetProductState: (state) => {
@@ -232,7 +233,11 @@ const productSlice = createSlice({
       state.pagination = null;
       state.loading = true; // Set to true to show spinner immediately
       state.productCache = {}; // Also clear cache to be safe
-    }
+      state.currentVariantImage = null; // Reset variant image
+    },
+    setCurrentVariantImage: (state, action) => {
+      state.currentVariantImage = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -267,6 +272,7 @@ const productSlice = createSlice({
       .addCase(fetchProductById.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.currentVariantImage = null; // Reset on new product fetch
       })
       .addCase(fetchProductById.fulfilled, (state, action) => {
         state.loading = false;
@@ -283,11 +289,12 @@ const productSlice = createSlice({
 });
 
 const selectSelectedProduct = (state) => state.product.selectedProduct;
+const selectCurrentVariantImage = (state) => state.product.currentVariantImage;
 const removeSelectedProduct = (state) => {
   state.product.selectedProduct = null;
 };
 
-export const { resetProductState } = productSlice.actions;
-export { selectSelectedProduct, removeSelectedProduct };
+export const { resetProductState, setCurrentVariantImage } = productSlice.actions;
+export { selectSelectedProduct, selectCurrentVariantImage, removeSelectedProduct };
 
 export default productSlice.reducer;

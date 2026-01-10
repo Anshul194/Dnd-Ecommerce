@@ -1,4 +1,4 @@
-import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import { selectSelectedProduct, selectCurrentVariantImage } from "@/app/store/slices/productSlice";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
@@ -7,6 +7,14 @@ import { getImageUrl } from "@/app/utils/imageHelper";
 const RenderVariant1 = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const productData = useSelector(selectSelectedProduct);
+  const currentVariantImage = useSelector(selectCurrentVariantImage);
+
+  // If a variant image is selected via Redux, we want to show it.
+  // We can either bypass the selectedImage index or try to find it.
+  // Bypassing is safer as it might not be in the main images list.
+
+  const mainImage = currentVariantImage ? getImageUrl(currentVariantImage) : (productData?.images?.[selectedImage] ? getImageUrl(productData.images[selectedImage].url) : "");
+
 
   const nextImage = () => {
     setSelectedImage((prev) =>
@@ -28,11 +36,10 @@ const RenderVariant1 = () => {
             [...productData.images].map((img, index) => (
               <div
                 key={index}
-                className={`w-20 h-20 border-2 rounded-lg cursor-pointer overflow-hidden transition-all ${
-                  selectedImage === index
+                className={`w-20 h-20 border-2 rounded-lg cursor-pointer overflow-hidden transition-all ${selectedImage === index
                     ? "border-green-500 shadow-md"
                     : "border-gray-200 hover:border-gray-300"
-                }`}
+                  }`}
                 onClick={() => setSelectedImage(index)}
               >
                 <img
@@ -61,9 +68,9 @@ const RenderVariant1 = () => {
               <ChevronRight size={20} />
             </button>
 
-            {productData?.images?.[selectedImage] ? (
+            {mainImage ? (
               <img
-                src={getImageUrl(productData.images[selectedImage].url)}
+                src={mainImage}
                 alt="Product Image"
                 className="w-full h-full object-cover"
               />
@@ -75,9 +82,8 @@ const RenderVariant1 = () => {
                 {productData.images.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      selectedImage === index ? "greenOne" : "bg-white/50"
-                    }`}
+                    className={`w-2 h-2 rounded-full transition-all ${selectedImage === index ? "greenOne" : "bg-white/50"
+                      }`}
                   />
                 ))}
               </div>

@@ -5,7 +5,7 @@ import {
   toggleCart,
 } from "@/app/store/slices/cartSlice";
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
-import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import { selectSelectedProduct, setCurrentVariantImage } from "@/app/store/slices/productSlice";
 import { ChevronDown, ShoppingCart, Star } from "lucide-react";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -243,7 +243,21 @@ function Variant1({ productData: propProductData, detailSettings }: Variant1Prop
                   ? "border-green-600 bg-green-50"
                   : "border-gray-300 hover:border-gray-400"
                   }`}
-                onClick={() => setSelectedVariant(variant._id)}
+                onClick={() => {
+                  console.log("Variant1 Clicked - Selected Variant:", variant);
+                  setSelectedVariant(variant._id);
+                  // Dispatch the variant image if available
+                  if (variant.image) {
+                    console.log("Variant1 Dispatching variant.image:", variant.image);
+                    dispatch(setCurrentVariantImage(variant.image));
+                  } else if (variant.images && variant.images.length > 0) {
+                    console.log("Variant1 Dispatching variant.images[0]:", variant.images[0]);
+                    dispatch(setCurrentVariantImage(variant.images[0]));
+                  } else {
+                    console.log("Variant1 Dispatching null (no image found)");
+                    dispatch(setCurrentVariantImage(null));
+                  }
+                }}
               >
                 <div
                   className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${variant.color === "green"

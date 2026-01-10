@@ -1,6 +1,6 @@
-import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import { selectSelectedProduct, selectCurrentVariantImage } from "@/app/store/slices/productSlice";
 import { Eye, Heart, Share2, ChevronLeft, ChevronRight } from "lucide-react";
-import Image from "next/image";
+
 import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { getImageUrl } from "@/app/utils/imageHelper";
@@ -11,7 +11,12 @@ const RenderVariant3 = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const productData = useSelector(selectSelectedProduct);
-  
+  const currentVariantImage = useSelector(selectCurrentVariantImage);
+
+
+  const mainImage = currentVariantImage ? getImageUrl(currentVariantImage) : (productData?.images?.[selectedImage] ? getImageUrl(productData.images[selectedImage].url) : "");
+
+
   // Ref for the scrollable container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -29,12 +34,12 @@ const RenderVariant3 = () => {
     <div className="space-y-6 h-fit sticky top-20">
       {/* Main Image with Floating Elements */}
       <div className="relative group">
+
         <div className="aspect-square lg:max-w-[45vw] rounded-3xl overflow-hidden cream relative">
-          <Image
-            src={getImageUrl(productData.images[selectedImage].url)}
+          <img
+            src={mainImage}
             alt="Product"
             className="w-full h-full object-cover"
-            layout="fill"
           />
 
           {/* Floating Badges */}
@@ -78,9 +83,9 @@ const RenderVariant3 = () => {
 
       {/* Enhanced Thumbnails */}
       <div className="relative flex items-center justify-center gap-2 lg:max-w-[45vw]">
-        
+
         {/* Left Arrow */}
-        <button 
+        <button
           onClick={() => scroll("left")}
           className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 text-gray-700 z-10 transition-colors border border-gray-100 hidden sm:flex"
           aria-label="Scroll Left"
@@ -89,18 +94,17 @@ const RenderVariant3 = () => {
         </button>
 
         {/* Scrollable Container */}
-        <div 
+        <div
           ref={scrollContainerRef}
           className="flex gap-4 overflow-x-auto scrollbar-hide py-2 px-1 scroll-smooth"
         >
           {productData.images.map((img, index) => (
             <button
               key={index}
-              className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all transform hover:scale-105 ${
-                selectedImage === index
-                  ? "ring-4 ring-[#EA8932] shadow-lg"
-                  : "ring-2 ring-gray-200 hover:ring-gray-300"
-              }`}
+              className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all transform hover:scale-105 ${selectedImage === index
+                ? "ring-4 ring-[#EA8932] shadow-lg"
+                : "ring-2 ring-gray-200 hover:ring-gray-300"
+                }`}
               onClick={() => setSelectedImage(index)}
             >
               <img
@@ -116,7 +120,7 @@ const RenderVariant3 = () => {
         </div>
 
         {/* Right Arrow */}
-        <button 
+        <button
           onClick={() => scroll("right")}
           className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 text-gray-700 z-10 transition-colors border border-gray-100 hidden sm:flex"
           aria-label="Scroll Right"

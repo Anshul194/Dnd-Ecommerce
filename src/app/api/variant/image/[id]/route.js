@@ -2,14 +2,10 @@
 // import { getSubdomain, getDbConnection } from "../../../../lib/tenantDb.js";
 import { NextResponse } from "next/server";
 import { getSubdomain, getDbConnection } from "../../../../lib/tenantDb.js";
-import VariantRepository from "../../../../lib/repository/variantRepository.js";
 import {
   getVariantById,
   updateVariant,
 } from "../../../../lib/controllers/variantController.js";
-import { variantSchema } from "../../../../lib/models/Variant.js";
-import mongoose from "mongoose";
-import VariantService from "@/app/lib/services/VariantService.js";
 
 // DELETE /api/variant/image/:id
 // DELETE /api/variant/image/:id?index=0&type=images&variantId=xxxx
@@ -45,7 +41,9 @@ export async function DELETE(req, { params }) {
         { status: 400 }
       );
     }
-    if (!variantId || !mongoose.isValidObjectId(variantId)) {
+    // Simple validation for MongoDB ObjectId format (24 hex characters)
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(variantId);
+    if (!variantId || !isValidObjectId) {
       return NextResponse.json(
         { success: false, message: "Invalid or missing variantId" },
         { status: 400 }
@@ -60,18 +58,16 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    const Variant =
-      conn?.models?.Variant || conn.model("Variant", variantSchema);
-    const variantRepo = new VariantRepository(Variant);
-    const variantService = new VariantService(variantRepo);
-
-    const variant = await Variant.findById(variantId);
-    if (!variant) {
+    // Get variant using the service instead of direct model access
+    const variantResult = await getVariantById(variantId, conn);
+    if (!variantResult?.body?.success || !variantResult?.body?.data) {
       return NextResponse.json(
         { success: false, message: "Variant not found" },
         { status: 404 }
       );
     }
+
+    const variant = variantResult.body.data;
 
     if (!Array.isArray(variant.images)) {
       return NextResponse.json(
@@ -88,38 +84,54 @@ export async function DELETE(req, { params }) {
     }
 
     // Remove the image at the specified index
-    const removed = variant.images.splice(index, 1);
-    if (!removed.length) {
+    // Since variant is a plain object (not Mongoose doc), we need to create a new array
+    const updatedImages = variant.images.filter((_, idx) => idx !== index);
+
+    if (updatedImages.length === variant.images.length) {
+      // No image was removed (index was out of bounds or invalid)
       return NextResponse.json(
         { success: false, message: "No image at given index" },
         { status: 404 }
       );
     }
 
+    // Convert to plain object for updating
+    // Use spread operator to convert to plain JavaScript array
+    const variantData = {
+      images: updatedImages, // New array without the deleted image
+    };
+
     // Update the variant
-    const updateResult = await updateVariant(variant._id, variant, conn);
+    const updateResult = await updateVariant(variant._id, variantData, conn);
+
+    console.log("Update result:", JSON.stringify(updateResult, null, 2));
+
     let fullVariant = null;
-    if (updateResult && updateResult.success) {
+
+    // Access the response correctly (updateResult.body.success, not updateResult.success)
+    if (updateResult?.body?.success) {
       const getResult = await getVariantById(variant._id, conn);
-      if (getResult && getResult.success) {
-        fullVariant = getResult.data;
+      if (getResult?.body?.success) {
+        fullVariant = getResult.body.data;
       }
+    } else {
+      console.error("Failed to update variant:", updateResult?.body?.message || "Unknown error");
     }
 
     return NextResponse.json(
       {
-        success: updateResult.success,
-        message: updateResult.message || "Image deleted successfully",
+        success: updateResult?.body?.success || false,
+        message: updateResult?.body?.message || "Image deleted successfully",
         variant: fullVariant,
       },
       {
-        status: updateResult.success ? 200 : 400,
+        status: updateResult?.body?.success ? 200 : 400,
       }
     );
   } catch (error) {
-    // console.error("DELETE variant image error:", error);
+    console.error("DELETE variant image error:", error);
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: error.message || "Internal server error" },
       { status: 500 }
     );
   }

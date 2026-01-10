@@ -45,6 +45,7 @@ import { fetchProducts } from "@/app/store/slices/productSlice";
 import { fetchBlogs } from "@/app/store/slices/blogSclie";
 import axiosInstance from "@/axiosConfig/axiosInstance";
 import { getImageUrl } from "@/app/utils/imageHelper";
+import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 export default function Navbar({ initialCategories = [] }) {
   const [isOpen, setIsOpen] = useState(false);

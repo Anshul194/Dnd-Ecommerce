@@ -18,6 +18,7 @@ import { fetchProducts, fetchAddons } from "@/app/store/slices/productSlice";
 import Link from "next/link";
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
 import { getImageUrl } from "@/app/utils/imageHelper";
+import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 const CartSidebar = () => {
   const dispatch = useDispatch();

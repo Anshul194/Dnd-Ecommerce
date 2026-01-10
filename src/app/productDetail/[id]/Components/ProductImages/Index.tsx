@@ -34,57 +34,26 @@ export function ProductImages({
     variant: component.variant || settings[component.id]?.variant || "variant1",
   };
 
-  // Dummy images if product images are not available
-  const dummyImages = [
-    {
-      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTea_Teabags_aa3e8528-95b5-423b-9869-16baff3a7710.jpg?v=1755320690&width=1000",
-      alt: "Sample Image 1",
-    },
-    {
-      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_02.jpg?v=1755320690&width=1000",
-      alt: "Sample Image 1",
-    },
-    {
-      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_08.jpg?v=1755320690&width=1000",
-      alt: "Sample Image 1",
-    },
-    {
-      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_03.jpg?v=1755320690&width=1000",
-      alt: "Sample Image 1",
-    },
-    {
-      url: "https://in.teabox.com/cdn/shop/files/RoseGreenTeabag_CarouselImage_04.jpg?v=1755320690&width=1000",
-      alt: "Sample Image 1",
-    },
-  ];
-
-  const productData = {
-    name: product?.name || "Premium Wireless Headphones",
-    badges: ["Premium", "Best Seller", "Limited Edition"],
-    ...product,
-    images: dummyImages,
-  };
 
   const renderVariant = () => {
     switch (imageSettings.variant) {
       case "variant2":
-        return <RenderVariant2 productData={productData} />;
+        return <RenderVariant2 />;
       case "variant3":
-        return <RenderVariant3 productData={productData} />;
+        return <RenderVariant3 />;
       case "variant4":
-        return <RenderVariant4 productData={productData} imageSettings={imageSettings} />;
+        return <RenderVariant4 imageSettings={imageSettings} />;
       default:
-        return <RenderVariant1 productData={productData} />;
+        return <RenderVariant1 />;
     }
   };
 
   return (
     <div
-      className={`${
-        isPreviewMode
-          ? "bg-transparent"
-          : "bg-white rounded-2xl shadow-xl border border-gray-100"
-      } ${isPreviewMode ? "" : "p-6 mb-4"} ${isFullWidth ? "w-full" : ""}`}
+      className={`${isPreviewMode
+        ? "bg-transparent"
+        : "bg-white rounded-2xl shadow-xl border border-gray-100"
+        } ${isPreviewMode ? "" : "p-6 mb-4"} ${isFullWidth ? "w-full" : ""}`}
     >
       {!isPreviewMode && (
         <div className="flex justify-between items-center mb-6">

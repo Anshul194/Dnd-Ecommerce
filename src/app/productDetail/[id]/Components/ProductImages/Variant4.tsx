@@ -1,4 +1,4 @@
-import { selectSelectedProduct } from "@/app/store/slices/productSlice";
+import { selectSelectedProduct, selectCurrentVariantImage } from "@/app/store/slices/productSlice";
 import { ChevronLeft, ChevronRight, Eye, Heart, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
@@ -9,6 +9,10 @@ const RenderVariant4 = ({ imageSettings }) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const productData = useSelector(selectSelectedProduct);
+  const currentVariantImage = useSelector(selectCurrentVariantImage);
+
+  const mainImage = currentVariantImage ? getImageUrl(currentVariantImage) : (productData?.images?.[selectedImage] ? getImageUrl(productData.images[selectedImage].url) : "");
+
 
   const nextImage = () => {
     setSelectedImage((prev) =>
@@ -25,7 +29,7 @@ const RenderVariant4 = ({ imageSettings }) => {
     <div className="space-y-6">
       <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100">
         <img
-          src={getImageUrl(productData.images[selectedImage].url)}
+          src={mainImage}
           alt="Main product"
           className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -48,11 +52,10 @@ const RenderVariant4 = ({ imageSettings }) => {
         <div className="absolute top-4 right-4 flex gap-2">
           <button
             onClick={() => setIsWishlisted(!isWishlisted)}
-            className={`p-2 backdrop-blur-sm rounded-full shadow-lg transition-colors ${
-              isWishlisted
+            className={`p-2 backdrop-blur-sm rounded-full shadow-lg transition-colors ${isWishlisted
                 ? "bg-red-500 text-white"
                 : "bg-white/90 text-gray-600 hover:text-red-500"
-            }`}
+              }`}
           >
             <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} />
           </button>
@@ -75,9 +78,8 @@ const RenderVariant4 = ({ imageSettings }) => {
           {productData.images.slice(0, 4).map((img: string, idx: number) => (
             <div
               key={idx}
-              className={`relative group cursor-pointer overflow-hidden rounded-xl transition-all ${
-                selectedImage === idx ? "ring-2 ring-blue-500" : "bg-gray-100"
-              }`}
+              className={`relative group cursor-pointer overflow-hidden rounded-xl transition-all ${selectedImage === idx ? "ring-2 ring-blue-500" : "bg-gray-100"
+                }`}
               onClick={() => setSelectedImage(idx)}
             >
               <img
