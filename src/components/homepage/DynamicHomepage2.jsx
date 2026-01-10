@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import { HeroSlider } from "../HeroSlider";
-import { CustomerFavorites } from "../CustomerFavorites";
 import { TimerBanner } from "../TimerBanner";
 import { WhyUs } from "../WhyUs";
 import { Features } from "../Features";
@@ -16,6 +15,7 @@ import { LoadingSpinner } from "../common/Loading";
 import ValidatedSection2 from "./ValidatedSection2";
 import AllProducts from "./sections/AllProducts";
 import BlogSection from "../BlogSection";
+import DynamicProductSlider from "./sections/DynamicProductSlider";
 
 function DynamicHomepage2() {
   const { groupedContent, loading, error, lastFetched } = useSelector(
@@ -66,7 +66,7 @@ function DynamicHomepage2() {
             key={_id}
             className=" mx-auto px-4 bg-gradient-to-b from-white to-gray-50"
           >
-            <CustomerFavorites content={content} />
+            <DynamicProductSlider content={content} />
           </div>
         );
 

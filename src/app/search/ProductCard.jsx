@@ -22,6 +22,7 @@ import {
 import { ShoppingCart, Star } from "lucide-react";
 import { toast } from "react-toastify";
 import { getImageUrl } from "../utils/imageHelper";
+import { getDisplayPrice } from "../utils/priceHelper";
 
 import { trackEvent } from "../lib/tracking/trackEvent";
 import { useTrack } from "../lib/tracking/useTrack";
@@ -87,7 +88,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     e.preventDefault();
     // Ensure cart sidebar is closed immediately - before any operations
     dispatch(closeCart());
-    const price = product.variants[0];
+    const { salePrice } = getDisplayPrice(product);
     try {
       // Ensure image has proper structure
       const productImage = product.thumbnail || product.images?.[0];
@@ -107,7 +108,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
             category: product.category,
           },
           quantity: 1,
-          price: price.salePrice || price.price,
+          price: salePrice,
           variant: product.variants[0]._id,
         })
       );
@@ -138,16 +139,15 @@ const ProductCard = ({ product, showDes, buyNow }) => {
     //   return;
     // }
 
-    const price = product?.variants[0]
-      ? product?.variants[0]?.salePrice || product?.variants[0]?.price
-      : product?.salePrice || product?.price;
+
+    const { salePrice } = getDisplayPrice(product);
 
     try {
       const resultAction = await dispatch(
         addToCart({
           product: product._id,
           quantity: 1,
-          price: price,
+          price: salePrice,
           variant: product?.variants[0]?._id,
         })
       );
@@ -327,37 +327,22 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               {/* Price and Rating */}
               <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-4">
                 <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
-                  {product?.variants?.[0]?.price ? (
-                    <>
-                      {product?.variants[0]?.salePrice && (
-                        <span className="text-lg  max-sm:text-base font-bold text-gray-800">
-                          Rs {product?.variants[0]?.salePrice}
-                        </span>
-                      )}
-                      <span className="text-xs  max-sm:text-xs text-gray-400 h-5  line-through">
-                        Rs {product?.variants[0]?.price}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      {product?.salePrice && (
+                  {(() => {
+                    const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
+                    return (
+                      <>
                         <span className="text-lg max-sm:text-base font-bold text-gray-800">
-                          Rs {product?.salePrice}
+                          ₹{salePrice}
                         </span>
-                      )}
-                      <span className="text-xs  max-sm:text-md text-gray-400 h-5  line-through">
-                        Rs {product?.price}
-                      </span>
-                    </>
-                  )}
+                        {hasSale && (
+                          <span className="text-xs max-sm:text-xs text-gray-400 h-5 line-through">
+                            ₹{originalPrice}
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
-                {/* <div className="flex items-center space-x-1 pt-1">
-                  <span className="text-orange-400 text-sm">⭐</span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {product?.rating?.Average || 4.5} (
-                    {product?.reviewCount || 1} reviews)
-                  </span>
-                </div> */}
               </div>
               {buyNow ? (
                 <div className="flex gap-2">
