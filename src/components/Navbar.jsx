@@ -899,7 +899,7 @@ export default function Navbar({ initialCategories = [] }) {
                         >
                           <div className="border-2 cursor-pointer p-2 rounded-md flex gap-2 border-gray-200">
                             <Image
-                              src={getImageUrl(product?.thumbnail || product?.images?.[0])}
+                              src={getImageUrl(product?.thumbnail || product?.images?.[0]) || "/Image-not-found.png"}
                               alt={
                                 product?.thumbnail?.alt ||
                                 product?.images?.[0]?.alt ||

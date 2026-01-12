@@ -88,7 +88,7 @@ const CartSidebar = () => {
     e.preventDefault();
     // Use slug for navigation
     if (item?.product?.slug) {
-      route.push(`/product-detail/${item.product.slug}`);
+      route.push(`/productDetail/${item.product.slug}`);
     }
   };
 
@@ -259,7 +259,7 @@ const CartSidebar = () => {
             <div className="text-sm flex gap-2 overflow-auto">
               {addons?.length > 0 &&
                 addons.map((item, index) => (
-                  <Link href={`/product-detail/${item?.slug}`} key={index}>
+                  <Link href={`/productDetail/${item?.slug}`} key={index}>
                     <div className="relative w-fit flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
                       <div className="h-20 aspect-square   rounded-sm overflow-hidden mb-2 flex items-center justify-center">
                         {(item?.thumbnail?.url && item?.thumbnail?.url.trim() !== "") ||
