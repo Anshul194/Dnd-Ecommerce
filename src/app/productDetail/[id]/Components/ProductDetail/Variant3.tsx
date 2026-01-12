@@ -32,20 +32,11 @@ function Variant3({ productData: propProductData }: Variant3Props) {
   const reduxProductData = useSelector(selectSelectedProduct);
   const productData = propProductData || reduxProductData;
   const dispatch = useDispatch();
-  const [selectedVariant, setSelectedVariant] = React.useState<any>(
-    productData?.variants?.[0]?._id
-  );
+  const [selectedVariant, setSelectedVariant] = React.useState<any>(null);
   const [showFixedBar, setShowFixedBar] = React.useState<boolean>(false);
   const actionButtonsRef = React.useRef<HTMLDivElement>(null);
   const isAuthenticated = useSelector((state: any) => state.auth.isAuthenticated);
   const userId = useSelector((state: any) => state.auth.user?._id);
-
-  // Ensure selectedVariant is set if variants exist
-  React.useEffect(() => {
-    if (productData?.variants?.length > 0 && !selectedVariant) {
-      setSelectedVariant(productData.variants[0]._id);
-    }
-  }, [productData, selectedVariant]);
 
   // Early return if no product data
   if (!productData) {
@@ -298,25 +289,44 @@ function Variant3({ productData: propProductData }: Variant3Props) {
           <p className="text-sm text-gray-600">Inclusive of all taxes</p>
         </div>
 
-        {/* Pack Selection */}
+        {/* Pack Selection - Card Based Design */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
-            Choose Size
-          </h3>
-          <div className="grid grid-cols-3 max-sm:grid-cols-3 gap-3">
-            {variants.map((variant: any) => {
+          <div className="mb-3">
+            <span className="text-sm text-gray-600">Stock, Available</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {variants.map((variant: any, index: number) => {
               // Calculate discount percentage
               const discountPercent = variant.salePrice && variant.price && variant.price > variant.salePrice
                 ? Math.round(((variant.price - variant.salePrice) / variant.price) * 100)
                 : 0;
 
+              const isSelected = selectedVariant === variant._id;
+              const variantImage = variant.image || (variant.images && variant.images.length > 0 ? variant.images[0] : null);
+              const displayImage = variantImage || productData.thumbnail || productData.images?.[0];
+
+              // Determine label based on variant (you can customize this logic)
+              const getVariantLabel = () => {
+                if (index === 0) return "Beginner";
+                if (index === 1) return "Saver";
+                if (index === 2) return "Super Saver";
+                return "";
+              };
+
+              const getPackLabel = () => {
+                // You can customize this based on variant data
+                const quantity = variant.quantity || index + 1;
+                return `Pack of ${quantity}`;
+              };
+
               return (
                 <button
                   key={variant._id}
-                  className={`relative p-4 border-2 rounded-xl text-center transition-all ${selectedVariant === variant._id
-                    ? "customBorder bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                    }`}
+                  className={`relative bg-white border-2 rounded-lg overflow-hidden transition-all text-left ${
+                    isSelected
+                      ? "border-green-600 shadow-lg ring-2 ring-green-500 ring-opacity-50"
+                      : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                  }`}
                   onClick={() => {
                     setSelectedVariant(variant._id);
                     // Dispatch the variant image if available
@@ -329,15 +339,54 @@ function Variant3({ productData: propProductData }: Variant3Props) {
                     }
                   }}
                 >
-                  <div className="font-semibold max-sm:text-sm text-gray-900">
-                    {variant.title}
+                  {/* Header Bar */}
+                  <div className={`h-10 flex items-center justify-center font-semibold text-white ${
+                    isSelected ? "bg-green-600" : "bg-gray-400"
+                  }`}>
+                    {variant.title || `Variant ${index + 1}`}
                   </div>
-                  <div className="text-sm text-gray-600">
-                    ₹{variant.salePrice || variant.price}
+
+                  {/* Image Section */}
+                  <div className="p-4 flex justify-center items-center bg-gray-50 min-h-[180px]">
+                    {displayImage ? (
+                      <img
+                        src={getImageUrl(displayImage)}
+                        alt={variant.title || `Variant ${index + 1}`}
+                        className="max-w-full max-h-[160px] object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-[160px] bg-gray-200 rounded flex items-center justify-center text-gray-400">
+                        No Image
+                      </div>
+                    )}
                   </div>
-                  {discountPercent > 0 && (
-                    <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-                      -{discountPercent}%
+
+                  {/* Pricing Section */}
+                  <div className="p-4 bg-white">
+                    <div className="flex items-baseline gap-2 mb-2">
+                      {variant.price && variant.price > (variant.salePrice || variant.price) && (
+                        <span className="text-sm text-gray-500 line-through">
+                          ₹{variant.price}
+                        </span>
+                      )}
+                      <span className="text-xl font-bold text-gray-900">
+                        ₹{variant.salePrice || variant.price}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600 mb-1">
+                      {getPackLabel()}
+                    </div>
+                    <div className="text-xs font-medium text-gray-500">
+                      {getVariantLabel()}
+                    </div>
+                  </div>
+
+                  {/* Selection Indicator */}
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
                     </div>
                   )}
                 </button>
