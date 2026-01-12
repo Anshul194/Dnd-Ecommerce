@@ -59,10 +59,10 @@ export default class ReviewRepository {
       //consolle.log("hasProductModel:", hasProductModel);
       if (hasProductModel) {
         //consolle.log("if -->");
-        populatedFaq = await this.Review.find({ productId }).populate("userId");
+        populatedFaq = await this.Review.find({ productId, isActive: true }).populate("userId");
       } else {
         //consolle.log("else -->");
-        populatedFaq = await this.Review.find({ productId });
+        populatedFaq = await this.Review.find({ productId, isActive: true });
       }
 
       //consolle.log(
@@ -70,7 +70,7 @@ export default class ReviewRepository {
       //   populatedFaq
       // );
 
-      const data = await this.Review.find({ productId })
+      const data = await this.Review.find({ productId, isActive: true })
         .populate("userId")
         .sort({ createdAt: -1 })
         .exec();
@@ -79,7 +79,7 @@ export default class ReviewRepository {
       const objectProductId = new mongoose.Types.ObjectId(productId);
 
       const result = await this.Review.aggregate([
-        { $match: { productId: objectProductId } },
+        { $match: { productId: objectProductId, isActive: true } },
         {
           $group: {
             _id: "$rating",
@@ -188,7 +188,7 @@ export default class ReviewRepository {
       ]);
 
       const avgResult = await this.Review.aggregate([
-        { $match: { productId: objectProductId } },
+        { $match: { productId: objectProductId, isActive: true } },
         {
           $group: {
             _id: null,

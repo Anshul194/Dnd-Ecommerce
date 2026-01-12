@@ -8,12 +8,16 @@ import { getImageUrl } from "@/app/utils/imageHelper";
 const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
 
 const RenderVariant2 = () => {
-  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<number>(-1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const productData = useSelector(selectSelectedProduct);
   const currentVariantImage = useSelector(selectCurrentVariantImage);
 
-  const mainImage = currentVariantImage ? getImageUrl(currentVariantImage) : (productData?.images?.[selectedImage] ? getImageUrl(productData.images[selectedImage].url) : "");
+  const mainImage = currentVariantImage
+    ? getImageUrl(currentVariantImage)
+    : (selectedImage > -1 && productData?.images?.[selectedImage])
+    ? getImageUrl(productData.images[selectedImage].url)
+    : (productData?.images?.[0] ? getImageUrl(productData.images[0].url) : "");
 
 
   const nextImage = () => {
@@ -33,13 +37,19 @@ const RenderVariant2 = () => {
         {/* Main Image */}
         <div className="relative mb-4">
           <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative group">
-            <Image
-              src={mainImage}
-              alt="Product"
-              className="w-full h-full object-cover"
-              layout="fill"
-              objectFit="cover"
-            />
+            {mainImage ? (
+              <Image
+                src={mainImage}
+                alt="Product"
+                className="w-full h-full object-cover"
+                layout="fill"
+                objectFit="cover"
+              />
+            ) : (
+              <div className="w-full h-96 flex items-center justify-center text-gray-400 text-sm border-2 border-dashed rounded-lg">
+                Select a pack to view image
+              </div>
+            )}
 
             <button
               onClick={prevImage}

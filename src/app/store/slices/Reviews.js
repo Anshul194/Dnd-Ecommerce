@@ -16,7 +16,7 @@ export const fetchReviews = createAsyncThunk(
       }
 
       inFlightFetchReviews = axiosInstance
-        .get("/review/all")
+        .get("/review/all", { params: { isActive: true } })
         .then((response) => response.data?.data || [])
         .finally(() => {
           inFlightFetchReviews = null;

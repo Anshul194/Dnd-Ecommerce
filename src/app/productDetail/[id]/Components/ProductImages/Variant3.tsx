@@ -1,20 +1,57 @@
 import { selectSelectedProduct, selectCurrentVariantImage } from "@/app/store/slices/productSlice";
 import { Eye, Heart, Share2, ChevronLeft, ChevronRight } from "lucide-react";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { getImageUrl } from "@/app/utils/imageHelper";
 
 const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
 
 const RenderVariant3 = () => {
-  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<number>(-1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const productData = useSelector(selectSelectedProduct);
   const currentVariantImage = useSelector(selectCurrentVariantImage);
 
+  // Reset selectedImage to 0 if it's out of bounds when images change
+  useEffect(() => {
+    if (productData?.images && productData.images.length > 0) {
+      if (selectedImage >= productData.images.length) {
+        setSelectedImage(0);
+      }
+    }
+  }, [productData?.images?.length, selectedImage]);
 
-  const mainImage = currentVariantImage ? getImageUrl(currentVariantImage) : (productData?.images?.[selectedImage] ? getImageUrl(productData.images[selectedImage].url) : "");
+  // Get the main image to display
+  const getMainImage = () => {
+    // If variant image is selected, use that
+    if (currentVariantImage) {
+      return getImageUrl(currentVariantImage);
+    }
+    
+    // Try to get image from images array
+    if (productData?.images && productData.images.length > 0) {
+      const index = selectedImage >= 0 && selectedImage < productData.images.length ? selectedImage : 0;
+      const image = productData.images[index];
+      if (image?.url) {
+        return getImageUrl(image.url);
+      }
+    }
+    
+    // Fallback to thumbnail
+    if (productData?.thumbnail) {
+      const thumbUrl = typeof productData.thumbnail === 'string' 
+        ? productData.thumbnail 
+        : productData.thumbnail?.url;
+      if (thumbUrl) {
+        return getImageUrl(thumbUrl);
+      }
+    }
+    
+    return "";
+  };
+
+  const mainImage = getMainImage();
 
 
   // Ref for the scrollable container
@@ -35,12 +72,18 @@ const RenderVariant3 = () => {
       {/* Main Image with Floating Elements */}
       <div className="relative group">
 
-        <div className="aspect-square lg:max-w-[45vw] rounded-3xl overflow-hidden cream relative">
-          <img
-            src={mainImage}
-            alt="Product"
-            className="w-full h-full object-cover"
-          />
+        <div className="aspect-square lg:max-w-[45vw] rounded-3xl overflow-hidden cream relative bg-gray-100">
+          {mainImage ? (
+            <img
+              src={mainImage}
+              alt={productData?.name || "Product"}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <span>No Image Available</span>
+            </div>
+          )}
 
           {/* Floating Badges */}
           <div className="absolute top-6 left-6 flex flex-col gap-2">
@@ -75,9 +118,11 @@ const RenderVariant3 = () => {
           </div> */}
 
           {/* Quick View Indicator */}
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-            {selectedImage + 1} / {productData.images.length}
-          </div>
+          {productData?.images && productData.images.length > 0 && (
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+              {(selectedImage > -1 ? selectedImage + 1 : 1)} / {productData.images.length}
+            </div>
+          )}
         </div>
       </div>
 
@@ -98,25 +143,34 @@ const RenderVariant3 = () => {
           ref={scrollContainerRef}
           className="flex gap-4 overflow-x-auto scrollbar-hide py-2 px-1 scroll-smooth"
         >
-          {productData.images.map((img, index) => (
-            <button
-              key={index}
-              className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all transform hover:scale-105 ${selectedImage === index
-                ? "ring-4 ring-[#EA8932] shadow-lg"
-                : "ring-2 ring-gray-200 hover:ring-gray-300"
-                }`}
-              onClick={() => setSelectedImage(index)}
-            >
-              <img
-                src={getImageUrl(img.url)}
-                alt={`View ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-              {selectedImage === index && (
-                <div className="absolute inset-0 bg-[#EA8932]/20"></div>
-              )}
-            </button>
-          ))}
+          {productData?.images && productData.images.length > 0 ? (
+            productData.images.map((img, index) => {
+              if (!img?.url) return null;
+              return (
+                <button
+                  key={index}
+                  className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all transform hover:scale-105 ${selectedImage === index
+                    ? "ring-4 ring-[#EA8932] shadow-lg"
+                    : "ring-2 ring-gray-200 hover:ring-gray-300"
+                    }`}
+                  onClick={() => setSelectedImage(index)}
+                >
+                  <img
+                    src={getImageUrl(img.url)}
+                    alt={`View ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {selectedImage === index && (
+                    <div className="absolute inset-0 bg-[#EA8932]/20"></div>
+                  )}
+                </button>
+              );
+            })
+          ) : (
+            <div className="w-20 h-20 flex-shrink-0 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
+              No Image
+            </div>
+          )}
         </div>
 
         {/* Right Arrow */}

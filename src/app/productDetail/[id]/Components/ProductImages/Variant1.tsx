@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { getImageUrl } from "@/app/utils/imageHelper";
 
 const RenderVariant1 = () => {
-  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<number>(-1);
   const productData = useSelector(selectSelectedProduct);
   const currentVariantImage = useSelector(selectCurrentVariantImage);
 
@@ -13,7 +13,11 @@ const RenderVariant1 = () => {
   // We can either bypass the selectedImage index or try to find it.
   // Bypassing is safer as it might not be in the main images list.
 
-  const mainImage = currentVariantImage ? getImageUrl(currentVariantImage) : (productData?.images?.[selectedImage] ? getImageUrl(productData.images[selectedImage].url) : "");
+  const mainImage = currentVariantImage
+    ? getImageUrl(currentVariantImage)
+    : (selectedImage > -1 && productData?.images?.[selectedImage])
+    ? getImageUrl(productData.images[selectedImage].url)
+    : (productData?.images?.[0] ? getImageUrl(productData.images[0].url) : "");
 
 
   const nextImage = () => {
@@ -74,10 +78,14 @@ const RenderVariant1 = () => {
                 alt="Product Image"
                 className="w-full h-full object-cover"
               />
-            ) : null}
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm border-2 border-dashed rounded-lg">
+                Select a pack to view image
+              </div>
+            )}
 
             {/* Image indicator dots */}
-            {productData?.images?.length > 1 && (
+            {(productData?.images?.length > 1 && (selectedImage > -1 || currentVariantImage)) && (
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                 {productData.images.map((_, index) => (
                   <div

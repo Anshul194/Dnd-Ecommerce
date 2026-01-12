@@ -32,6 +32,13 @@ export async function GET(req) {
     // Build query object dynamically
     const query = {};
 
+    // Optional isActive filter (for public endpoints)
+    const isActiveParam = url.searchParams.get('isActive');
+    if (isActiveParam !== null) {
+      // interpret "true"/"false"
+      query.isActive = isActiveParam === 'true';
+    }
+
     if (productId) query.productId = productId;
     if (userId) query.userId = userId;
     if (rating) query.rating = rating;

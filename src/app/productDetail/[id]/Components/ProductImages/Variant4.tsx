@@ -6,12 +6,16 @@ import { getImageUrl } from "@/app/utils/imageHelper";
 
 const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
 const RenderVariant4 = ({ imageSettings }) => {
-  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<number>(-1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const productData = useSelector(selectSelectedProduct);
   const currentVariantImage = useSelector(selectCurrentVariantImage);
 
-  const mainImage = currentVariantImage ? getImageUrl(currentVariantImage) : (productData?.images?.[selectedImage] ? getImageUrl(productData.images[selectedImage].url) : "");
+  const mainImage = currentVariantImage
+    ? getImageUrl(currentVariantImage)
+    : (selectedImage > -1 && productData?.images?.[selectedImage])
+    ? getImageUrl(productData.images[selectedImage].url)
+    : (productData?.images?.[0] ? getImageUrl(productData.images[0].url) : "");
 
 
   const nextImage = () => {
@@ -28,11 +32,17 @@ const RenderVariant4 = ({ imageSettings }) => {
   return (
     <div className="space-y-6">
       <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100">
-        <img
-          src={mainImage}
-          alt="Main product"
-          className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {mainImage ? (
+          <img
+            src={mainImage}
+            alt="Main product"
+            className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-80 flex items-center justify-center text-gray-400 text-sm border-2 border-dashed rounded-lg">
+            Select a pack to view image
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Navigation Controls */}
