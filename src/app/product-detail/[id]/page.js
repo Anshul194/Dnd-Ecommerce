@@ -570,12 +570,20 @@ function ProductPage({ params }) {
                                   className="flex items-start gap-2"
                                 >
                                   <div className="w-1.5 h-1.5 greenOne rounded-full mt-2 flex-shrink-0"></div>
-                                  <div
-                                    dangerouslySetInnerHTML={{
-                                      __html: item.description,
-                                    }}
-                                    className="leading-relaxed"
-                                  ></div>
+                                  <div className="leading-relaxed">
+                                    {(item.name || item.title) && (
+                                      <div className="font-semibold text-gray-900 mb-1">
+                                        {item.name || item.title}
+                                      </div>
+                                    )}
+                                    {item.description && (
+                                      <div
+                                        dangerouslySetInnerHTML={{
+                                          __html: item.description,
+                                        }}
+                                      ></div>
+                                    )}
+                                  </div>
                                 </li>
                               ))}
                           </ul>

@@ -70,12 +70,16 @@ export default function Ingredient({ data }) {
                     {String(index + 1).padStart(2, '0')}
                   </span>
                   <div className="flex-1">
-                    <h3 className="text-3xl font-bold text-black bebas mb-2">
-                      {ingredient.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 poppins-medium mb-2">
-                      {ingredient.quantity}
-                    </p>
+                    {((ingredient.name && ingredient.name.trim()) || (ingredient.title && ingredient.title.trim())) && (
+                      <h3 className="text-3xl font-bold text-black bebas mb-2">
+                        {(ingredient.name && ingredient.name.trim()) || (ingredient.title && ingredient.title.trim())}
+                      </h3>
+                    )}
+                    {ingredient.quantity && ingredient.quantity.trim() && (
+                      <p className="text-sm text-gray-600 poppins-medium mb-2">
+                        {ingredient.quantity}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -137,12 +141,18 @@ export default function Ingredient({ data }) {
               {/* Image Overlay Info */}
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4">
-                  <h4 className="text-xl font-bold text-black bebas mb-1">
-                    {ingredients[activeIngredient]?.name}
-                  </h4>
-                  <p className="text-sm text-gray-700 poppins-medium">
-                    {ingredients[activeIngredient]?.quantity}
-                  </p>
+                  {((ingredients[activeIngredient]?.name && ingredients[activeIngredient].name.trim()) || 
+                    (ingredients[activeIngredient]?.title && ingredients[activeIngredient].title.trim())) && (
+                    <h4 className="text-xl font-bold text-black bebas mb-1">
+                      {(ingredients[activeIngredient]?.name && ingredients[activeIngredient].name.trim()) || 
+                       (ingredients[activeIngredient]?.title && ingredients[activeIngredient].title.trim())}
+                    </h4>
+                  )}
+                  {ingredients[activeIngredient]?.quantity && ingredients[activeIngredient].quantity.trim() && (
+                    <p className="text-sm text-gray-700 poppins-medium">
+                      {ingredients[activeIngredient]?.quantity}
+                    </p>
+                  )}
                 </div>
               </div>
 

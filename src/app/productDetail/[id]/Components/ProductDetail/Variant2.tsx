@@ -387,12 +387,20 @@ function Variant2({ productData: propProductData, detailSettings }: Variant2Prop
                     className="flex items-start b-10 gap-2"
                   >
                     <div className="w-1.5 h-1.5 greenOne rounded-full mt-2 flex-shrink-0"></div>
-                    <span
-                      dangerouslySetInnerHTML={{
-                        __html: item.description,
-                      }}
-                      className="leading-relaxed"
-                    ></span>
+                    <div className="leading-relaxed">
+                      {(item.name || item.title) && (
+                        <div className="font-semibold text-gray-900 mb-1">
+                          {item.name || item.title}
+                        </div>
+                      )}
+                      {item.description && (
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: item.description,
+                          }}
+                        ></span>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>

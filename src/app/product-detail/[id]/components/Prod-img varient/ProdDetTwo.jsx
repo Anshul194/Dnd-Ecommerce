@@ -398,9 +398,16 @@ function ProdDetTwo() {
                     {productData.ingredients.map((item) => (
                       <div key={item._id} className="flex items-start gap-3">
                         <div className="w-2 h-2 greenOne rounded-full mt-2 flex-shrink-0"></div>
-                        <span className="text-gray-700">
-                          {item.description}
-                        </span>
+                        <div className="text-gray-700">
+                          {(item.name || item.title) && (
+                            <div className="font-semibold text-gray-900 mb-1">
+                              {item.name || item.title}
+                            </div>
+                          )}
+                          {item.description && (
+                            <span>{item.description}</span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

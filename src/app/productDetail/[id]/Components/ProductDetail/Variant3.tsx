@@ -496,12 +496,20 @@ function Variant3({ productData: propProductData }: Variant3Props) {
               {productData.ingredients.map((item: any) => (
                 <div key={item._id} className="flex items-start gap-3">
                   <div className="w-2 h-2 greenOne rounded-full mt-2 flex-shrink-0"></div>
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: item.description,
-                    }}
-                    className="text-gray-700"
-                  ></span>
+                  <div className="text-gray-700">
+                    {(item.name || item.title) && (
+                      <div className="font-semibold text-gray-900 mb-1">
+                        {item.name || item.title}
+                      </div>
+                    )}
+                    {item.description && (
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: item.description,
+                        }}
+                      ></span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
