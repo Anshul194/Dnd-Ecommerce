@@ -419,9 +419,9 @@ export default function Navbar({ initialCategories = [] }) {
                 <Image
                   src="/logo.png"
                   alt="TeaHaven Logo"
-                  width={100}
-                  height={100}
-                  className="rounded-full h-[90px] w-[90px] max-sm:h-[60px] max-sm:w-[60px] object-cover "
+                  width={200}
+                  height={200}
+                  className="rounded-full h-[150px] w-[150px] max-sm:h-[100px] max-sm:w-[100px] object-cover "
                 />
               </Link>
 
