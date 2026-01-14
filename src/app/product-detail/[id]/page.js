@@ -37,6 +37,7 @@ import {
 import { setCheckoutOpen } from "@/app/store/slices/checkOutSlice";
 
 import { trackEvent } from "@/app/lib/tracking/trackEvent";
+import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 function ProductPage({ params }) {
   const { id: slug } = React.use(params); // unwrap params with React.use()
@@ -93,6 +94,13 @@ function ProductPage({ params }) {
     //   return;
     // }
     const { salePrice } = getDisplayPrice(data, selectedPack);
+    
+    // Check if price is available
+    if (salePrice === null || salePrice === undefined) {
+      toast.error("Price not available for this product. Please contact support.");
+      return;
+    }
+    
     try {
       const resultAction = await dispatch(
         addToCart({
@@ -148,6 +156,13 @@ function ProductPage({ params }) {
     //   return;
     // }
     const { salePrice } = getDisplayPrice(data, selectedPack);
+    
+    // Check if price is available
+    if (salePrice === null || salePrice === undefined) {
+      toast.error("Price not available for this product. Please contact support.");
+      return;
+    }
+    
     try {
       // Ensure image has proper structure
       const productImage = data.thumbnail || data.images?.[0];
@@ -383,10 +398,17 @@ function ProductPage({ params }) {
                 <div className="flex gap-3 flex-wrap">
                   {data?.variants?.length > 0 ? (
                     data?.variants?.map((variant, index) => {
-                      // Calculate discount percentage if sale price exists
-                      const discountPercent = variant.salePrice && variant.price
-                        ? Math.round(((variant.price - variant.salePrice) / variant.price) * 100)
+                      // Handle null prices properly
+                      const variantPrice = variant.price !== null && variant.price !== undefined ? variant.price : null;
+                      const variantSalePrice = variant.salePrice !== null && variant.salePrice !== undefined ? variant.salePrice : null;
+                      
+                      // Calculate discount percentage if sale price exists and both prices are valid numbers
+                      const discountPercent = variantSalePrice !== null && variantPrice !== null && variantPrice > variantSalePrice
+                        ? Math.round(((variantPrice - variantSalePrice) / variantPrice) * 100)
                         : 0;
+
+                      // Determine display price
+                      const displayPrice = variantSalePrice !== null ? variantSalePrice : variantPrice;
 
                       return (
                         <div
@@ -412,11 +434,11 @@ function ProductPage({ params }) {
                                 : "text-gray-900"
                                 }`}
                             >
-                              ₹{variant.salePrice || variant.price}
+                              {displayPrice !== null ? `₹${displayPrice}` : "Price not available"}
                             </div>
-                            {variant.salePrice && variant.price > variant.salePrice && (
+                            {variantSalePrice !== null && variantPrice !== null && variantPrice > variantSalePrice && (
                               <div className="text-sm text-gray-500 line-through">
-                                ₹{variant.price}
+                                ₹{variantPrice}
                               </div>
                             )}
                           </div>

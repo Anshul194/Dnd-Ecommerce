@@ -71,8 +71,8 @@ function Variant1({ productData: propProductData, detailSettings }: Variant1Prop
 
     const { salePrice } = getDisplayPrice(productData, selectedVariant);
 
-    if (!salePrice && salePrice !== 0) {
-      toast.error("Please select a valid variant");
+    if (salePrice === null || salePrice === undefined) {
+      toast.error("Price not available for this variant. Please contact support.");
       return;
     }
 
@@ -259,39 +259,50 @@ function Variant1({ productData: propProductData, detailSettings }: Variant1Prop
                   }
                 }}
               >
-                <div
-                  className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${variant.color === "green"
-                    ? "greenOne"
-                    : variant.color === "orange"
-                      ? "bg-orange-500"
-                      : "bg-blue-500"
-                    }`}
-                >
-                  {(variant.salePrice - variant.price) / variant.price
-                    ? `-${Math.round(
-                      ((variant.price - variant.salePrice) / variant.price) *
-                      100
-                    )}%`
-                    : ""}
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-sm text-black">
-                    {variant.title}
-                  </div>
-                  <div
-                    className={`font-semibold ${selectedVariant === variant._id
-                      ? "text-green-600"
-                      : "text-gray-900"
-                      }`}
-                  >
-                    ₹{variant.salePrice || variant.price}
-                  </div>
-                  {variant.salePrice && (
-                    <div className="text-sm text-gray-500 line-through">
-                      ₹{variant.price}
-                    </div>
-                  )}
-                </div>
+                {(() => {
+                  // Handle null prices properly
+                  const variantPrice = variant.price !== null && variant.price !== undefined ? variant.price : null;
+                  const variantSalePrice = variant.salePrice !== null && variant.salePrice !== undefined ? variant.salePrice : null;
+                  const displayPrice = variantSalePrice !== null ? variantSalePrice : variantPrice;
+                  const discountPercent = variantSalePrice !== null && variantPrice !== null && variantPrice > variantSalePrice
+                    ? Math.round(((variantPrice - variantSalePrice) / variantPrice) * 100)
+                    : 0;
+                  
+                  return (
+                    <>
+                      {discountPercent > 0 && (
+                        <div
+                          className={`absolute -top-2 -right-2 text-white text-xs px-2 py-1 rounded ${variant.color === "green"
+                            ? "greenOne"
+                            : variant.color === "orange"
+                              ? "bg-orange-500"
+                              : "bg-blue-500"
+                            }`}
+                        >
+                          -{discountPercent}%
+                        </div>
+                      )}
+                      <div className="text-center">
+                        <div className="font-bold text-sm text-black">
+                          {variant.title}
+                        </div>
+                        <div
+                          className={`font-semibold ${selectedVariant === variant._id
+                            ? "text-green-600"
+                            : "text-gray-900"
+                            }`}
+                        >
+                          {displayPrice !== null ? `₹${displayPrice}` : "Price not available"}
+                        </div>
+                        {variantSalePrice !== null && variantPrice !== null && variantPrice > variantSalePrice && (
+                          <div className="text-sm text-gray-500 line-through">
+                            ₹{variantPrice}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             ))
           ) : (
