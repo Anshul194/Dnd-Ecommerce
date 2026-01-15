@@ -324,8 +324,8 @@ function Variant3({ productData: propProductData }: Variant3Props) {
                 <button
                   key={variant._id}
                   className={`relative w-full bg-white border-2 rounded-xl overflow-hidden transition-all text-center ${isSelected
-                      ? "border-green-800 shadow-lg ring-1 ring-green-800"
-                      : "border-gray-200 hover:border-gray-300"
+                    ? "border-green-800 shadow-lg ring-1 ring-green-800"
+                    : "border-gray-200 hover:border-gray-300"
                     }`}
                   onClick={() => {
                     setSelectedVariant(variant._id);
@@ -411,7 +411,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
         <div ref={actionButtonsRef} className="flex gap-3 mb-6">
           <button
             onClick={handleAddToCart}
-            className="flex-1 greenOne text-white py-4 px-6 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+            className="flex-1 greenOne text-black py-4 px-6 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
           >
             <ShoppingCart size={20} className="max-sm:hidden" />
             Add to Cart
