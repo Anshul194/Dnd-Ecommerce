@@ -25,18 +25,39 @@ class SubCategoryService {
 
   async getAllSubCategories(query) {
     try {
-      const { page = 1, limit = 10, filters = "{}", searchFields = "{}", sort = "{}" } = query;
+      console.log("SubCategoryService.getAllSubCategories - Query received:", query);
+      const {
+        page = 1,
+        limit = 10,
+        filters = "{}",
+        searchFields = "{}",
+        sort = "{}",
+      } = query;
 
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
 
-      const parsedFilters = JSON.parse(filters);
-      const parsedSearchFields = JSON.parse(searchFields);
-      const parsedSort = JSON.parse(sort);
+      // Parse JSON strings from query parameters to objects with robustness
+      const tryParse = (val, defaultVal = {}) => {
+        if (!val || val === "undefined" || val === "null") return defaultVal;
+        if (typeof val === "object") return val;
+        try {
+          return JSON.parse(val);
+        } catch (e) {
+          console.error(`Failed to parse parameter: ${val}`, e);
+          return defaultVal;
+        }
+      };
+
+      const parsedFilters = tryParse(filters);
+      const parsedSearchFields = tryParse(searchFields);
+      const parsedSort = tryParse(sort);
 
       const filterConditions = { deletedAt: null };
       for (const [key, value] of Object.entries(parsedFilters)) {
-        filterConditions[key] = value;
+        if (value !== undefined && value !== null && value !== "") {
+          filterConditions[key] = value;
+        }
       }
 
       const searchConditions = [];

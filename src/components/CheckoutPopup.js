@@ -40,7 +40,7 @@ import {
 import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { initializeBuyNowFromQuery, getCartItems, restoreCartState, setBuyNowProduct } from "@/app/store/slices/cartSlice";
-import { fetchProducts } from "@/app/store/slices/productSlice";
+import { fetchProducts, fetchAddons } from "@/app/store/slices/productSlice";
 import { toast } from "react-toastify";
 import { fetchSettings } from "@/app/store/slices/settingSlice";
 import axiosInstance from "@/axiosConfig/axiosInstance";
@@ -982,11 +982,7 @@ export default function CheckoutPopup() {
   useEffect(() => {
     setMounted(true);
     dispatch(restoreCartState());
-    dispatch(
-      fetchProducts({
-        isAddon: true,
-      })
-    );
+    dispatch(fetchAddons());
     dispatch(fetchPages());
     // Settings are already fetched and cached by ClientLayout - no need to fetch again
 
@@ -1484,19 +1480,19 @@ export default function CheckoutPopup() {
                         const selectedVariant = buyNowProduct?.product?.variants?.find(
                           (v) => v._id === buyNowProduct?.variant || v.id === buyNowProduct?.variant
                         );
-                        
+
                         // Prioritize variant image, then product images
-                        const imageSource = 
+                        const imageSource =
                           (selectedVariant?.images?.[0]) ||
                           buyNowProduct?.product?.image ||
                           buyNowProduct?.product?.thumbnail ||
                           buyNowProduct?.product?.images?.[0] ||
                           "/Image-not-found.png";
-                        
-                        const imageAlt = 
+
+                        const imageAlt =
                           buyNowProduct?.product?.name ||
                           "Product";
-                        
+
                         return (
                           <Image
                             src={getImageUrl(imageSource)}
@@ -1545,19 +1541,19 @@ export default function CheckoutPopup() {
                             const selectedVariant = item?.product?.variants?.find(
                               (v) => v._id === item?.variant || v.id === item?.variant
                             );
-                            
+
                             // Prioritize variant image, then product images
-                            const imageSource = 
+                            const imageSource =
                               (selectedVariant?.images?.[0]) ||
                               item?.product?.thumbnail ||
                               item?.product?.images?.[0] ||
                               item?.product?.image ||
                               "/Image-not-found.png";
-                            
-                            const imageAlt = 
+
+                            const imageAlt =
                               item?.product?.name ||
                               "Product";
-                            
+
                             return (
                               <Image
                                 src={getImageUrl(imageSource)}
