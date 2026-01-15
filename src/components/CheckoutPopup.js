@@ -2106,7 +2106,7 @@ export default function CheckoutPopup() {
 
                   <button
                     onClick={handleAddAddress}
-                    className="w-full mt-4 mb-4 text-sm bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition-colors "
+                    className="w-full mt-4 mb-4 text-sm greenTwo text-white py-3 rounded-md hover:opacity-90 transition-colors "
                   >
                     Add address
                   </button>
@@ -2276,10 +2276,7 @@ export default function CheckoutPopup() {
                 }
               }}
               disabled={placingOrder || pincodeChecking}
-              className={`w-full mt-4  text-sm ${pinCodeVerified?.success
-                ? "bg-blue-600 hover:bg-blue-700"
-                : " greenOne hover:bg-green-700"
-                } text-white py-3 rounded-md  transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+              className={`w-full mt-4  text-sm greenTwo text-white py-3 rounded-md  transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
             >
               {placingOrder ? (
                 <>
@@ -2439,7 +2436,7 @@ export default function CheckoutPopup() {
                       </div>
                     </div>
                     {isSelected && (
-                      <div className="mt-2 text-xs text-blue-600 font-medium">
+                      <div className="mt-2 text-xs text-green-600 font-medium">
                         ✓ Currently Selected
                       </div>
                     )}
