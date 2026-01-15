@@ -341,7 +341,8 @@ function CheckoutPageContent() {
       return response.data;
     } catch (error) {
       //console.log("Error checking payment status:", error);
-      toast.error(error.response.data.message);
+      const errorMessage = error.response?.data?.message || error.message || "Order validation failed";
+      return { success: false, message: errorMessage };
     }
   };
 
@@ -369,7 +370,6 @@ function CheckoutPageContent() {
 
     // Additional check for the specific message
     if (check.message && check.message !== "Order is valid" && !check.success) {
-      toast.error(check.message || "Order validation failed. Please try again.");
       setPlacingOrder(false);
       return;
     }

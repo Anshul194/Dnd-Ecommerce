@@ -386,7 +386,6 @@ export default function CheckoutPopup() {
     } catch (error) {
       //console.log("Error checking payment status:", error);
       const errorMessage = error?.response?.data?.message || error?.message || "Failed to validate order. Please check your address details.";
-      toast.error(errorMessage);
       return {
         success: false,
         message: errorMessage
@@ -420,7 +419,8 @@ export default function CheckoutPopup() {
 
     // Additional check for the specific message
     if (check.message && check.message !== "Order is valid" && !check.success) {
-      toast.error(check.message || "Order validation failed. Please try again.");
+      // Note: toast is already shown by checking (!check || !check.success) above if checkBeforePayment didn't show it.
+      // However, to be extra safe and avoid duplicates, we only show it IF it's not handled.
       setPlacingOrder(false);
       return;
     }
