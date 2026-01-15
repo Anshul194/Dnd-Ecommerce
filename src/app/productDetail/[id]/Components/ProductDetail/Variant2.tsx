@@ -211,12 +211,12 @@ function Variant2({ productData: propProductData, detailSettings }: Variant2Prop
       {/* Pack Selection */}
       <div className="mb-6 relative">
         <h3 className="font-semibold text-black mb-3">Select Pack</h3>
-        <div className="flex gap-3">
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {productData?.variants?.map((variant, index) => (
             <div
               key={index}
               onClick={() => setSelectedVariant(variant._id)}
-              className={`relative flex-1 border-2 rounded-lg p-4 cursor-pointer transition-all ${selectedVariant == variant._id
+              className={`relative flex-1 min-w-[200px] border-2 rounded-lg p-4 cursor-pointer transition-all ${selectedVariant == variant._id
                 ? "border-green-600 bg-green-50"
                 : "border-gray-300 hover:border-gray-400"
                 }`}

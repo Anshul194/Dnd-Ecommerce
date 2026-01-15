@@ -333,7 +333,7 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
             {/* Variant Selection */}
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-900">Choose Size</h3>
-              <div className="space-y-2">
+              <div className="flex lg:block gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {productData?.variants?.map((variant, index) => (
                   <button
                     key={variant._id}
@@ -352,7 +352,7 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
                         dispatch(setCurrentVariantImage(null));
                       }
                     }}
-                    className={`w-full p-3 border-2 rounded-lg text-left transition-all ${selectedVariant === index
+                    className={`flex-shrink-0 lg:w-full min-w-[150px] p-3 border-2 rounded-lg text-left transition-all ${selectedVariant === index
                       ? "customBorder bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
                       }`}
