@@ -165,7 +165,7 @@ export default function Footer() {
                 />
               </div>
               <span className="text-[#3C950D] capitalize text-xl tracking-tight">
-                bharat gram udyogsangh
+               Bharat Gram Udyog Sangh
               </span>
             </div>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
@@ -409,7 +409,7 @@ export default function Footer() {
           className="border-t border-gray-800 pt-4 text-center text-sm text-gray-400"
         >
           <p>
-            &copy; 2025 BharatGramUdyogSangh. All rights reserved.
+            &copy; 2025 Bharat Gram Udyog Sangh. All rights reserved.
           </p>
         </motion.div>
       </div>
