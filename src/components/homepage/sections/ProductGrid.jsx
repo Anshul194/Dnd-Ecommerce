@@ -13,11 +13,11 @@ const ProductGrid = () => {
   const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    // Only fetch if products are not already loaded
-    const productList = products?.products || products || [];
-    if (!hasFetchedRef.current && productList.length === 0) {
+    // Always fetch to ensure we respect the current limit (e.g. 8 vs 1000)
+    // regardless of previously loaded state
+    if (!hasFetchedRef.current) {
       hasFetchedRef.current = true;
-      dispatch(fetchProducts({ limit: 1000 }));
+      dispatch(fetchProducts({ limit: 8 }));
     }
   }, [dispatch, products]);
 
@@ -47,7 +47,7 @@ const ProductGrid = () => {
       {/* Products Grid */}
       {!loading && productList.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:px-4">
-          {productList.map((product) => (
+          {productList.slice(0, 8).map((product) => (
             <ProductCard
               key={product._id}
               product={product}
