@@ -1,6 +1,7 @@
 import Variant1 from "./Variant1";
 import Variant2 from "./Variant2";
 import Variant3 from "./Variant3";
+import Variant4 from "./Variant4";
 
 export function HowToUse({
   component,
@@ -60,20 +61,27 @@ export function HowToUse({
           "Regular maintenance ensures longevity. Clean after use and store in a cool, dry place.",
       },
     ],
+    storageInfo: {
+      title: "Storage & Freshness",
+      description:
+        "Store in a cool, dry place away from direct sunlight. Once opened, keep refrigerated and consume within 25-30 days as it contains no strong artificial preservatives.",
+    },
   };
 
-  const data = dummyHowToUseData;
+  const data = product || dummyHowToUseData;
 
   const renderVariant = () => {
     switch (howToUseSettings.variant) {
       case "minimal":
-        return <Variant1 data={data} />;
+        return <Variant1 productData={data} />;
       case "detailed":
-        return <Variant2 data={data} />;
+        return <Variant2 productData={data} />;
       case "standard":
-        return <Variant3 data={data} />;
+        return <Variant3 productData={data} />;
+      case "ayurvedic":
+        return <Variant4 productData={data} />;
       default:
-        return <Variant1 data={data} />;
+        return <Variant1 productData={data} />;
     }
   };
 

@@ -295,7 +295,7 @@ export default function Navbar({ initialCategories = [] }) {
               )}
               <SheetContent
                 side="left"
-                className="w-[280px] sm:w-[320px] overflow-y-auto"
+                className="w-auto sm:w-[320px] overflow-y-auto"
               >
                 <SheetHeader>
                   <SheetTitle className="text-[#3C950D]">Menu</SheetTitle>
@@ -421,7 +421,7 @@ export default function Navbar({ initialCategories = [] }) {
                   alt="TeaHaven Logo"
                   width={200}
                   height={200}
-                  className="rounded-full h-[150px] w-[150px] max-sm:h-[100px] max-sm:w-[100px] object-cover "
+                  className=" h-[100px] w-auto max-sm:h-[100px] max-sm:w-[100px] object-contain "
                 />
               </Link>
 

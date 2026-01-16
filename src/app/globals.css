@@ -1,4 +1,5 @@
 @import "tailwindcss";
+/* @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap'); */
 
 :root {
   --background: #ffffff;
@@ -11,6 +12,14 @@
   --color-foreground: var(--foreground);
   /* --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono); */
+  
+  /* Veda Ayurvedic Theme Variables */
+  --font-manrope: "Manrope", sans-serif;
+  --color-veda-primary: #13ec5b;
+  --color-veda-background-light: #f6f8f6;
+  --color-veda-background-dark: #102216;
+  --color-veda-text-dark: #0d1b12;
+  --color-veda-text-secondary: #4c9a66;
 }
 
 @media (prefers-color-scheme: dark) {
