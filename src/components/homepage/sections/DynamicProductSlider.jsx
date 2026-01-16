@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import teaOne from "../../../../public/images/one.webp";
-import { fetchProducts } from "@/app/store/slices/productSlice";
+import { fetchFrequentlyPurchasedProducts } from "@/app/store/slices/productSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ShoppingCart, X } from "lucide-react";
@@ -26,13 +26,14 @@ import { getDisplayPrice } from "@/app/utils/priceHelper";
 
 const DynamicProductSlider = ({ content }) => {
   const { title, description, image } = content;
-  const { products, loading } = useSelector((state) => state.product);
+  // Use separate frequentlyPurchased state to avoid colliding with ProductGrid's main product list
+  const { frequentlyPurchased, loading } = useSelector((state) => state.product);
 
 
 
 
   // Safely derive stories from products (handling both array and object structure)
-  const rawProducts = Array.isArray(products) ? products : (products?.products || []);
+  const rawProducts = Array.isArray(frequentlyPurchased) ? frequentlyPurchased : [];
 
   // Merge Product Stories (Admin)
   const stories = rawProducts.filter((P) => P?.storyVideoUrl).map(p => ({ ...p, isUserStory: false }));
@@ -67,7 +68,7 @@ const DynamicProductSlider = ({ content }) => {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [products]);
+  }, [frequentlyPurchased]);
 
   const scroll = (direction) => {
     const container = sliderRef.current;
@@ -268,7 +269,7 @@ const DynamicProductSlider = ({ content }) => {
 
   useEffect(() => {
     dispatch(
-      fetchProducts({
+      fetchFrequentlyPurchasedProducts({
         frequentlyPurchased: true,
         limit: 10,
       })
@@ -305,7 +306,7 @@ const DynamicProductSlider = ({ content }) => {
   };
 
   // Check if we should show the component
-  const hasProducts = products?.length > 0 || products?.products?.length > 0;
+  const hasProducts = frequentlyPurchased?.length > 0;
   if (loading || !hasProducts) {
     return null;
   }
@@ -390,17 +391,8 @@ const DynamicProductSlider = ({ content }) => {
             className="grid grid-cols-2 gap-4 auto-rows-fr  md:grid-cols-3 lg:flex lg:overflow-x-auto scrollbar-hide lg:space-x-4 py-4 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {products?.products?.length > 0 ? (
-              products?.products?.map((product, index) => (
-                <TrySectionCard
-                  key={product._id}
-                  product={product}
-                  showDes={false}
-                  buyNow={true}
-                />
-              ))
-            ) : products?.length > 0 ? (
-              products?.map((product, index) => (
+            {frequentlyPurchased?.length > 0 ? (
+              frequentlyPurchased.map((product, index) => (
                 <TrySectionCard
                   key={product._id}
                   product={product}

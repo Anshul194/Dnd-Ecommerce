@@ -39,6 +39,24 @@ const ProductCard = ({ product, showDes, buyNow }) => {
   const { trackView, trackAddToCart, trackWishlist, trackRemoveWishlist } =
     useTrack();
 
+  const [imgSrc, setImgSrc] = useState(
+    getImageUrl(product?.thumbnail) ||
+    getImageUrl(product?.images?.[0]) ||
+    "/Image-not-found.png"
+  );
+
+  useEffect(() => {
+    setImgSrc(
+      getImageUrl(product?.thumbnail) ||
+      getImageUrl(product?.images?.[0]) ||
+      "/Image-not-found.png"
+    );
+  }, [product]);
+
+  const handleImageError = () => {
+    setImgSrc("/Image-not-found.png");
+  };
+
   // Get wishlist items from Redux for immediate updates
   const { items: wishlistItems, initialized } = useSelector((state) => state.wishlist);
 
@@ -276,11 +294,12 @@ const ProductCard = ({ product, showDes, buyNow }) => {
             <div className="flex h-40 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
               {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
               <Image
-                src={getImageUrl(product?.thumbnail) || getImageUrl(product?.images?.[0]) || "/Image-not-found.png"}
+                src={imgSrc}
                 alt={product?.thumbnail?.alt || product.images?.[0]?.alt || product?.name || "Product Image"}
                 width={160}
                 height={120}
                 className="object-contain h-full w-full"
+                onError={handleImageError}
               />
             </div>
           </div>

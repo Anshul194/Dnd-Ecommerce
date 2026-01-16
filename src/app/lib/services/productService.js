@@ -101,13 +101,74 @@ class ProductService {
       console.log(`[ProductService] Applying name filter: ${name}`);
     }
 
-    // Accept multiple query param names for backwards-compatibility
+    // Handle onlyWithVariants filter - must be checked separately to ensure it always runs
+    if (onlyWithVariants === "true" || onlyWithVariants === true || onlyWithVariants === "1" || onlyWithVariants === 1) {
+      const Variant = conn.models.Variant || conn.model("Variant", variantSchema);
+      // Find all variants that are not deleted and get distinct productIds
+      // Use lean() to get plain JavaScript objects and handle both ObjectId and string formats
+      const variants = await Variant.find({ deletedAt: null }).lean();
+      const productsWithVariants = [...new Set(variants.map(v => {
+        const pid = v.productId;
+        // Convert to string for consistent comparison, handle both ObjectId and string
+        return pid ? (pid.toString ? pid.toString() : String(pid)) : null;
+      }).filter(Boolean))];
+      
+      console.log(`[ProductService] Found ${variants.length} variants (deletedAt: null)`);
+      console.log(`[ProductService] Found ${productsWithVariants.length} unique products with variants (onlyWithVariants=true)`);
+      console.log(`[ProductService] Product IDs with variants:`, productsWithVariants);
+
+      if (Array.isArray(productsWithVariants) && productsWithVariants.length > 0) {
+        // Convert all IDs to ObjectIds for MongoDB query
+        const productIds = productsWithVariants.map(idStr => {
+          try {
+            if (mongoose.Types.ObjectId.isValid(idStr)) {
+              return new mongoose.Types.ObjectId(idStr);
+            }
+            return idStr;
+          } catch {
+            return idStr;
+          }
+        });
+        const productIdStrings = productIds.map(id => id ? id.toString() : String(id));
+
+        // Merge with existing _id filter if present
+        if (filterConditions._id) {
+          if (filterConditions._id.$in) {
+            // If _id already has $in, intersect the arrays
+            filterConditions._id.$in = filterConditions._id.$in.filter(id => {
+              const idStr = id ? id.toString() : String(id);
+              return productIdStrings.includes(idStr);
+            });
+            // If intersection is empty, ensure we get no results
+            if (filterConditions._id.$in.length === 0) {
+              filterConditions._id = { $in: [] };
+            }
+          } else {
+            // If _id is a single value, check if it's in productsWithVariants
+            const idStr = filterConditions._id ? filterConditions._id.toString() : String(filterConditions._id);
+            if (!productIdStrings.includes(idStr)) {
+              filterConditions._id = { $in: [] }; // Product doesn't have variants
+            }
+          }
+        } else {
+          filterConditions._id = { $in: productIds };
+        }
+      } else {
+        // No products have variants, return empty result
+        filterConditions._id = { $in: [] };
+      }
+      
+      console.log(`[ProductService] Final filterConditions._id after onlyWithVariants:`, 
+        filterConditions._id?.$in ? `${filterConditions._id.$in.length} product IDs` : filterConditions._id);
+    }
+
+    // Handle price filters separately (only apply if not already handled by onlyWithVariants)
     const minQuery =
       minPrice || query.min || query.min_price || query.minprice || null;
     const maxQuery =
       maxPrice || query.max || query.max_price || query.maxprice || null;
 
-    if (minQuery || maxQuery || onlyWithVariants === "true") {
+    if ((minQuery || maxQuery) && onlyWithVariants !== "true" && onlyWithVariants !== true) {
       const minVal = minQuery ? parseFloat(minQuery) : null;
       const maxVal = maxQuery ? parseFloat(maxQuery) : null;
 

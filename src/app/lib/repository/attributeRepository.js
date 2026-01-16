@@ -57,18 +57,23 @@ class AttributeRepository extends CrudRepository {
       throw new Error('Product ID is required to find attributes');
     }
 
-    const Product = this.Product.findOne({ _id: productId, deletedAt: null });
-    if (!Product) {
-      throw new Error(`Product with ID ${productId} not found or deleted`);
+    const product = await this.Product.findOne({ _id: productId, deletedAt: null });
+    
+    if (!product) {
+      return []; // Return empty array if product not found
     }
 
-    const product = await Product;
-    if (!product || !product.attributeSet) {
-      throw new Error('Product or attributeSet not found');
+    // If product exists but has no attributeSet or empty attributeSet, return empty array
+    if (!product.attributeSet || !Array.isArray(product.attributeSet) || product.attributeSet.length === 0) {
+      return []; // Return empty array instead of throwing error
     }
 
     // Extract attributeIds from attributeSet array
-    const attributeIds = product.attributeSet.map(item => item.attributeId);
+    const attributeIds = product.attributeSet.map(item => item.attributeId).filter(id => id); // Filter out any null/undefined IDs
+
+    if (attributeIds.length === 0) {
+      return []; // Return empty array if no valid attributeIds
+    }
 
     // Populate attributes for dropdown
     const attributes = await this.Attribute.find({
@@ -76,9 +81,7 @@ class AttributeRepository extends CrudRepository {
       deletedAt: null,
     });
 
-    return attributes;
-
-    
+    return attributes || []; // Ensure we always return an array
   }
 
   // Custom soft delete (status inactive)

@@ -203,7 +203,17 @@ export const fetchFrequentlyPurchasedProducts = createAsyncThunk(
       const response = await axiosInstance.get("/product", {
         params: quaryParams,
       });
-      return response.data.products.data;
+
+      // Robust parsing for Dnd-Ecommerce (matching fetchProducts logic)
+      const apiData = response.data?.products?.data ||
+        response.data?.data?.body?.data ||
+        response.data?.body?.data ||
+        response.data?.products ||
+        response.data?.data ||
+        response.data;
+
+      const productsArray = apiData?.products || apiData?.result || (Array.isArray(apiData) ? apiData : []);
+      return productsArray;
     } catch (error) {
       throw error;
     }
@@ -225,6 +235,7 @@ const productSlice = createSlice({
     error: null,
     productCache: {},
     addons: [],
+    frequentlyPurchased: [], // Separate state for homepage slider
     currentVariantImage: null, // Add this line
   },
   reducers: {
@@ -284,6 +295,9 @@ const productSlice = createSlice({
       })
       .addCase(fetchAddons.fulfilled, (state, action) => {
         state.addons = action.payload;
+      })
+      .addCase(fetchFrequentlyPurchasedProducts.fulfilled, (state, action) => {
+        state.frequentlyPurchased = action.payload;
       });
   },
 });

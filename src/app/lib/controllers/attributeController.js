@@ -210,23 +210,14 @@ export async function getByProductId(productId, conn) {
       productId
     );
 
-    if (!attributes || attributes.length === 0) {
-      return {
-        status: 404,
-        body: {
-          success: false,
-          message: "No attributes found for this product",
-          data: null,
-        },
-      };
-    }
-
+    // Return 200 with empty array instead of 404 - this is more RESTful
+    // An empty array means "no attributes assigned", not "error"
     return {
       status: 200,
       body: {
         success: true,
-        message: "Attributes found",
-        data: attributes,
+        message: attributes && attributes.length > 0 ? "Attributes found" : "No attributes assigned to this product",
+        data: attributes || [],
       },
     };
   } catch (err) {
@@ -235,7 +226,7 @@ export async function getByProductId(productId, conn) {
       status: 500,
       body: {
         success: false,
-        message: "Server error",
+        message: err?.message || "Server error",
         data: null,
       },
     };

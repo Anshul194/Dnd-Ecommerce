@@ -17,7 +17,7 @@ const ProductGrid = () => {
     const productList = products?.products || products || [];
     if (!hasFetchedRef.current && productList.length === 0) {
       hasFetchedRef.current = true;
-      dispatch(fetchProducts({}));
+      dispatch(fetchProducts({ limit: 1000 }));
     }
   }, [dispatch, products]);
 
