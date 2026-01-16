@@ -40,7 +40,7 @@ import {
 import { addToCart, clearCart } from "@/app/store/slices/cartSlice";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { initializeBuyNowFromQuery, getCartItems, restoreCartState, setBuyNowProduct } from "@/app/store/slices/cartSlice";
-import { fetchProducts } from "@/app/store/slices/productSlice";
+import { fetchProducts, fetchAddons } from "@/app/store/slices/productSlice";
 import { toast } from "react-toastify";
 import { fetchSettings } from "@/app/store/slices/settingSlice";
 import axiosInstance from "@/axiosConfig/axiosInstance";
@@ -386,7 +386,6 @@ export default function CheckoutPopup() {
     } catch (error) {
       //console.log("Error checking payment status:", error);
       const errorMessage = error?.response?.data?.message || error?.message || "Failed to validate order. Please check your address details.";
-      toast.error(errorMessage);
       return {
         success: false,
         message: errorMessage
@@ -420,7 +419,8 @@ export default function CheckoutPopup() {
 
     // Additional check for the specific message
     if (check.message && check.message !== "Order is valid" && !check.success) {
-      toast.error(check.message || "Order validation failed. Please try again.");
+      // Note: toast is already shown by checking (!check || !check.success) above if checkBeforePayment didn't show it.
+      // However, to be extra safe and avoid duplicates, we only show it IF it's not handled.
       setPlacingOrder(false);
       return;
     }
@@ -982,11 +982,7 @@ export default function CheckoutPopup() {
   useEffect(() => {
     setMounted(true);
     dispatch(restoreCartState());
-    dispatch(
-      fetchProducts({
-        isAddon: true,
-      })
-    );
+    dispatch(fetchAddons());
     dispatch(fetchPages());
     // Settings are already fetched and cached by ClientLayout - no need to fetch again
 
@@ -1484,19 +1480,19 @@ export default function CheckoutPopup() {
                         const selectedVariant = buyNowProduct?.product?.variants?.find(
                           (v) => v._id === buyNowProduct?.variant || v.id === buyNowProduct?.variant
                         );
-                        
+
                         // Prioritize variant image, then product images
-                        const imageSource = 
+                        const imageSource =
                           (selectedVariant?.images?.[0]) ||
                           buyNowProduct?.product?.image ||
                           buyNowProduct?.product?.thumbnail ||
                           buyNowProduct?.product?.images?.[0] ||
                           "/Image-not-found.png";
-                        
-                        const imageAlt = 
+
+                        const imageAlt =
                           buyNowProduct?.product?.name ||
                           "Product";
-                        
+
                         return (
                           <Image
                             src={getImageUrl(imageSource)}
@@ -1545,19 +1541,19 @@ export default function CheckoutPopup() {
                             const selectedVariant = item?.product?.variants?.find(
                               (v) => v._id === item?.variant || v.id === item?.variant
                             );
-                            
+
                             // Prioritize variant image, then product images
-                            const imageSource = 
+                            const imageSource =
                               (selectedVariant?.images?.[0]) ||
                               item?.product?.thumbnail ||
                               item?.product?.images?.[0] ||
                               item?.product?.image ||
                               "/Image-not-found.png";
-                            
-                            const imageAlt = 
+
+                            const imageAlt =
                               item?.product?.name ||
                               "Product";
-                            
+
                             return (
                               <Image
                                 src={getImageUrl(imageSource)}
@@ -2110,7 +2106,7 @@ export default function CheckoutPopup() {
 
                   <button
                     onClick={handleAddAddress}
-                    className="w-full mt-4 mb-4 text-sm bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition-colors "
+                    className="w-full mt-4 mb-4 text-sm greenTwo text-white py-3 rounded-md hover:opacity-90 transition-colors "
                   >
                     Add address
                   </button>
@@ -2280,10 +2276,7 @@ export default function CheckoutPopup() {
                 }
               }}
               disabled={placingOrder || pincodeChecking}
-              className={`w-full mt-4  text-sm ${pinCodeVerified?.success
-                ? "bg-blue-600 hover:bg-blue-700"
-                : " greenOne hover:bg-green-700"
-                } text-white py-3 rounded-md  transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+              className={`w-full mt-4  text-sm greenTwo text-white py-3 rounded-md  transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
             >
               {placingOrder ? (
                 <>
@@ -2443,7 +2436,7 @@ export default function CheckoutPopup() {
                       </div>
                     </div>
                     {isSelected && (
-                      <div className="mt-2 text-xs text-blue-600 font-medium">
+                      <div className="mt-2 text-xs text-green-600 font-medium">
                         ✓ Currently Selected
                       </div>
                     )}

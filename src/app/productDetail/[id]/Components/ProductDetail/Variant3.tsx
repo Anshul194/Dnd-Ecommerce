@@ -294,7 +294,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
           <div className="mb-3">
             <span className="text-sm text-gray-600">Stock, Available</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
             {variants.map((variant: any, index: number) => {
               // Calculate discount percentage
               const discountPercent = variant.salePrice && variant.price && variant.price > variant.salePrice
@@ -305,8 +305,9 @@ function Variant3({ productData: propProductData }: Variant3Props) {
               const variantImage = variant.image || (variant.images && variant.images.length > 0 ? variant.images[0] : null);
               const displayImage = variantImage || productData.thumbnail || productData.images?.[0];
 
-              // Determine label based on variant (you can customize this logic)
+              // Determine label based on variant
               const getVariantLabel = () => {
+                if (variant.offerTag) return variant.offerTag;
                 if (index === 0) return "Beginner";
                 if (index === 1) return "Saver";
                 if (index === 2) return "Super Saver";
@@ -314,7 +315,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
               };
 
               const getPackLabel = () => {
-                // You can customize this based on variant data
+                if (variant.title && variant.title.toLowerCase().includes("pack")) return variant.title;
                 const quantity = variant.quantity || index + 1;
                 return `Pack of ${quantity}`;
               };
@@ -322,11 +323,10 @@ function Variant3({ productData: propProductData }: Variant3Props) {
               return (
                 <button
                   key={variant._id}
-                  className={`relative bg-white border-2 rounded-lg overflow-hidden transition-all text-left ${
-                    isSelected
-                      ? "border-green-600 shadow-lg ring-2 ring-green-500 ring-opacity-50"
-                      : "border-gray-200 hover:border-gray-300 hover:shadow-md"
-                  }`}
+                  className={`relative w-full bg-white border-2 rounded-xl overflow-hidden transition-all text-center ${isSelected
+                    ? "border-green-800 shadow-lg ring-1 ring-green-800"
+                    : "border-gray-200 hover:border-gray-300"
+                    }`}
                   onClick={() => {
                     setSelectedVariant(variant._id);
                     // Dispatch the variant image if available
@@ -340,55 +340,45 @@ function Variant3({ productData: propProductData }: Variant3Props) {
                   }}
                 >
                   {/* Header Bar */}
-                  <div className={`h-10 flex items-center justify-center font-semibold text-white ${
-                    isSelected ? "bg-green-600" : "bg-gray-400"
-                  }`}>
+                  <div className={`h-8 flex items-center justify-center font-bold text-xs ${isSelected ? "bg-green-800 text-white" : "bg-gray-100 text-gray-800 border-b border-gray-300"
+                    }`}>
                     {variant.title || `Variant ${index + 1}`}
                   </div>
 
                   {/* Image Section */}
-                  <div className="p-4 flex justify-center items-center bg-gray-50 min-h-[180px]">
+                  <div className="p-3 flex justify-center items-center bg-[#e2f0d9] min-h-[120px]">
                     {displayImage ? (
                       <img
                         src={getImageUrl(displayImage)}
                         alt={variant.title || `Variant ${index + 1}`}
-                        className="max-w-full max-h-[160px] object-contain"
+                        className="max-w-full max-h-[80px] object-contain"
                       />
                     ) : (
-                      <div className="w-full h-[160px] bg-gray-200 rounded flex items-center justify-center text-gray-400">
+                      <div className="w-full h-[80px] bg-gray-200 rounded flex items-center justify-center text-gray-400 text-[10px]">
                         No Image
                       </div>
                     )}
                   </div>
 
                   {/* Pricing Section */}
-                  <div className="p-4 bg-white">
-                    <div className="flex items-baseline gap-2 mb-2">
+                  <div className="p-2 space-y-1">
+                    <div className="flex flex-wrap items-center justify-center gap-1 mb-0.5">
                       {variant.price && variant.price > (variant.salePrice || variant.price) && (
-                        <span className="text-sm text-gray-500 line-through">
+                        <span className="text-[9px] text-gray-400 line-through">
                           ₹{variant.price}
                         </span>
                       )}
-                      <span className="text-xl font-bold text-gray-900">
+                      <span className="text-sm font-bold text-gray-900">
                         ₹{variant.salePrice || variant.price}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600 mb-1">
+                    <div className="text-[10px] font-bold text-gray-700 leading-tight">
                       {getPackLabel()}
                     </div>
-                    <div className="text-xs font-medium text-gray-500">
+                    <div className="text-[10px] font-bold text-gray-800">
                       {getVariantLabel()}
                     </div>
                   </div>
-
-                  {/* Selection Indicator */}
-                  {isSelected && (
-                    <div className="absolute top-2 right-2 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
                 </button>
               );
             })}
@@ -421,7 +411,7 @@ function Variant3({ productData: propProductData }: Variant3Props) {
         <div ref={actionButtonsRef} className="flex gap-3 mb-6">
           <button
             onClick={handleAddToCart}
-            className="flex-1 greenOne text-white py-4 px-6 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+            className="flex-1 greenOne text-black py-4 px-6 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
           >
             <ShoppingCart size={20} className="max-sm:hidden" />
             Add to Cart

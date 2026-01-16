@@ -31,28 +31,46 @@ class CategoryService {
 
   async getAllCategories(query) {
     try {
-      //consolle.log("Query Parameters category:", query);
-      const { page = 1, limit = 10, filters = "{}", searchFields = "{}", sort = "{}", sortBy, sortOrder } = query;
+      console.log("CategoryService.getAllCategories - Query received:", query);
+      const {
+        page = 1,
+        limit = 10,
+        filters = "{}",
+        searchFields = "{}",
+        sort = "{}",
+        sortBy,
+        sortOrder,
+      } = query;
 
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
 
+      // Parse JSON strings from query parameters to objects with robustness
+      const tryParse = (val, defaultVal = {}) => {
+        if (!val || val === "undefined" || val === "null") return defaultVal;
+        if (typeof val === "object") return val;
+        try {
+          return JSON.parse(val);
+        } catch (e) {
+          console.error(`Failed to parse parameter: ${val}`, e);
+          return defaultVal;
+        }
+      };
 
-      // Parse JSON strings from query parameters to objects
-      const parsedFilters = JSON.parse(filters);
-      const parsedSearchFields = JSON.parse(searchFields);
+      const parsedFilters = tryParse(filters);
+      const parsedSearchFields = tryParse(searchFields);
 
       let sortConditions = {};
 
       if (sortBy) {
-        sortConditions[sortBy] = sortOrder === "asc" ? 1 : -1;
+        // Remove quotes if present (some versions of the admin panel might send stringified strings)
+        const cleanSortBy = typeof sortBy === "string" ? sortBy.replace(/^"+|"+$/g, "") : sortBy;
+        sortConditions[cleanSortBy] = sortOrder === "asc" ? 1 : -1;
       } else {
-        try {
-          const parsedSort = JSON.parse(sort);
-          for (const [field, direction] of Object.entries(parsedSort)) {
-            sortConditions[field] = direction === "asc" ? 1 : -1;
-          }
-        } catch (e) { }
+        const parsedSort = tryParse(sort);
+        for (const [field, direction] of Object.entries(parsedSort)) {
+          sortConditions[field] = direction === "asc" ? 1 : -1;
+        }
       }
 
       if (Object.keys(sortConditions).length === 0) {
@@ -63,7 +81,9 @@ class CategoryService {
       const filterConditions = { deletedAt: null };
 
       for (const [key, value] of Object.entries(parsedFilters)) {
-        filterConditions[key] = value;
+        if (value !== undefined && value !== null && value !== "") {
+          filterConditions[key] = value;
+        }
       }
 
       // Build search conditions for multiple fields with partial matching

@@ -44,13 +44,24 @@ class ProductService {
 
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
-    const parsedFilters =
-      typeof filters === "string" ? JSON.parse(filters) : filters;
-    const parsedSearchFields =
-      typeof searchFields === "string"
-        ? JSON.parse(searchFields)
-        : searchFields;
-    const parsedSort = typeof sort === "string" ? JSON.parse(sort) : sort;
+
+    console.log(`[ProductService] RECEIVED QUERY at ${new Date().toISOString()}:`, JSON.stringify(query));
+
+    // Parse JSON strings from query parameters to objects with robustness
+    const tryParse = (val, defaultVal = {}) => {
+      if (!val || val === "undefined" || val === "null") return defaultVal;
+      if (typeof val === "object") return val;
+      try {
+        return JSON.parse(val);
+      } catch (e) {
+        console.warn(`[ProductService] Failed to parse parameter: ${val}`, e.message);
+        return defaultVal;
+      }
+    };
+
+    const parsedFilters = tryParse(filters);
+    const parsedSearchFields = tryParse(searchFields);
+    const parsedSort = tryParse(sort);
 
     const filterConditions = { deletedAt: null, ...parsedFilters };
 
@@ -58,36 +69,36 @@ class ProductService {
       filterConditions.status = status;
     }
 
-    if (category) {
-      // store category as ObjectId when possible
+    if (category && category !== "undefined" && category !== "null" && category !== "") {
       try {
         filterConditions.category = mongoose.Types.ObjectId.isValid(category)
           ? new mongoose.Types.ObjectId(category)
           : category;
+        console.log(`[ProductService] Applying category filter: ${filterConditions.category} (type: ${typeof filterConditions.category})`);
       } catch (e) {
         filterConditions.category = category;
+        console.warn(`[ProductService] Category ObjectId conversion failed, using raw value:`, category);
       }
     }
 
-    if (subcategory) {
-      // Product model uses `subcategory` (lowercase) field name. Normalize incoming query.
+    if (subcategory && subcategory !== "undefined" && subcategory !== "null" && subcategory !== "") {
       try {
-        filterConditions.subcategory = mongoose.Types.ObjectId.isValid(
-          subcategory
-        )
+        filterConditions.subcategory = mongoose.Types.ObjectId.isValid(subcategory)
           ? new mongoose.Types.ObjectId(subcategory)
           : subcategory;
+        console.log(`[ProductService] Applying subcategory filter: ${filterConditions.subcategory}`);
       } catch (e) {
         filterConditions.subcategory = subcategory;
       }
     }
 
     if (isAddon) {
-      filterConditions.isAddon = isAddon === "true" ? true : false;
+      filterConditions.isAddon = isAddon === "true";
     }
 
-    if (name) {
+    if (name && name !== "undefined" && name !== "null" && name !== "") {
       filterConditions.name = { $regex: name, $options: "i" };
+      console.log(`[ProductService] Applying name filter: ${name}`);
     }
 
     // Accept multiple query param names for backwards-compatibility
@@ -100,13 +111,11 @@ class ProductService {
       const minVal = minQuery ? parseFloat(minQuery) : null;
       const maxVal = maxQuery ? parseFloat(maxQuery) : null;
 
-      // Build variant filters so we find variants where either price OR salePrice lies within the requested range.
-      // If both min and max are provided, we require the field (price or salePrice) to be between min and max.
+      // Build variant filters
       const variantFilters = { deletedAt: null };
 
       if (minVal != null || maxVal != null) {
         if (minVal != null && maxVal != null) {
-          // Match variants where price is between min and max OR salePrice is between min and max
           variantFilters.$or = [
             { price: { $gte: minVal, $lte: maxVal } },
             { salePrice: { $gte: minVal, $lte: maxVal } },
@@ -124,48 +133,63 @@ class ProductService {
         }
       }
 
-      // Register Variant model for the tenant-specific connection
-      const Variant =
-        conn.models.Variant || conn.model("Variant", VariantSchema);
+      console.log(`[ProductService] Variant filters:`, JSON.stringify(variantFilters));
+      const Variant = conn.models.Variant || conn.model("Variant", variantSchema);
+      const matchingVariants = await Variant.find(variantFilters).distinct("productId");
+      console.log(`[ProductService] Found ${matchingVariants.length} products with matching variants`);
 
-      const matchingVariants = await Variant.find(variantFilters).distinct(
-        "productId"
-      );
-
-      // If we are filtering by variants, apply the intersection
       if (Array.isArray(matchingVariants) && matchingVariants.length > 0) {
-        // If there's an existing _id filter (from some other logic, though unlikely here), merge them
         if (filterConditions._id) {
-          filterConditions._id = { $all: [filterConditions._id, { $in: matchingVariants }] };
+          filterConditions._id = {
+            $all: [filterConditions._id, { $in: matchingVariants }],
+          };
         } else {
           filterConditions._id = { $in: matchingVariants };
         }
       } else {
-        // No matching variants -> no products should be returned. Use a false condition.
         filterConditions._id = { $in: [] };
       }
     }
 
+    // Build search conditions for multiple fields with partial matching
     const searchConditions = [];
     for (const [field, term] of Object.entries(parsedSearchFields)) {
-      searchConditions.push({ [field]: { $regex: term, $options: "i" } });
+      if (term && term !== "undefined" && term !== "null" && term !== "") {
+        searchConditions.push({ [field]: { $regex: term, $options: "i" } });
+      }
     }
+
     if (searchConditions.length > 0) {
-      filterConditions.$or = searchConditions;
+      console.log(`[ProductService] Applying search conditions:`, JSON.stringify(searchConditions));
+      if (searchConditions.length === 1) {
+        // If only one search field, add it directly to minimize $or complexity
+        const [field, condition] = Object.entries(searchConditions[0])[0];
+        // Ensure we don't accidentally override essential filters like category if they were somehow in searchFields
+        if (!filterConditions[field] || field === "name") {
+          filterConditions[field] = condition;
+        } else {
+          // Fallback to $and if conflict
+          if (!filterConditions.$and) filterConditions.$and = [];
+          filterConditions.$and.push({ [field]: condition });
+        }
+      } else {
+        // Use implicit $and behavior: { category, $or: [...] }
+        filterConditions.$or = searchConditions;
+      }
     }
 
     // Sorting logic: handle sortBy/sortOrder and merge with parsedSort
     const sortConditions = {};
-    // If sort param is provided, parse it first
     for (const [field, direction] of Object.entries(parsedSort)) {
       sortConditions[field] = direction === "asc" ? 1 : -1;
     }
-    // If sortBy is provided, override/add it
     if (sortBy) {
-      // Remove leading/trailing quotes from sortBy
-      const cleanSortBy = typeof sortBy === "string" ? sortBy.replace(/^"+|"+$/g, "") : sortBy;
-      sortConditions[cleanSortBy] = (sortOrder === "asc" ? 1 : -1);
+      const cleanSortBy =
+        typeof sortBy === "string" ? sortBy.replace(/^"+|"+$/g, "") : sortBy;
+      sortConditions[cleanSortBy] = sortOrder === "asc" ? 1 : -1;
     }
+
+    console.log("[ProductService.getAllProducts] FINAL MONGODB FILTER:", JSON.stringify(filterConditions, null, 2));
 
     return await this.productRepository.getAll(
       filterConditions,

@@ -341,7 +341,8 @@ function CheckoutPageContent() {
       return response.data;
     } catch (error) {
       //console.log("Error checking payment status:", error);
-      toast.error(error.response.data.message);
+      const errorMessage = error.response?.data?.message || error.message || "Order validation failed";
+      return { success: false, message: errorMessage };
     }
   };
 
@@ -369,7 +370,6 @@ function CheckoutPageContent() {
 
     // Additional check for the specific message
     if (check.message && check.message !== "Order is valid" && !check.success) {
-      toast.error(check.message || "Order validation failed. Please try again.");
       setPlacingOrder(false);
       return;
     }
@@ -1527,8 +1527,8 @@ function CheckoutPageContent() {
                     }}
                     disabled={placingOrder || pincodeChecking}
                     className={`w-full py-4 rounded-lg font-bold text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${pinCodeVerified?.success
-                      ? "greenOne hover:bg-green-700 shadow-green-200"
-                      : "bg-blue-600 hover:bg-blue-700 shadow-blue-200"
+                      ? "greenTwo hover:opacity-90 shadow-green-200"
+                      : "greenTwo hover:opacity-90 shadow-blue-200"
                       }`}
                   >
                     {placingOrder ? (

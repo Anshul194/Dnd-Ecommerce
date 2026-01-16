@@ -263,11 +263,11 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
         <h3 className="text-xl font-semibold text-gray-900">
           Choose Your Pack
         </h3>
-        <div className="grid grid-cols-1 gap-3">
+        <div className="flex md:grid md:grid-cols-1 gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {productData?.variants?.map((variant) => (
             <button
               key={variant._id}
-              className={`relative p-4 border-2 rounded-2xl text-left transition-all hover:shadow-lg ${selectedVariant?._id === variant._id
+              className={`relative flex-shrink-0 min-w-[280px] p-4 border-2 rounded-2xl text-left transition-all hover:shadow-lg ${selectedVariant?._id === variant._id
                 ? "border-orange-400 bg-orange-50 shadow-md"
                 : "border-gray-200 hover:border-gray-300"
                 }`}
