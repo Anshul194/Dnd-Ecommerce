@@ -419,7 +419,7 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
             <div className="space-y-3">
               <button
                 onClick={handleAddToCart}
-                className="w-full greenOne text-white py-4 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                className="w-full greenOne text-black py-4 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 <ShoppingCart size={20} />
                 Add to Cart
