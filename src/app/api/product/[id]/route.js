@@ -397,6 +397,18 @@ export async function PUT(req, context) {
         );
       }
 
+      // Clean up attributeSet - remove entries with invalid ObjectIds
+      if (body.attributeSet && Array.isArray(body.attributeSet)) {
+        body.attributeSet = body.attributeSet.filter((attr) => {
+          if (!attr || !attr.attributeId) return false;
+          const id = attr.attributeId;
+          // Filter out null, empty strings, or the string "null"
+          if (id === null || id === "" || id === "null") return false;
+          // Validate it's a valid ObjectId format
+          return mongoose.Types.ObjectId.isValid(id);
+        });
+      }
+
       // Only remove thumbnail if explicitly set to empty
       if (body.thumbnail && !body.thumbnail.url && !body.thumbnail.alt) {
         delete body.thumbnail;

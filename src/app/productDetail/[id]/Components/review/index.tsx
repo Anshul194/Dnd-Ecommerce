@@ -3,6 +3,7 @@ import renderCardsVariant from "./variant1";
 import RenderTestimonialVariant from "./variant2";
 import RenderListVariant from "./variant3";
 import RenderCardsVariant from "./variant1";
+import AyurvedicReviewsVariant from "./Variant4";
 import { useSelector } from "react-redux";
 import { selectSelectedProduct } from "@/app/store/slices/productSlice";
 
@@ -48,6 +49,8 @@ export function CustomerReviews({
         return <RenderListVariant />;
       case "testimonial":
         return <RenderTestimonialVariant />;
+      case "ayurvedic":
+        return <AyurvedicReviewsVariant />;
       default:
         return <RenderCardsVariant />;
     }
