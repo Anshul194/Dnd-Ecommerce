@@ -272,7 +272,7 @@ class ProductRepository extends CrudRepository {
           productDoc = await this.model.findById(id).populate(populateOptions);
         } else {
           productDoc = await this.model
-            .findOne({ slug: id })
+            .findOne({ slug: id, deletedAt: null })
             .populate(populateOptions);
         }
       } catch (populateError) {
@@ -282,7 +282,7 @@ class ProductRepository extends CrudRepository {
         if (mongoose.Types.ObjectId.isValid(id)) {
           productDoc = await this.model.findById(id);
         } else {
-          productDoc = await this.model.findOne({ slug: id });
+          productDoc = await this.model.findOne({ slug: id, deletedAt: null });
         }
       }
 
