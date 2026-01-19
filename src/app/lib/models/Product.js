@@ -88,6 +88,16 @@ const productSchema = new mongoose.Schema(
         alt: String,
       },
     ],
+    targetAudience: {
+      idealFor: {
+        type: [String],
+        default: [],
+      },
+      consultDoctor: {
+        type: [String],
+        default: [],
+      },
+    },
     storyVideoUrl: {
       type: String,
       default: null,

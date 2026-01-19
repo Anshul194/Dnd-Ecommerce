@@ -12,7 +12,6 @@ export default function Variant5() {
   const productData = useSelector(selectSelectedProduct);
   const currentVariantImage = useSelector(selectCurrentVariantImage);
   const dispatch = useDispatch();
-  const [selectedPack, setSelectedPack] = useState(1);
   const [selectedImage, setSelectedImage] = useState<number>(-1);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [showFixedBar, setShowFixedBar] = useState<boolean>(false);
@@ -129,7 +128,7 @@ export default function Variant5() {
     if (currentVariantImage) {
       return getImageUrl(currentVariantImage);
     }
-    
+
     // Try to get image from images array
     if (productData?.images && productData.images.length > 0) {
       const index = selectedImage >= 0 && selectedImage < productData.images.length ? selectedImage : 0;
@@ -138,17 +137,17 @@ export default function Variant5() {
         return getImageUrl(image.url);
       }
     }
-    
+
     // Fallback to thumbnail
     if (productData?.thumbnail) {
-      const thumbUrl = typeof productData.thumbnail === 'string' 
-        ? productData.thumbnail 
+      const thumbUrl = typeof productData.thumbnail === 'string'
+        ? productData.thumbnail
         : productData.thumbnail?.url;
       if (thumbUrl) {
         return getImageUrl(thumbUrl);
       }
     }
-    
+
     return "https://lh3.googleusercontent.com/aida-public/AB6AXuCam2aSrkEcUNAJ8_gHB3qRWI8th42_xgAWp5vhBT_ScdPB27DqnClxHlM4E0pC4dYP8VHP-kGQzT00MibOUQl9ramX3gL4K4pKDvxoKDgpUbM0kchU8ZLXaLnBzb-lw--xSjx4p2_iFuFhnyzJNCeZWPrCiXpVNF2t3M38ArlLBlc5rFfj3tABsZq1CNzXe6QJkhLTKzsX0XY1TuoykMo2wjhmn_nsQxphdwTmQp-sFELGy-XRZZAif0hAhUCzhi-qAGv6nWuVoPN7";
   };
 
@@ -165,40 +164,25 @@ export default function Variant5() {
   };
 
   // Pricing packs from Variant6
-  const pricingPacks = [
-    {
-      id: 0,
-      label: "Trial Pack",
-      name: "Pack of 1",
-      price: "₹599",
-      originalPrice: null,
-      tag: null,
-    },
-    {
-      id: 1,
-      label: "1 Month Care",
-      name: "Pack of 2",
-      price: "₹1,099",
-      originalPrice: "₹1,598",
-      tag: "MOST LOVED",
-    },
-    {
-      id: 2,
-      label: "2 Months Care",
-      name: "Pack of 4",
-      price: "₹1,999",
-      originalPrice: "₹3,196",
-      tag: null,
-    },
-    {
-      id: 3,
-      label: "3 Months Care",
-      name: "Pack of 6",
-      price: "₹2,899",
-      originalPrice: "₹4,794",
-      tag: null,
-    },
-  ];
+  const variants = productData?.variants || [];
+
+  // Set default variant
+  useEffect(() => {
+    if (variants.length > 0 && !selectedVariant) {
+      setSelectedVariant(variants[0]);
+    }
+  }, [variants, selectedVariant]);
+
+  // Pricing packs from product variants
+  const pricingPacks = variants.map((variant: any, index: number) => ({
+    id: variant._id,
+    label: variant.offerTag || (index === 0 ? "Trial Pack" : index === 1 ? "1 Month Care" : `${index + 1} Months Care`),
+    name: variant.title || `Pack of ${index + 1}`,
+    price: `₹${variant.salePrice}`,
+    originalPrice: variant.price > variant.salePrice ? `₹${variant.price}` : null,
+    tag: variant.offerTag || (index === 1 ? "MOST LOVED" : null),
+    variantObj: variant
+  }));
 
   const certifications = [
     { icon: "✓", text: "GMP Certified" },
@@ -267,214 +251,210 @@ export default function Variant5() {
       )}
 
       <div className="w-full font-manrope">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        {/* Left Side: Product Details (From Variant6) */}
-        <div className="flex flex-col gap-6 z-10 text-gray-900">
-          {/* Certification Badge */}
-          <div className="inline-flex items-center gap-2 bg-green-100 px-3 py-1 rounded-full w-fit">
-            <span className="text-green-700 text-[18px]">✓</span>
-            <span className="text-xs font-bold text-green-800 uppercase tracking-wide">
-              Ayurveda Certified
-            </span>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left Side: Product Details (From Variant6) */}
+          <div className="flex flex-col gap-6 z-10 text-gray-900">
+            {/* Certification Badge */}
+            <div className="inline-flex items-center gap-2 bg-green-100 px-3 py-1 rounded-full w-fit">
+              <span className="text-green-700 text-[18px]">✓</span>
+              <span className="text-xs font-bold text-green-800 uppercase tracking-wide">
+                Ayurveda Certified
+              </span>
+            </div>
 
-          {/* Title */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-gray-900">
-            {productData?.name || "Daily Heart + Stress Support"},{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-400">
-              Ayurveda Style
-            </span>
-          </h1>
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-gray-900">
+              {productData?.name || "Daily Heart + Stress Support"},{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-400">
+                Ayurveda Style
+              </span>
+            </h1>
 
-          {/* Description */}
-          <p className="text-lg text-gray-700 font-medium max-w-lg">
-            {productData?.shortDescription ||
-              "9 traditional herbs, 2x daily dose, COD + Free delivery."}
-            <br />
-            <span className="text-sm text-green-600 mt-1 block">
-              Backed by 8+ years of trust.
-            </span>
-          </p>
+            {/* Description */}
+            <p className="text-lg text-gray-700 font-medium max-w-lg">
+              {productData?.shortDescription ||
+                "9 traditional herbs, 2x daily dose, COD + Free delivery."}
+              <br />
+              <span className="text-sm text-green-600 mt-1 block">
+                Backed by 8+ years of trust.
+              </span>
+            </p>
 
-          {/* Pricing Packs */}
-          <div className="w-full overflow-hidden">
-            <div className="flex overflow-x-auto gap-4 py-4 px-1 hide-scrollbar snap-x">
-              {pricingPacks.map((pack) => (
-                <button
-                  key={pack.id}
-                  onClick={() => setSelectedPack(pack.id)}
-                  className={`snap-start flex-shrink-0 w-36 p-3 rounded-xl border text-left transition-all ${
-                    selectedPack === pack.id
-                      ? "border-2 border-green-500 bg-green-50 text-green-600 relative shadow-md transform scale-105 origin-left"
-                      : "border border-gray-200 bg-white text-gray-700 hover:border-green-500 hover:shadow-md"
-                  }`}
-                >
-                  {pack.tag && selectedPack === pack.id && (
-                    <span className="absolute -top-3 right-2 text-[10px] font-bold bg-green-500 text-white px-2 py-0.5 rounded-full shadow-sm">
-                      {pack.tag}
-                    </span>
-                  )}
-                  <span
-                    className={`block text-xs font-semibold mb-1 ${
-                      selectedPack === pack.id ? "text-green-700" : "text-gray-400"
-                    }`}
+            {/* Pricing Packs */}
+            <div className="w-full overflow-hidden">
+              <div className="flex overflow-x-auto gap-4 py-4 px-1 hide-scrollbar snap-x">
+                {pricingPacks.map((pack) => (
+                  <button
+                    key={pack.id}
+                    onClick={() => setSelectedVariant(pack.variantObj)}
+                    className={`snap-start flex-shrink-0 w-36 p-3 rounded-xl border text-left transition-all ${selectedVariant?._id === pack.id
+                        ? "border-2 border-green-500 bg-green-50 text-green-600 relative shadow-md transform scale-105 origin-left"
+                        : "border border-gray-200 bg-white text-gray-700 hover:border-green-500 hover:shadow-md"
+                      }`}
                   >
-                    {pack.label}
-                  </span>
-                  <span className="block text-lg font-bold text-gray-900">
-                    {pack.name}
-                  </span>
-                  <span
-                    className={`block text-xs font-medium mt-1 ${
-                      selectedPack === pack.id ? "text-green-700" : "text-green-600"
-                    }`}
-                  >
-                    {pack.price}{" "}
-                    {pack.originalPrice && (
-                      <span className="line-through opacity-60">
-                        {pack.originalPrice}
+                    {pack.tag && selectedVariant?._id === pack.id && (
+                      <span className="absolute -top-3 right-2 text-[10px] font-bold bg-green-500 text-white px-2 py-0.5 rounded-full shadow-sm">
+                        {pack.tag}
                       </span>
                     )}
+                    <span
+                      className={`block text-xs font-semibold mb-1 ${selectedVariant?._id === pack.id ? "text-green-700" : "text-gray-400"
+                        }`}
+                    >
+                      {pack.label}
+                    </span>
+                    <span className="block text-lg font-bold text-gray-900">
+                      {pack.name}
+                    </span>
+                    <span
+                      className={`block text-xs font-medium mt-1 ${selectedVariant?._id === pack.id ? "text-green-700" : "text-green-600"
+                        }`}
+                    >
+                      {pack.price}{" "}
+                      {pack.originalPrice && (
+                        <span className="line-through opacity-60">
+                          {pack.originalPrice}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Certifications */}
+            <div className="flex flex-wrap gap-4 py-2 opacity-80">
+              {certifications.map((cert, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-1 bg-white border border-gray-100 px-2 py-1 rounded shadow-sm"
+                >
+                  <span className="text-green-500 text-[16px]">
+                    {cert.icon}
                   </span>
-                </button>
+                  <span className="text-xs font-bold">{cert.text}</span>
+                </div>
               ))}
             </div>
+
+            {/* CTA Buttons */}
+            <div ref={actionButtonsRef}></div>
+            <div className="flex flex-wrap gap-4 mt-2">
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 min-w-[160px] max-w-[240px] bg-green-500 hover:bg-green-400 text-white font-bold h-12 rounded-lg shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5">
+                <span>🛒</span>
+                Add to Cart
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 min-w-[160px] max-w-[240px] bg-white border-2 border-gray-200 hover:border-green-500 text-gray-900 font-bold h-12 rounded-lg flex items-center justify-center gap-2 transition-all">
+                <span className="text-green-600">💬</span>
+                Order on WhatsApp
+              </button>
+            </div>
+
+            {/* Delivery Info */}
+            <p className="text-xs text-gray-500 mt-[-10px]">
+              ⚡️ Fast delivery within 3-5 days
+            </p>
           </div>
 
-          {/* Certifications */}
-          <div className="flex flex-wrap gap-4 py-2 opacity-80">
-            {certifications.map((cert, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-1 bg-white border border-gray-100 px-2 py-1 rounded shadow-sm"
-              >
-                <span className="text-green-500 text-[16px]">
-                  {cert.icon}
-                </span>
-                <span className="text-xs font-bold">{cert.text}</span>
+          {/* Right Side: Image with Thumbnail Gallery */}
+          <div className="relative flex flex-col gap-6">
+            {/* Main Image */}
+            <div className="relative flex justify-center lg:justify-end group">
+              {/* Background blur effect */}
+              <div className="absolute inset-0 bg-green-500/20 rounded-full filter blur-3xl opacity-30 transform translate-y-10 scale-90"></div>
+
+              {/* Main image container */}
+              <div className="relative z-10 w-full max-w-md">
+                <div className="aspect-[4/5] w-full bg-gradient-to-b from-gray-50 to-white rounded-3xl border border-gray-100 shadow-2xl overflow-hidden relative flex items-center justify-center p-8">
+                  <img
+                    alt={productData?.name || "Product"}
+                    className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
+                    src={mainImage}
+                  />
+
+                  {/* Floating badge */}
+                  <div className="absolute bottom-6 right-6 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg border border-gray-100 flex items-center gap-3">
+                    <div className="bg-green-100 p-2 rounded-full text-green-700">
+                      <Leaf size={24} strokeWidth={2.5} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900 leading-tight">
+                        100% Natural
+                      </p>
+                      <p className="text-[10px] text-gray-600 font-medium">
+                        No added sugar
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Image counter on hover */}
+                  {productData?.images && productData.images.length > 0 && (
+                    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                      {(selectedImage > -1 ? selectedImage + 1 : 1)} / {productData.images.length}
+                    </div>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* CTA Buttons */}
-          <div ref={actionButtonsRef}></div>
-          <div className="flex flex-wrap gap-4 mt-2">
-            <button 
-              onClick={handleAddToCart}
-              className="flex-1 min-w-[160px] max-w-[240px] bg-green-500 hover:bg-green-400 text-white font-bold h-12 rounded-lg shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5">
-              <span>🛒</span>
-              Add to Cart
-            </button>
-            <button 
-              onClick={handleBuyNow}
-              className="flex-1 min-w-[160px] max-w-[240px] bg-white border-2 border-gray-200 hover:border-green-500 text-gray-900 font-bold h-12 rounded-lg flex items-center justify-center gap-2 transition-all">
-              <span className="text-green-600">💬</span>
-              Order on WhatsApp
-            </button>
-          </div>
+            {/* Enhanced Thumbnails */}
+            {productData?.images && productData.images.length > 0 && (
+              <div className="relative flex items-center justify-center gap-2 max-w-md mx-auto lg:mx-0 lg:ml-auto">
+                {/* Left Arrow */}
+                <button
+                  onClick={() => scroll("left")}
+                  className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 text-gray-700 z-10 transition-colors border border-gray-100 hidden sm:flex"
+                  aria-label="Scroll Left"
+                >
+                  <ChevronLeft size={20} />
+                </button>
 
-          {/* Delivery Info */}
-          <p className="text-xs text-gray-500 mt-[-10px]">
-            ⚡️ Fast delivery within 3-5 days
-          </p>
-        </div>
-
-        {/* Right Side: Image with Thumbnail Gallery */}
-        <div className="relative flex flex-col gap-6">
-          {/* Main Image */}
-          <div className="relative flex justify-center lg:justify-end group">
-            {/* Background blur effect */}
-            <div className="absolute inset-0 bg-green-500/20 rounded-full filter blur-3xl opacity-30 transform translate-y-10 scale-90"></div>
-
-            {/* Main image container */}
-            <div className="relative z-10 w-full max-w-md">
-              <div className="aspect-[4/5] w-full bg-gradient-to-b from-gray-50 to-white rounded-3xl border border-gray-100 shadow-2xl overflow-hidden relative flex items-center justify-center p-8">
-                <img
-                  alt={productData?.name || "Product"}
-                  className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
-                  src={mainImage}
-                />
-
-                {/* Floating badge */}
-                <div className="absolute bottom-6 right-6 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg border border-gray-100 flex items-center gap-3">
-                  <div className="bg-green-100 p-2 rounded-full text-green-700">
-                    <Leaf size={24} strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900 leading-tight">
-                      100% Natural
-                    </p>
-                    <p className="text-[10px] text-gray-600 font-medium">
-                      No added sugar
-                    </p>
-                  </div>
+                {/* Scrollable Container */}
+                <div
+                  ref={scrollContainerRef}
+                  className="flex gap-4 overflow-x-auto scrollbar-hide py-2 px-1 scroll-smooth"
+                >
+                  {productData.images.map((img, index) => {
+                    if (!img?.url) return null;
+                    return (
+                      <button
+                        key={index}
+                        className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all transform hover:scale-105 ${selectedImage === index
+                            ? "ring-4 ring-green-500 shadow-lg"
+                            : "ring-2 ring-gray-200 hover:ring-gray-300"
+                          }`}
+                        onClick={() => setSelectedImage(index)}
+                      >
+                        <img
+                          src={getImageUrl(img.url)}
+                          alt={`View ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {selectedImage === index && (
+                          <div className="absolute inset-0 bg-green-500/20"></div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {/* Image counter on hover */}
-                {productData?.images && productData.images.length > 0 && (
-                  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    {(selectedImage > -1 ? selectedImage + 1 : 1)} / {productData.images.length}
-                  </div>
-                )}
+                {/* Right Arrow */}
+                <button
+                  onClick={() => scroll("right")}
+                  className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 text-gray-700 z-10 transition-colors border border-gray-100 hidden sm:flex"
+                  aria-label="Scroll Right"
+                >
+                  <ChevronRight size={20} />
+                </button>
               </div>
-            </div>
+            )}
           </div>
-
-          {/* Enhanced Thumbnails */}
-          {productData?.images && productData.images.length > 0 && (
-            <div className="relative flex items-center justify-center gap-2 max-w-md mx-auto lg:mx-0 lg:ml-auto">
-              {/* Left Arrow */}
-              <button
-                onClick={() => scroll("left")}
-                className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 text-gray-700 z-10 transition-colors border border-gray-100 hidden sm:flex"
-                aria-label="Scroll Left"
-              >
-                <ChevronLeft size={20} />
-              </button>
-
-              {/* Scrollable Container */}
-              <div
-                ref={scrollContainerRef}
-                className="flex gap-4 overflow-x-auto scrollbar-hide py-2 px-1 scroll-smooth"
-              >
-                {productData.images.map((img, index) => {
-                  if (!img?.url) return null;
-                  return (
-                    <button
-                      key={index}
-                      className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all transform hover:scale-105 ${
-                        selectedImage === index
-                          ? "ring-4 ring-green-500 shadow-lg"
-                          : "ring-2 ring-gray-200 hover:ring-gray-300"
-                      }`}
-                      onClick={() => setSelectedImage(index)}
-                    >
-                      <img
-                        src={getImageUrl(img.url)}
-                        alt={`View ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      {selectedImage === index && (
-                        <div className="absolute inset-0 bg-green-500/20"></div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Right Arrow */}
-              <button
-                onClick={() => scroll("right")}
-                className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 text-gray-700 z-10 transition-colors border border-gray-100 hidden sm:flex"
-                aria-label="Scroll Right"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          )}
         </div>
       </div>
-    </div>
     </>
   );
 }

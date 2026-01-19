@@ -145,7 +145,22 @@ export async function POST(req) {
         const arrDotMatch = key.match(/([\w]+)\[(\d+)\]\.(\w+)/);
         const objObjMatch = key.match(/([\w]+)\.(\w+)/);
 
-        if (arrDotMatch || arrObjMatch) {
+        if (key.startsWith("targetAudience.")) {
+          // Handle targetAudience.idealFor[index] and targetAudience.consultDoctor[index]
+          const taMatch = key.match(/^targetAudience\.(idealFor|consultDoctor)\[(\d+)\]$/);
+          if (taMatch) {
+            const field = taMatch[1]; // 'idealFor' or 'consultDoctor'
+            const index = parseInt(taMatch[2]);
+
+            if (!body.targetAudience) {
+              body.targetAudience = { idealFor: [], consultDoctor: [] };
+            }
+            if (!body.targetAudience[field]) {
+              body.targetAudience[field] = [];
+            }
+            body.targetAudience[field][index] = value;
+          }
+        } else if (arrDotMatch || arrObjMatch) {
           const match = arrDotMatch || arrObjMatch;
           const arrKey = match[1]; // e.g., "images"
           const arrIdx = parseInt(match[2]); // e.g., 0
@@ -358,6 +373,16 @@ export async function POST(req) {
       delete body["thumbnail[file]"];
       delete body["thumbnail.alt"];
       delete body["thumbnail.file"];
+
+      // Filter out empty strings from targetAudience arrays
+      if (body.targetAudience) {
+        if (body.targetAudience.idealFor) {
+          body.targetAudience.idealFor = body.targetAudience.idealFor.filter(item => item && item.trim() !== '');
+        }
+        if (body.targetAudience.consultDoctor) {
+          body.targetAudience.consultDoctor = body.targetAudience.consultDoctor.filter(item => item && item.trim() !== '');
+        }
+      }
     } else {
       body = await req.json();
     }

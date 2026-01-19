@@ -169,12 +169,6 @@ export async function PUT(req, context) {
       // But we will use maxIndices to truncate them later if they are present.
 
       for (const [key, value] of formData.entries()) {
-        //consolle.log(
-        //   `Processing PUT field: ${key}=${
-        //     value instanceof File ? `File(${value.name})` : value
-        //   }`
-        // );
-
         // Handle thumbnail fields specifically
         if (
           key === "thumbnail.file" ||
@@ -227,7 +221,28 @@ export async function PUT(req, context) {
         const arrObjMatch = key.match(/([\w]+)\[(\d+)\](?:\.([\w]+|file))?/);
         const objObjMatch = key.match(/([\w]+)\.(\w+)/);
 
-        if (arrObjMatch) {
+        if (key.startsWith("targetAudience.")) {
+          // Handle targetAudience.idealFor[index] and targetAudience.consultDoctor[index]
+          const taMatch = key.match(/^targetAudience\.(idealFor|consultDoctor)\[(\d+)\]$/);
+          if (taMatch) {
+            const field = taMatch[1]; // 'idealFor' or 'consultDoctor'
+            const index = parseInt(taMatch[2]);
+
+            if (!body.targetAudience) {
+              body.targetAudience = { idealFor: [], consultDoctor: [] };
+            }
+            if (!body.targetAudience[field]) {
+              body.targetAudience[field] = [];
+            }
+            body.targetAudience[field][index] = value;
+
+            presentArrays.add(`targetAudience.${field}`);
+            const taKey = `targetAudience.${field}`;
+            if (maxIndices[taKey] === undefined || index > maxIndices[taKey]) {
+              maxIndices[taKey] = index;
+            }
+          }
+        } else if (arrObjMatch) {
           const arrKey = arrObjMatch[1];
           const arrIdx = parseInt(arrObjMatch[2]);
           const objKey = arrObjMatch[3];
@@ -387,6 +402,24 @@ export async function PUT(req, context) {
         }
       });
 
+      // Handle targetAudience truncation separately
+      if (body.targetAudience) {
+        if (presentArrays.has('targetAudience.idealFor') && maxIndices['targetAudience.idealFor'] !== undefined) {
+          body.targetAudience.idealFor = body.targetAudience.idealFor.slice(0, maxIndices['targetAudience.idealFor'] + 1);
+        }
+        if (presentArrays.has('targetAudience.consultDoctor') && maxIndices['targetAudience.consultDoctor'] !== undefined) {
+          body.targetAudience.consultDoctor = body.targetAudience.consultDoctor.slice(0, maxIndices['targetAudience.consultDoctor'] + 1);
+        }
+
+        // Filter out empty strings from targetAudience arrays
+        if (body.targetAudience.idealFor) {
+          body.targetAudience.idealFor = body.targetAudience.idealFor.filter(item => item && item.trim() !== '');
+        }
+        if (body.targetAudience.consultDoctor) {
+          body.targetAudience.consultDoctor = body.targetAudience.consultDoctor.filter(item => item && item.trim() !== '');
+        }
+      }
+
       // Clean up arrays - remove entries with no valid url
       if (body.images) {
         body.images = body.images.filter((img) => img && img.url);
@@ -455,7 +488,6 @@ export async function PUT(req, context) {
       });
     }
 
-    //consolle.log("Final PUT body:", JSON.stringify(body, null, 2));
     const updateResult = await productController.update(id, body, conn);
 
     let fullProduct = null;

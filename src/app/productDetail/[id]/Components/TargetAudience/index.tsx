@@ -32,19 +32,18 @@ export function TargetAudience({
   const renderVariant = () => {
     switch (targetAudienceSettings.variant) {
       case "split":
-        return <Variant1 />;
+        return <Variant1 productData={product} />;
       default:
-        return <Variant1 />;
+        return <Variant1 productData={product} />;
     }
   };
 
   return (
     <div
-      className={`${
-        isPreviewMode
+      className={`${isPreviewMode
           ? "bg-transparent"
           : "bg-white rounded-2xl shadow-xl border border-gray-100"
-      } ${isPreviewMode ? "" : "p-6 mb-4"} ${isFullWidth ? "w-full" : ""}`}
+        } ${isPreviewMode ? "" : "p-6 mb-4"} ${isFullWidth ? "w-full" : ""}`}
     >
       {!isPreviewMode && (
         <div className="flex justify-between items-center mb-6">
