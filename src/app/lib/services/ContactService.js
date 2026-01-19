@@ -37,6 +37,7 @@ export default class ContactService {
       const payload = {
         name: value.name,
         email: value.email,
+        phone: value.phone,
         message: value.message,
       };
 
@@ -82,6 +83,7 @@ export default class ContactService {
       const payload = {};
       if (typeof value.name !== "undefined") payload.name = value.name;
       if (typeof value.email !== "undefined") payload.email = value.email;
+      if (typeof value.phone !== "undefined") payload.phone = value.phone;
       if (typeof value.message !== "undefined") payload.message = value.message;
       if (typeof value.status !== "undefined") payload.status = value.status;
 

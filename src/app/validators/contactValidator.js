@@ -3,6 +3,7 @@ import Joi from "joi";
 export const contactCreateValidator = Joi.object({
   name: Joi.string().required().trim().min(2).max(200),
   email: Joi.string().required().trim().email().max(254),
+  phone: Joi.string().required().trim().min(10).max(15),
   message: Joi.string().required().trim().min(5).max(5000),
 });
 
@@ -26,6 +27,7 @@ export const contactIdValidator = Joi.object({
 export const contactUpdateValidator = Joi.object({
   name: Joi.string().trim().min(2).max(200).optional(),
   email: Joi.string().trim().email().max(254).optional(),
+  phone: Joi.string().trim().min(10).max(15).optional(),
   message: Joi.string().trim().min(5).max(5000).optional(),
   status: Joi.string().valid("new", "read", "closed").optional(),
 }).or("name", "email", "message", "status");
