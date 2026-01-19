@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCertificates } from "@/app/store/slices/certificateSlice";
 import AnimatedGradientBorder from "../ui/AnimatedGradientBorder";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function ValidatedSection({ content }) {
   const scrollContainerRef = useRef(null);
@@ -91,8 +92,8 @@ export default function ValidatedSection({ content }) {
                         item && item.file
                           ? item.file
                           : content?.images && content.images[index]
-                          ? content.images[index]
-                          : "/logo-place-holder.png"
+                            ? content.images[index]
+                            : "/logo-place-holder.png"
                       }
                       alt={`Certificate ${index + 1}`}
                       width={160}
@@ -115,8 +116,8 @@ export default function ValidatedSection({ content }) {
                         item && item.file
                           ? item.file
                           : content?.images && content.images[index]
-                          ? content.images[index]
-                          : "/logo-place-holder.png"
+                            ? content.images[index]
+                            : "/logo-place-holder.png"
                       }
                       alt={`Certificate duplicate ${index + 1}`}
                       width={160}
