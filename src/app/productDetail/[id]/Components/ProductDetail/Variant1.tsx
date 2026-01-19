@@ -341,14 +341,14 @@ function Variant1({ productData: propProductData, detailSettings }: Variant1Prop
       <div className="flex gap-2 mb-6">
         <button
           onClick={handleAddToCart}
-          className="px-4 w-1/2 py-3 border border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+          className="px-4 w-1/2 py-3 border border-gray-300 text-black rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
         >
           <ShoppingCart size={16} />
           Add to Cart
         </button>
         <button
           onClick={handleBuyNow}
-          className="flex-1 w-1/2 greenOne text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
+          className="flex-1 w-1/2 greenTwo text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
         >
           Buy Now
         </button>

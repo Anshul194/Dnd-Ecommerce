@@ -210,11 +210,10 @@ function ProdDetThree() {
                 <div className="absolute top-6 right-6 flex flex-col gap-3">
                   <button
                     onClick={() => setIsWishlisted(!isWishlisted)}
-                    className={`p-3 rounded-full shadow-lg transition-all transform hover:scale-110 ${
-                      isWishlisted
-                        ? "bg-red-500 text-white"
-                        : "bg-white/90 backdrop-blur-sm text-gray-700 hover:text-red-500"
-                    }`}
+                    className={`p-3 rounded-full shadow-lg transition-all transform hover:scale-110 ${isWishlisted
+                      ? "bg-red-500 text-white"
+                      : "bg-white/90 backdrop-blur-sm text-gray-700 hover:text-red-500"
+                      }`}
                   >
                     <Heart
                       size={20}
@@ -263,7 +262,7 @@ function ProdDetThree() {
 
           {/* Enhanced Product Info */}
 
-                      {/* variant3 */}
+          {/* variant3 */}
 
           <div className="space-y-8">
             {/* Header Section */}
@@ -287,11 +286,10 @@ function ProdDetThree() {
                       <Star
                         key={i}
                         size={20}
-                        className={`${
-                          i < Math.floor(productData.rating)
-                            ? "fill-orange-400 text-orange-400"
-                            : "text-gray-300"
-                        }`}
+                        className={`${i < Math.floor(productData.rating)
+                          ? "fill-orange-400 text-orange-400"
+                          : "text-gray-300"
+                          }`}
                       />
                     ))}
                   </div>
@@ -337,11 +335,10 @@ function ProdDetThree() {
                 {productData.variants.map((variant) => (
                   <button
                     key={variant._id}
-                    className={`relative p-4 border-2 rounded-2xl text-left transition-all hover:shadow-lg ${
-                      selectedVariant === variant._id
-                        ? "border-orange-400 bg-orange-50 shadow-md"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`relative p-4 border-2 rounded-2xl text-left transition-all hover:shadow-lg ${selectedVariant === variant._id
+                      ? "border-orange-400 bg-orange-50 shadow-md"
+                      : "border-gray-200 hover:border-gray-300"
+                      }`}
                     onClick={() => setSelectedVariant(variant._id)}
                   >
                     <div className="flex items-center justify-between">
@@ -369,11 +366,10 @@ function ProdDetThree() {
                         </div>
                       </div>
                       <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          selectedVariant === variant._id
-                            ? "border-orange-400 bg-orange-400"
-                            : "border-gray-300"
-                        }`}
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedVariant === variant._id
+                          ? "border-orange-400 bg-orange-400"
+                          : "border-gray-300"
+                          }`}
                       >
                         {selectedVariant === variant._id && (
                           <Check size={14} className="text-white" />
@@ -413,12 +409,12 @@ function ProdDetThree() {
             <div className="flex gap-4">
               <button
                 onClick={handleAddToCart}
-                className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-8 rounded-2xl font-bold hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105 flex items-center justify-center gap-3 shadow-lg"
+                className="flex-1 greenOne text-black py-4 px-8 rounded-2xl font-bold hover:bg-green-400 transition-all transform hover:scale-105 flex items-center justify-center gap-3 shadow-lg"
               >
                 <ShoppingCart size={22} />
                 Add to Cart
               </button>
-              <button className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-8 rounded-2xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 shadow-lg">
+              <button className="greenTwo text-white py-4 px-8 rounded-2xl font-bold hover:bg-green-900 transition-all transform hover:scale-105 shadow-lg">
                 Buy Now
               </button>
             </div>
@@ -504,11 +500,10 @@ function ProdDetThree() {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-medium transition-all ${
-                    activeTab === tab.key
-                      ? "bg-white text-gray-900 shadow-md"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-medium transition-all ${activeTab === tab.key
+                    ? "bg-white text-gray-900 shadow-md"
+                    : "text-gray-600 hover:text-gray-900"
+                    }`}
                 >
                   <Icon size={18} />
                   {tab.label}
@@ -632,11 +627,10 @@ function ProdDetThree() {
                               <Star
                                 key={i}
                                 size={14}
-                                className={`${
-                                  i < review.rating
-                                    ? "fill-orange-400 text-orange-400"
-                                    : "text-gray-300"
-                                }`}
+                                className={`${i < review.rating
+                                  ? "fill-orange-400 text-orange-400"
+                                  : "text-gray-300"
+                                  }`}
                               />
                             ))}
                           </div>

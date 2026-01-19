@@ -503,7 +503,7 @@ export function ProductDetails({
 
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4">
-        <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2">
+        <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-black px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2">
           <ShoppingCart size={18} />
           Add to Cart
         </button>

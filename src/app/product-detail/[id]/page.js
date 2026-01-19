@@ -94,13 +94,13 @@ function ProductPage({ params }) {
     //   return;
     // }
     const { salePrice } = getDisplayPrice(data, selectedPack);
-    
+
     // Check if price is available
     if (salePrice === null || salePrice === undefined) {
       toast.error("Price not available for this product. Please contact support.");
       return;
     }
-    
+
     try {
       const resultAction = await dispatch(
         addToCart({
@@ -156,13 +156,13 @@ function ProductPage({ params }) {
     //   return;
     // }
     const { salePrice } = getDisplayPrice(data, selectedPack);
-    
+
     // Check if price is available
     if (salePrice === null || salePrice === undefined) {
       toast.error("Price not available for this product. Please contact support.");
       return;
     }
-    
+
     try {
       // Ensure image has proper structure
       const productImage = data.thumbnail || data.images?.[0];
@@ -401,7 +401,7 @@ function ProductPage({ params }) {
                       // Handle null prices properly
                       const variantPrice = variant.price !== null && variant.price !== undefined ? variant.price : null;
                       const variantSalePrice = variant.salePrice !== null && variant.salePrice !== undefined ? variant.salePrice : null;
-                      
+
                       // Calculate discount percentage if sale price exists and both prices are valid numbers
                       const discountPercent = variantSalePrice !== null && variantPrice !== null && variantPrice > variantSalePrice
                         ? Math.round(((variantPrice - variantSalePrice) / variantPrice) * 100)
@@ -481,14 +481,14 @@ function ProductPage({ params }) {
               <div ref={buttonRef} className="flex gap-2 mb-6">
                 <button
                   onClick={handleAddToCart}
-                  className="px-4 w-1/2 py-3 border border-gray-300 text rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                  className="px-4 w-1/2 py-3 border border-gray-300 text-black rounded hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={16} />
                   Add to Cart
                 </button>
                 <button
                   onClick={handleBuyNow}
-                  className="flex-1 w-1/2 greenOne text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
+                  className="flex-1 w-1/2 greenTwo text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
                 >
                   Buy Now
                 </button>
@@ -842,7 +842,7 @@ function ProductPage({ params }) {
             </button>
             <button
               onClick={handleBuyNow}
-              className="flex-1 w-1/2 greenOne text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
+              className="flex-1 w-1/2 greenTwo text-white py-3 px-4 rounded font-medium hover:bg-green-700 transition-colors"
             >
               Buy Now
             </button>

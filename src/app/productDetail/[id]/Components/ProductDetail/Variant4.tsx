@@ -343,7 +343,7 @@ function Variant4({ productData: propProductData, detailSettings }: Variant4Prop
       <div className="flex gap-4">
         <button
           onClick={handleAddToCart}
-          className="flex-1 greenOne text-white py-4 px-8 rounded-2xl font-bold transition-all transform hover:scale-105 flex items-center justify-center gap-3 shadow-lg"
+          className="flex-1 greenOne text-black py-4 px-8 rounded-2xl font-bold transition-all transform hover:scale-105 flex items-center justify-center gap-3 shadow-lg"
         >
           <ShoppingCart size={22} />
           Add to Cart

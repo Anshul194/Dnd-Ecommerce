@@ -165,11 +165,10 @@ function ProdDetTwo() {
                   <div className="absolute top-4 right-4 flex gap-2">
                     <button
                       onClick={() => setIsWishlisted(!isWishlisted)}
-                      className={`w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-all ${
-                        isWishlisted
+                      className={`w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-all ${isWishlisted
                           ? "bg-red-500 text-white"
                           : "bg-white text-gray-600 hover:text-red-500"
-                      }`}
+                        }`}
                     >
                       <Heart
                         size={18}
@@ -188,11 +187,10 @@ function ProdDetTwo() {
                 {productData.images.map((img, index) => (
                   <button
                     key={index}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === index
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
                         ? "border-green-500 shadow-md"
                         : "border-gray-200 hover:border-gray-300"
-                    }`}
+                      }`}
                     onClick={() => setSelectedImage(index)}
                   >
                     <img
@@ -242,11 +240,10 @@ function ProdDetTwo() {
                   {productData.variants.map((variant) => (
                     <button
                       key={variant._id}
-                      className={`relative p-4 border-2 rounded-xl text-center transition-all ${
-                        selectedPack === variant._id
-                          ?"customBorder bg-blue-50"
+                      className={`relative p-4 border-2 rounded-xl text-center transition-all ${selectedPack === variant._id
+                          ? "customBorder bg-blue-50"
                           : "border-gray-200 hover:border-gray-300"
-                      }`}
+                        }`}
                       onClick={() => setSelectedPack(variant._id)}
                     >
                       <div className="font-semibold text-gray-900">
@@ -295,7 +292,7 @@ function ProdDetTwo() {
               <div className="flex gap-3 mb-6">
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 greenOne text-white py-4 px-6 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 greenOne text-black py-4 px-6 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={20} />
                   Add to Cart
@@ -366,11 +363,10 @@ function ProdDetTwo() {
                     <button
                       key={tab.key}
                       onClick={() => toggleSection(tab.key)}
-                      className={`flex-1 py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
-                        expandedSection === tab.key
+                      className={`flex-1 py-4 px-6 text-sm font-medium border-b-2 transition-colors ${expandedSection === tab.key
                           ? "border-green-500 text-[#07490C]"
                           : "border-transparent text-gray-600 hover:text-gray-900"
-                      }`}
+                        }`}
                     >
                       {tab.label}
                     </button>

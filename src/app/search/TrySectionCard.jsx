@@ -321,7 +321,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                   <button
                     type="button"
                     onClick={(e) => handleBuyNow(e)}
-                    className="w-4/3 h-10 max-sm:h-9 mb-2 greenOne text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                    className="w-4/3 h-10 max-sm:h-9 mb-2 greenTwo text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                   >
                     Buy Now
                   </button>
@@ -337,7 +337,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
               ) : (
                 <button
                   onClick={(e) => handleAddToCart(e)}
-                  className="w-full greenOne text-white py-2.5 max-sm:py-2 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                  className="w-full greenOne text-black py-2.5 max-sm:py-2 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                   type="button"
                 >
                   Add to cart

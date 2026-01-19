@@ -505,7 +505,7 @@ const DynamicProductSlider = ({ content }) => {
                                   e.stopPropagation();
                                   handleBuyNow(e, product);
                                 }}
-                                className="greenOne text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                                className="greenTwo text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
                               >
                                 Buy Now
                               </button>
@@ -514,7 +514,7 @@ const DynamicProductSlider = ({ content }) => {
                                   e.stopPropagation();
                                   handleAddToCart(e, product);
                                 }}
-                                className="border border-white text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-white hover:text-black transition-colors duration-200"
+                                className="greenOne text-black py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-400 transition-colors duration-200"
                               >
                                 Add to Cart
                               </button>
@@ -586,7 +586,7 @@ const DynamicProductSlider = ({ content }) => {
                     <div className="flex gap-2">
                       <button
                         onClick={(e) => handleBuyNow(e, overlayProduct)}
-                        className="w-32 h-10 mb-2 greenOne text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                        className="w-32 h-10 mb-2 greenTwo text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200"
                       >
                         Buy Now
                       </button>

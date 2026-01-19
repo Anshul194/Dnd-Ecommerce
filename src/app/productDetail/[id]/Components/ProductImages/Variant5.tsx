@@ -288,8 +288,8 @@ export default function Variant5() {
                     key={pack.id}
                     onClick={() => setSelectedVariant(pack.variantObj)}
                     className={`snap-start flex-shrink-0 w-36 p-3 rounded-xl border text-left transition-all ${selectedVariant?._id === pack.id
-                        ? "border-2 border-green-500 bg-green-50 text-green-600 relative shadow-md transform scale-105 origin-left"
-                        : "border border-gray-200 bg-white text-gray-700 hover:border-green-500 hover:shadow-md"
+                      ? "border-2 border-green-500 bg-green-50 text-green-600 relative shadow-md transform scale-105 origin-left"
+                      : "border border-gray-200 bg-white text-gray-700 hover:border-green-500 hover:shadow-md"
                       }`}
                   >
                     {pack.tag && selectedVariant?._id === pack.id && (
@@ -342,7 +342,7 @@ export default function Variant5() {
             <div className="flex flex-wrap gap-4 mt-2">
               <button
                 onClick={handleAddToCart}
-                className="flex-1 min-w-[160px] max-w-[240px] bg-green-500 hover:bg-green-400 text-white font-bold h-12 rounded-lg shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5">
+                className="flex-1 min-w-[160px] max-w-[240px] greenOne hover:bg-green-400 text-black font-bold h-12 rounded-lg shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5">
                 <span>🛒</span>
                 Add to Cart
               </button>
@@ -424,8 +424,8 @@ export default function Variant5() {
                       <button
                         key={index}
                         className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden transition-all transform hover:scale-105 ${selectedImage === index
-                            ? "ring-4 ring-green-500 shadow-lg"
-                            : "ring-2 ring-gray-200 hover:ring-gray-300"
+                          ? "ring-4 ring-green-500 shadow-lg"
+                          : "ring-2 ring-gray-200 hover:ring-gray-300"
                           }`}
                         onClick={() => setSelectedImage(index)}
                       >
