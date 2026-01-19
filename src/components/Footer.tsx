@@ -53,7 +53,7 @@ export default function Footer() {
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newsletterEmail.trim()) {
       setNewsletterMessage({ type: "error", text: "Please enter a valid email address" });
       return;
@@ -71,12 +71,12 @@ export default function Footer() {
       });
 
       if (response.data.success !== false) {
-        setNewsletterMessage({ 
-          type: "success", 
-          text: "Thank you for subscribing! Check your email for confirmation." 
+        setNewsletterMessage({
+          type: "success",
+          text: "Thank you for subscribing! Check your email for confirmation."
         });
         setNewsletterEmail("");
-        
+
         // Clear success message after 5 seconds
         setTimeout(() => {
           setNewsletterMessage(null);
@@ -85,24 +85,24 @@ export default function Footer() {
         throw new Error(response.data.message || "Subscription failed");
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          "Failed to subscribe. Please try again.";
-      
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        "Failed to subscribe. Please try again.";
+
       // Check if email already exists
-      if (errorMessage.toLowerCase().includes("already") || 
-          errorMessage.toLowerCase().includes("duplicate")) {
-        setNewsletterMessage({ 
-          type: "error", 
-          text: "This email is already subscribed to our newsletter." 
+      if (errorMessage.toLowerCase().includes("already") ||
+        errorMessage.toLowerCase().includes("duplicate")) {
+        setNewsletterMessage({
+          type: "error",
+          text: "This email is already subscribed to our newsletter."
         });
       } else {
-        setNewsletterMessage({ 
-          type: "error", 
-          text: errorMessage 
+        setNewsletterMessage({
+          type: "error",
+          text: errorMessage
         });
       }
-      
+
       // Clear error message after 5 seconds
       setTimeout(() => {
         setNewsletterMessage(null);
@@ -140,7 +140,7 @@ export default function Footer() {
     return null; // Don't render Navbar on product detail page
   }
   return (
-    <footer className={`bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden ${pathname.includes("/productDetail") ? "mb-[97px]": "mb-0"}`}>
+    <footer className={`bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden ${pathname.includes("/productDetail") ? "mb-[97px]" : "mb-0"}`}>
       {/* Decorative Elements */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-[#3C950D]/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#3C950D]/10 rounded-full blur-3xl" />
@@ -165,7 +165,7 @@ export default function Footer() {
                 />
               </div>
               <span className="text-[#3C950D] capitalize text-xl tracking-tight">
-               Bharat Gram Udyog Sangh
+                Bharat Gram Udyog Sangh
               </span>
             </div>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
@@ -265,21 +265,23 @@ export default function Footer() {
                 </h3>
                 <ul className="space-y-3 text-sm">
                   {Array.isArray(item.pages) &&
-                    item.pages.map((page: any, pageIndex: number) => (
-                      <li key={pageIndex}>
-                        <a
-                          href={
-                            page?.redirectBySlug
-                              ? `/${page.slug}`
-                              : `/pages/${page._id}`
-                          }
-                          className="text-gray-400 hover:text-[#3C950D] transition-colors flex items-center gap-2 group"
-                        >
-                          <span className="w-0 h-0.5 bg-[#3C950D] capitalize group-hover:w-2 transition-all" />
-                          {page.title}
-                        </a>
-                      </li>
-                    ))}
+                    item.pages
+                      .filter((page: any) => page?.title?.toLowerCase() !== "client care")
+                      .map((page: any, pageIndex: number) => (
+                        <li key={pageIndex}>
+                          <a
+                            href={
+                              page?.redirectBySlug
+                                ? `/${page.slug}`
+                                : `/pages/${page._id}`
+                            }
+                            className="text-gray-400 hover:text-[#3C950D] transition-colors flex items-center gap-2 group"
+                          >
+                            <span className="w-0 h-0.5 bg-[#3C950D] capitalize group-hover:w-2 transition-all" />
+                            {page.title}
+                          </a>
+                        </li>
+                      ))}
                 </ul>
               </motion.div>
             );
@@ -311,7 +313,7 @@ export default function Footer() {
                 disabled={newsletterLoading}
                 className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 backdrop-blur-sm"
               />
-              <Button 
+              <Button
                 type="submit"
                 disabled={newsletterLoading || !newsletterEmail.trim()}
                 className="bg-gradient-to-r from-[#3C950D] to-[#2d7009] hover:from-[#2d7009] hover:to-[#3C950D] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -320,11 +322,10 @@ export default function Footer() {
               </Button>
             </form>
             {newsletterMessage && (
-              <p className={`text-sm ${
-                newsletterMessage.type === "success" 
-                  ? "text-green-400" 
+              <p className={`text-sm ${newsletterMessage.type === "success"
+                  ? "text-green-400"
                   : "text-red-400"
-              }`}>
+                }`}>
                 {newsletterMessage.text}
               </p>
             )}
@@ -348,11 +349,11 @@ export default function Footer() {
               <h3 className="mb-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Available On</h3>
               <div className="flex gap-4">
                 {[
-                    { name: 'Flipkart', src: '/images/flipkart.png' },
-                    { name: 'Amazon', src: '/images/amazon.png' },
-                    { name: 'Tata 1mg', src: '/images/tata1mg.png' },
-                    { name: 'Meesho', src: '/images/meesho.png' },
-                    { name: 'Snapdeal', src: '/images/snapdeal.png' }
+                  { name: 'Flipkart', src: '/images/flipkart.png' },
+                  { name: 'Amazon', src: '/images/amazon.png' },
+                  { name: 'Tata 1mg', src: '/images/tata1mg.png' },
+                  { name: 'Meesho', src: '/images/meesho.png' },
+                  { name: 'Snapdeal', src: '/images/snapdeal.png' }
                 ].map((store) => (
                   <div key={store.name} className="bg-white p-2 rounded-lg hover:scale-105 transition-transform cursor-pointer">
                     <Image

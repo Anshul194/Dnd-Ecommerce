@@ -306,10 +306,8 @@ const ProductCard = ({ product, showDes, buyNow }) => {
 
           <div className="p-2">
             {/* Title */}
-            <h3 className="text-xs  bg-[#F1FAEE] w-fit p-1 px-3 text poppins-medium  mb-1">
-              {product?.name?.slice(0, 15)}
-              {""}
-              {product?.name?.length > 18 ? "..." : ""}
+            <h3 className="text-xs bg-[#F1FAEE] w-full p-1 px-3 text poppins-medium mb-1 line-clamp-2">
+              {product?.name}
             </h3>
 
             {/* Rating - Only show if rating > 0 */}

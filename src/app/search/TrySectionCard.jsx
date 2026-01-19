@@ -263,10 +263,8 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
           </div>
 
           <div className="p-2">
-            <h3 className="text-xs  bg-[#F1FAEE] w-fit p-1 px-3 text poppins-medium  mb-1">
-              {product?.name?.slice(0, 15)}
-              {""}
-              {product?.name?.length > 18 ? "..." : ""}
+            <h3 className="text-xs bg-[#F1FAEE] w-full p-1 px-3 text poppins-medium mb-1 line-clamp-2">
+              {product?.name}
             </h3>
 
             {product?.rating > 0 && (
