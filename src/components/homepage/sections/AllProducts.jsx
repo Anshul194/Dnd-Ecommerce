@@ -10,7 +10,7 @@ import { LoadingSpinner } from "@/components/common/Loading";
 const AllProducts = () => {
   const dispatch = useDispatch();
   const { products, loading } = useSelector((state) => state.product);
-  const [displayLimit, setDisplayLimit] = useState(12);
+  const [displayLimit, setDisplayLimit] = useState(8);
 
   const hasFetchedRef = useRef(false);
 
@@ -23,12 +23,18 @@ const AllProducts = () => {
     }
   }, [dispatch, products]);
 
-  const handleLoadMore = () => {
-    setDisplayLimit((prev) => prev + 12);
-  };
-
   // Get products array - handle both products.products and products array
   const productList = (products?.products || products || []);
+
+  const handleLoadMore = () => {
+    // Show all fetched products
+    setDisplayLimit(productList.length);
+  };
+
+  const handleViewLess = () => {
+    setDisplayLimit(8);
+  };
+
   const displayedProducts = productList.slice(0, displayLimit);
   const hasMore = displayLimit < productList.length;
 
@@ -69,15 +75,24 @@ const AllProducts = () => {
         ))}
       </div>
 
-      {/* Load More Button */}
-      {hasMore && (
-        <div className="flex justify-center mt-12">
-          <button
-            onClick={handleLoadMore}
-            className="bg-[#3C950D] text-white px-8 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors duration-200"
-          >
-            Load More Products
-          </button>
+      {/* View More/Less Button */}
+      {productList.length > 8 && (
+        <div className="flex justify-center mt-12 gap-4">
+          {hasMore ? (
+            <button
+              onClick={handleLoadMore}
+              className="bg-[#3C950D] text-white px-8 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors duration-200"
+            >
+              View More Products
+            </button>
+          ) : (
+            <button
+              onClick={handleViewLess}
+              className="bg-[#3C950D] text-white px-8 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors duration-200"
+            >
+              View Less Products
+            </button>
+          )}
         </div>
       )}
 

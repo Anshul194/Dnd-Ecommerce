@@ -38,6 +38,7 @@ const reviewSlice = createSlice({
     reviews: [],
     loading: false,
     error: null,
+    hasFetched: false,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -49,6 +50,7 @@ const reviewSlice = createSlice({
       .addCase(fetchReviews.fulfilled, (state, action) => {
         state.loading = false;
         state.reviews = action.payload;
+        state.hasFetched = true;
       })
       .addCase(fetchReviews.rejected, (state, action) => {
         state.loading = false;

@@ -34,13 +34,13 @@ const itemVariants = {
 
 export function Reviews({ content }) {
   //console.log("reviews content ====>", content);
-  const { reviews, loading, error } = useSelector((state) => state.reviews);
+  const { reviews, loading, error, hasFetched } = useSelector((state) => state.reviews);
   const dispatch = useDispatch();
   useEffect(() => {
-    if (!reviews || reviews.length === 0) {
+    if (!hasFetched && !loading) {
       dispatch(fetchReviews());
     }
-  }, [dispatch, reviews]);
+  }, [dispatch, hasFetched, loading]);
   return (
     <>
       <section className="max-w-7xl mx-auto py-20  px-4 ">
