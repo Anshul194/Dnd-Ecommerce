@@ -12,7 +12,14 @@ export const generateInvoiceHtml = (order, baseUrl = "") => {
   const sgstRate = formatNumber(sgstRateRaw);
 
   const items = (order.items || []).map((it, i) => {
-    const name = it.product?.name || it.name || "Product";
+    // Robust name resolution: prioritize name on item, then name on product object, then fallback
+    let name = it.name || it.product?.name;
+    if (!name && typeof it.product === 'string') {
+      name = it.product;
+    }
+    if (!name || typeof name !== 'string') {
+      name = "Product";
+    }
     const qty = Number(it.qty || it.quantity || it.count || 0);
     const rate = Number(it.rate || it.price || 0);
     const amount = Number(it.total ?? (qty && rate ? qty * rate : 0));
@@ -51,7 +58,7 @@ export const generateInvoiceHtml = (order, baseUrl = "") => {
   const cgst = formatNumber(cgstAmountRaw);
   const sgst = formatNumber(sgstAmountRaw);
   const totalTax = formatNumber((cgstAmountRaw + sgstAmountRaw) || 0);
-  const totalAfterTax = formatNumber(totalAfterTaxRaw || (Number(totalBeforeTaxRaw || 0) + Number(cgstAmountRaw + sgstAmountRaw || 0)));
+  const totalAfterTax = formatNumber(totalAfterTaxRaw || (Number(totalBeforeTaxRaw || 0) + (cgstAmountRaw + sgstAmountRaw || 0)));
 
   // Build billing and shipping address HTML from order data
   const billing = order.billingAddress || {};
@@ -105,7 +112,7 @@ export const generateInvoiceHtml = (order, baseUrl = "") => {
   <table class="header-table">
     <tr>
       <td class="logo-cell">
-        <img src="${baseUrl ? baseUrl : ''}/logo.webp" width="70" height="70" alt="Company Logo">
+        <img src="${baseUrl ? baseUrl.replace(/\/$/, '') : ''}/logo.webp" width="70" height="70" alt="Company Logo">
       </td>
       <td class="company-info">
         <div class="company-name">BHARAT GRAM UDYOG</div>
