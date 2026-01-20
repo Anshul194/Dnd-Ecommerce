@@ -234,7 +234,7 @@ export default function Variant5() {
             <div className="md:flex block gap-2">
               <button
                 onClick={handleAddToCart}
-                className="greenOne text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 text-sm max-md:mb-2"
+                className="greenOne text-black px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 text-sm max-md:mb-2"
               >
                 <ShoppingCart size={16} />
                 Add to Cart
