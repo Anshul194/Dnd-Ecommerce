@@ -30,7 +30,6 @@ export default function Footer() {
   const [newsletterLoading, setNewsletterLoading] = useState(false);
   const [newsletterMessage, setNewsletterMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  console.log("footer page links =======>", list);
 
   useEffect(() => {
     dispatch(fetchPages());
@@ -323,8 +322,8 @@ export default function Footer() {
             </form>
             {newsletterMessage && (
               <p className={`text-sm ${newsletterMessage.type === "success"
-                  ? "text-green-400"
-                  : "text-red-400"
+                ? "text-green-400"
+                : "text-red-400"
                 }`}>
                 {newsletterMessage.text}
               </p>

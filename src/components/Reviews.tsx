@@ -34,8 +34,8 @@ const itemVariants = {
 
 export function Reviews({ content }) {
   //console.log("reviews content ====>", content);
-  const { reviews, loading, error, hasFetched } = useSelector((state) => state.reviews);
-  const dispatch = useDispatch();
+  const { reviews, loading, error, hasFetched } = useSelector((state: any) => state.reviews);
+  const dispatch = useDispatch<any>();
   useEffect(() => {
     if (!hasFetched && !loading) {
       dispatch(fetchReviews());
@@ -77,7 +77,7 @@ export function Reviews({ content }) {
                     <div className="flex items-center gap-4 mb-4">
                       <Avatar className="bg-gradient-to-br from-[#3C950D] to-[#2d7009] text-white w-12 h-12 shadow-lg">
                         <AvatarFallback className="bg-gradient-to-br uppercase from-[#3C950D] to-[#2d7009] text-white">
-                          {review?.userId?.name[0] || "U"}
+                          {review?.userId?.name?.[0] || "U"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
@@ -95,16 +95,16 @@ export function Reviews({ content }) {
                       </div>
                     </div>
                     <p className="text-gray-600  text-sm leading-relaxed italic">
-                      {"\u201C" + review.comment.slice(0, 115)}
-                      {review.comment.length > 120 ? "..." : "" + "\u201D"}
+                      {"\u201C" + (review?.comment?.slice(0, 115) || "")}
+                      {(review?.comment?.length || 0) > 120 ? "..." : "" + "\u201D"}
                     </p>
 
                     <div className="w-full h-32 mt-2 bg-gray-300 rounded-lg">
                       {/* Placeholder for image or additional content */}
                       <Image
                         src={
-                          review?.images[0] ||
-                          review?.productId?.images[0]?.url ||
+                          review?.images?.[0] ||
+                          review?.productId?.images?.[0]?.url ||
                           "/images/testimonial-placeholder.webp"
                         }
                         alt="Testimonial Placeholder"

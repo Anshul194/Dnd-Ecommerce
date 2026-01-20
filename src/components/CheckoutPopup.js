@@ -1010,7 +1010,6 @@ export default function CheckoutPopup() {
     : (cartItems?.length > 0 ? cartItems.reduce((acc, item) => acc + (Number(item.price || 0) * Number(item.quantity || 0)), 0) : 0);
 
 
-  console.log("Items Total2:", cartItems);
 
   // Calculate product discount (original price - sale price)
   const productDiscount = buyNowProduct

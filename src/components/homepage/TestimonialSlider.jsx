@@ -126,8 +126,8 @@ export default function TestimonialSlider({ content }) {
                     {/* Placeholder for image or additional content */}
                     <Image
                       src={
-                        testimonial?.images[0] ||
-                        testimonial?.productId?.images[0]?.url ||
+                        testimonial?.images?.[0] ||
+                        testimonial?.productId?.images?.[0]?.url ||
                         "/images/testimonial-placeholder.webp"
                       }
                       alt="Testimonial Placeholder"
@@ -140,8 +140,8 @@ export default function TestimonialSlider({ content }) {
                   {/* Quote */}
                   <div className="flex-1 mt-4">
                     <blockquote className="text-gray-700 line-clamp-5 text-lg font-medium leading-tight ">
-                      "{testimonial.comment.slice(0, 130)}{" "}
-                      {testimonial.comment.length > 115 ? "..." : ""}"
+                      "{testimonial?.comment?.slice(0, 130) || ""}
+                      {(testimonial?.comment?.length || 0) > 115 ? "..." : ""}"
                     </blockquote>
                   </div>
                 </div>
