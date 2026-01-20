@@ -32,9 +32,9 @@ export function FAQ({
   const renderVariant = () => {
     switch (faqSettings.variant) {
       case "accordion":
-        return <Variant1 />;
+        return <Variant1 productData={product} />;
       default:
-        return <Variant1 />;
+        return <Variant1 productData={product} />;
     }
   };
 

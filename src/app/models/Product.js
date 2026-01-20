@@ -43,6 +43,18 @@ const productSchema = new mongoose.Schema({
   lastViewedAt: { type: Date },
   lastPurchasedAt: { type: Date },
   abandonedCount: { type: Number, default: 0 },
+    // Comparison table data: headers and rows for dynamic comparison table
+    comparison: {
+      headers: [{ type: String }],
+      rows: [
+        {
+          title: { type: String },
+          // cells correspond to headers order
+          cells: [{ type: String }],
+          note: { type: String },
+        },
+      ],
+    },
 });
 
 export const ProductSchema = productSchema;

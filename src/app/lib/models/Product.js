@@ -112,6 +112,20 @@ const productSchema = new mongoose.Schema(
     descriptionVideo: String,
     // Highlights / Features
     highlights: [String],
+    comparison: {
+      headers: {
+        type: [String],
+        default: [],
+      },
+      rows: [
+        {
+          title: String,
+          cells: [String],
+          note: String,
+        },
+      ],
+      default: { headers: [], rows: [] },
+    },
     // Ratings and Reviews
     rating: {
       type: Number,

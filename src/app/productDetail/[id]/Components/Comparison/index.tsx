@@ -32,9 +32,9 @@ export function Comparison({
   const renderVariant = () => {
     switch (comparisonSettings.variant) {
       case "table":
-        return <Variant1 />;
+        return <Variant1 productData={product} />;
       default:
-        return <Variant1 />;
+        return <Variant1 productData={product} />;
     }
   };
 

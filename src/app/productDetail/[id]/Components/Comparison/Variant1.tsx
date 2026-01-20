@@ -75,7 +75,41 @@ export default function Variant1({ productData }: { productData?: any }) {
     ],
   };
 
-  const comparison = productData?.comparison || dummyComparison;
+  // Map stored comparison shape to the UI's expected shape.
+  let comparison: any;
+  const raw = productData?.comparison;
+  if (raw && Array.isArray(raw.rows) && Array.isArray(raw.headers)) {
+    const headers = raw.headers || [];
+    const competitors = headers.length > 0 ? headers : ["Competitor 1", "Competitor 2"];
+
+    const features = raw.rows.map((row: any) => {
+      const cells = Array.isArray(row.cells) ? row.cells : [];
+      const makeCell = (val: any) => ({
+        icon: val ? "✓" : "✗",
+        label: val || "-",
+        status: val ? "winner" : "no",
+      });
+
+      return {
+        name: row.title || "",
+        description: row.note || "",
+        whyExcels: "",
+        ourProduct: makeCell(cells[0]),
+        competitor1: makeCell(cells[1]),
+        competitor2: makeCell(cells[2]),
+      };
+    });
+
+    comparison = {
+      title: raw.title || dummyComparison.title,
+      subtitle: raw.subtitle || dummyComparison.subtitle,
+      productName: productData?.name || raw.productName || dummyComparison.productName,
+      competitors,
+      features,
+    };
+  } else {
+    comparison = dummyComparison;
+  }
 
   return (
     <div className="py-8 font-manrope">

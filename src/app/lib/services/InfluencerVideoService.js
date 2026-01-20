@@ -1,6 +1,7 @@
 import influencerVideoRepository from '../repository/InfluencerVideoRepository.js';
 import mongoose from 'mongoose';
 import { ProductModel } from '../models/Product.js';
+import { influencerVideoSchema } from '../models/InfluencerVideo.js';
 import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
@@ -28,7 +29,7 @@ class InfluencerVideoService {
       query.title = { $regex: search, $options: 'i' };
     }
 
-    const InfluencerVideo = conn.models.InfluencerVideo || conn.model('InfluencerVideo', mongoose.model('InfluencerVideo').schema);
+    const InfluencerVideo = conn.models.InfluencerVideo || conn.model('InfluencerVideo', influencerVideoSchema);
 
     const skip = (page - 1) * limit;
     const [influencerVideos, totalItems] = await Promise.all([

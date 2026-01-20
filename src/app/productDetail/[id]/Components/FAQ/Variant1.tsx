@@ -27,13 +27,21 @@ export default function Variant1({ productData }: { productData?: any }) {
     },
   ];
 
-  const faqs = productData?.faqs || dummyFAQs;
+  // Use real FAQs when productData is provided and has FAQs.
+  // Show dummy FAQs only in preview mode (no productData).
+  const faqs = productData
+    ? (Array.isArray(productData.faqs) && productData.faqs.length > 0
+        ? productData.faqs
+        : [])
+    : dummyFAQs;
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
+    // If there are no FAQs (real product with no faqs), hide the section
+    faqs.length === 0 ? null : (
     <div className="py-8 font-manrope">
       <h2 className="text-3xl font-bold text-center mb-10 text-veda-text-dark">
         Frequently Asked Questions
@@ -85,6 +93,7 @@ export default function Variant1({ productData }: { productData?: any }) {
           </div>
         ))}
       </div>
-    </div>
+     </div>
+     )
   );
 }

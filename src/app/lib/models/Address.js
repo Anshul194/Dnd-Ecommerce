@@ -76,6 +76,20 @@ export const getAddressModel = (conn) => {
   if (conn.models.Address) {
     delete conn.models.Address;
   }
+  // Ensure `User` model/schema is registered on the same connection so populate('user') works.
+  try {
+    if (!conn.models.User) {
+      // `User.js` exports the schema as the default export (ESM), so require may return an object with `default`.
+      const userModule = require("./User.js");
+      const UserSchema = userModule?.default || userModule;
+      if (UserSchema) {
+        conn.model("User", UserSchema);
+      }
+    }
+  } catch (err) {
+    // If requiring the User schema fails, ignore — populate will error elsewhere if truly missing.
+  }
+
   return conn.model("Address", AddressSchema);
 };
 const Address =

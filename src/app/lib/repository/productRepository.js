@@ -124,9 +124,6 @@ class ProductRepository extends CrudRepository {
       }
 
       const results = [];
-      console.log(`Repository - Filter: ${JSON.stringify(filter)}`);
-      console.log(`Repository - Skip: ${skip}, Limit: ${limitNum}`);
-      console.log(`Repository - Products found: ${products.length}`);
 
       for (const productDoc of products) {
         const variants = await this.getVariantsWithAttributes(
@@ -207,7 +204,6 @@ class ProductRepository extends CrudRepository {
 
       // Get total count for pagination info
       const totalCount = await this.model.countDocuments(filter);
-      console.log(`Repository - Total Count: ${totalCount}`);
 
       return {
         products: results,
@@ -237,7 +233,8 @@ class ProductRepository extends CrudRepository {
   // Optionally override create/findById/update/delete if you need custom logic
   async create(data) {
     try {
-      return await this.model.create(data);
+      const res = await this.model.create(data);
+      return res;
     } catch (error) {
       //consolle.error("Repository Create Error:", error.message);
       throw error;

@@ -12,6 +12,7 @@ function normalizeProductBody(body) {
     "attributeSet",
     "frequentlyPurchased",
     "highlights",
+    "comparison",
     "searchKeywords",
   ];
 
@@ -47,6 +48,26 @@ function normalizeProductBody(body) {
           name: item.name || undefined, // For ingredients
           quantity: item.quantity || undefined, // For ingredients
         }));
+    }
+    // Normalize comparison if provided as array/object
+    if (field === 'comparison') {
+      if (typeof body.comparison === 'string') {
+        try {
+          body.comparison = JSON.parse(body.comparison);
+        } catch {
+          body.comparison = { headers: [], rows: [] };
+        }
+      }
+      if (!body.comparison || typeof body.comparison !== 'object') {
+        body.comparison = { headers: [], rows: [] };
+      }
+      // Ensure headers and rows shape
+      body.comparison.headers = Array.isArray(body.comparison.headers) ? body.comparison.headers.map(h => String(h || '')) : [];
+      body.comparison.rows = Array.isArray(body.comparison.rows) ? body.comparison.rows.map(r => ({
+        title: r?.title || '',
+        cells: Array.isArray(r?.cells) ? r.cells.map(c => (c == null ? '' : String(c))) : [],
+        note: r?.note || '',
+      })) : [];
     }
   });
 
@@ -143,7 +164,7 @@ class ProductController {
 
   async create(body, conn) {
     body = normalizeProductBody(body);
-    //console.log("Normalized product body:", JSON.stringify(body, null, 2));
+    // normalized body is available for processing
 
     try {
       if (!body.name || !body.category) {
@@ -357,6 +378,7 @@ class ProductController {
   async update(id, body, conn) {
     body = normalizeProductBody(body);
     try {
+      // normalized comparison is available on body
       const existing = await this.service.getProductById(id, conn);
       if (!existing) {
         return {
@@ -438,6 +460,7 @@ class ProductController {
       }
 
       const product = await this.service.updateProduct(id, body, conn);
+
       return { success: true, message: "Product updated", data: product };
     } catch (error) {
       //console.error("Update error:", error);

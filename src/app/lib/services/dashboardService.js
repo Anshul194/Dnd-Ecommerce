@@ -1,4 +1,8 @@
 import mongoose from 'mongoose';
+import ProductSchema from '../models/Product.js';
+import UserSchema from '../models/User.js';
+import ticketSchema from '../models/Ticket.js';
+import leadSchema from '../models/Lead.js';
 
 class DashboardService {
   constructor(orderService, ticketService) {
@@ -14,11 +18,11 @@ class DashboardService {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-      // Register models
-      const Product = conn.models.Product || conn.model('Product', mongoose.model('Product').schema);
-      const User = conn.models.User || conn.model('User', mongoose.model('User').schema);
-      const Ticket = conn.models.Ticket || conn.model('Ticket', mongoose.model('Ticket').schema);
-      const Lead = conn.models.Lead || conn.model('Lead', mongoose.model('Lead').schema);
+      // Register models on the tenant connection using local schemas
+      const Product = conn.models.Product || conn.model('Product', ProductSchema);
+      const User = conn.models.User || conn.model('User', UserSchema);
+      const Ticket = conn.models.Ticket || conn.model('Ticket', ticketSchema);
+      const Lead = conn.models.Lead || conn.model('Lead', leadSchema);
 
       // Fetch counts
       const totalOrders = await this.orderService.getTotalOrders(conn);

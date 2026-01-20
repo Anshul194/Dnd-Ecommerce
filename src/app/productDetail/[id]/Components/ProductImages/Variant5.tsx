@@ -350,7 +350,7 @@ export default function Variant5() {
                 onClick={handleBuyNow}
                 className="flex-1 min-w-[160px] max-w-[240px] bg-white border-2 border-gray-200 hover:border-green-500 text-gray-900 font-bold h-12 rounded-lg flex items-center justify-center gap-2 transition-all">
                 <span className="text-green-600">💬</span>
-                Order on WhatsApp
+                Buy Now
               </button>
             </div>
 

@@ -13,7 +13,8 @@ class ProductService {
     if (conn && conn.models && conn.models.Product) {
       this.productRepository.model = conn.models.Product;
     }
-    return await this.productRepository.create(data);
+    const result = await this.productRepository.create(data);
+    return result;
   }
 
   async getAllProducts(query = {}, conn) {

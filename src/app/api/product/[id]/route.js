@@ -4,8 +4,10 @@ import ProductRepository from "../../../lib/repository/productRepository.js";
 import ProductService from "../../../lib/services/productService.js";
 import ProductController from "../../../lib/controllers/productController.js";
 import ProductModel from "../../../lib/models/Product.js";
+import UserSchema from "../../../lib/models/User.js";
 import { saveFile } from "../../../config/fileUpload";
 import { ReviewSchema } from "../../../lib/models/Review.js";
+import { FaqSchema } from "../../../lib/models/Faq.js";
 import mongoose from "mongoose";
 
 // GET /api/product/:id
@@ -40,6 +42,9 @@ export async function GET(req, context) {
       );
     }
 
+    // Ensure `User` model is registered on this connection so populate('userId') works
+    conn.models.User || conn.model("User", UserSchema);
+
     // Populate reviews using the actual _id
     const reviews = await Review.find({ productId: product._id.toString() })
       .populate("userId", "name email")
@@ -50,6 +55,19 @@ export async function GET(req, context) {
         ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
         : 0;
     product.reviewCount = reviews.length;
+
+    // Fetch product-specific FAQs and attach to product response
+    try {
+      const Faq = conn.models.Faq || conn.model("Faq", FaqSchema);
+      const faqs = await Faq.find({ product: product._id, type: "product", status: "active" })
+        .sort({ createdAt: -1 })
+        .lean();
+      product.faqs = faqs;
+    } catch (err) {
+      // swallow — don't fail the whole request if FAQs can't be loaded
+      product.faqs = [];
+    }
+    
 
     return NextResponse.json(
       {

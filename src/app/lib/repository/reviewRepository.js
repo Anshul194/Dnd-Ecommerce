@@ -54,8 +54,10 @@ export default class ReviewRepository {
 
       let populatedFaq;
 
+      // Ensure the `User` model is registered on the same connection
+      // that this repository's `Review` model is using so populate() works.
       const hasProductModel =
-        conn.models.User || conn.model("User", UserSchema);
+        this.connection.models.User || this.connection.model("User", UserSchema);
       //consolle.log("hasProductModel:", hasProductModel);
       if (hasProductModel) {
         //consolle.log("if -->");
@@ -69,6 +71,9 @@ export default class ReviewRepository {
       //   "ReviewRepository findByProductId - populatedFaq:",
       //   populatedFaq
       // );
+
+      // Make sure User model exists on the Review model's connection
+      this.connection.models.User || this.connection.model("User", UserSchema);
 
       const data = await this.Review.find({ productId, isActive: true })
         .populate("userId")

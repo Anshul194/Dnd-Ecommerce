@@ -33,9 +33,9 @@ export function Benefits({
   const renderVariant = () => {
     switch (benefitsSettings.variant) {
       case "ayurvedic":
-        return <Variant1 />;
+        return <Variant1 productData={product} />;
       default:
-        return <Variant1 />;
+        return <Variant1 productData={product} />;
     }
   };
 

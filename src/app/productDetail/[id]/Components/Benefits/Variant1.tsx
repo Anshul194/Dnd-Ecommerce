@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 
 export default function Variant1({ productData }: { productData?: any }) {
   // Dummy benefits data matching code.html structure
@@ -93,7 +93,21 @@ export default function Variant1({ productData }: { productData?: any }) {
     },
   ];
 
-  const benefits = productData?.benefits || dummyBenefits;
+  // If product provides benefits, map them into the UI shape we expect.
+  const benefits =
+    productData && Array.isArray(productData.benefits) && productData.benefits.length
+      ? productData.benefits.map((b: any, i: number) => ({
+          id: b._id || `product-benefit-${i}`,
+          badge: { icon: "⭐", text: "Benefit", color: "green" },
+          title: b.title || "",
+          // product data often contains HTML in `description` — render as HTML below
+          description: b.description || "",
+          // use product thumbnail as fallback image when individual image not provided
+          image: b.image || productData.thumbnail?.url || "",
+          imageLabel: b.imageLabel || "",
+          howItWorks: null,
+        }))
+      : dummyBenefits;
 
   const getBadgeColor = (color: string) => {
     const colors: { [key: string]: string } = {
@@ -196,9 +210,12 @@ export default function Variant1({ productData }: { productData?: any }) {
               <h3 className="text-3xl font-bold mb-6 text-veda-text-dark">
                 {benefit.title}
               </h3>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                {benefit.description}
-              </p>
+              {benefit.description && (
+                <div
+                  className="text-lg text-gray-600 leading-relaxed mb-6"
+                  dangerouslySetInnerHTML={{ __html: benefit.description }}
+                />
+              )}
 
               {benefit.howItWorks && (
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
