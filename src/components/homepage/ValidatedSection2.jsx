@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCertificates } from "@/app/store/slices/certificateSlice";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function ValidatedSection2({ content }) {
   const scrollContainerRef = useRef(null);
@@ -86,9 +87,9 @@ export default function ValidatedSection2({ content }) {
                     <Image
                       src={
                         item && item.file
-                          ? item.file
+                          ? getImageUrl(item.file)
                           : content?.images && content.images[index]
-                            ? content.images[index]
+                            ? getImageUrl(content.images[index])
                             : "/logo-place-holder.png"
                       }
                       alt={`Certificate ${index + 1}`}
@@ -110,9 +111,9 @@ export default function ValidatedSection2({ content }) {
                     <Image
                       src={
                         item && item.file
-                          ? item.file
+                          ? getImageUrl(item.file)
                           : content?.images && content.images[index]
-                            ? content.images[index]
+                            ? getImageUrl(content.images[index])
                             : "/logo-place-holder.png"
                       }
                       alt={`Certificate duplicate ${index + 1}`}

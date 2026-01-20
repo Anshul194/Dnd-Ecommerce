@@ -225,7 +225,7 @@ export default function BlogDetailPage() {
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-12">
         <h2 className="bebas text-5xl font-bold text-gray-900 mb-4">
-          More Tea Stories
+          More Blogs Stories
         </h2>
         <p className="text-gray-600 text-lg">
           Continue your journey into the world of tea

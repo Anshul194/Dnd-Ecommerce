@@ -9,6 +9,7 @@ import axiosInstance from "@/axiosConfig/axiosInstance";
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -18,8 +19,8 @@ export default function ContactPage() {
     e.preventDefault();
     setError(null);
     // Basic client-side validation
-    if (!name.trim() || !email.trim() || !message.trim()) {
-      setError("Please fill in name, email and message.");
+    if (!name.trim() || !email.trim() || !phone.trim() || !message.trim()) {
+      setError("Please fill in name, email, phone and message.");
       return;
     }
 
@@ -28,6 +29,7 @@ export default function ContactPage() {
       const payload = {
         name: name.trim(),
         email: email.trim(),
+        phone: phone.trim(),
         message: message.trim(),
       };
       const response = await axiosInstance.post("/contact", payload);
@@ -36,6 +38,7 @@ export default function ContactPage() {
         setStatus("Thanks! Your message has been received.");
         setName("");
         setEmail("");
+        setPhone("");
         setMessage("");
         // hide success after a while
         setTimeout(() => setStatus(null), 5000);
@@ -179,6 +182,20 @@ export default function ContactPage() {
                   placeholder="john@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="bg-gray-50 border-2 border-gray-200 focus:border-[#3C950D] focus:ring-[#3C950D] text-gray-900 placeholder:text-gray-400 h-12 transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Phone No
+                </label>
+                <Input
+                  type="tel"
+                  placeholder="+91"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   required
                   className="bg-gray-50 border-2 border-gray-200 focus:border-[#3C950D] focus:ring-[#3C950D] text-gray-900 placeholder:text-gray-400 h-12 transition-colors"
                 />

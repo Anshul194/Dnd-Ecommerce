@@ -11,14 +11,13 @@ import AnimatedGradientBorder from "../ui/AnimatedGradientBorder";
 export default function TestimonialSlider({ content }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slidesToShow, setSlidesToShow] = useState(4);
-  const { reviews, loading, error } = useSelector((state) => state.reviews);
+  const { reviews, loading, error, hasFetched } = useSelector((state) => state.reviews);
   const dispatch = useDispatch();
-
   useEffect(() => {
-    if (!reviews || reviews.length === 0) {
+    if (!hasFetched && !loading) {
       dispatch(fetchReviews());
     }
-  }, [dispatch, reviews]);
+  }, [dispatch, hasFetched, loading]);
 
   const getTotalPages = (count, show) => Math.max(1, count - show + 1);
 
@@ -65,7 +64,7 @@ export default function TestimonialSlider({ content }) {
         <h1 className="text-3xl md:text-5xl text-black mb-2 font-black text-center">
           {content?.title || "GENUI NE HEARTS. TRUE STORIES."}
         </h1>
-        < AnimatedGradientBorder/>
+        < AnimatedGradientBorder />
         <div className="text-start lg:max-w-[80%] mx-auto mt-5">
           <p className="text-black relative poppins-medium leading-tight text-lg ml-auto text-center">
             {content?.description ||
@@ -127,8 +126,8 @@ export default function TestimonialSlider({ content }) {
                     {/* Placeholder for image or additional content */}
                     <Image
                       src={
-                        testimonial?.images[0] ||
-                        testimonial?.productId?.images[0]?.url ||
+                        testimonial?.images?.[0] ||
+                        testimonial?.productId?.images?.[0]?.url ||
                         "/images/testimonial-placeholder.webp"
                       }
                       alt="Testimonial Placeholder"
@@ -141,8 +140,8 @@ export default function TestimonialSlider({ content }) {
                   {/* Quote */}
                   <div className="flex-1 mt-4">
                     <blockquote className="text-gray-700 line-clamp-5 text-lg font-medium leading-tight ">
-                      "{testimonial.comment.slice(0, 130)}{" "}
-                      {testimonial.comment.length > 115 ? "..." : ""}"
+                      "{testimonial?.comment?.slice(0, 130) || ""}
+                      {(testimonial?.comment?.length || 0) > 115 ? "..." : ""}"
                     </blockquote>
                   </div>
                 </div>

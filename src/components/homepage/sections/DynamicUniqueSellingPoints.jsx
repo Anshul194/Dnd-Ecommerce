@@ -5,10 +5,10 @@ import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Navigation, Pagination } from 'swiper/modules';
+import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/autoplay';
-import 'swiper/css/navigation';
+
 import 'swiper/css/pagination';
 import AnimatedGradientBorder from "@/components/ui/AnimatedGradientBorder";
 
@@ -33,25 +33,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
           .swiper {
             position: relative;
           }
-          .swiper-button-next,
-          .swiper-button-prev {
-            background-color: #16a34a ;
-            opacity: 0.85 ;
-            color: white ;
-            border-radius: 50%;
-            width: 40px ;
-            height: 40px ;
-          }
-          .swiper-button-prev {
-            left: 0 ;
-          }
-          .swiper-button-next {
-            right: 0 ;
-          }
-          .swiper-button-next::after,
-          .swiper-button-prev::after {
-            font-size: 16px ;
-          }
+
           .swiper-pagination-bullet {
             background-color: #16a34a ;
           }
@@ -82,7 +64,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
       <div className="flex-1 h-full w-full">
         <Swiper
           ref={swiperRef}
-          modules={[Autoplay, Navigation, Pagination]}
+          modules={[Autoplay, Pagination]}
           spaceBetween={20}
           slidesPerView={1}
           autoplay={{
@@ -90,7 +72,7 @@ const DynamicUniqueSellingPoints = ({ content }) => {
             disableOnInteraction: false,
           }}
           loop={true}
-          navigation={true}
+          navigation={false}
           pagination={{
             clickable: true,
           }}
