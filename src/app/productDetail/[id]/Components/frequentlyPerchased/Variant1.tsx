@@ -255,7 +255,7 @@ export default function RenderSliderVariant() {
                 return (
                   <div
                     key={product._id}
-                    className="bg-white flex-shrink-0 snap-start w-52 h-64 px-1 relative"
+                    className="bg-white flex-shrink-0 snap-start w-full sm:w-52 min-h-[16rem] h-auto px-1 relative"
                   >
                     {/* Heart button positioned above the image but outside the Link to avoid navigation */}
                     <div className="absolute right-2 top-2 z-20">
