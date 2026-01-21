@@ -261,23 +261,23 @@ const CartSidebar = () => {
                 addons.map((item, index) => (
                   <Link href={`/productDetail/${item?.slug}`} key={index}>
                     <div className="relative w-fit flex flex-col border-[1px] border-black/10 gap-2 rounded-lg p-3">
-                      <div className="h-20 aspect-square   rounded-sm overflow-hidden mb-2 flex items-center justify-center">
+                      <div className="h-32 w-full   rounded-sm overflow-hidden mb-2 flex items-center justify-center">
                         {(item?.thumbnail?.url && item?.thumbnail?.url.trim() !== "") ||
                           (item?.images?.[0]?.url && item?.images?.[0]?.url.trim() !== "") ? (
                           <Image
                             src={getImageUrl(item?.thumbnail || item?.images?.[0])}
                             alt={item?.thumbnail?.alt || item?.images?.[0]?.alt || "Product"}
-                            width={56}
-                            height={64}
-                            className="object-cover h-full w-full"
+                            width={160}
+                            height={128}
+                            className="object-contain h-full w-full"
                           />
                         ) : (
                           <Image
                             src="/Image-not-found.png"
                             alt={item?.name || "Product Image"}
-                            width={56}
-                            height={64}
-                            className="object-cover h-full w-full"
+                            width={160}
+                            height={128}
+                            className="object-contain h-full w-full"
                           />
                         )}
                       </div>
