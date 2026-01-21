@@ -51,7 +51,7 @@ export default function Variant5() {
       return;
     }
 
-    const { salePrice } = getDisplayPrice(productData, selectedVariant);
+    const { salePrice } = getDisplayPrice(productData, selectedVariant?._id);
 
     if (!salePrice && salePrice !== 0) {
       toast.error("Please select a valid variant");
@@ -87,7 +87,7 @@ export default function Variant5() {
       if (serverSuccess === true) {
         setTimeout(async () => {
           try {
-            await dispatch(getCartItems());
+            await (dispatch as any)(getCartItems());
           } catch (err) { }
         }, 500);
       }
@@ -99,7 +99,7 @@ export default function Variant5() {
   };
 
   const handleBuyNow = async () => {
-    const { salePrice } = getDisplayPrice(productData, selectedVariant);
+    const { salePrice } = getDisplayPrice(productData, selectedVariant?._id);
     try {
       await (dispatch as any)(
         (setBuyNowProduct as any)({
@@ -115,7 +115,7 @@ export default function Variant5() {
           variant: selectedVariant,
         })
       );
-      await dispatch(getCartItems());
+      await (dispatch as any)(getCartItems());
       dispatch(setCheckoutOpen());
     } catch (error) {
       toast.error("Failed to add to cart");
@@ -213,7 +213,7 @@ export default function Variant5() {
               </h3>
               <div className="flex items-center gap-2 mt-1">
                 {(() => {
-                  const { salePrice, originalPrice, hasSale } = getDisplayPrice(productData, selectedVariant);
+                  const { salePrice, originalPrice, hasSale } = getDisplayPrice(productData, selectedVariant?._id);
                   return (
                     <>
                       <span className="text-lg font-bold text-gray-900">
