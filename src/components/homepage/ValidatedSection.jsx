@@ -90,9 +90,9 @@ export default function ValidatedSection({ content }) {
                     <Image
                       src={
                         item && item.file
-                          ? item.file
+                          ? getImageUrl(item.file)
                           : content?.images && content.images[index]
-                            ? content.images[index]
+                            ? getImageUrl(content.images[index])
                             : "/logo-place-holder.png"
                       }
                       alt={`Certificate ${index + 1}`}
@@ -114,9 +114,9 @@ export default function ValidatedSection({ content }) {
                     <Image
                       src={
                         item && item.file
-                          ? item.file
+                          ? getImageUrl(item.file)
                           : content?.images && content.images[index]
-                            ? content.images[index]
+                            ? getImageUrl(content.images[index])
                             : "/logo-place-holder.png"
                       }
                       alt={`Certificate duplicate ${index + 1}`}
