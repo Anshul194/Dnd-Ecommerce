@@ -433,7 +433,7 @@ export default function CheckoutPopup() {
           amount: Math.round(total * 100), // Use the calculated total which includes everything
           currency: "INR",
           currency: "INR",
-          name: "Tea Box",
+          name: "Checkout",
           description: "Slot Booking Fee",
           handler: async (response) => {
             try {
@@ -1199,7 +1199,7 @@ export default function CheckoutPopup() {
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-center text-lg font-semibold">Tea box</h1>
+          <h1 className="text-center text-lg font-semibold">Checkout</h1>
         </div>
 
         {/* Offer Banner */}
