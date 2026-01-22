@@ -251,117 +251,9 @@ export default function Variant5() {
       )}
 
       <div className="w-full font-manrope">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left Side: Product Details (From Variant6) */}
-          <div className="flex flex-col gap-6 z-10 text-gray-900">
-            {/* Certification Badge */}
-            <div className="inline-flex items-center gap-2 bg-green-100 px-3 py-1 rounded-full w-fit">
-              <span className="text-green-700 text-[18px]">✓</span>
-              <span className="text-xs font-bold text-green-800 uppercase tracking-wide">
-                Ayurveda Certified
-              </span>
-            </div>
-
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-gray-900">
-              {productData?.name || "Daily Heart + Stress Support"},{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-400">
-                Ayurveda Style
-              </span>
-            </h1>
-
-            {/* Description */}
-            <p className="text-lg text-gray-700 font-medium max-w-lg">
-              {productData?.shortDescription ||
-                "9 traditional herbs, 2x daily dose, COD + Free delivery."}
-              <br />
-              <span className="text-sm text-green-600 mt-1 block">
-                Backed by 8+ years of trust.
-              </span>
-            </p>
-
-            {/* Pricing Packs */}
-            <div className="w-full overflow-hidden">
-              <div className="flex overflow-x-auto gap-4 py-4 px-1 hide-scrollbar snap-x">
-                {pricingPacks.map((pack) => (
-                  <button
-                    key={pack.id}
-                    onClick={() => setSelectedVariant(pack.variantObj)}
-                    className={`snap-start flex-shrink-0 w-36 p-3 rounded-xl border text-left transition-all ${selectedVariant?._id === pack.id
-                      ? "border-2 border-green-500 bg-green-50 text-green-600 relative shadow-md transform scale-105 origin-left"
-                      : "border border-gray-200 bg-white text-gray-700 hover:border-green-500 hover:shadow-md"
-                      }`}
-                  >
-                    {pack.tag && selectedVariant?._id === pack.id && (
-                      <span className="absolute -top-3 right-2 text-[10px] font-bold bg-green-500 text-white px-2 py-0.5 rounded-full shadow-sm">
-                        {pack.tag}
-                      </span>
-                    )}
-                    <span
-                      className={`block text-xs font-semibold mb-1 ${selectedVariant?._id === pack.id ? "text-green-700" : "text-gray-400"
-                        }`}
-                    >
-                      {pack.label}
-                    </span>
-                    <span className="block text-lg font-bold text-gray-900">
-                      {pack.name}
-                    </span>
-                    <span
-                      className={`block text-xs font-medium mt-1 ${selectedVariant?._id === pack.id ? "text-green-700" : "text-green-600"
-                        }`}
-                    >
-                      {pack.price}{" "}
-                      {pack.originalPrice && (
-                        <span className="line-through opacity-60">
-                          {pack.originalPrice}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Certifications */}
-            <div className="flex flex-wrap gap-4 py-2 opacity-80">
-              {certifications.map((cert, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-1 bg-white border border-gray-100 px-2 py-1 rounded shadow-sm"
-                >
-                  <span className="text-green-500 text-[16px]">
-                    {cert.icon}
-                  </span>
-                  <span className="text-xs font-bold">{cert.text}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA Buttons */}
-            <div ref={actionButtonsRef}></div>
-            <div className="flex flex-wrap gap-4 mt-2">
-              <button
-                onClick={handleAddToCart}
-                className="flex-1 min-w-[160px] max-w-[240px] greenOne hover:bg-green-400 text-black font-bold h-12 rounded-lg shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5">
-                <span>🛒</span>
-                Add to Cart
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="flex-1 min-w-[160px] max-w-[240px] bg-white border-2 border-gray-200 hover:border-green-500 text-gray-900 font-bold h-12 rounded-lg flex items-center justify-center gap-2 transition-all">
-                <span className="text-green-600">💬</span>
-                Buy Now
-              </button>
-            </div>
-
-            {/* Delivery Info */}
-            <p className="text-xs text-gray-500 mt-[-10px]">
-              ⚡️ Fast delivery within 3-5 days
-            </p>
-          </div>
-
-          {/* Right Side: Image with Thumbnail Gallery */}
-          <div className="relative flex flex-col gap-6">
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-12 lg:items-center">
+          {/* Image with Thumbnail Gallery - Shows first on mobile/tablet, second on desktop */}
+          <div className="relative flex flex-col gap-6 order-1 lg:order-2">
             {/* Main Image */}
             <div className="relative flex justify-center lg:justify-end group">
               {/* Background blur effect */}
@@ -452,6 +344,113 @@ export default function Variant5() {
                 </button>
               </div>
             )}
+          </div>
+
+          {/* Product Details - Shows second on mobile/tablet, first on desktop */}
+          <div className="flex flex-col gap-6 z-10 text-gray-900 order-2 lg:order-1">
+            {/* Certification Badge */}
+            <div className="inline-flex items-center gap-2 bg-green-100 px-3 py-1 rounded-full w-fit">
+              <span className="text-green-700 text-[18px]">✓</span>
+              <span className="text-xs font-bold text-green-800 uppercase tracking-wide">
+                Ayurveda Certified
+              </span>
+            </div>
+
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-gray-900">
+              {productData?.name || "Daily Heart + Stress Support"},{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-400">
+                Ayurveda Style
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p className="text-lg text-gray-700 font-medium max-w-lg">
+              {productData?.shortDescription ||
+                "9 traditional herbs, 2x daily dose, COD + Free delivery."}
+              <br />
+              <span className="text-sm text-green-600 mt-1 block">
+                Backed by 8+ years of trust.
+              </span>
+            </p>
+
+            {/* Pricing Packs */}
+            <div className="w-full overflow-hidden">
+              <div className="flex overflow-x-auto gap-4 py-4 px-1 hide-scrollbar snap-x">
+                {pricingPacks.map((pack) => (
+                  <button
+                    key={pack.id}
+                    onClick={() => setSelectedVariant(pack.variantObj)}
+                    className={`snap-start flex-shrink-0 w-36 p-3 rounded-xl border text-left transition-all ${selectedVariant?._id === pack.id
+                      ? "border-2 border-green-500 bg-green-50 text-green-600 relative shadow-md transform scale-105 origin-left"
+                      : "border border-gray-200 bg-white text-gray-700 hover:border-green-500 hover:shadow-md"
+                      }`}
+                  >
+                    {pack.tag && selectedVariant?._id === pack.id && (
+                      <span className="absolute -top-3 right-2 text-[10px] font-bold bg-green-500 text-white px-2 py-0.5 rounded-full shadow-sm">
+                        {pack.tag}
+                      </span>
+                    )}
+                    <span
+                      className={`block text-xs font-semibold mb-1 ${selectedVariant?._id === pack.id ? "text-green-700" : "text-gray-400"
+                        }`}
+                    >
+                      {pack.label}
+                    </span>
+                    <span className="block text-lg font-bold text-gray-900">
+                      {pack.name}
+                    </span>
+                    <span
+                      className={`block text-xs font-medium mt-1 ${selectedVariant?._id === pack.id ? "text-green-700" : "text-green-600"
+                        }`}
+                    >
+                      {pack.price}{" "}
+                      {pack.originalPrice && (
+                        <span className="line-through opacity-60">
+                          {pack.originalPrice}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Certifications */}
+            <div className="flex flex-wrap gap-4 py-2 opacity-80">
+              {certifications.map((cert, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-1 bg-white border border-gray-100 px-2 py-1 rounded shadow-sm"
+                >
+                  <span className="text-green-500 text-[16px]">
+                    {cert.icon}
+                  </span>
+                  <span className="text-xs font-bold">{cert.text}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA Buttons */}
+            <div ref={actionButtonsRef}></div>
+            <div className="flex flex-wrap gap-4 mt-2">
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 min-w-[160px] max-w-[240px] greenOne hover:bg-green-400 text-black font-bold h-12 rounded-lg shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5">
+                <ShoppingCart size={18} />
+                Add to Cart
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 min-w-[160px] max-w-[240px] bg-white border-2 border-gray-200 hover:border-green-500 text-gray-900 font-bold h-12 rounded-lg flex items-center justify-center transition-all">
+                Buy Now
+              </button>
+            </div>
+
+            {/* Delivery Info */}
+            <p className="text-xs text-gray-500 mt-[-10px]">
+              ⚡️ Fast delivery within 3-5 days
+            </p>
           </div>
         </div>
       </div>

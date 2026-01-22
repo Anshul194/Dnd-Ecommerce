@@ -108,7 +108,7 @@ export default function Variant4({ productData }: { productData?: any }) {
       )}
 
       {/* Steps Section */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 relative">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8 mb-12 relative">
         {/* Connecting line for desktop */}
         <div className="hidden lg:block absolute top-10 left-[12%] right-[12%] h-0.5 bg-gray-200 -z-10"></div>
 

@@ -43,12 +43,23 @@ const Categories = ({ dynamicContent = null }) => {
           color: #22c55e;
           width: 30px;
           height: 30px;
-          margin-top: -15px;
+          margin-top: -45px;
+          position: absolute;
+          top: 50%;
+          z-index: 10;
+        }
+
+        .categories-swiper .swiper-button-prev {
+          left: 0;
+        }
+
+        .categories-swiper .swiper-button-next {
+          right: 0;
         }
 
         .categories-swiper .swiper-button-next:after,
         .categories-swiper .swiper-button-prev:after {
-          font-size: 18px;
+          font-size: 15px;
           font-weight: bold;
         }
 
@@ -57,7 +68,7 @@ const Categories = ({ dynamicContent = null }) => {
         }
 
         .categories-swiper .swiper-pagination {
-          bottom: -5px;
+          bottom: 0px;
         }
 
         @media (max-width: 768px) {
@@ -102,85 +113,69 @@ const Categories = ({ dynamicContent = null }) => {
         </div>
 
         <div>
-          <div className="w-full">
-            {categories.length >= 6 ? (
-              // Render as slider when more than 6 categories
-              <Swiper
-                modules={[Navigation, Pagination, Autoplay]}
-                spaceBetween={16}
-                slidesPerView={3}
-                navigation
-                pagination={{ clickable: true }}
-                autoplay={{
-                  delay: 3000,
-                  disableOnInteraction: false,
-                }}
-                breakpoints={{
-                  0: {
-                    slidesPerView: 1,
-                    spaceBetween: 2,
-                  },
-                  550: {
-                    slidesPerView: 2,
-                    spaceBetween: 16,
-                  },
-                  750: {
-                    slidesPerView: 3,
-                    spaceBetween: 16,
-                  },
-                  1024: {
-                    slidesPerView: 4,
-                    spaceBetween: 16,
-                  },
-                }}
-                className="categories-swiper"
-              >
-                {categories.map((item, index) => (
-                  <SwiperSlide key={index}>
-                    <Link
-                      href={`/search?category=${item._id}`}
-                      className="block cursor-pointer"
-                    >
-                      <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-lg flex flex-col overflow-hidden hover:shadow-md transition-shadow h-72">
-                        <div className="flex-1 relative w-full">
-                          <Image
-                            fill
-                            src={getImageUrl(item?.thumbnail || item?.image) || "/placeholder.png"}
-                            alt={item?.name || "Category Image"}
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="bg text-white text-xs py-3 px-2 text-center flex items-center justify-center w-full font-bold uppercase tracking-widest">
-                          {item?.name}
-                        </div>
+          <div className="w-full relative">
+            <Swiper
+              modules={[Navigation, Pagination, Autoplay]}
+              spaceBetween={8}
+              slidesPerView={3}
+              navigation
+              pagination={{ clickable: true }}
+              autoplay={{
+                delay: 3000,
+                disableOnInteraction: false,
+              }}
+              breakpoints={{
+                0: {
+                  slidesPerView: 1.2,
+                  spaceBetween: 12,
+                  centeredSlides: false,
+                },
+                480: {
+                  slidesPerView: 1.5,
+                  spaceBetween: 16,
+                },
+                640: {
+                  slidesPerView: 2,
+                  spaceBetween: 16,
+                },
+                768: {
+                  slidesPerView: 2.5,
+                  spaceBetween: 16,
+                },
+                1024: {
+                  slidesPerView: 3,
+                  spaceBetween: 20,
+                },
+                1280: {
+                  slidesPerView: 4,
+                  spaceBetween: 25,
+                },
+              }}
+              className="categories-swiper"
+            >
+              {categories.map((item, index) => (
+                <SwiperSlide key={index}>
+                  <Link
+                    href={`/search?category=${item._id}`}
+                    className="block cursor-pointer"
+                  >
+                    <div className="border-2 mb-10 border-gray-200 shadow-sm rounded-lg flex flex-col overflow-hidden hover:shadow-md transition-shadow w-full max-w-[240px]">
+                      <div className="relative w-full h-56">
+                        <Image
+                          fill
+                          src={getImageUrl(item?.thumbnail || item?.image) || "/placeholder.png"}
+                          alt={item?.name || "Category Image"}
+                          className="object-cover"
+                        />
                       </div>
-                    </Link>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            ) : (
-              // Render as grid when 6 or fewer categories
-              <div className="grid grid-cols-2 md:flex md:flex-row md:justify-center flex-wrap gap-4 justify-items-center">
-                {categories.length > 0 &&
-                  categories.map((item, index) => (
-                    <Link href={`/search?category=${item._id}`} key={index}>
-                      <div className="border-2 border-gray-200 shadow-sm w-[45%] max-sm:w-[160px] md:w-56 min-h-48 rounded-sm flex flex-col overflow-hidden hover:shadow-md transition-shadow">
-                        <div className="flex-1 relative w-full h-44">
-                          <Image
-                            fill
-                            src={getImageUrl(item?.thumbnail || item?.image) || "/placeholder.png"}
-                            alt={item?.name || "Category Image"}
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="bg text-white text-xs py-3 px-2 text-center flex items-center justify-center w-full font-bold uppercase tracking-widest">
-                          {item?.name}
-                        </div>
+                      <div className="bg text-white text-xs py-3 px-2 text-center flex items-center justify-center w-full font-bold uppercase tracking-widest">
+                        {item?.name}
                       </div>
-                    </Link>
-                  ))}
-              </div>
-            )}
+                    </div>
+                  </Link>
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
         </div>
         <Link className="w-fit m-auto " href={dynamicContent?.cta?.link || "/shop"}>
