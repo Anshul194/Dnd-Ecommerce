@@ -38,7 +38,7 @@ function Page() {
           <>
             {/* Title Section */}
             <div className="mb-12">
-              <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
+              <h1 className="poppins text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
                 {data?.title || "Untitled Page"}
               </h1>
               <div className="mt-4 w-20 h-1 bg-gradient-to-r from-[#3c950d] to-green-400 rounded-full"></div>
@@ -46,7 +46,7 @@ function Page() {
 
             {/* Content Section */}
             <article
-              className="prose max-w-none text-gray-700 leading-relaxed text-base"
+              className="poppins max-w-none text-gray-700 leading-relaxed text-base"
               style={{
                 "--tw-prose-headings": "#1a1a1a",
                 "--tw-prose-links": "#3c950d",
