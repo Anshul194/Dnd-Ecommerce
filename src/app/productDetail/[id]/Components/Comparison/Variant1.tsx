@@ -1,4 +1,10 @@
 export default function Variant1({ productData }: { productData?: any }) {
+  // Check if product has comparison data - if not, don't render
+  const raw = productData?.comparison;
+  if (!raw || (!Array.isArray(raw.rows) && !Array.isArray(raw.headers))) {
+    return null; // Don't render if no comparison data exists
+  }
+
   // Dummy comparison data matching code.html
   const dummyComparison = {
     title: "Deep Dive Comparison",
@@ -77,7 +83,6 @@ export default function Variant1({ productData }: { productData?: any }) {
 
   // Map stored comparison shape to the UI's expected shape.
   let comparison: any;
-  const raw = productData?.comparison;
   if (raw && Array.isArray(raw.rows) && Array.isArray(raw.headers)) {
     const headers = raw.headers || [];
     const competitors = headers.length > 0 ? headers : ["Competitor 1", "Competitor 2"];
@@ -108,7 +113,7 @@ export default function Variant1({ productData }: { productData?: any }) {
       features,
     };
   } else {
-    comparison = dummyComparison;
+    return null; // Don't render if comparison data structure is invalid
   }
 
   return (

@@ -289,99 +289,101 @@ function Variant3({ productData: propProductData }: Variant3Props) {
           <p className="text-sm text-gray-600">Inclusive of all taxes</p>
         </div>
 
-        {/* Pack Selection - Card Based Design */}
+        {/* Pack Selection - Horizontal Slider */}
         <div className="mb-6">
           <div className="mb-3">
             <span className="text-sm text-gray-600">Stock, Available</span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
-            {variants.map((variant: any, index: number) => {
-              // Calculate discount percentage
-              const discountPercent = variant.salePrice && variant.price && variant.price > variant.salePrice
-                ? Math.round(((variant.price - variant.salePrice) / variant.price) * 100)
-                : 0;
+          <div className="relative mb-6">
+            <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400" style={{ scrollbarWidth: 'thin' }}>
+              {variants.map((variant: any, index: number) => {
+                // Calculate discount percentage
+                const discountPercent = variant.salePrice && variant.price && variant.price > variant.salePrice
+                  ? Math.round(((variant.price - variant.salePrice) / variant.price) * 100)
+                  : 0;
 
-              const isSelected = selectedVariant === variant._id;
-              const variantImage = variant.image || (variant.images && variant.images.length > 0 ? variant.images[0] : null);
-              const displayImage = variantImage || productData.thumbnail || productData.images?.[0];
+                const isSelected = selectedVariant === variant._id;
+                const variantImage = variant.image || (variant.images && variant.images.length > 0 ? variant.images[0] : null);
+                const displayImage = variantImage || productData.thumbnail || productData.images?.[0];
 
-              // Determine label based on variant
-              const getVariantLabel = () => {
-                if (variant.offerTag) return variant.offerTag;
-                if (index === 0) return "Beginner";
-                if (index === 1) return "Saver";
-                if (index === 2) return "Super Saver";
-                return "";
-              };
+                // Determine label based on variant
+                const getVariantLabel = () => {
+                  if (variant.offerTag) return variant.offerTag;
+                  if (index === 0) return "Beginner";
+                  if (index === 1) return "Saver";
+                  if (index === 2) return "Super Saver";
+                  return "";
+                };
 
-              const getPackLabel = () => {
-                if (variant.title && variant.title.toLowerCase().includes("pack")) return variant.title;
-                const quantity = variant.quantity || index + 1;
-                return `Pack of ${quantity}`;
-              };
+                const getPackLabel = () => {
+                  if (variant.title && variant.title.toLowerCase().includes("pack")) return variant.title;
+                  const quantity = variant.quantity || index + 1;
+                  return `Pack of ${quantity}`;
+                };
 
-              return (
-                <button
-                  key={variant._id}
-                  className={`relative w-full bg-white border-2 rounded-xl overflow-hidden transition-all text-center ${isSelected
-                    ? "border-green-800 shadow-lg ring-1 ring-green-800"
-                    : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  onClick={() => {
-                    setSelectedVariant(variant._id);
-                    // Dispatch the variant image if available
-                    if (variant.image) {
-                      dispatch(setCurrentVariantImage(variant.image));
-                    } else if (variant.images && variant.images.length > 0) {
-                      dispatch(setCurrentVariantImage(variant.images[0]));
-                    } else {
-                      dispatch(setCurrentVariantImage(null));
-                    }
-                  }}
-                >
-                  {/* Header Bar */}
-                  <div className={`h-8 flex items-center justify-center font-bold text-xs ${isSelected ? "bg-green-800 text-white" : "bg-gray-100 text-gray-800 border-b border-gray-300"
-                    }`}>
-                    {variant.title || `Variant ${index + 1}`}
-                  </div>
+                return (
+                  <button
+                    key={variant._id}
+                    className={`relative flex-shrink-0 w-[calc(33.333%-0.67rem)] min-w-[140px] md:w-[160px] bg-white border-2 rounded-xl overflow-hidden transition-all text-center ${isSelected
+                      ? "border-green-800 shadow-lg ring-1 ring-green-800"
+                      : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    onClick={() => {
+                      setSelectedVariant(variant._id);
+                      // Dispatch the variant image if available
+                      if (variant.image) {
+                        dispatch(setCurrentVariantImage(variant.image));
+                      } else if (variant.images && variant.images.length > 0) {
+                        dispatch(setCurrentVariantImage(variant.images[0]));
+                      } else {
+                        dispatch(setCurrentVariantImage(null));
+                      }
+                    }}
+                  >
+                    {/* Header Bar */}
+                    <div className={`h-8 flex items-center justify-center font-bold text-xs ${isSelected ? "bg-green-800 text-white" : "bg-gray-100 text-gray-800 border-b border-gray-300"
+                      }`}>
+                      {variant.title || `Variant ${index + 1}`}
+                    </div>
 
-                  {/* Image Section */}
-                  <div className="p-3 flex justify-center items-center bg-[#e2f0d9] min-h-[120px]">
-                    {displayImage ? (
-                      <img
-                        src={getImageUrl(displayImage)}
-                        alt={variant.title || `Variant ${index + 1}`}
-                        className="max-w-full max-h-[80px] object-contain"
-                      />
-                    ) : (
-                      <div className="w-full h-[80px] bg-gray-200 rounded flex items-center justify-center text-gray-400 text-[10px]">
-                        No Image
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Pricing Section */}
-                  <div className="p-2 space-y-1">
-                    <div className="flex flex-wrap items-center justify-center gap-1 mb-0.5">
-                      {variant.price && variant.price > (variant.salePrice || variant.price) && (
-                        <span className="text-[9px] text-gray-400 line-through">
-                          ₹{variant.price}
-                        </span>
+                    {/* Image Section */}
+                    <div className="p-3 flex justify-center items-center bg-[#e2f0d9] min-h-[120px]">
+                      {displayImage ? (
+                        <img
+                          src={getImageUrl(displayImage)}
+                          alt={variant.title || `Variant ${index + 1}`}
+                          className="max-w-full max-h-[80px] object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-[80px] bg-gray-200 rounded flex items-center justify-center text-gray-400 text-[10px]">
+                          No Image
+                        </div>
                       )}
-                      <span className="text-sm font-bold text-gray-900">
-                        ₹{variant.salePrice || variant.price}
-                      </span>
                     </div>
-                    <div className="text-[10px] font-bold text-gray-700 leading-tight">
-                      {getPackLabel()}
+
+                    {/* Pricing Section */}
+                    <div className="p-2 space-y-1">
+                      <div className="flex flex-wrap items-center justify-center gap-1 mb-0.5">
+                        {variant.price && variant.price > (variant.salePrice || variant.price) && (
+                          <span className="text-[9px] text-gray-400 line-through">
+                            ₹{variant.price}
+                          </span>
+                        )}
+                        <span className="text-sm font-bold text-gray-900">
+                          ₹{variant.salePrice || variant.price}
+                        </span>
+                      </div>
+                      <div className="text-[10px] font-bold text-gray-700 leading-tight">
+                        {getPackLabel()}
+                      </div>
+                      <div className="text-[10px] font-bold text-gray-800">
+                        {getVariantLabel()}
+                      </div>
                     </div>
-                    <div className="text-[10px] font-bold text-gray-800">
-                      {getVariantLabel()}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 

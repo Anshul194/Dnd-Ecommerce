@@ -421,7 +421,7 @@ export default function Navbar({ initialCategories = [] }) {
                   alt="TeaHaven Logo"
                   width={200}
                   height={200}
-                  className=" h-[100px] w-auto max-sm:h-[100px] max-sm:w-[100px] object-contain "
+                  className=" md:h-[100px] h-[50px] w-auto max-sm:h-auto max-sm:w-[65px] object-contain "
                 />
               </Link>
 
