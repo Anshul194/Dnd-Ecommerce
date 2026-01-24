@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { getSubdomain, getDbConnection } from "../../../lib/tenantDb.js";
 import ProductRepository from "../../../lib/repository/productRepository.js";
 import ProductService from "../../../lib/services/productService.js";
@@ -67,7 +68,7 @@ export async function GET(req, context) {
       // swallow — don't fail the whole request if FAQs can't be loaded
       product.faqs = [];
     }
-    
+
 
     return NextResponse.json(
       {
@@ -156,12 +157,15 @@ export async function PUT(req, context) {
       );
     }
     const existingProduct = existingProductResult.data;
+    console.log("DEBUG: Existing Product Benefits:", JSON.stringify(existingProduct.benefits, null, 2));
 
     const contentType = req.headers.get("content-type") || "";
     let body = {};
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
+      console.log("DEBUG: FormData Keys:", [...formData.keys()]);
+
 
       // Initialize arrays as empty if we are receiving updates for them
       const arrayFields = [
@@ -294,6 +298,7 @@ export async function PUT(req, context) {
             if (!body[arrKey]) body[arrKey] = [];
             if (!body[arrKey][arrIdx]) body[arrKey][arrIdx] = {};
 
+
             if (objKey === "image") {
               if (value instanceof File) {
                 try {
@@ -303,8 +308,9 @@ export async function PUT(req, context) {
                   // console.error(`Error saving ${arrKey} image:`, error.message);
                 }
               } else if (typeof value === "string") {
-                // If value is a string, it could be the existing URL or an empty string to clear it
-                body[arrKey][arrIdx].image = value;
+                // If value is an empty string, set to null to clear the image
+                // Otherwise, use the existing URL
+                body[arrKey][arrIdx].image = value.trim() === "" ? null : value;
               }
             } else if (objKey) {
               body[arrKey][arrIdx][objKey] = value;
@@ -506,49 +512,53 @@ export async function PUT(req, context) {
       });
     }
 
-    const updateResult = await productController.update(id, body, conn);
+  }
 
-    let fullProduct = null;
-    if (updateResult && updateResult.success) {
-      const getResult = await productController.getById(id, conn);
-      if (getResult && getResult.success) {
-        fullProduct = getResult.data;
+    console.log("DEBUG: Body Benefits before update:", JSON.stringify(body.benefits, null, 2));
 
-        // CHECK: If the product has NO attributes (attributeSet is empty), delete its variants but KEEP the product.
-        // The previous logic in EditProduct.tsx ensures we send an empty list if all are unchecked.
-        if (!fullProduct.attributeSet || fullProduct.attributeSet.length === 0) {
-          console.log(`[ProductController] Product ${id} has no attributes remaining. Deleting variants only.`);
+  const updateResult = await productController.update(id, body, conn);
 
-          // 1. Delete all variants associated with this product (as they rely on attributes)
-          const Variant = conn.models.Variant;
-          if (Variant) {
-            await Variant.updateMany({ productId: id }, { deletedAt: new Date() });
-            console.log(`[ProductController] Soft-deleted variants for product ${id}`);
-          }
+  let fullProduct = null;
+  if (updateResult && updateResult.success) {
+    const getResult = await productController.getById(id, conn);
+    if (getResult && getResult.success) {
+      fullProduct = getResult.data;
 
-          // We do NOT delete the product itself anymore.
-          // Proceed to return the product (which is now a simple product without variants)
+      // CHECK: If the product has NO attributes (attributeSet is empty), delete its variants but KEEP the product.
+      // The previous logic in EditProduct.tsx ensures we send an empty list if all are unchecked.
+      if (!fullProduct.attributeSet || fullProduct.attributeSet.length === 0) {
+        console.log(`[ProductController] Product ${id} has no attributes remaining. Deleting variants only.`);
 
-          // Manually clear variants in response since we just deleted them
-          fullProduct.variants = [];
+        // 1. Delete all variants associated with this product (as they rely on attributes)
+        const Variant = conn.models.Variant;
+        if (Variant) {
+          await Variant.updateMany({ productId: id }, { deletedAt: new Date() });
+          console.log(`[ProductController] Soft-deleted variants for product ${id}`);
         }
+
+        // We do NOT delete the product itself anymore.
+        // Proceed to return the product (which is now a simple product without variants)
+
+        // Manually clear variants in response since we just deleted them
+        fullProduct.variants = [];
       }
     }
-
-    return NextResponse.json(
-      {
-        success: updateResult.success,
-        message: updateResult.message,
-        product: fullProduct,
-      },
-      {
-        status: updateResult.success ? 200 : 400,
-      }
-    );
-  } catch (error) {
-    //consolle.error("PUT error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  return NextResponse.json(
+    {
+      success: updateResult.success,
+      message: updateResult.message,
+      product: fullProduct,
+    },
+    {
+      status: updateResult.success ? 200 : 400,
+    }
+  );
+} catch (error) {
+  //consolle.error("PUT error:", error);
+  return NextResponse.json({ error: error.message }, { status: 500 });
+}
 }
 
 // DELETE /api/product/:id

@@ -93,20 +93,35 @@ export default function Variant1({ productData }: { productData?: any }) {
     },
   ];
 
+
   // If product provides benefits, map them into the UI shape we expect.
+  // Helper function to construct full image URL
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return "";
+    // If already a full URL, return as is
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath;
+    }
+    // Otherwise, prefix with the base URL
+    const baseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || "";
+    // Remove leading slash from imagePath if present to avoid double slashes
+    const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
+    return `${baseUrl}/${cleanPath}`;
+  };
+
   const benefits =
     productData && Array.isArray(productData.benefits) && productData.benefits.length
       ? productData.benefits.map((b: any, i: number) => ({
-          id: b._id || `product-benefit-${i}`,
-          badge: { icon: "⭐", text: "Benefit", color: "green" },
-          title: b.title || "",
-          // product data often contains HTML in `description` — render as HTML below
-          description: b.description || "",
-          // use product thumbnail as fallback image when individual image not provided
-          image: b.image || productData.thumbnail?.url || "",
-          imageLabel: b.imageLabel || "",
-          howItWorks: null,
-        }))
+        id: b._id || `product-benefit-${i}`,
+        badge: { icon: "⭐", text: "Benefit", color: "green" },
+        title: b.title || "",
+        // product data often contains HTML in `description` — render as HTML below
+        description: b.description || "",
+        // Only use the benefit's own image, don't fallback to thumbnail
+        image: b.image ? getImageUrl(b.image) : "",
+        imageLabel: b.imageLabel || "",
+        howItWorks: null,
+      }))
       : dummyBenefits;
 
   const getBadgeColor = (color: string) => {
@@ -143,7 +158,7 @@ export default function Variant1({ productData }: { productData?: any }) {
   };
 
   return (
-    <div className="py-8 font-manrope">
+    <div className="py-8 font-manrope overflow-x-hidden px-4 md:px-6 lg:px-8">
       <div className="text-center max-w-2xl mx-auto mb-16">
         <h2 className="text-3xl font-bold mb-4 text-veda-text-dark">
           Why our customers love it
@@ -162,28 +177,27 @@ export default function Variant1({ productData }: { productData?: any }) {
           >
             {/* Image Section */}
             <div
-              className={`relative group ${
-                index % 2 === 0 ? "order-2 lg:order-1" : "order-2"
-              }`}
+              className={`relative group ${index % 2 === 0 ? "order-2 lg:order-1" : "order-2"
+                }`}
             >
               <div
                 className={`absolute -inset-4 bg-gradient-to-r ${getGradientColor(
                   benefit.badge.color
-                )} rounded-2xl transform ${
-                  index % 2 === 0 ? "-rotate-1" : "rotate-1"
-                } group-hover:rotate-0 transition-transform`}
+                )} rounded-2xl transform ${index % 2 === 0 ? "-rotate-1" : "rotate-1"
+                  } group-hover:rotate-0 transition-transform`}
               ></div>
-              <img
-                alt={benefit.title}
-                className="relative rounded-xl shadow-lg w-full object-cover h-[400px]"
-                src={benefit.image}
-              />
+              {benefit.image && (
+                <img
+                  alt={benefit.title}
+                  className="relative rounded-xl shadow-lg w-full object-cover h-[400px]"
+                  src={benefit.image}
+                />
+              )}
               <div
-                className={`absolute bottom-4 ${
-                  index % 2 === 0 ? "left-4" : "right-4"
-                } bg-white/90 backdrop-blur px-4 py-2 rounded-lg shadow-sm border ${getImageBorderColor(
-                  benefit.badge.color
-                )}`}
+                className={`absolute bottom-4 ${index % 2 === 0 ? "left-4" : "right-4"
+                  } bg-white/90 backdrop-blur px-4 py-2 rounded-lg shadow-sm border ${getImageBorderColor(
+                    benefit.badge.color
+                  )}`}
               >
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
                   {benefit.imageLabel}
@@ -193,9 +207,8 @@ export default function Variant1({ productData }: { productData?: any }) {
 
             {/* Content Section */}
             <div
-              className={`${
-                index % 2 === 0 ? "order-1 lg:order-2" : "order-1"
-              }`}
+              className={`${index % 2 === 0 ? "order-1 lg:order-2" : "order-1"
+                }`}
             >
               <div
                 className={`inline-flex items-center gap-2 ${getBadgeColor(

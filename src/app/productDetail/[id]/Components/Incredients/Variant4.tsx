@@ -80,9 +80,8 @@ export default function Variant4({ productData }: { productData?: any }) {
             {ingredients.map((ingredient: any, index: number) => (
               <tr
                 key={index}
-                className={`border-b border-[#e7f3eb] hover:bg-gray-50 transition-colors ${
-                  index === ingredients.length - 1 ? "" : ""
-                }`}
+                className={`border-b border-[#e7f3eb] hover:bg-gray-50 transition-colors ${index === ingredients.length - 1 ? "" : ""
+                  }`}
               >
                 <td className="p-4 font-bold text-veda-text-dark flex items-center gap-3">
                   {ingredient.image && (
@@ -94,8 +93,8 @@ export default function Variant4({ productData }: { productData?: any }) {
                   )}
                   {ingredient.name}
                 </td>
-                <td className="p-4 text-gray-600">{ingredient.knownFor || ingredient.name}</td>
-                <td className="p-4 text-gray-600 hidden md:table-cell">
+                <td className="p-4 text-gray-900 font-medium">{ingredient.knownFor || ingredient.name}</td>
+                <td className="p-4 text-gray-800 hidden md:table-cell">
                   {ingredient.description}
                 </td>
               </tr>

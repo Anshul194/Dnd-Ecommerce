@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+export const dynamic = 'force-dynamic';
 import { getSubdomain, getDbConnection } from "../../lib/tenantDb";
 import ProductRepository from "../../lib/repository/productRepository";
 import ProductService from "../../lib/services/productService";
