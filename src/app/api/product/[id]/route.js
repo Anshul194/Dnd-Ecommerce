@@ -69,66 +69,6 @@ export async function GET(req, context) {
       product.faqs = [];
     }
 
-    // Normalize image paths: convert "Uploads" to "uploads" for case-sensitive servers
-    // This fixes existing database entries that may have "Uploads" with capital U
-    const normalizeImagePath = (path) => {
-      if (typeof path === 'string') {
-        return path.replace(/\/Uploads\//gi, "/uploads/");
-      }
-      return path;
-    };
-
-    // Normalize all image paths in the product
-    if (product.benefits && Array.isArray(product.benefits)) {
-      product.benefits = product.benefits.map(benefit => {
-        const originalImage = benefit.image;
-        const normalizedImage = benefit.image ? normalizeImagePath(benefit.image) : benefit.image;
-        // Debug logging for production issues
-        if (originalImage && originalImage !== normalizedImage) {
-          console.log(`[Product GET] Normalized benefit image: ${originalImage} -> ${normalizedImage}`);
-        }
-        return {
-          ...benefit,
-          image: normalizedImage
-        };
-      });
-    }
-    if (product.ingredients && Array.isArray(product.ingredients)) {
-      product.ingredients = product.ingredients.map(ingredient => ({
-        ...ingredient,
-        image: ingredient.image ? normalizeImagePath(ingredient.image) : ingredient.image
-      }));
-    }
-    if (product.precautions && Array.isArray(product.precautions)) {
-      product.precautions = product.precautions.map(precaution => ({
-        ...precaution,
-        image: precaution.image ? normalizeImagePath(precaution.image) : precaution.image
-      }));
-    }
-    if (product.howToUseSteps && Array.isArray(product.howToUseSteps)) {
-      product.howToUseSteps = product.howToUseSteps.map(step => ({
-        ...step,
-        image: step.image ? normalizeImagePath(step.image) : step.image
-      }));
-    }
-    if (product.thumbnail && product.thumbnail.url) {
-      product.thumbnail.url = normalizeImagePath(product.thumbnail.url);
-    }
-    if (product.images && Array.isArray(product.images)) {
-      product.images = product.images.map(img => ({
-        ...img,
-        url: img.url ? normalizeImagePath(img.url) : img.url
-      }));
-    }
-    if (product.descriptionImages && Array.isArray(product.descriptionImages)) {
-      product.descriptionImages = product.descriptionImages.map(img => ({
-        ...img,
-        url: img.url ? normalizeImagePath(img.url) : img.url
-      }));
-    }
-    if (product.storyVideoUrl) {
-      product.storyVideoUrl = normalizeImagePath(product.storyVideoUrl);
-    }
 
     return NextResponse.json(
       {
@@ -572,6 +512,8 @@ export async function PUT(req, context) {
       });
     }
 
+  }
+
     console.log("DEBUG: Body Benefits before update:", JSON.stringify(body.benefits, null, 2));
 
   const updateResult = await productController.update(id, body, conn);
@@ -600,59 +542,6 @@ export async function PUT(req, context) {
         // Manually clear variants in response since we just deleted them
         fullProduct.variants = [];
       }
-    }
-  }
-
-  // Normalize image paths in the response (same as GET endpoint)
-  if (fullProduct) {
-    const normalizeImagePath = (path) => {
-      if (typeof path === 'string') {
-        return path.replace(/\/Uploads\//gi, "/uploads/");
-      }
-      return path;
-    };
-
-    if (fullProduct.benefits && Array.isArray(fullProduct.benefits)) {
-      fullProduct.benefits = fullProduct.benefits.map(benefit => ({
-        ...benefit,
-        image: benefit.image ? normalizeImagePath(benefit.image) : benefit.image
-      }));
-    }
-    if (fullProduct.ingredients && Array.isArray(fullProduct.ingredients)) {
-      fullProduct.ingredients = fullProduct.ingredients.map(ingredient => ({
-        ...ingredient,
-        image: ingredient.image ? normalizeImagePath(ingredient.image) : ingredient.image
-      }));
-    }
-    if (fullProduct.precautions && Array.isArray(fullProduct.precautions)) {
-      fullProduct.precautions = fullProduct.precautions.map(precaution => ({
-        ...precaution,
-        image: precaution.image ? normalizeImagePath(precaution.image) : precaution.image
-      }));
-    }
-    if (fullProduct.howToUseSteps && Array.isArray(fullProduct.howToUseSteps)) {
-      fullProduct.howToUseSteps = fullProduct.howToUseSteps.map(step => ({
-        ...step,
-        image: step.image ? normalizeImagePath(step.image) : step.image
-      }));
-    }
-    if (fullProduct.thumbnail && fullProduct.thumbnail.url) {
-      fullProduct.thumbnail.url = normalizeImagePath(fullProduct.thumbnail.url);
-    }
-    if (fullProduct.images && Array.isArray(fullProduct.images)) {
-      fullProduct.images = fullProduct.images.map(img => ({
-        ...img,
-        url: img.url ? normalizeImagePath(img.url) : img.url
-      }));
-    }
-    if (fullProduct.descriptionImages && Array.isArray(fullProduct.descriptionImages)) {
-      fullProduct.descriptionImages = fullProduct.descriptionImages.map(img => ({
-        ...img,
-        url: img.url ? normalizeImagePath(img.url) : img.url
-      }));
-    }
-    if (fullProduct.storyVideoUrl) {
-      fullProduct.storyVideoUrl = normalizeImagePath(fullProduct.storyVideoUrl);
     }
   }
 
