@@ -142,12 +142,12 @@ const Wishlist = () => {
               >
                 {/* Product Image */}
                 <div className="relative">
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                  <div className="w-full h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
                     {imgSrc ? (
                       <img
                         src={getImageUrl(imgSrc)}
                         alt={item?.product?.thumbnail?.alt || item?.product?.name}
-                        className="object-cover h-full w-full"
+                        className="object-contain h-full w-full p-2"
                       />
                     ) : (
                       <span className="text-gray-400 text-sm">Product Image</span>
