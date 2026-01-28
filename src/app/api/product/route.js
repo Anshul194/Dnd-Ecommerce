@@ -99,7 +99,7 @@ export async function POST(req) {
           if (value instanceof File) {
             try {
               validateImageFile(value);
-              const url = await saveFile(value, "Uploads/Product");
+              const url = await saveFile(value, "uploads/Product");
               body.thumbnail.url = url;
               ////console.log(`Thumbnail URL set: ${url}`);
             } catch (error) {
@@ -125,7 +125,7 @@ export async function POST(req) {
           if (prop === "file" && value instanceof File) {
             try {
               validateImageFile(value);
-              const url = await saveFile(value, "Uploads/Product");
+              const url = await saveFile(value, "uploads/Product");
               body.thumbnail.url = url;
               ////console.log(`Thumbnail URL set via bracket notation: ${url}`);
             } catch (error) {
@@ -177,7 +177,7 @@ export async function POST(req) {
             ) {
               try {
                 validateImageFile(value);
-                const url = await saveFile(value, "Uploads/Product");
+                const url = await saveFile(value, "uploads/Product");
                 body[arrKey][arrIdx].url = url;
               } catch (error) {
                 ////console.error(
@@ -202,7 +202,7 @@ export async function POST(req) {
             if (objKey === "image" && value instanceof File) {
               try {
                 validateImageFile(value);
-                const url = await saveFile(value, "Uploads/Product");
+                const url = await saveFile(value, "uploads/Product");
                 body[arrKey][arrIdx].image = url;
               } catch (error) {
                 ////console.error(
@@ -240,7 +240,7 @@ export async function POST(req) {
           try {
             validateImageFile(value);
             if (!body.images) body.images = [];
-            const url = await saveFile(value, "Uploads/Product");
+            const url = await saveFile(value, "uploads/Product");
             body.images.push({ url, alt: "" });
           } catch (error) {
             ////console.error(
@@ -257,7 +257,7 @@ export async function POST(req) {
           try {
             const mime = value.type || "";
             if (mime.startsWith("video/") || mime === "image/gif") {
-              const url = await saveFile(value, "Uploads/Product");
+              const url = await saveFile(value, "uploads/Product");
               body.storyVideoUrl = url;
               ////console.log(`storyVideoUrl saved: ${url}`);
             } else {
@@ -279,7 +279,7 @@ export async function POST(req) {
             try {
               const mime = value.type || "";
               if (mime.startsWith("video/") || mime === "image/gif") {
-                const url = await saveFile(value, "Uploads/Product");
+                const url = await saveFile(value, "uploads/Product");
                 body.storyVideoUrl = url;
                 ////console.log(`storyVideoUrl saved via bracket: ${url}`);
               } else {
@@ -301,7 +301,7 @@ export async function POST(req) {
           try {
             validateImageFile(value);
             if (!body.descriptionImages) body.descriptionImages = [];
-            const url = await saveFile(value, "Uploads/Product");
+            const url = await saveFile(value, "uploads/Product");
             body.descriptionImages.push({ url, alt: "" });
           } catch (error) {
             ////console.error(

@@ -1,4 +1,5 @@
 import React from "react";
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 export default function Variant1({ productData }: { productData?: any }) {
   // Dummy benefits data matching code.html structure
@@ -95,19 +96,6 @@ export default function Variant1({ productData }: { productData?: any }) {
 
 
   // If product provides benefits, map them into the UI shape we expect.
-  // Helper function to construct full image URL
-  const getImageUrl = (imagePath: string) => {
-    if (!imagePath) return "";
-    // If already a full URL, return as is
-    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-      return imagePath;
-    }
-    // Otherwise, prefix with the base URL
-    const baseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || "";
-    // Remove leading slash from imagePath if present to avoid double slashes
-    const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
-    return `${baseUrl}/${cleanPath}`;
-  };
 
   const benefits =
     productData && Array.isArray(productData.benefits) && productData.benefits.length

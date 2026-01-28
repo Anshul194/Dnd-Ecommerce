@@ -302,7 +302,7 @@ export async function PUT(req, context) {
             if (objKey === "image") {
               if (value instanceof File) {
                 try {
-                  const url = await saveFile(value, "Uploads/Product");
+                  const url = await saveFile(value, "uploads/Product");
                   body[arrKey][arrIdx].image = url;
                 } catch (error) {
                   // console.error(`Error saving ${arrKey} image:`, error.message);
@@ -351,7 +351,7 @@ export async function PUT(req, context) {
           }
         } else if (key === "descriptionImages" && value instanceof File) {
           try {
-            const url = await saveFile(value, "Uploads/Product");
+            const url = await saveFile(value, "uploads/Product");
             body.descriptionImages.push({ url, alt: "" });
             //consolle.log(`New description image added: ${url}`);
           } catch (error) {
@@ -553,10 +553,10 @@ export async function PUT(req, context) {
         status: updateResult.success ? 200 : 400,
       }
     );
-} catch (error) {
-  //consolle.error("PUT error:", error);
-  return NextResponse.json({ error: error.message }, { status: 500 });
-}
+  } catch (error) {
+    //consolle.error("PUT error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
 
 // DELETE /api/product/:id

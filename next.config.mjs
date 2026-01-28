@@ -70,6 +70,12 @@ const nextConfig = {
           source: "/uploads/invoices/:id.html",
           destination: "/api/invoice/:id",
         },
+        // Serve uploaded files through API route for standalone mode compatibility
+        // This ensures runtime-uploaded files in public/uploads/ are accessible
+        {
+          source: "/uploads/:path*",
+          destination: "/api/uploads/:path*",
+        },
       ],
     };
   },
@@ -130,6 +136,8 @@ const nextConfig = {
       { protocol: "https", hostname: "bharat.nexprism.in" },
       { protocol: "http", hostname: "localhost", port: "3000" },
       { protocol: "http", hostname: "localhost", port: "3001" },
+      { protocol: "http", hostname: "bharat.localhost", port: "3001" },
+      { protocol: "http", hostname: "bharat.localhost" },
     ],
   },
 
