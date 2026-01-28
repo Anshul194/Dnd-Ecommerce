@@ -214,6 +214,52 @@ function Variant5({ productData: propProductData, detailSettings }: Variant5Prop
             {productData?.name}
           </h1>
 
+          {/* Brand Logo */}
+          {(() => {
+            // Handle both brand object and brandImage string
+            const brandImage = productData?.brandImage || 
+                              (typeof productData?.brand === 'object' && productData?.brand?.image ? productData.brand.image : null);
+            
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[Variant5] Brand data:', {
+                brand: productData?.brand,
+                brandImage: productData?.brandImage,
+                resolvedBrandImage: brandImage,
+                productDataKeys: Object.keys(productData || {})
+              });
+            }
+            
+            if (!brandImage) {
+              if (process.env.NODE_ENV === 'development') {
+                console.warn('[Variant5] No brand image found');
+              }
+              return null;
+            }
+            
+            const imageUrl = getImageUrl(brandImage);
+            
+            return (
+              <div className="flex items-center mt-2">
+                <Image
+                  src={imageUrl}
+                  alt={typeof productData?.brand === 'object' ? productData?.brand?.name : (productData?.brand || "Brand Logo")}
+                  width={120}
+                  height={32}
+                  className="h-8 w-auto object-contain"
+                  onError={(e) => {
+                    console.error('[Variant5] Brand logo failed to load:', imageUrl);
+                    e.currentTarget.style.display = 'none';
+                  }}
+                  onLoad={() => {
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log('[Variant5] Brand logo loaded successfully:', imageUrl);
+                    }
+                  }}
+                />
+              </div>
+            );
+          })()}
+
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="flex items-center">

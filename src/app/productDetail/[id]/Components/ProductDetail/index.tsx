@@ -208,6 +208,7 @@ export function ProductDetails({
     name: product?.name || dummyProduct.name,
     subtitle: product?.subtitle || dummyProduct.subtitle,
     brand: product?.brand?.name || product?.brand || dummyProduct.brand,
+    brandImage: product?.brand?.image || product?.brandImage || (typeof product?.brand === 'object' && product?.brand?.image ? product.brand.image : null),
     price: product?.price || dummyProduct.price,
     originalPrice: product?.originalPrice || dummyProduct.originalPrice,
     discount: product?.discount || dummyProduct.discount,

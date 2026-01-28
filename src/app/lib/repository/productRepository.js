@@ -5,6 +5,7 @@ import { attributeSchema } from "../models/Attribute.js";
 import { variantSchema } from "../models/Variant.js";
 import { influencerVideoSchema } from "../models/InfluencerVideo.js";
 import { OrderSchema } from "../models/Order.js";
+import { BrandSchema } from "../models/Brand.js";
 
 class ProductRepository extends CrudRepository {
   // Fetch all products and attach variants with attributes to each
@@ -252,6 +253,11 @@ class ProductRepository extends CrudRepository {
         conn.model("InfluencerVideo", influencerVideoSchema);
       }
 
+      // Register Brand model if not already registered
+      if (!conn.models.Brand) {
+        conn.model("Brand", BrandSchema);
+      }
+
       // Register Order model if not already registered using canonical OrderSchema
       let Order;
       if (!conn.models.Order) {
@@ -264,7 +270,10 @@ class ProductRepository extends CrudRepository {
       // Note: Schema has strictPopulate: false, but if populate still fails, we'll skip it
       let productDoc;
       try {
-        const populateOptions = [{ path: "attributeSet.attributeId" }];
+        const populateOptions = [
+          { path: "attributeSet.attributeId" },
+          { path: "brand", select: "name image" }
+        ];
         if (mongoose.Types.ObjectId.isValid(id)) {
           productDoc = await this.model.findById(id).populate(populateOptions);
         } else {
@@ -273,13 +282,22 @@ class ProductRepository extends CrudRepository {
             .populate(populateOptions);
         }
       } catch (populateError) {
-        // If populate fails, fetch without populate
-        // This can happen if strictPopulate is enforced at connection level
-        console.warn("Failed to populate attributeSet.attributeId, fetching without populate:", populateError.message);
-        if (mongoose.Types.ObjectId.isValid(id)) {
-          productDoc = await this.model.findById(id);
-        } else {
-          productDoc = await this.model.findOne({ slug: id, deletedAt: null });
+        // If populate fails, try to fetch with just brand populated
+        console.warn("Failed to populate with all options, trying with brand only:", populateError.message);
+        try {
+          if (mongoose.Types.ObjectId.isValid(id)) {
+            productDoc = await this.model.findById(id).populate({ path: "brand", select: "name image" });
+          } else {
+            productDoc = await this.model.findOne({ slug: id, deletedAt: null }).populate({ path: "brand", select: "name image" });
+          }
+        } catch (brandPopulateError) {
+          // If brand populate also fails, fetch without populate
+          console.warn("Failed to populate brand, fetching without populate:", brandPopulateError.message);
+          if (mongoose.Types.ObjectId.isValid(id)) {
+            productDoc = await this.model.findById(id);
+          } else {
+            productDoc = await this.model.findOne({ slug: id, deletedAt: null });
+          }
         }
       }
 
