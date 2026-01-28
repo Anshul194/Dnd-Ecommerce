@@ -103,6 +103,9 @@ export function SignupPage() {
                               </Link>
                                </div>
             </div>
+            <h1 className="text-md sm:text-lg lg:text-xl text-white font-bold mb-3 lg:mb-4 leading-tight">
+              Bharat Gram Udyog Sangh.
+            </h1>
             <h1 className="text-2xl sm:text-xl lg:text-2xl font-bold mb-3 lg:mb-4 leading-tight">
               Trusted Indian (Ayurvedic) products for everyday families, from Kisan source to home.
             </h1>

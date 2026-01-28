@@ -144,11 +144,11 @@ const Categories = ({ dynamicContent = null }) => {
                 },
                 1024: {
                   slidesPerView: 3,
-                  spaceBetween: 20,
+                  spaceBetween: 16,
                 },
                 1280: {
-                  slidesPerView: 4,
-                  spaceBetween: 25,
+                  slidesPerView: 4.5,
+                  spaceBetween: 16,
                 },
               }}
               className="categories-swiper"
