@@ -212,14 +212,14 @@ const ProductCard = ({ product, showDes, buyNow }) => {
       >
         <div
           className={`${showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
-            } bg-white flex max-sm:w-full  max-sm:mx-auto flex-col justify-between border border-[#92BD78] rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 md:w-full max-w-[320px]`}
-        // } bg-white flex max-sm:w-full max-sm:min-w-[280px] max-sm:mx-auto flex-col justify-between border  border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-[200px] md:w-full max-w-[320px]`}
+            } bg-white flex flex-col justify-between border border-[#92BD78] rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-80`}
         >
           {/* Product Header */}
           <div className="relative bg-white rounded-t-2xl">
             {/* Heart Icon */}
             <div className="absolute top-2 right-2 z-10">
               <button
+                type="button"
                 className="w-6 h-6 hover:scale-[1.1] bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
                 onClick={async (e) => {
                   e.stopPropagation();
@@ -291,20 +291,18 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               </button>
             </div>
             {/* Product Image */}
-            <div className="flex h-40 max-sm:h-44 max-sm:w-full justify-center items-center overflow-hidden">
-              {/* <div className="flex h-40  max-sm:h-32 max-sm:w-fit max-sm:mx-auto justify-center items-center"> */}
+            <div className="flex h-56 max-sm:h-44 w-full justify-center items-center overflow-hidden">
               <Image
                 src={imgSrc}
                 alt={product?.thumbnail?.alt || product.images?.[0]?.alt || product?.name || "Product Image"}
                 width={160}
                 height={120}
-                className="object-contain h-full w-full"
+                className="object-cover h-full w-full"
                 onError={handleImageError}
               />
             </div>
-          </div>
 
-          <div className="p-2">
+            <div className="p-2">
             {/* Title */}
             <h3 className="text-xs bg-[#F1FAEE] w-full p-1 px-3 text poppins-medium mb-1 line-clamp-2">
               {product?.name}
@@ -327,6 +325,27 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               </div>
             )}
 
+            {/* Price Section - Moved here */}
+            <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-2">
+              <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
+                {(() => {
+                  const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
+                  return (
+                    <>
+                      <span className="text-lg max-sm:text-base font-bold text-gray-800">
+                        ₹{salePrice}
+                      </span>
+                      {hasSale && (
+                        <span className="text-xs max-sm:text-xs text-gray-400 h-5 line-through">
+                          ₹{originalPrice}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
             {/* Description */}
             {showDes && (
               <div
@@ -337,30 +356,14 @@ const ProductCard = ({ product, showDes, buyNow }) => {
               ></div>
             )}
           </div>
+          </div>
 
-          {/* Product Info */}
+
+          
+
+          {/* Action Buttons Section */}
           <div className="p-2">
             <div>
-              {/* Price and Rating */}
-              <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-4">
-                <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
-                  {(() => {
-                    const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
-                    return (
-                      <>
-                        <span className="text-lg max-sm:text-base font-bold text-gray-800">
-                          ₹{salePrice}
-                        </span>
-                        {hasSale && (
-                          <span className="text-xs max-sm:text-xs text-gray-400 h-5 line-through">
-                            ₹{originalPrice}
-                          </span>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
               {buyNow ? (
                 <div className="flex gap-2">
                   <button

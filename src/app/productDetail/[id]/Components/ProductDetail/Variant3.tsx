@@ -347,12 +347,12 @@ function Variant3({ productData: propProductData }: Variant3Props) {
                     </div>
 
                     {/* Image Section */}
-                    <div className="p-3 flex justify-center items-center bg-[#e2f0d9] min-h-[120px]">
+                    <div className="flex justify-center items-center bg-[#e2f0d9] min-h-[120px]">
                       {displayImage ? (
                         <img
                           src={getImageUrl(displayImage)}
                           alt={variant.title || `Variant ${index + 1}`}
-                          className="max-w-full max-h-[80px] object-contain"
+                          className="max-w-full max-h-[80px] object-cover"
                         />
                       ) : (
                         <div className="w-full h-[80px] bg-gray-200 rounded flex items-center justify-center text-gray-400 text-[10px]">

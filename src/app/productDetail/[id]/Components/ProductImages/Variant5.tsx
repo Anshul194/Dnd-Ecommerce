@@ -295,7 +295,7 @@ export default function Variant5() {
 
             {/* Enhanced Thumbnails */}
             {productData?.images && productData.images.length > 0 && (
-              <div className="relative flex items-center justify-center gap-2 max-w-md mx-auto lg:mx-0 lg:ml-auto">
+              <div className="relative flex items-center justify-center gap-2 max-w-md mx-auto lg:mx-0 lg:ml-auto w-full overflow-scroll">
                 {/* Left Arrow */}
                 <button
                   onClick={() => scroll("left")}

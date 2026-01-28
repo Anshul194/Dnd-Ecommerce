@@ -260,9 +260,7 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
                 className="object-cover h-full w-full"
               />
             </div>
-          </div>
-
-          <div className="p-2">
+            <div className="p-2">
             <h3 className="text-xs bg-[#F1FAEE] w-full p-1 px-3 text poppins-medium mb-1 line-clamp-2">
               {product?.name}
             </h3>
@@ -283,6 +281,27 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
               </div>
             )}
 
+            {/* Price Section - Moved here */}
+            <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-2">
+              <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
+                {(() => {
+                  const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
+                  return (
+                    <>
+                      <span className="text-lg max-sm:text-base font-bold text-gray-800">
+                        ₹{salePrice}
+                      </span>
+                      {hasSale && (
+                        <span className="text-xs text-gray-400 h-5 line-through">
+                          ₹{originalPrice}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
             {showDes && (
               <div
                 className="text-sm h-10 text-black poppins-medium mb-3 max-sm:hidden"
@@ -292,28 +311,13 @@ const TrySectionCard = ({ product, showDes, buyNow }) => {
               ></div>
             )}
           </div>
+          </div>
 
+            
+
+          {/* Action Buttons Section */}
           <div className="p-2">
             <div>
-              <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-4">
-                <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
-                  {(() => {
-                    const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
-                    return (
-                      <>
-                        <span className="text-lg max-sm:text-base font-bold text-gray-800">
-                          ₹{salePrice}
-                        </span>
-                        {hasSale && (
-                          <span className="text-xs text-gray-400 h-5 line-through">
-                            ₹{originalPrice}
-                          </span>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
               {buyNow ? (
                 <div className="flex gap-2">
                   <button

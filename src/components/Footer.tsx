@@ -409,7 +409,7 @@ export default function Footer() {
           className="border-t border-gray-800 pt-4 text-center text-sm text-gray-400"
         >
           <p>
-            &copy; 2025 Bharat Gram Udyog Sangh. All rights reserved.
+            &copy; 2026 Bharat Gram Udyog Sangh. All rights reserved.
           </p>
         </motion.div>
       </div>

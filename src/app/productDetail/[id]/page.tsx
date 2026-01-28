@@ -1580,7 +1580,8 @@ export default function ProductPageBuilder() {
 
   return (
     <div
-      className={`min-h-screen max-w-[100vw] my-20 ${isPreviewMode ? "bg-white" : "bg-gray-100"} flex flex-col md:flex-row`}
+      className={`min-h-screen max-w-[100vw] ${isPreviewMode ? "bg-white" : "bg-gray-100"} flex flex-col md:flex-row`}
+      // className={`min-h-screen max-w-[100vw] my-20 ${isPreviewMode ? "bg-white" : "bg-gray-100"} flex flex-col md:flex-row`}
     >
       {loading ? (
         <div className="flex w-full justify-center items-center h-[60vh]">
