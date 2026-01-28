@@ -512,49 +512,47 @@ export async function PUT(req, context) {
       });
     }
 
-  }
-
     console.log("DEBUG: Body Benefits before update:", JSON.stringify(body.benefits, null, 2));
 
-  const updateResult = await productController.update(id, body, conn);
+    const updateResult = await productController.update(id, body, conn);
 
-  let fullProduct = null;
-  if (updateResult && updateResult.success) {
-    const getResult = await productController.getById(id, conn);
-    if (getResult && getResult.success) {
-      fullProduct = getResult.data;
+    let fullProduct = null;
+    if (updateResult && updateResult.success) {
+      const getResult = await productController.getById(id, conn);
+      if (getResult && getResult.success) {
+        fullProduct = getResult.data;
 
-      // CHECK: If the product has NO attributes (attributeSet is empty), delete its variants but KEEP the product.
-      // The previous logic in EditProduct.tsx ensures we send an empty list if all are unchecked.
-      if (!fullProduct.attributeSet || fullProduct.attributeSet.length === 0) {
-        console.log(`[ProductController] Product ${id} has no attributes remaining. Deleting variants only.`);
+        // CHECK: If the product has NO attributes (attributeSet is empty), delete its variants but KEEP the product.
+        // The previous logic in EditProduct.tsx ensures we send an empty list if all are unchecked.
+        if (!fullProduct.attributeSet || fullProduct.attributeSet.length === 0) {
+          console.log(`[ProductController] Product ${id} has no attributes remaining. Deleting variants only.`);
 
-        // 1. Delete all variants associated with this product (as they rely on attributes)
-        const Variant = conn.models.Variant;
-        if (Variant) {
-          await Variant.updateMany({ productId: id }, { deletedAt: new Date() });
-          console.log(`[ProductController] Soft-deleted variants for product ${id}`);
+          // 1. Delete all variants associated with this product (as they rely on attributes)
+          const Variant = conn.models.Variant;
+          if (Variant) {
+            await Variant.updateMany({ productId: id }, { deletedAt: new Date() });
+            console.log(`[ProductController] Soft-deleted variants for product ${id}`);
+          }
+
+          // We do NOT delete the product itself anymore.
+          // Proceed to return the product (which is now a simple product without variants)
+
+          // Manually clear variants in response since we just deleted them
+          fullProduct.variants = [];
         }
-
-        // We do NOT delete the product itself anymore.
-        // Proceed to return the product (which is now a simple product without variants)
-
-        // Manually clear variants in response since we just deleted them
-        fullProduct.variants = [];
       }
     }
-  }
 
-  return NextResponse.json(
-    {
-      success: updateResult.success,
-      message: updateResult.message,
-      product: fullProduct,
-    },
-    {
-      status: updateResult.success ? 200 : 400,
-    }
-  );
+    return NextResponse.json(
+      {
+        success: updateResult.success,
+        message: updateResult.message,
+        product: fullProduct,
+      },
+      {
+        status: updateResult.success ? 200 : 400,
+      }
+    );
 } catch (error) {
   //consolle.error("PUT error:", error);
   return NextResponse.json({ error: error.message }, { status: 500 });
