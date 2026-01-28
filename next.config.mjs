@@ -70,12 +70,6 @@ const nextConfig = {
           source: "/uploads/invoices/:id.html",
           destination: "/api/invoice/:id",
         },
-        // Serve uploaded files through API route for standalone mode compatibility
-        // This ensures runtime-uploaded files in public/uploads/ are accessible
-        {
-          source: "/uploads/:path*",
-          destination: "/api/uploads/:path*",
-        },
       ],
     };
   },
