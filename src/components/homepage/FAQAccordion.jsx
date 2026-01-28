@@ -10,6 +10,7 @@ import AnimatedGradientBorder from "../ui/AnimatedGradientBorder";
 
 export default function FAQAccordion({ content }) {
   const [openIndex, setOpenIndex] = useState(null);
+  const [showAll, setShowAll] = useState(false);
   const { faqs, loading, error, lastFetched } = useSelector((state) => state.faq);
   const dispatch = useDispatch();
 
@@ -28,6 +29,15 @@ export default function FAQAccordion({ content }) {
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
+  const toggleShowAll = () => {
+    setShowAll(!showAll);
+  };
+
+  // Determine how many FAQs to show
+  const maxVisible = 5;
+  const hasMoreThanFive = faqs.length > maxVisible;
+  const visibleFAQs = showAll ? faqs : faqs.slice(0, maxVisible);
 
   return (
     <div className="w-full py-10 lg:py-20 px-4">
@@ -69,7 +79,7 @@ export default function FAQAccordion({ content }) {
             )}
             {!loading &&
               !error &&
-              faqs.map((faq, index) => (
+              visibleFAQs.map((faq, index) => (
                 <div
                   key={faq._id || index}
                   className="border-b border-gray-200"
@@ -101,6 +111,18 @@ export default function FAQAccordion({ content }) {
                 </div>
               ))}
           </div>
+
+          {/* View More / View Less Button */}
+          {hasMoreThanFive && (
+            <div className="text-center mt-6">
+              <button
+                onClick={toggleShowAll}
+                className="px-6 py-2 bg-[#3C950D] text-white rounded-lg hover:bg-[#2d7009] transition-colors font-medium"
+              >
+                {showAll ? "View Less" : `View More (${faqs.length - maxVisible} more)`}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

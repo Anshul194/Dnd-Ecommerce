@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export default function Variant1({ productData }: { productData?: any }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState<boolean>(false);
 
   // Dummy FAQ data
   const dummyFAQs = [
@@ -39,6 +40,15 @@ export default function Variant1({ productData }: { productData?: any }) {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  const toggleShowAll = () => {
+    setShowAll(!showAll);
+  };
+
+  // Determine how many FAQs to show
+  const maxVisible = 5;
+  const hasMoreThanFive = faqs.length > maxVisible;
+  const visibleFAQs = showAll ? faqs : faqs.slice(0, maxVisible);
+
   return (
     // If there are no FAQs (real product with no faqs), hide the section
     faqs.length === 0 ? null : (
@@ -48,7 +58,7 @@ export default function Variant1({ productData }: { productData?: any }) {
       </h2>
 
       <div className="space-y-4 max-w-3xl mx-auto">
-        {faqs.map((faq: any, index: number) => (
+        {visibleFAQs.map((faq: any, index: number) => (
           <div
             key={index}
             className={`group bg-gray-50 rounded-lg p-4 cursor-pointer border transition-all ${
@@ -93,6 +103,18 @@ export default function Variant1({ productData }: { productData?: any }) {
           </div>
         ))}
       </div>
+
+      {/* View More / View Less Button */}
+      {hasMoreThanFive && (
+        <div className="text-center mt-6">
+          <button
+            onClick={toggleShowAll}
+            className="px-6 py-2 bg-[#3C950D] text-white rounded-lg hover:bg-[#2d7009] transition-colors font-medium"
+          >
+            {showAll ? "View Less" : `View More (${faqs.length - maxVisible} more)`}
+          </button>
+        </div>
+      )}
      </div>
      )
   );

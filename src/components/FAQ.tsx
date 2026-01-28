@@ -8,10 +8,11 @@ import {
   AccordionTrigger,
 } from "./ui/accordion";
 import { motion } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { fetchFaqs } from "@/app/store/slices/faqSlice";
 
 export function FAQ({ content }) {
+  const [showAll, setShowAll] = useState(false);
   const { faqs, loading, error } = useSelector((state) => state.faq);
   const dispatch = useDispatch();
   useEffect(() => {
@@ -19,6 +20,15 @@ export function FAQ({ content }) {
       dispatch(fetchFaqs());
     }
   }, [dispatch, faqs]);
+
+  const toggleShowAll = () => {
+    setShowAll(!showAll);
+  };
+
+  // Determine how many FAQs to show
+  const maxVisible = 5;
+  const hasMoreThanFive = faqs.length > maxVisible;
+  const visibleFAQs = showAll ? faqs : faqs.slice(0, maxVisible);
   return (
     <section className="py-20 relative">
       <div className="container mx-auto px-4">
@@ -45,7 +55,7 @@ export function FAQ({ content }) {
           className="max-w-3xl mx-auto"
         >
           <Accordion type="single" collapsible className="space-y-4">
-            {faqs.map((faq, index) => (
+            {visibleFAQs.map((faq, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 10 }}
@@ -67,6 +77,24 @@ export function FAQ({ content }) {
               </motion.div>
             ))}
           </Accordion>
+
+          {/* View More / View Less Button */}
+          {hasMoreThanFive && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="text-center mt-8"
+            >
+              <button
+                onClick={toggleShowAll}
+                className="px-6 py-2 bg-gradient-to-r from-[#3C950D] to-[#2d7009] text-white rounded-lg hover:from-[#2d7009] hover:to-[#3C950D] transition-all font-medium shadow-lg hover:shadow-xl"
+              >
+                {showAll ? "View Less" : `View More (${faqs.length - maxVisible} more)`}
+              </button>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </section>
