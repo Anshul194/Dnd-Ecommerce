@@ -228,7 +228,7 @@ export default function BlogDetailPage() {
           More Blogs Stories
         </h2>
         <p className="text-gray-600 text-lg">
-          Continue your journey into the world of tea
+         Continue your journey into natural wellness with our Ayurvedic insights, health tips, and traditional remedies.
         </p>
       </div>
 

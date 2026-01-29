@@ -9,7 +9,7 @@ export default function Variant1({ productData }: { productData?: any }) {
   const dummyComparison = {
     title: "Deep Dive Comparison",
     subtitle:
-      "See how VedaFlow's comprehensive blend stands out against single-herb supplements.",
+      "See how Bharat Gram Udyog Sangh combines ancient Ayurvedic wisdom with modern quality standards to deliver natural wellness solutions.",
     productName: "VedaFlow Juice",
     competitors: ["Single Herb Powder", "Conventional Tablets"],
     features: [
