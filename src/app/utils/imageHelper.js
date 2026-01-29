@@ -10,35 +10,51 @@ export const getImageUrl = (url) => {
 
     let originalPath = url; // Store original path for conversion
 
-    // In development, if the URL is already a full production URL, convert it to localhost
-    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && (url.startsWith("http://") || url.startsWith("https://"))) {
-        const hostname = window.location.hostname;
-        const isLocalhost = hostname === 'localhost' ||
-                           hostname === '127.0.0.1' ||
-                           hostname.includes('localhost') ||
-                           hostname.endsWith('.localhost');
-
-        if (isLocalhost) {
-            const pathSegment = new URL(url).pathname;
-            // Use current origin instead of hardcoded localhost:3000
-            const convertedUrl = `${window.location.origin}${pathSegment}`;
-            console.log(`[Frontend getImageUrl] Converting production URL to current origin: ${url} -> ${convertedUrl}`);
-            url = convertedUrl;
-        }
-    }
-
-    // Already a full URL (http/https) or data URI - return as is
-    if (url.startsWith("http") || url.startsWith("https")) return url;
-    if (url.startsWith("data:")) return url;
-
-    // Normalize path: convert "Uploads" to "uploads" for case-sensitive servers (Linux)
+    // Normalize path FIRST: convert "Uploads" to "uploads" for case-sensitive servers (Linux)
     // This handles existing database entries that may have "Uploads" with capital U
+    // Do this BEFORE checking for full URLs so we normalize production URLs too
+    // Use multiple patterns to catch all variations (same as admin panel)
     let normalizedUrl = url.replace(/\/Uploads\//gi, "/uploads/");
-
+    normalizedUrl = normalizedUrl.replace(/\/Uploads\//g, "/uploads/"); // Case-sensitive fallback
+    normalizedUrl = normalizedUrl.replace(/Uploads\//gi, "uploads/"); // Without leading slash
+    
     // Remove any duplicate /uploads/uploads/ patterns (case-insensitive)
     normalizedUrl = normalizedUrl.replace(/\/uploads\/uploads\//gi, "/uploads/");
     normalizedUrl = normalizedUrl.replace(/\/uploads\/\/uploads\//gi, "/uploads/"); // Handle double slashes
     
+    // If it's already a full URL (http/https), check if we need to convert it
+    if (normalizedUrl.startsWith("http") || normalizedUrl.startsWith("https")) {
+        // In development (localhost), convert production URLs to localhost
+        if (typeof window !== 'undefined') {
+            const hostname = window.location.hostname;
+            const isLocalhost = hostname === 'localhost' ||
+                               hostname === '127.0.0.1' ||
+                               hostname.includes('localhost') ||
+                               hostname.endsWith('.localhost');
+
+            // If we're running on localhost and the URL is a production URL, convert it
+            if (isLocalhost && (normalizedUrl.includes('nexprism.in') || normalizedUrl.includes('bharat.nexprism.in'))) {
+                try {
+                    const urlObj = new URL(normalizedUrl);
+                    const pathSegment = urlObj.pathname;
+                    // Normalize path segment: convert "Uploads" to "uploads" (in case it wasn't normalized)
+                    const normalizedPath = pathSegment.replace(/\/Uploads\//gi, "/uploads/");
+                    // Use current origin instead of production URL
+                    const convertedUrl = `${window.location.origin}${normalizedPath}`;
+                    console.log(`[Frontend getImageUrl] Converting production URL to localhost: ${normalizedUrl} -> ${convertedUrl}`);
+                    normalizedUrl = convertedUrl;
+                } catch (e) {
+                    console.warn(`[Frontend getImageUrl] Failed to parse URL for conversion:`, normalizedUrl, e);
+                }
+            }
+        }
+        
+        // Ensure no double slashes in the normalized URL
+        normalizedUrl = normalizedUrl.replace(/\/\//g, "/").replace(/http:\//g, "http://").replace(/https:\//g, "https://");
+        return normalizedUrl;
+    }
+    if (normalizedUrl.startsWith("data:")) return normalizedUrl;
+
     // Remove leading slash if present to avoid double slashes
     let cleanUrl = normalizedUrl.startsWith("/") ? normalizedUrl.slice(1) : normalizedUrl;
     

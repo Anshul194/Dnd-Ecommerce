@@ -11,6 +11,9 @@ export async function GET(request, context) {
     // Join path segments
     let filePath = Array.isArray(pathSegments) ? pathSegments.join("/") : pathSegments;
     
+    // Normalize path: convert "Uploads" to "uploads" for case-sensitive servers (Linux)
+    filePath = filePath.replace(/\/Uploads\//gi, "/uploads/");
+    
     // Ensure the path starts with uploads/ (in case rewrite rule stripped it)
     if (!filePath.startsWith("uploads/") && !filePath.startsWith("/uploads/")) {
       filePath = `uploads/${filePath}`;
