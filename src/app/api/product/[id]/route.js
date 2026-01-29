@@ -402,6 +402,14 @@ export async function PUT(req, context) {
           } else if (prop === "url") {
             body.storyVideoUrl = value;
           }
+        } else if (key === "comparison" && typeof value === "string") {
+          // Parse comparison JSON string from FormData
+          try {
+            body.comparison = JSON.parse(value);
+          } catch (e) {
+            console.error("Failed to parse comparison JSON:", e);
+            body.comparison = value; // Fallback to string if parsing fails
+          }
         } else {
           body[key] = value;
         }
@@ -513,6 +521,7 @@ export async function PUT(req, context) {
     }
 
     console.log("DEBUG: Body Benefits before update:", JSON.stringify(body.benefits, null, 2));
+    console.log("DEBUG: Body Comparison before update:", JSON.stringify(body.comparison, null, 2));
 
     const updateResult = await productController.update(id, body, conn);
 

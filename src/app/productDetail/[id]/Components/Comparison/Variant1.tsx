@@ -98,7 +98,7 @@ export default function Variant1({ productData }: { productData?: any }) {
       return {
         name: row.title || "",
         description: row.note || "",
-        whyExcels: "",
+        whyExcels: row.whyExcels || "", // Use dynamic whyExcels from database
         ourProduct: makeCell(cells[0]),
         competitor1: makeCell(cells[1]),
         competitor2: makeCell(cells[2]),
@@ -154,9 +154,11 @@ export default function Variant1({ productData }: { productData?: any }) {
                   <p className="text-xs text-gray-500 mt-2 leading-relaxed">
                     {feature.description}
                   </p>
-                  <p className="text-xs font-semibold text-veda-primary mt-2">
-                    Why VedaFlow Excels: {feature.whyExcels}
-                  </p>
+                  {feature.whyExcels && feature.whyExcels.trim() !== "" && (
+                    <p className="text-xs font-semibold text-veda-primary mt-2">
+                      Why {comparison.productName} Excels: {feature.whyExcels}
+                    </p>
+                  )}
                 </td>
                 <td className="p-6 bg-[#fcfefd]">
                   <span className="text-veda-primary text-4xl">

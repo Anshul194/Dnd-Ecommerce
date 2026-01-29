@@ -341,9 +341,18 @@ class ProductRepository extends CrudRepository {
         },
       ]);
 
+      // Convert to object with all fields included (minimize: false ensures empty fields are included)
       const productObj = productDoc.toObject
-        ? productDoc.toObject()
+        ? productDoc.toObject({ minimize: false, virtuals: false })
         : productDoc;
+      
+      // Ensure comparison.rows always have whyExcels field
+      if (productObj.comparison && productObj.comparison.rows && Array.isArray(productObj.comparison.rows)) {
+        productObj.comparison.rows = productObj.comparison.rows.map(row => ({
+          ...row,
+          whyExcels: row.whyExcels !== undefined ? row.whyExcels : '',
+        }));
+      }
       productObj.variants = variants;
       productObj.influencerVideos = influencerVideos;
 

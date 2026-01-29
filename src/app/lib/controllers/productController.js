@@ -63,11 +63,16 @@ function normalizeProductBody(body) {
       }
       // Ensure headers and rows shape
       body.comparison.headers = Array.isArray(body.comparison.headers) ? body.comparison.headers.map(h => String(h || '')) : [];
-      body.comparison.rows = Array.isArray(body.comparison.rows) ? body.comparison.rows.map(r => ({
-        title: r?.title || '',
-        cells: Array.isArray(r?.cells) ? r.cells.map(c => (c == null ? '' : String(c))) : [],
-        note: r?.note || '',
-      })) : [];
+      body.comparison.rows = Array.isArray(body.comparison.rows) ? body.comparison.rows.map(r => {
+        // Explicitly create object with all fields to ensure Mongoose saves them
+        const row = {
+          title: r?.title || '',
+          cells: Array.isArray(r?.cells) ? r.cells.map(c => (c == null ? '' : String(c))) : [],
+          note: r?.note !== undefined && r?.note !== null ? String(r.note) : '',
+          whyExcels: r?.whyExcels !== undefined && r?.whyExcels !== null ? String(r.whyExcels) : '', // Dynamic "Why [Product] Excels" text
+        };
+        return row;
+      }) : [];
     }
   });
 
@@ -366,6 +371,18 @@ class ProductController {
         );
       } else {
         productObj.influencerVideos = [];
+      }
+
+      // Ensure comparison.rows always have whyExcels field
+      if (productObj.comparison && productObj.comparison.rows && Array.isArray(productObj.comparison.rows)) {
+        productObj.comparison.rows = productObj.comparison.rows.map(row => ({
+          title: row.title || '',
+          cells: Array.isArray(row.cells) ? row.cells : [],
+          note: row.note !== undefined ? String(row.note) : '',
+          whyExcels: row.whyExcels !== undefined ? String(row.whyExcels) : '', // Ensure whyExcels is always present
+          _id: row._id || null,
+          id: row.id || row._id || null,
+        }));
       }
 
       return { success: true, message: "Product fetched", data: productObj };

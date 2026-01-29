@@ -51,10 +51,14 @@ const productSchema = new mongoose.Schema({
           title: { type: String },
           // cells correspond to headers order
           cells: [{ type: String }],
-          note: { type: String },
+          note: { type: String, default: "" },
+          whyExcels: { type: String, default: "" }, // Dynamic "Why [Product] Excels" text
         },
       ],
     },
+}, { 
+  strict: false, // Allow fields not explicitly in schema
+  minimize: false // Don't remove empty objects/arrays
 });
 
 export const ProductSchema = productSchema;
