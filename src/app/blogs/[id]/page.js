@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect, useRef } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Calendar,
@@ -13,6 +13,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "next/navigation";
 import { fetchBlogById, fetchBlogs } from "@/app/store/slices/blogSclie";
+import { toast } from "react-toastify";
 
 import Link from "next/link";
 import { getImageUrl } from "@/app/utils/imageHelper";
@@ -31,6 +32,34 @@ export default function BlogDetailPage() {
   const params = useParams();
   const blogId = params.id;
   const hasFetchedRef = useRef(false);
+  const [isLiked, setIsLiked] = useState(false);
+
+  const handleShare = async () => {
+    const shareData = {
+      title: selectedBlog?.title || "Check out this blog",
+      text: selectedBlog?.excerpt || "I found this interesting blog post!",
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success("Shared successfully!");
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        toast.error("Failed to share");
+      }
+    }
+  };
+
+  const toggleLike = () => {
+    setIsLiked(!isLiked);
+    toast.success(!isLiked ? "Added to favorites" : "Removed from favorites");
+  };
   const relatedPosts = [
     {
       id: 1,
@@ -96,11 +125,22 @@ export default function BlogDetailPage() {
             <span className="text-sm">Back to Tea Blog</span>
           </Link>
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <button
+              onClick={handleShare}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              title="Share"
+            >
               <Share2 size={18} />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <Heart size={18} />
+            <button
+              onClick={toggleLike}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              title={isLiked ? "Remove from favorites" : "Add to favorites"}
+            >
+              <Heart
+                size={18}
+                className={isLiked ? "fill-red-500 text-red-500" : ""}
+              />
             </button>
           </div>
         </div>
@@ -154,13 +194,13 @@ export default function BlogDetailPage() {
         </div>
       </div>
 
-    
-      
-      
-  {/* Article Content */ }
-  <article className="max-w-4xl mx-auto px-6 py-16">
-    {/* Article Stats */}
-    {/* <div className="flex items-center justify-between border-b border-gray-200 pb-6 mb-12">
+
+
+
+      {/* Article Content */}
+      <article className="max-w-4xl mx-auto px-6 py-16">
+        {/* Article Stats */}
+        {/* <div className="flex items-center justify-between border-b border-gray-200 pb-6 mb-12">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 text-gray-500">
               <Heart size={18} />
@@ -174,31 +214,31 @@ export default function BlogDetailPage() {
           <div className="text-sm text-gray-500">6 min read</div>
         </div> */}
 
-    {/* Article Body */}
-    <div
-      dangerouslySetInnerHTML={{
-        __html: data?.content || "<p>Loading...</p>",
-      }}
-      className="prose prose-lg max-w-none"
-    ></div>
+        {/* Article Body */}
+        <div
+          dangerouslySetInnerHTML={{
+            __html: data?.content || "<p>Loading...</p>",
+          }}
+          className="prose prose-lg max-w-none"
+        ></div>
 
-    {/* Tags */}
-    <div className="border-t border-gray-200 pt-8 mt-12">
-      <div className="flex flex-wrap gap-3">
-        {data?.tags?.length > 0 &&
-          data?.tags?.map((tag, index) => (
-            <span
-              key={index}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer"
-            >
-              #{tag}
-            </span>
-          ))}
-      </div>
-    </div>
+        {/* Tags */}
+        <div className="border-t border-gray-200 pt-8 mt-12">
+          <div className="flex flex-wrap gap-3">
+            {data?.tags?.length > 0 &&
+              data?.tags?.map((tag, index) => (
+                <span
+                  key={index}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                >
+                  #{tag}
+                </span>
+              ))}
+          </div>
+        </div>
 
-    {/* Author Info */}
-    {/* <div className="border-t border-gray-200 pt-8 mt-8">
+        {/* Author Info */}
+        {/* <div className="border-t border-gray-200 pt-8 mt-8">
           <div className="flex items-center gap-6">
             <div className="w-16 h-16 bg min-w-16 rounded-full flex items-center justify-center">
               <span className="text-xl font-bold text-white">CW</span>
@@ -218,60 +258,60 @@ export default function BlogDetailPage() {
             </div>
           </div>
         </div> */}
-  </article>
+      </article>
 
-  {/* Related Posts */ }
-  <section className="border-t border-gray-200 py-16">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-12">
-        <h2 className="bebas text-5xl font-bold text-gray-900 mb-4">
-          More Blogs Stories
-        </h2>
-        <p className="text-gray-600 text-lg">
-         Continue your journey into natural wellness with our Ayurvedic insights, health tips, and traditional remedies.
-        </p>
-      </div>
+      {/* Related Posts */}
+      <section className="border-t border-gray-200 py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="bebas text-5xl font-bold text-gray-900 mb-4">
+              More Blogs Stories
+            </h2>
+            <p className="text-gray-600 text-lg">
+              Continue your journey into natural wellness with our Ayurvedic insights, health tips, and traditional remedies.
+            </p>
+          </div>
 
-      <div className="grid md:grid-cols-3 gap-8">
-        {items.slice(0, 3).map((post) => (
-          <article key={post._id} className="group cursor-pointer">
-            <div className="relative overflow-hidden mb-4">
-              <img
-                src={
-                  getImageUrl(post.thumbnail?.url) ||
-                  getImageUrl(post.images?.[0]?.url) ||
-                  getImageUrl(post.image?.[0]?.url) ||
-                  "/placeholder.png"
-                }
-                alt={
-                  post.thumbnail?.alt ||
-                  post.image?.[0]?.alt ||
-                  "Blog Image"
-                }
-                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {items.slice(0, 3).map((post) => (
+              <article key={post._id} className="group cursor-pointer">
+                <div className="relative overflow-hidden mb-4">
+                  <img
+                    src={
+                      getImageUrl(post.thumbnail?.url) ||
+                      getImageUrl(post.images?.[0]?.url) ||
+                      getImageUrl(post.image?.[0]?.url) ||
+                      "/placeholder.png"
+                    }
+                    alt={
+                      post.thumbnail?.alt ||
+                      post.image?.[0]?.alt ||
+                      "Blog Image"
+                    }
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
 
-            <div className="space-y-3">
-              <p className="text-sm text-gray-500">
-                {formatToReadableDate(post.createdAt)}
-              </p>
-              <h3 className="text-xl font-semibold text-gray-900 group-hover:text-green-600 transition-colors">
-                {post.title}
-              </h3>
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-500">
+                    {formatToReadableDate(post.createdAt)}
+                  </p>
+                  <h3 className="text-xl font-semibold text-gray-900 group-hover:text-green-600 transition-colors">
+                    {post.title}
+                  </h3>
 
-              <Link href={`/blogs/${post._id}`} className="pt-2">
-                <span className="text-green-600 bebas text-sm font-medium group-hover:text-green-700 transition-colors">
-                  Read More →
-                </span>
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
-    </div>
-  </section>
+                  <Link href={`/blogs/${post._id}`} className="pt-2">
+                    <span className="text-green-600 bebas text-sm font-medium group-hover:text-green-700 transition-colors">
+                      Read More →
+                    </span>
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
     </div >
   );
 }
