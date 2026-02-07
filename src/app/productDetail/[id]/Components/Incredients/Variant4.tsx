@@ -110,7 +110,7 @@ export default function Variant4({ productData }: { productData?: any }) {
             Why {ingredientCount} herbs together?
           </h3>
           <p className="text-sm text-gray-700">
-            In Ayurveda, herbs work synergistically (Yoga Vahi). This blend combines{" "}
+            In Ayurveda, herbs work synergistically. This blend combines{" "}
             {ingredients.map((ing: any, idx: number) => (
               <span key={idx}>
                 <strong>{ing.name}</strong>
