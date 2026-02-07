@@ -6,6 +6,8 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { Button } from "../ui/button";
 
+import { getImageUrl } from "@/app/utils/imageHelper";
+
 function LandingBanner({ content = [] }) {
   // console.log("content is ===> ", content);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -126,11 +128,11 @@ function LandingBanner({ content = [] }) {
           <div
             className="w-full h-full"
             style={{
-              backgroundImage: `url(${
+              backgroundImage: `url(${getImageUrl(
                 isMobile && currentContent?.mobileImage
                   ? currentContent?.mobileImage
                   : currentContent?.image
-              })`,
+              )})`,
               backgroundSize: "cover", // Changed from 'contain' to 'cover' for better full-screen fill
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",

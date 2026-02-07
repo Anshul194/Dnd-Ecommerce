@@ -1,10 +1,6 @@
 "use client";
 
-import React from 'react';
-import { ChevronRight } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import leaf from '../../../../public/images/leaf.png';
+import { getImageUrl } from "@/app/utils/imageHelper";
 
 const DynamicHeroSection = ({ content }) => {
   const { title, description, cta, image } = content;
@@ -13,23 +9,23 @@ const DynamicHeroSection = ({ content }) => {
     <div className="relative w-full min-h-[500px] overflow-hidden">
       {/* Fixed Left Leaf Image */}
       <div className="absolute -left-30 md:-left-50 top-1/2 transform -translate-y-1/2 z-50">
-        <Image 
-          className='w-[40vh] md:w-[60vh] rotate-[210deg] max-h-[600px]' 
-          src={leaf} 
-          alt="Leaf" 
-          width='auto' 
-          height='auto' 
+        <Image
+          className='w-[40vh] md:w-[60vh] rotate-[210deg] max-h-[600px]'
+          src={leaf}
+          alt="Leaf"
+          width='auto'
+          height='auto'
         />
       </div>
 
       {/* Fixed Right Leaf Image */}
       <div className="absolute -right-50 top-1/2 transform -translate-y-1/2 z-50">
-        <Image 
-          className='w-[60vh] -rotate-[40deg] max-h-[600px]' 
-          src={leaf} 
-          alt="Leaf" 
-          width='auto' 
-          height='auto' 
+        <Image
+          className='w-[60vh] -rotate-[40deg] max-h-[600px]'
+          src={leaf}
+          alt="Leaf"
+          width='auto'
+          height='auto'
         />
       </div>
 
@@ -70,7 +66,7 @@ const DynamicHeroSection = ({ content }) => {
               <div className="relative z-10 transform hover:scale-105 transition-transform duration-300">
                 <div className="w-fit h-full lg:h-[80vh] max-h-[600px] rounded-2xl overflow-hidden">
                   <Image
-                    src={image}
+                    src={getImageUrl(image)}
                     alt={title}
                     width={400}
                     height={600}

@@ -5,6 +5,8 @@ import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { getImageUrl } from "@/app/utils/imageHelper";
+
 const DynamicOfferBanner = ({ content }) => {
   const { tagline, title, description, countdown, cta, image, mobileImage } =
     content;
@@ -32,7 +34,7 @@ const DynamicOfferBanner = ({ content }) => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const imageToShow = isMobile && mobileImage ? mobileImage : image;
+  const imageToShow = getImageUrl(isMobile && mobileImage ? mobileImage : image);
 
   useEffect(() => {
     if (!effectiveEndDate) return;
@@ -113,7 +115,7 @@ const DynamicOfferBanner = ({ content }) => {
           </div>
         )}
 
-{/* {console.log("check content ====> " , cta)} */}
+        {/* {console.log("check content ====> " , cta)} */}
         {cta && (
           <Link href={cta.link || "/search"}>
             <button className="bg-white text-green-600 px-8 py-3 rounded-full font-bold uppercase hover:bg-gray-100 transition-all duration-300 flex items-center gap-2 mx-auto">
