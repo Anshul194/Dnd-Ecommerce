@@ -211,7 +211,7 @@ const ProductCard = ({ product, showDes, buyNow }) => {
         onClick={handleProductClick}
       >
         <div
-          className={`${showDes ? "h-96 max-sm:h-full" : "h-full sm:h-[420px]"
+          className={`${showDes ? "min-h-[420px]" : "h-full sm:min-h-[420px]"
             } bg-white flex flex-col justify-between border border-[#92BD78] rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-shadow duration-200 w-full max-w-80`}
         >
           {/* Product Header */}
@@ -303,79 +303,79 @@ const ProductCard = ({ product, showDes, buyNow }) => {
             </div>
 
             <div className="p-2">
-            {/* Title */}
-            <h3 className="text-xs bg-[#F1FAEE] w-full p-1 px-3 text poppins-medium mb-1 line-clamp-2">
-              {product?.name}
-            </h3>
+              {/* Title */}
+              <h3 className="text-xs bg-[#F1FAEE] w-full p-1 px-3 text poppins-medium mb-1 line-clamp-2">
+                {product?.name}
+              </h3>
 
-            {/* Rating - Only show if rating > 0 */}
-            {product?.rating > 0 && (
-              <div className="flex items-center gap-1 mb-2">
-                <div className="flex items-center">
-                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                  <span className="text-xs font-medium text-gray-700 ml-1">
-                    {product.rating.toFixed(1)}
-                  </span>
+              {/* Rating - Only show if rating > 0 */}
+              {product?.rating > 0 && (
+                <div className="flex items-center gap-1 mb-2">
+                  <div className="flex items-center">
+                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                    <span className="text-xs font-medium text-gray-700 ml-1">
+                      {product.rating.toFixed(1)}
+                    </span>
+                  </div>
+                  {product?.reviewCount > 0 && (
+                    <span className="text-xs text-gray-500">
+                      ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'})
+                    </span>
+                  )}
                 </div>
-                {product?.reviewCount > 0 && (
-                  <span className="text-xs text-gray-500">
-                    ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'})
-                  </span>
-                )}
-              </div>
-            )}
+              )}
 
-            {/* Price Section - Moved here */}
-            <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-2">
-              <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
-                {(() => {
-                  const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
-                  return (
-                    <>
-                      <span className="text-lg max-sm:text-base font-bold text-gray-800">
-                        ₹{salePrice}
-                      </span>
-                      {hasSale && (
-                        <span className="text-xs max-sm:text-xs text-gray-400 h-5 line-through">
-                          ₹{originalPrice}
+              {/* Price Section - Moved here */}
+              <div className="flex max-sm:flex-row justify-between items-start max-sm:items-center mb-2">
+                <div className="flex flex-col max-sm:flex-row max-sm:items-center max-sm:gap-2">
+                  {(() => {
+                    const { salePrice, originalPrice, hasSale } = getDisplayPrice(product);
+                    return (
+                      <>
+                        <span className="text-lg max-sm:text-base font-bold text-gray-800">
+                          ₹{salePrice}
                         </span>
-                      )}
-                    </>
-                  );
-                })()}
+                        {hasSale && (
+                          <span className="text-xs max-sm:text-xs text-gray-400 h-5 line-through">
+                            ₹{originalPrice}
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
+
+              {/* Description */}
+              {showDes && (
+                <div
+                  className="text-sm h-10 text-black poppins-medium max-sm:hidden"
+                  dangerouslySetInnerHTML={{
+                    __html: product?.description?.slice(0, 50),
+                  }}
+                ></div>
+              )}
             </div>
-
-            {/* Description */}
-            {showDes && (
-              <div
-                className="text-sm h-10 text-black poppins-medium max-sm:hidden"
-                dangerouslySetInnerHTML={{
-                  __html: product?.description?.slice(0, 50),
-                }}
-              ></div>
-            )}
-          </div>
           </div>
 
 
-          
+
 
           {/* Action Buttons Section */}
-          <div className="p-2">
+          <div className="p-3">
             <div>
               {buyNow ? (
                 <div className="flex gap-2">
                   <button
                     onClick={(e) => handleBuyNow(e)}
-                    className="w-4/3 h-10 max-sm:h-9 mb-2 greenTwo text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
+                    className="flex-1 h-10 max-sm:h-9 mb-2 greenTwo text-white py-2.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors duration-200"
                   >
                     Buy Now
                   </button>
 
                   <button
                     onClick={(e) => handleAddToCart(e)}
-                    className="h-10 max-sm:h-9 w-3/5 flex justify-center group/group2 items-center border hover:bg-[#3C950D]  rounded-lg"
+                    className="h-10 max-sm:h-9 w-12 flex justify-center group/group2 items-center border border-[#3C950D] hover:bg-[#3C950D] rounded-lg transition-colors"
                     type="button"
                   >
                     <ShoppingCart className="w-4 h-4 text-[#3C950D] group-hover/group2:text-white" />
