@@ -132,7 +132,7 @@ export default function BlogDetailPage() {
             >
               <Share2 size={18} />
             </button>
-            <button
+            {/* <button
               onClick={toggleLike}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               title={isLiked ? "Remove from favorites" : "Add to favorites"}
@@ -141,7 +141,7 @@ export default function BlogDetailPage() {
                 size={18}
                 className={isLiked ? "fill-red-500 text-red-500" : ""}
               />
-            </button>
+            </button> */}
           </div>
         </div>
       </nav>
