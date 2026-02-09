@@ -13,7 +13,7 @@ export function HeroSlider({ content }) {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % content.length);
-    }, 5000);
+    }, 9000);
     return () => clearInterval(timer);
   }, [content.length]);
 
