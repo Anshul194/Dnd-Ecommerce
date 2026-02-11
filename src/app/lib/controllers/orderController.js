@@ -126,7 +126,7 @@ class OrderController {
 
     // Fetch order from DB
     const orderResp = await this.orderService.getOrderById(orderId, null, ["items.product"]);
-    console.log("Order fetched in controller:", orderResp);
+    //console.log("Order fetched in controller:", orderResp);
     if (!orderResp || !orderResp.success) return { success: false, message: "Order not found" };
     
     const services = await this.orderService.getServiceOptions(orderResp, conn);
@@ -155,6 +155,30 @@ class OrderController {
       orderId,
       courier,
       response: shipmentResp.data || shipmentResp.error,
+    };
+  }
+
+  // cancelShipment
+  async cancelShipment({ body }, conn, tenant) {
+    const { orderId, courier } = body;
+
+    if (!courier) return { success: false, message: "Missing data (courier)" };
+
+    let order = null;
+    if (orderId) {
+      const orderResp = await this.orderService.getOrderById(orderId, null, ["items.product"]);
+      if (!orderResp || !orderResp.success) return { success: false, message: orderResp?.message || "Order not found for shipment cancel" };
+      order = orderResp.data;
+    }
+
+    const cancelResp = await this.orderService.cancelShipment(order, courier, body, conn);
+
+    return {
+      success: cancelResp.success,
+      message: cancelResp.message,
+      orderId: orderId || null,
+      courier,
+      response: cancelResp.data || cancelResp.error,
     };
   }
 

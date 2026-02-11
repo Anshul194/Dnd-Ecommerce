@@ -886,9 +886,9 @@ class OrderService {
     // //consolle.log('DTDC response:', resp.data);
 
     const services = resp.data.SERV_LIST_DTLS || [];
-    // //consolle.log('Services:', services);
+    console.log('Services:', services);
     return services.map((s) => ({
-      code: s.CODE,
+      code: s.NAME,
       name: s.NAME,
       courier: "DTDC",
       priority: 0, // default, will override from ShippingModel
@@ -896,9 +896,9 @@ class OrderService {
   }
 
   // Fetch Delhivery services
-  async getDtdcServices(order) {
-    //consolle.log(
-    //   "Fetching DTDC services for order:",
+  async getDelhiveryServices(order) {
+    //console.log(
+    //   "Fetching Delhivery services for order:",
     //   order?.data?.shippingAddress?.postalCode
     // );
     const originPincode = "110001";
@@ -915,7 +915,7 @@ class OrderService {
     return services.map((s) => ({
       code: s.CODE,
       name: s.NAME,
-      courier: "DTDC",
+      courier: "DELHIVERY",
       priority: 0, // default, will override from ShippingModel
     }));
   }
@@ -1169,6 +1169,7 @@ class OrderService {
           throw new Error("Unsupported courier");
       }
     } catch (error) {
+      consolle.error("Shipment creation error:", error.message);
       return {
         success: false,
         message: error.message,
@@ -2087,6 +2088,9 @@ async getDelhiveryWaybill(count = 1) {
     };
     const destination = order.shippingAddress;
 
+    // console.log("DTDC shipment origin:", origin);
+    // console.log("DTDC shipment destination:", destination);
+
     // Build pieces_detail from order items
     const piecesDetail = order.items.map((item) => ({
       description: item.product?.name || "Product",
@@ -2145,8 +2149,8 @@ async getDelhiveryWaybill(count = 1) {
       ],
     };
 
-    // //consolle.log("DTDC shipment payload:", payload);
-    // //consolle.log("Using DTDC API Key:", process.env.DTDC_API_KEY);
+    console.log("DTDC shipment payload:", payload);
+    // //console.log("Using DTDC API Key:", process.env.DTDC_API_KEY);
 
     // Make API call
     console.log("[orderService][createDtdcShipment] DTDC_API_KEY present:", !!process.env.DTDC_API_KEY, process.env.DTDC_API_KEY ? `${process.env.DTDC_API_KEY.slice(0,4)}...${process.env.DTDC_API_KEY.slice(-4)}` : null);
@@ -2189,8 +2193,9 @@ async getDelhiveryWaybill(count = 1) {
         shipping_details: shippingDetails,
       });
     } else {
+      console.log("DTDC shipment creation failed:", res.data);
       throw new Error(
-        `DTDC shipment creation failed: ${res.data.message || "Unknown error"}`
+        `DTDC shipment creation failed: ${res.data.data.message || "Unknown error"}`
       );
     }
 
@@ -2677,6 +2682,253 @@ async getDelhiveryWaybill(count = 1) {
         },
         courier: "BLUEDART",
         orderId: order._id.toString(),
+      };
+    }
+  }
+
+  /**
+   * Cancel shipment - common entry
+   * order: may be null if caller passes AWB in body
+   * courier: string
+   * body: raw request body (may contain AWBNo or other courier-specific data)
+   */
+  async cancelShipment(order, courier, body = {}, conn) {
+    try {
+      if (!courier) throw new Error("Courier is required for cancelShipment");
+      switch ((courier || "").toUpperCase()) {
+        case "DTDC":
+          return this.cancelDtdcShipment(order, body, conn);
+        case "DELHIVERY":
+          return this.cancelDelhiveryShipment(order, body, conn);
+        case "BLUEDART":
+          return this.cancelBluedartShipment(order, body, conn);
+        default:
+          throw new Error("Unsupported courier for cancelShipment");
+      }
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // DTDC cancel implementation (uses DTDC public cancel endpoint)
+  async cancelDtdcShipment(order, body = {}, conn) {
+    try {
+      // determine AWB array
+      let awbs = [];
+      if (Array.isArray(body.AWBNo) && body.AWBNo.length) awbs = body.AWBNo;
+      else if (body.AWBNo) awbs = Array.isArray(body.AWBNo) ? body.AWBNo : [body.AWBNo];
+      else if (order && order.shipping_details && order.shipping_details.reference_number)
+        awbs = [order.shipping_details.reference_number];
+
+      if (!awbs.length) {
+        return { success: false, message: "No AWB number(s) provided or found on order" };
+      }
+
+      const payload = {
+        AWBNo: awbs,
+        customerCode: body.customerCode || process.env.DTDC_CUSTOMER_CODE || undefined,
+      };
+
+      const headers = {
+        "Content-Type": "application/json",
+        "api-key": process.env.DTDC_API_KEY || body["api-key"],
+      };
+
+      const res = await axios.post(
+        "https://pxapi.dtdc.in/api/customer/integration/consignment/cancel",
+        payload,
+        { headers }
+      );
+
+      // Persist cancellation info if order present
+      if (order && order._id) {
+        const shipping_details = {
+          ...order.shipping_details,
+          cancelled: true,
+          cancelled_at: new Date(),
+          cancel_response: res.data,
+          last_updated: new Date(),
+          current_status: "Cancelled",
+        };
+        try {
+          await this.orderRepository.updateOrder(order._id, { shipping_details });
+        } catch (e) {
+          // non-fatal
+        }
+      }
+
+      return {
+        success: true,
+        message: "DTDC cancel request sent",
+        data: res.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `DTDC cancel failed: ${error.message}`,
+        error: error.response?.data || error.message,
+      };
+    }
+  }
+
+  // Delhivery cancel - static response for now
+  async cancelDelhiveryShipment(order, body = {}, conn) {
+    try {
+      // determine waybill: prefer explicit body.waybill, then AWBNo, then order shipping details
+      let waybill = null;
+      if (body.waybill) waybill = body.waybill;
+      else if (body.AWBNo) waybill = Array.isArray(body.AWBNo) ? body.AWBNo[0] : body.AWBNo;
+      else if (order && order.shipping_details) {
+        waybill = order.shipping_details.waybill || order.shipping_details.reference_number || order.shipping_details.awb_number;
+      }
+
+      if (!waybill) {
+        return { success: false, message: "No waybill provided or found on order" };
+      }
+
+      const payload = {
+        waybill: waybill,
+        cancellation: "true",
+      };
+
+      const token = process.env.DELHIVERY_API_TOKEN || body.token || body.authorization || null;
+      const headers = {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      };
+      if (token) headers.Authorization = `Token ${token}`;
+
+      const res = await axios.post(
+        "https://track.delhivery.com/api/p/edit",
+        payload,
+        { headers }
+      );
+
+      // Persist cancellation info if order present
+      if (order && order._id) {
+        const shipping_details = {
+          ...order.shipping_details,
+          cancelled: true,
+          cancelled_at: new Date(),
+          cancel_response: res.data,
+          last_updated: new Date(),
+          current_status: "Cancelled",
+        };
+        try {
+          await this.orderRepository.updateOrder(order._id, { shipping_details });
+        } catch (e) {
+          // non-fatal
+        }
+      }
+
+      return {
+        success: true,
+        message: "Delhivery cancel request sent",
+        data: res.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Delhivery cancel failed: ${error.message}`,
+        error: error.response?.data || error.message,
+      };
+    }
+  }
+
+  // Bluedart cancel - static response for now
+  async cancelBluedartShipment(order, body = {}, conn) {
+    try {
+      // Step 1: Generate authentication token (reuse Bluedart auth used for create)
+      const clientId = process.env.BLUEDART_CLIENT_ID || body.clientId;
+      const clientSecret = process.env.BLUEDART_CLIENT_SECRET || body.clientSecret;
+      if (!clientId || !clientSecret) {
+        throw new Error("Bluedart credentials missing (BLUEDART_CLIENT_ID / BLUEDART_CLIENT_SECRET)");
+      }
+
+      const tokenResp = await axios.get(
+        "https://apigateway.bluedart.com/in/transportation/token/v1/login",
+        {
+          headers: {
+            ClientID: clientId,
+            clientSecret: clientSecret,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const jwtToken = tokenResp.data?.JWTToken;
+      if (!jwtToken) {
+        throw new Error("Failed to obtain Bluedart JWT token");
+      }
+
+      // Step 2: Determine TokenNumber to cancel
+      let tokenNumber = null;
+      if (body.request && (body.request.TokenNumber || body.request.tokenNumber)) {
+        tokenNumber = body.request.TokenNumber || body.request.tokenNumber;
+      } else if (body.TokenNumber || body.tokenNumber) {
+        tokenNumber = body.TokenNumber || body.tokenNumber;
+      } else if (order && order.shipping_details) {
+        tokenNumber = order.shipping_details.token_number || order.shipping_details.tokenNumber || null;
+      }
+
+      if (!tokenNumber) {
+        throw new Error("Bluedart TokenNumber is required to cancel pickup");
+      }
+
+      // Build pickup date: accept provided or use current
+      const pickupDate = body.request?.PickupRegistrationDate || `/Date(${Date.now()})/`;
+
+      const payload = {
+        request: {
+          PickupRegistrationDate: pickupDate,
+          Remarks: body.request?.Remarks || body.Remarks || "",
+          TokenNumber: Number(tokenNumber),
+        },
+        profile: {
+          Api_type: body.profile?.Api_type || "S",
+          LicenceKey: body.profile?.LicenceKey || process.env.BLUEDART_LICENSE_KEY || "",
+          LoginID: body.profile?.LoginID || process.env.BLUEDART_LOGIN_ID || "",
+        },
+      };
+
+      const res = await axios.post(
+        "https://apigateway.bluedart.com/in/transportation/cancel-pickup/v1",
+        payload,
+        {
+          headers: {
+            JWTToken: jwtToken,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Persist cancellation info if order present
+      if (order && order._id) {
+        const shipping_details = {
+          ...order.shipping_details,
+          cancelled: true,
+          cancelled_at: new Date(),
+          cancel_response: res.data,
+          last_updated: new Date(),
+          current_status: "Cancelled",
+        };
+        try {
+          await this.orderRepository.updateOrder(order._id, { shipping_details });
+        } catch (e) {
+          // non-fatal
+        }
+      }
+
+      return {
+        success: true,
+        message: "Bluedart cancel request sent",
+        data: res.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Bluedart cancel failed: ${error.message}`,
+        error: error.response?.data || error.message,
       };
     }
   }

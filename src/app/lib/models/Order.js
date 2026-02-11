@@ -135,6 +135,9 @@ const orderSchema = new mongoose.Schema(
       status_history: { type: Array, default: [] }, // Array of status updates
       current_status: { type: String, default: null }, // Latest status
       last_updated: { type: Date, default: Date.now },
+      cancelled: { type: Boolean, default: false },
+      cancelled_at: { type: Date, default: null },
+      cancel_response: { type: Object, default: null }, // Store cancellation API response
     },
 
     // Return & Refund Management

@@ -19,6 +19,7 @@ export function getSubdomain(request) {
 
 export async function getDbConnection(subdomain) {
   try {
+    console.log("Getting DB connection for subdomain:", subdomain);
     if (!subdomain || subdomain === "localhost") {
       //consolle?.log('Using default DB for subdomain29829:', subdomain);
       return await dbConnect();

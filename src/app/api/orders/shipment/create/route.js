@@ -89,8 +89,12 @@ export async function POST(req) {
     return NextResponse.json(result, { status: 201 });
 
   } catch (error) {
+<<<<<<< Updated upstream
     console.error("[Shipment Create Error]:", error);
 
+=======
+    console.log("Route POST order error:", error.message);
+>>>>>>> Stashed changes
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }
