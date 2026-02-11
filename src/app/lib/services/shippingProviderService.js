@@ -7,6 +7,10 @@ export class DTDCShippingService {
 
   async createShipment(orderData, shippingDetails) {
     try {
+      console.log("[DTDCShippingService] createShipment called", {
+        orderId: orderData?._id || orderData?.order_id || orderData?.customer_reference_number,
+        items: Array.isArray(orderData?.items) ? orderData.items.length : undefined,
+      });
       const consignmentData = this.formatConsignmentData(
         orderData,
         shippingDetails
@@ -24,6 +28,11 @@ export class DTDCShippingService {
       });
 
       const result = await response.json();
+      console.log("[DTDCShippingService] provider response status", response.status);
+      console.log("[DTDCShippingService] provider response summary", {
+        ok: response.ok,
+        message: result?.message,
+      });
 
       if (!response.ok) {
         throw new Error(`DTDC API Error: ${result.message || "Unknown error"}`);
@@ -35,7 +44,7 @@ export class DTDCShippingService {
         trackingNumber: result.consignments?.[0]?.tracking_number || null,
       };
     } catch (error) {
-      console.error("DTDC Shipping Service Error:", error);
+      console.error("[DTDCShippingService] error", error?.stack || error);
       return {
         success: false,
         error: error.message,
@@ -122,10 +131,16 @@ export class BlueDartShippingService {
   }
 
   async createShipment(orderData, shippingDetails) {
-    // Implement Blue Dart API integration here
+    console.log("[BlueDartShippingService] createShipment called", {
+      orderId: orderData?._id || orderData?.order_id,
+      items: Array.isArray(orderData?.items) ? orderData.items.length : undefined,
+    });
+
+    // Placeholder implementation — keep behavior explicit for callers
+    console.warn("[BlueDartShippingService] createShipment not implemented");
     return {
       success: false,
-      error: "Blue Dart integration not implemented yet",
+      error: "Blue Dart integration not implemented",
     };
   }
 }

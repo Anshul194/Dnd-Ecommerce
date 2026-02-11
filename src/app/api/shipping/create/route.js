@@ -11,6 +11,12 @@ export async function POST(req) {
     const tenant = req.headers.get("x-tenant");
     const body = await req.json();
 
+    console.log("[shipping][create] incoming request", {
+      tenant,
+      orderId: body?.orderId,
+      shipping_method: body?.shipping_method,
+    });
+
     //consolle.log(
     //   "Shipping creation request body:",
     //   JSON.stringify(body, null, 2)
@@ -19,6 +25,7 @@ export async function POST(req) {
     // Validate request body
     const validation = ShippingValidation.validateCreateShippingRequest(body);
     if (!validation.isValid) {
+      console.log("[shipping][create] request validation failed", validation.errors);
       return NextResponse.json(
         {
           success: false,
@@ -29,15 +36,25 @@ export async function POST(req) {
       );
     }
 
-    const subdomain = getSubdomain(req);
-    //consolle.log("Subdomain:", subdomain);
+    let subdomain;
+    let conn;
+    try {
+      subdomain = getSubdomain(req);
+      console.log("[shipping][create] subdomain:", subdomain);
 
-    const conn = await getDbConnection(subdomain);
-    if (!conn) {
-      //consolle.error("No database connection established");
+      conn = await getDbConnection(subdomain);
+      if (!conn) {
+        console.error("[shipping][create] No database connection for subdomain:", subdomain);
+        return NextResponse.json(
+          { success: false, message: "DB not found" },
+          { status: 404 }
+        );
+      }
+    } catch (err) {
+      console.error("[shipping][create] error getting DB connection", err?.stack || err);
       return NextResponse.json(
-        { success: false, message: "DB not found" },
-        { status: 404 }
+        { success: false, message: "Internal error while connecting to DB" },
+        { status: 500 }
       );
     }
 
@@ -45,17 +62,29 @@ export async function POST(req) {
     const orderSchema = OrderSchema;
     const Order = conn.models.Order || conn.model("Order", orderSchema);
 
-    const order = await Order.findById(body.orderId).populate("items");
-    if (!order) {
+    let order;
+    try {
+      console.log("[shipping][create] fetching order", { orderId: body.orderId });
+      order = await Order.findById(body.orderId).populate("items");
+      if (!order) {
+        console.warn("[shipping][create] Order not found", { orderId: body.orderId });
+        return NextResponse.json(
+          { success: false, message: "Order not found" },
+          { status: 404 }
+        );
+      }
+    } catch (err) {
+      console.error("[shipping][create] error fetching order", err?.stack || err);
       return NextResponse.json(
-        { success: false, message: "Order not found" },
-        { status: 404 }
+        { success: false, message: "Internal error while fetching order" },
+        { status: 500 }
       );
     }
 
     // Validate order data
     const orderValidation = ShippingValidation.validateOrderData(order);
     if (!orderValidation.isValid) {
+      console.log("[shipping][create] order validation failed", orderValidation.errors);
       return NextResponse.json(
         {
           success: false,
@@ -67,7 +96,12 @@ export async function POST(req) {
     }
 
     let shippingResult;
-    const shippingMethod = body.shipping_method.toLowerCase();
+    const shippingMethod = (body.shipping_method || "").toLowerCase();
+
+    console.log("[shipping][create] preparing to call provider", {
+      shippingMethod,
+      itemsCount: Array.isArray(order.items) ? order.items.length : 0,
+    });
 
     switch (shippingMethod) {
       case "dtdc":
@@ -85,7 +119,10 @@ export async function POST(req) {
         }
 
         const dtdcService = new DTDCShippingService();
-        shippingResult = await dtdcService.createShipment(
+        console.log("[shipping][create] calling DTDC createShipment");
+        try {
+          const providerStart = Date.now();
+          shippingResult = await dtdcService.createShipment(
           {
             order_id: order._id.toString(),
             customer_name: order.customer_name,
@@ -100,13 +137,25 @@ export async function POST(req) {
             dimensions: body.dimensions,
             weight: body.weight,
           }
-        );
+          );
+          console.log("[shipping][create] DTDC response summary", {
+            success: !!shippingResult?.success,
+            trackingNumber: shippingResult?.trackingNumber,
+            durationMs: Date.now() - providerStart,
+          });
+        } catch (err) {
+          console.error("[shipping][create] DTDC provider threw", err?.stack || err);
+          shippingResult = { success: false, error: err?.message || String(err), data: null };
+        }
         break;
 
       case "bluedart":
       case "blue dart":
         const blueDartService = new BlueDartShippingService();
-        shippingResult = await blueDartService.createShipment(
+        console.log("[shipping][create] calling BlueDart createShipment");
+        try {
+          const providerStart = Date.now();
+          shippingResult = await blueDartService.createShipment(
           {
             order_id: order._id.toString(),
             customer_name: order.customer_name,
@@ -121,7 +170,16 @@ export async function POST(req) {
             dimensions: body.dimensions,
             weight: body.weight,
           }
-        );
+          );
+          console.log("[shipping][create] BlueDart response summary", {
+            success: !!shippingResult?.success,
+            trackingNumber: shippingResult?.trackingNumber,
+            durationMs: Date.now() - providerStart,
+          });
+        } catch (err) {
+          console.error("[shipping][create] BlueDart provider threw", err?.stack || err);
+          shippingResult = { success: false, error: err?.message || String(err), data: null };
+        }
         break;
 
       default:
@@ -135,6 +193,7 @@ export async function POST(req) {
     }
 
     if (!shippingResult.success) {
+      console.error("[shipping][create] provider error", shippingResult.error || shippingResult);
       return NextResponse.json(
         {
           success: false,
@@ -156,6 +215,11 @@ export async function POST(req) {
       });
     }
 
+    console.log("[shipping][create] shipping success", {
+      orderId: body.orderId,
+      trackingNumber: shippingResult.trackingNumber,
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -170,9 +234,9 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    //consolle.error("Shipping creation error:", error.message);
+    console.error("[shipping][create] unhandled error", error?.stack || error);
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }

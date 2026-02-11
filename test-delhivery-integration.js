@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const DELHIVERY_TOKEN = process.env.DELHIVERY_API_TOKEN || '91be46abf4dde7d868b4af4db9129c4581c2e1f9';
+const DELHIVERY_TOKEN = process.env.DELHIVERY_API_TOKEN || '5e7e9b8bfc46279733d74e9717a90b3842394771';
 
 // Test 1: Get waybill numbers
 async function testGetWaybill() {

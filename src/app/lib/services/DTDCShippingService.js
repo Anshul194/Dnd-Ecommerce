@@ -4,7 +4,7 @@ class DTDCShippingService {
   constructor() {
     this.baseURL =
       "https://alphademodashboardapi.shipsy.io/api/customer/integration/consignment/softdata";
-    this.apiKey = process.env.DTDC_API_KEY || "<api-key>";
+    this.apiKey = process.env.DTDC_API_KEY || "0ee1b3d1c37265e1f01d73809a9351";
     this.customerCode = process.env.DTDC_CUSTOMER_CODE || "<Customer Code>";
   }
 
@@ -16,7 +16,7 @@ class DTDCShippingService {
    */
   async createShipping(orderData, shippingDetails) {
     try {
-      //console.log("Creating DTDC shipping for order:", orderData._id);
+      console.log("Creating DTDC shipping for order:", orderData._id);
 
       // Validate required fields
       this.validateOrderData(orderData);
@@ -35,15 +35,16 @@ class DTDCShippingService {
         },
       });
 
-      //console.log("DTDC API Response:", response.data);
+      console.log("DTDC API Response:", response.data);
 
       // Process response
       return this.processResponse(response.data);
     } catch (error) {
-      //console.error("DTDC Shipping Error:", error.message);
+      
+      console.log("Error creating shipping with DTDC:", error);
 
       if (error.response) {
-        //console.error("DTDC API Error Response:", error.response.data);
+        console.log("DTDC API Error Response:", error.response.data);
         throw new Error(
           `DTDC API Error: ${error.response.data.message || error.response.statusText
           }`
@@ -51,6 +52,47 @@ class DTDCShippingService {
       }
 
       throw new Error(`DTDC Shipping Service Error: ${error.message}`);
+    }
+  }
+
+  /**
+   * Adapter for older callers expecting `createShipment(orderData, shippingDetails)`
+   * Normalizes incoming payloads and returns an object with { success, error, trackingNumber, data }
+   */
+  async createShipment(orderData, shippingDetails) {
+    try {
+      console.log("[DTDCService] createShipment adapter called");
+
+      // Normalize commonly used field names from route
+      const normalizedOrder = {
+        _id: orderData._id || orderData.order_id || orderData.orderId,
+        customer_name: orderData.customer_name || orderData.customerName,
+        customer_phone: orderData.customer_phone || orderData.customerPhone,
+        shippingAddress:
+          orderData.shippingAddress || orderData.shipping_address || orderData.shipping_address,
+        shipping_address:
+          orderData.shippingAddress || orderData.shipping_address || orderData.shipping_address,
+        items: orderData.items || [],
+        totalAmount: orderData.totalAmount || orderData.total_amount || orderData.total,
+        paymentMode: orderData.paymentMode || orderData.payment_method || orderData.paymentMethod,
+      };
+
+      // Call existing implementation which throws on error
+      const result = await this.createShipping(normalizedOrder, shippingDetails);
+
+      // createShipping returns a processed object on success
+      if (result && result.success) {
+        return {
+          success: true,
+          trackingNumber: result.data?.tracking_number || result.data?.consignment_id || null,
+          data: result.data || result,
+        };
+      }
+
+      return { success: false, error: result?.message || "Unknown DTDC error", data: result };
+    } catch (err) {
+      console.error("[DTDCService] createShipment adapter error", err?.stack || err);
+      return { success: false, error: err?.message || String(err), data: null };
     }
   }
 
