@@ -90,8 +90,12 @@ export async function POST(req) {
 
   } catch (error) {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     console.error("[Shipment Create Error]:", error);
 
+=======
+    console.log("Route POST order error:", error.message);
+>>>>>>> Stashed changes
 =======
     console.log("Route POST order error:", error.message);
 >>>>>>> Stashed changes
