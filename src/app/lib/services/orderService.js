@@ -17,6 +17,19 @@ import { ProductSchema } from "../models/Product.js";
 import * as xlsx from "xlsx"; // Fixed import for ESM
 import multer from "multer"; // Already in dependencies
 
+// Normalize Delhivery token env vars: prefer `DELHIVERY_API_TOKEN`, fallback to `DELHIVERY_TOKEN`.
+// Trim whitespace and set both names to the same value to avoid mismatches across the codebase.
+// If running in development and no env token is present, use a dev-only static token to aid debugging.
+const DEV_STATIC_DELHIVERY_TOKEN = "5e7e9b8bfc46279733d74e9717a90b3842394771"; // dev-only
+let _delhiveryToken = process.env.DELHIVERY_API_TOKEN?.trim() || process.env.DELHIVERY_TOKEN?.trim() || null;
+if (!_delhiveryToken && process.env.NODE_ENV === "development") {
+  _delhiveryToken = DEV_STATIC_DELHIVERY_TOKEN;
+}
+if (_delhiveryToken) {
+  process.env.DELHIVERY_API_TOKEN = _delhiveryToken;
+  process.env.DELHIVERY_TOKEN = _delhiveryToken;
+}
+
 const UserSchema = new mongoose.Schema(
   {
     email: {
@@ -2773,6 +2786,7 @@ async getDelhiveryWaybill(count = 1) {
 
   // Delhivery cancel - static response for now
   async cancelDelhiveryShipment(order, body = {}, conn) {
+    let tokenSource = null;
     try {
       // determine waybill: prefer explicit body.waybill, then AWBNo, then order shipping details
       let waybill = null;
@@ -2792,6 +2806,7 @@ async getDelhiveryWaybill(count = 1) {
       };
 
       const token = process.env.DELHIVERY_API_TOKEN || body.token || body.authorization || null;
+      tokenSource = process.env.DELHIVERY_API_TOKEN ? "env" : body.token ? "body.token" : body.authorization ? "body.authorization" : "none";
       const headers = {
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -2831,107 +2846,205 @@ async getDelhiveryWaybill(count = 1) {
         success: false,
         message: `Delhivery cancel failed: ${error.message}`,
         error: error.response?.data || error.message,
+        tokenSource,
+        status: error.response?.status || null,
       };
     }
   }
 
   // Bluedart cancel - static response for now
+  // async cancelBluedartShipment(order, body = {}, conn) {
+  //   try {
+  //     // Step 1: Generate authentication token (reuse Bluedart auth used for create)
+
+  //     console?.log("Generating Bluedart authentication token",process.env.BLUEDART_CLIENT_SECRET , body);
+
+  //     const clientId = process.env.BLUEDART_CLIENT_ID || body.clientId;
+  //     const clientSecret = process.env.BLUEDART_CLIENT_SECRET || body.clientSecret;
+   
+
+  //     const tokenResp = await axios.get(
+  //       "https://apigateway.bluedart.com/in/transportation/token/v1/login",
+  //       {
+  //         headers: {
+  //           ClientID: clientId,
+  //           clientSecret: clientSecret,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     const jwtToken = tokenResp.data?.JWTToken;
+  //     if (!jwtToken) {
+  //       throw new Error("Failed to obtain Bluedart JWT token");
+  //     }
+
+  //     // Step 2: Determine TokenNumber to cancel
+  //     let tokenNumber = null;
+  //     if (body.request && (body.request.TokenNumber || body.request.tokenNumber)) {
+  //       tokenNumber = body.request.TokenNumber || body.request.tokenNumber;
+  //     } else if (body.TokenNumber || body.tokenNumber) {
+  //       tokenNumber = body.TokenNumber || body.tokenNumber;
+  //     } else if (order && order.shipping_details) {
+  //       tokenNumber = order.shipping_details.token_number || order.shipping_details.tokenNumber || null;
+  //     }
+
+  //     if (!tokenNumber) {
+  //       throw new Error("Bluedart TokenNumber is required to cancel pickup");
+  //     }
+
+  //     // Build pickup date: accept provided or use current
+  //     const pickupDate = body.request?.PickupRegistrationDate || `/Date(${Date.now()})/`;
+
+  //     const payload = {
+  //       request: {
+  //         PickupRegistrationDate: pickupDate,
+  //         Remarks: body.request?.Remarks || body.Remarks || "",
+  //         TokenNumber: Number(tokenNumber),
+  //       },
+  //       profile: {
+  //         Api_type: body.profile?.Api_type || "S",
+  //         LicenceKey: body.profile?.LicenceKey || process.env.BLUEDART_LICENSE_KEY || "",
+  //         LoginID: body.profile?.LoginID || process.env.BLUEDART_LOGIN_ID || "",
+  //       },
+  //     };
+
+  //     const res = await axios.post(
+  //       "https://apigateway.bluedart.com/in/transportation/cancel-pickup/v1",
+  //       payload,
+  //       {
+  //         headers: {
+  //           JWTToken: jwtToken,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     // Persist cancellation info if order present
+  //     if (order && order._id) {
+  //       const shipping_details = {
+  //         ...order.shipping_details,
+  //         cancelled: true,
+  //         cancelled_at: new Date(),
+  //         cancel_response: res.data,
+  //         last_updated: new Date(),
+  //         current_status: "Cancelled",
+  //       };
+  //       try {
+  //         await this.orderRepository.updateOrder(order._id, { shipping_details });
+  //       } catch (e) {
+  //         // non-fatal
+  //       }
+  //     }
+
+  //     return {
+  //       success: true,
+  //       message: "Bluedart cancel request sent",
+  //       data: res.data,
+  //     };
+  //   } catch (error) {
+  //     console?.log("error here", error);
+  //     return {
+  //       success: false,
+  //       message: `Bluedart cancel failed: ${error.message}`,
+  //       error: error.response?.data || error.message,
+  //     };
+  //   }
+  // }
+
+
   async cancelBluedartShipment(order, body = {}, conn) {
-    try {
-      // Step 1: Generate authentication token (reuse Bluedart auth used for create)
-      const clientId = process.env.BLUEDART_CLIENT_ID || body.clientId;
-      const clientSecret = process.env.BLUEDART_CLIENT_SECRET || body.clientSecret;
-      if (!clientId || !clientSecret) {
-        throw new Error("Bluedart credentials missing (BLUEDART_CLIENT_ID / BLUEDART_CLIENT_SECRET)");
-      }
+  try {
 
-      const tokenResp = await axios.get(
-        "https://apigateway.bluedart.com/in/transportation/token/v1/login",
-        {
-          headers: {
-            ClientID: clientId,
-            clientSecret: clientSecret,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    const clientId = process.env.BLUEDART_CLIENT_ID || body.clientId;
+    const clientSecret = process.env.BLUEDART_CLIENT_SECRET || body.clientSecret;
 
-      const jwtToken = tokenResp.data?.JWTToken;
-      if (!jwtToken) {
-        throw new Error("Failed to obtain Bluedart JWT token");
-      }
-
-      // Step 2: Determine TokenNumber to cancel
-      let tokenNumber = null;
-      if (body.request && (body.request.TokenNumber || body.request.tokenNumber)) {
-        tokenNumber = body.request.TokenNumber || body.request.tokenNumber;
-      } else if (body.TokenNumber || body.tokenNumber) {
-        tokenNumber = body.TokenNumber || body.tokenNumber;
-      } else if (order && order.shipping_details) {
-        tokenNumber = order.shipping_details.token_number || order.shipping_details.tokenNumber || null;
-      }
-
-      if (!tokenNumber) {
-        throw new Error("Bluedart TokenNumber is required to cancel pickup");
-      }
-
-      // Build pickup date: accept provided or use current
-      const pickupDate = body.request?.PickupRegistrationDate || `/Date(${Date.now()})/`;
-
-      const payload = {
-        request: {
-          PickupRegistrationDate: pickupDate,
-          Remarks: body.request?.Remarks || body.Remarks || "",
-          TokenNumber: Number(tokenNumber),
-        },
-        profile: {
-          Api_type: body.profile?.Api_type || "S",
-          LicenceKey: body.profile?.LicenceKey || process.env.BLUEDART_LICENSE_KEY || "",
-          LoginID: body.profile?.LoginID || process.env.BLUEDART_LOGIN_ID || "",
-        },
-      };
-
-      const res = await axios.post(
-        "https://apigateway.bluedart.com/in/transportation/cancel-pickup/v1",
-        payload,
-        {
-          headers: {
-            JWTToken: jwtToken,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      // Persist cancellation info if order present
-      if (order && order._id) {
-        const shipping_details = {
-          ...order.shipping_details,
-          cancelled: true,
-          cancelled_at: new Date(),
-          cancel_response: res.data,
-          last_updated: new Date(),
-          current_status: "Cancelled",
-        };
-        try {
-          await this.orderRepository.updateOrder(order._id, { shipping_details });
-        } catch (e) {
-          // non-fatal
+    // 🔥 STEP 1: Get JWT Token
+    const tokenResp = await axios.get(
+      "https://apigateway.bluedart.com/in/transportation/token/v1/login",
+      {
+        headers: {
+          "ClientID": clientId,
+          "ClientSecret": clientSecret,
+          "Accept": "application/json"
         }
       }
+    );
 
-      return {
-        success: true,
-        message: "Bluedart cancel request sent",
-        data: res.data,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: `Bluedart cancel failed: ${error.message}`,
-        error: error.response?.data || error.message,
-      };
+    const jwtToken = tokenResp.data?.JWTToken;
+
+    if (!jwtToken) {
+      throw new Error("Failed to obtain Bluedart JWT token");
     }
+
+    // 🔥 STEP 2: Extract Token Number
+    let tokenNumber =
+      body?.request?.TokenNumber ||
+      body?.tokenNumber ||
+      order?.shipping_details?.token_number ||
+      order?.shipping_details?.tokenNumber;
+
+    if (!tokenNumber) {
+      throw new Error("Bluedart TokenNumber is required to cancel pickup");
+    }
+
+    // 🔥 STEP 3: Prepare Payload
+    const payload = {
+      request: {
+        PickupRegistrationDate:
+          body?.request?.PickupRegistrationDate ||
+          `/Date(${Date.now()})/`,
+        Remarks:
+          body?.request?.Remarks ||
+          body?.Remarks ||
+          "",
+        TokenNumber: Number(tokenNumber),
+      },
+      profile: {
+        Api_type:
+          body?.profile?.Api_type ||
+          "S",
+        LicenceKey:
+          body?.profile?.LicenceKey ||
+          process.env.BLUEDART_LICENSE_KEY,
+        LoginID:
+          body?.profile?.LoginID ||
+          process.env.BLUEDART_LOGIN_ID,
+      },
+    };
+
+    // 🔥 STEP 4: Cancel Pickup (Correct Headers)
+    const res = await axios.post(
+      "https://apigateway.bluedart.com/in/transportation/cancel-pickup/v1",
+      JSON.stringify(payload), // force raw JSON
+      {
+        headers: {
+          "Authorization": `Bearer ${jwtToken}`,  // ✅ CRITICAL FIX
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    return {
+      success: true,
+      message: "Bluedart cancel request sent",
+      data: res.data,
+    };
+
+  } catch (error) {
+    console.log("Bluedart cancel error:", error.response?.data || error.message);
+
+    return {
+      success: false,
+      message: `Bluedart cancel failed: ${error.message}`,
+      error: error.response?.data || error.message,
+    };
   }
+}
+
+
+
 
   // New method: Export orders to Excel
   async exportOrdersToExcel(filterConditions = { status: 'pending' }, conn) {
