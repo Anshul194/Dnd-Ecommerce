@@ -104,6 +104,129 @@ class OrderRepository extends CrudRepository {
     }
   }
 
+  //getShipmentDashboardData
+  async getShipmentDashboardData(connOrFilters = null, maybeFilters = {}) {
+    try {
+      // Flexible args: service may call getShipmentDashboardData(conn) or getShipmentDashboardData(filters)
+      let conn = this.connection || mongoose;
+      let filters = {};
+
+      if (connOrFilters) {
+        // If a mongoose connection (has .models), treat as conn
+        if (connOrFilters.models && typeof connOrFilters.model === "function") {
+          conn = connOrFilters;
+          filters = maybeFilters || {};
+        } else if (typeof connOrFilters === "object") {
+          // treat as filters
+          filters = connOrFilters || {};
+        }
+      }
+
+      const Order = conn.models.Order || conn.model("Order", OrderSchema);
+
+      // Build match stage
+      const matchStage = { "shipping_details.platform": { $ne: null } };
+      if (filters.platform) {
+        matchStage["shipping_details.platform"] = filters.platform;
+      }
+      // Optional date range filter (based on shipping_details.last_updated if provided)
+      if (filters.from || filters.to) {
+        matchStage["shipping_details.last_updated"] = {};
+        if (filters.from) matchStage["shipping_details.last_updated"].$gte = new Date(filters.from);
+        if (filters.to) matchStage["shipping_details.last_updated"].$lte = new Date(filters.to);
+      }
+
+      const pipeline = [
+        { $match: matchStage },
+
+        // Use normalized_status from shipping_details only
+        {
+          $addFields: {
+            platform_field: { $ifNull: ["$shipping_details.platform", null] },
+            normalized_status: { $ifNull: ["$shipping_details.normalized_status", "UNKNOWN"] },
+          },
+        },
+
+        // Uppercase normalized_status to make comparisons safe (enum already uppercase)
+        {
+          $addFields: {
+            normalized_status: { $toUpper: "$normalized_status" },
+          },
+        },
+
+        // Produce both overall totals and per-platform breakdowns
+        {
+          $facet: {
+            overall: [
+              {
+                $group: {
+                  _id: null,
+                  totalParcels: { $sum: 1 },
+                  delivered: {
+                    $sum: { $cond: [{ $eq: ["$normalized_status", "DELIVERED"] }, 1, 0] },
+                  },
+                  cancelled: {
+                    $sum: { $cond: [{ $eq: ["$normalized_status", "CANCELLED"] }, 1, 0] },
+                  },
+                  rto: {
+                    $sum: {
+                      $cond: [
+                        { $in: ["$normalized_status", ["RTO_IN_TRANSIT", "RTO_DELIVERED"]] },
+                        1,
+                        0,
+                      ],
+                    },
+                  },
+                  dispatched: {
+                    $sum: {
+                      $cond: [
+                        { $in: ["$normalized_status", ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"]] },
+                        1,
+                        0,
+                      ],
+                    },
+                  },
+                },
+              },
+            ],
+            byPlatform: [
+              {
+                $group: {
+                  _id: "$platform_field",
+                  totalParcels: { $sum: 1 },
+                  delivered: { $sum: { $cond: [{ $eq: ["$normalized_status", "DELIVERED"] }, 1, 0] } },
+                  cancelled: { $sum: { $cond: [{ $eq: ["$normalized_status", "CANCELLED"] }, 1, 0] } },
+                  rto: { $sum: { $cond: [{ $in: ["$normalized_status", ["RTO_IN_TRANSIT", "RTO_DELIVERED"]] }, 1, 0] } },
+                  dispatched: { $sum: { $cond: [{ $in: ["$normalized_status", ["PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"]] }, 1, 0] } },
+                },
+              },
+              { $project: { _id: 0, platform: "$_id", totalParcels: 1, delivered: 1, cancelled: 1, rto: 1, dispatched: 1 } },
+            ],
+          },
+        },
+      ];
+
+      const agg = await Order.aggregate(pipeline).allowDiskUse(true).exec();
+
+      const overall = (agg[0] && agg[0].overall && agg[0].overall[0]) || {
+        totalParcels: 0,
+        delivered: 0,
+        cancelled: 0,
+        rto: 0,
+        dispatched: 0,
+      };
+
+      const byPlatform = (agg[0] && agg[0].byPlatform) || [];
+
+      return { overall, byPlatform };
+    } catch (error) {
+      //consolle.error("OrderRepository getShipmentDashboardData Error:", error.message);
+      throw error;
+    }
+  }
+  
+  
+
   //getAllOrdersForTracking
   async getAllOrdersForTracking(populateFields = []) {
     try {

@@ -134,6 +134,22 @@ const orderSchema = new mongoose.Schema(
       labelUrl: { type: String, default: null },
       status_history: { type: Array, default: [] }, // Array of status updates
       current_status: { type: String, default: null }, // Latest status
+      normalized_status: {
+        type: String,
+        enum: [
+          "BOOKED",
+          "PICKED_UP",
+          "PICKUP_FAILED",
+          "IN_TRANSIT",
+          "OUT_FOR_DELIVERY",
+          "DELIVERED",
+          "RTO_IN_TRANSIT",
+          "RTO_DELIVERED",
+          "CANCELLED",
+          "UNKNOWN",
+        ],
+        default: "UNKNOWN",
+      },
       last_updated: { type: Date, default: Date.now },
       cancelled: { type: Boolean, default: false },
       cancelled_at: { type: Date, default: null },

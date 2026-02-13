@@ -284,6 +284,34 @@ class OrderController {
     }
   }
 
+
+  //getShipmentDashboard
+  async getShipmentDashboard(req, conn, tenant) {
+    try {
+      // Extract optional query params (platform, from, to)
+      let filters = {};
+      try {
+        const url = req.nextUrl || (req.url ? new URL(req.url) : null);
+        const searchParams = url ? url.searchParams : null;
+        if (searchParams) {
+          const platform = searchParams.get("platform");
+          const from = searchParams.get("from");
+          const to = searchParams.get("to");
+          if (platform) filters.platform = platform;
+          if (from) filters.from = from;
+          if (to) filters.to = to;
+        }
+      } catch (e) {
+        // ignore parsing errors and continue with empty filters
+      }
+
+      const dashboardData = await this.orderService.getShipmentDashboardData(conn, filters);
+      return { success: true, data: dashboardData };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
   // New method: Export orders to Excel
   async exportOrders(request, conn) {
     try {
