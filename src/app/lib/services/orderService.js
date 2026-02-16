@@ -1388,6 +1388,24 @@ class OrderService {
     };
   }
 
+  //getShipmentDashboardData
+  async getShipmentDashboardData(conn, filters = {}) {
+    try {
+      const data = await this.orderRepository.getShipmentDashboardData(conn, filters);
+      return {
+        success: true,
+        message: "Shipment dashboard data fetched successfully",
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
+    }
+  }
+
   //trackShipment
   async trackShipment(order, trackingNumber, conn) {
     const courier = order?.shipping_details?.platform;
@@ -1412,7 +1430,7 @@ class OrderService {
 
   // DTDC tracking
   async trackDtdcShipment(order, conn) {
-    // //consolle.log("Tracking DTDC shipment for order:", order);
+    console.log("Tracking DTDC shipment for order:", order);
     // You should store DTDC tracking username/password in env
     const username = process.env.DTDC_TRACK_USERNAME;
     const password = process.env.DTDC_TRACK_PASSWORD;
@@ -1625,10 +1643,10 @@ class OrderService {
     const response = await whatsappService.sendWebhookRequest({ ...payload2 });
     ////console.log("api response ==> ", response);
 
-    if (!response.success) {
-      ////console.log("failed to send message on whatsapp");
-      result.whatsappError = response.error;
-    }
+    // if (!response.success) {
+    //   ////console.log("failed to send message on whatsapp");
+    //   result.whatsappError = response.error;
+    // }
 
     return {
       success: true,
