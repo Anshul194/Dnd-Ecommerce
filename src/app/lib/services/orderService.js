@@ -2823,8 +2823,10 @@ async getDelhiveryWaybill(count = 1) {
         cancellation: "true",
       };
 
-      const token = process.env.DELHIVERY_API_TOKEN || body.token || body.authorization || null;
-      tokenSource = process.env.DELHIVERY_API_TOKEN ? "env" : body.token ? "body.token" : body.authorization ? "body.authorization" : "none";
+      // Prefer explicit token provided in request body over environment token.
+      // This allows clients to pass a valid tenant-specific token even when an env var exists.
+      const token = body.token || body.authorization || process.env.DELHIVERY_API_TOKEN || null;
+      tokenSource = body.token ? "body.token" : body.authorization ? "body.authorization" : process.env.DELHIVERY_API_TOKEN ? "env" : "none";
       const headers = {
         Accept: "application/json",
         "Content-Type": "application/json",

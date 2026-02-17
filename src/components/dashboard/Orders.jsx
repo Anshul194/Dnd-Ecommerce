@@ -63,7 +63,7 @@ const Orders = () => {
 
   const canCancelOrder = () => {
     if (!currentOrder) return false;
-    const eligibleStatuses = ['pending', 'processing'];
+    const eligibleStatuses = ['pending', 'processing','confirmed'];
     return eligibleStatuses.includes(currentOrder.status);
   };
 
