@@ -339,6 +339,303 @@ class OrderService {
     }
   }
 
+
+  //createBulkShipment
+  async createBulkShipment(data, conn, tenant)
+   {
+  
+    try {
+      //check if data is an array its not complsury to send data if user want to book shipment for all pending orders
+      if(data && !Array.isArray(data)) {
+        data = [data];
+      }
+
+      const results = [];
+
+      //if data is emty then fetch all pending orders and create shipment for them
+      if (!data || data.length === 0) {
+        const Order = conn.models.Order || conn.model("Order", OrderSchema);
+        //also check shipping_details.reference_number is null to avoid trying to book shipment for already booked orders
+        data = await Order.find({
+          $and: [
+            {
+              $or: [
+          { isShipmentBooked: { $exists: false } },
+          { isShipmentBooked: false },
+              ],
+            },
+            { status: { $in: ["pending", "confirmed"] } },
+            {
+              $or: [
+          { "shipping_details.reference_number": { $exists: false } },
+          { "shipping_details.reference_number": null },
+          { "shipping_details.reference_number": "" },
+              ],
+            },
+          ],
+        }).lean();
+      }
+
+      console.log(`Total orders to process for shipment booking: ${data.length}`);
+        let summary = {
+          total: 0,
+          booked: 0,
+          failed: 0,
+          skipped: 0,
+          details: [],
+        };
+        summary.total = data.length;
+
+
+        for (const order of data) {
+          try {
+            console.log(`Processing Order: ${order._id}`);
+
+            // Call your existing priority shipment logic
+            const bookingResult = await this.autoBookSingleOrder(order, conn, tenant);
+
+            if (bookingResult && bookingResult.success) {
+              summary.booked++;
+              summary.details.push({
+                orderId: order._id,
+                status: "BOOKED",
+                carrier: bookingResult.carrier,
+              });
+            } else {
+              summary.failed++;
+              summary.details.push({
+                orderId: order._id,
+                status: "FAILED",
+              });
+            }
+
+          } catch (err) {
+            summary.failed++;
+            summary.details.push({
+              orderId: order._id,
+              status: "ERROR",
+              message: err.message,
+            });
+            continue;
+          }
+        }
+
+        return {
+          success: true,
+          message: "Auto booking process completed",
+          summary,
+        };
+
+      } catch (err) {
+        console.log("Error in createBulkShipment:", err.message);
+      return {
+        success: false,
+        message: err.message,
+        data: null,
+      };
+    }
+     
+  }
+
+
+  //autoBookSingleOrder
+  async autoBookSingleOrder(order, conn, tenant) {
+
+     const ShippingModel =
+        conn.models.Shipping ||
+        conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+
+      // Attempt automatic shipment booking across available shipping methods (highest priority first)
+      let bookingResult = null;
+
+      //fetch shipping method priority wise and status active
+      const activeShippingMethods = await ShippingModel.find({
+        status: "active",
+      })
+        .sort({ priority: 1 })
+        .lean();
+
+        // console.log("Active shipping methods to attempt booking:", activeShippingMethods);
+
+      try {
+        const ShippingServiceModel =
+          conn.models.ShippingService ||
+          conn.model("ShippingService", require("../models/ShippingService.js").shippingServiceSchema);
+
+        for (const sh of activeShippingMethods) {
+          try {
+            const carrier = (sh.carrier || sh.name || "").toString().toLowerCase();
+            console.log(`Attempting shipment booking with carrier: ${carrier} (Shipping ID: ${sh._id})`);
+            // 1) DTDC: existing flow (use default services + availability)
+            if (carrier.includes("dtdc")) {
+              // Get default services for this shipping sorted by servicePriority (ascending)
+              const defaultServices = await ShippingServiceModel.find({
+                shippingId: sh._id,
+                status: "active",
+                isDefaultService: true,
+              })
+                .sort({ servicePriority: 1 })
+                .lean();
+
+              // console.log(`Default DTDC services for shipping ${sh._id}:`, defaultServices);  
+                
+             // if (!defaultServices || defaultServices.length === 0) continue;
+
+              // Call DTDC pincode availability / services API for this order
+              
+                // getDtdcServices expects an order shaped like: { data: { shippingAddress: { postalCode } } }
+                const dtdcOrder = {
+                data: order.toObject ? order.toObject() : order, // in case order is a Mongoose document, convert to plain object
+                };
+                const available = await this.getDtdcServices(dtdcOrder);
+              // console.log(`DTDC services available for shipping ${sh._id}:`, available);
+              const availableCodes = (available || []).map((a) => (a.code || a.name || "").toString());
+              // console.log(`Available DTDC services for shipping ${sh._id}:`, availableCodes);
+
+              // Match available services in order of priority and try creating shipment
+              let shipped = false;
+              for (const ds of defaultServices) {
+                const code = (ds.serviceCode || ds.serviceName || "").toString();
+                // console.log(`Trying DTDC service code ${code} for shipping ${sh._id}`);
+                if (!code) continue;
+                if (!availableCodes.includes(code)) continue;
+
+                // Try to create shipment using existing createShipment function
+                try {
+                  const resp = await this.createShipment(order, "DTDC", code);
+                  // console.log(`DTDC createShipment response for service code ${code} and shipping ${sh._id}:`, resp);
+                  if (resp && resp.success) {
+                    bookingResult = { shipping: sh, serviceCode: code, resp };
+                    shipped = true;
+                    //update isShipmentBooked to true in order
+                    await this.orderRepository.updateOrder(order._id, { isShipmentBooked: true });
+                    break;
+                  }
+                } catch (err) {
+                  // try next default service
+                  console.log(`Failed to book DTDC with service code ${code} for shipping ${sh._id}:`, err.message);
+                  continue;
+                }
+              }
+              // console.log(`DTDC booking result for shipping ${sh._id}:`, bookingResult);
+              // console.log(`DTDC shipped status for shipping ${sh._id}:`, shipped);
+
+              if (shipped) break; // stop trying further shippings
+              continue; // go to next shipping method if DTDC attempts failed
+            }
+
+            // 1.b) Bluedart: don't fetch services from DB — call Bluedart API and try available services
+            if (carrier.includes("bluedart")) {
+              try {
+                // Call Bluedart service availability function for this order
+                const bluedartOrder = {
+                  data: order.toObject ? order.toObject() : order, // in case order is a Mongoose document, convert to plain object
+                };
+                const availableBD = await this.getBluedartServices(bluedartOrder);
+                const availableCodesBD = (availableBD || []).map((a) => (a.code || a.name || "").toString());
+
+                if (!availableCodesBD || !availableCodesBD.length) continue;
+
+                // Try available Bluedart service codes in the order returned (priority order expected from API)
+                let shippedBD = false;
+                for (const code of availableCodesBD) {
+                  if (!code) continue;
+                  try {
+                    const resp = await this.createShipment(order, "BLUEDART", code);
+                    if (resp && resp.success) {
+                      bookingResult = { shipping: sh, serviceCode: code, resp };
+                      shippedBD = true;
+                      //update isShipmentBooked to true in order
+                      await this.orderRepository.updateOrder(order._id, { isShipmentBooked: true });
+                      break;
+                    }
+                  } catch (err) {
+                    // try next available service
+                    continue;
+                  }
+                }
+
+                if (shippedBD) break; // stop trying further shippings
+                continue;
+              } catch (err) {
+                // swallow bluedart errors and continue to next shipping
+                continue;
+              }
+            }
+
+            // 2) Delhivery (when shipping name or carrier contains "delivery")
+            if (carrier.includes("delivery")) {
+              try {
+                const destinationPincode = order?.shippingAddress?.postalCode || shippingAddress?.postalCode;
+                if (!destinationPincode) continue;
+
+                const agent = new https.Agent({ rejectUnauthorized: false });
+                const headers = { Authorization: `Token ${process.env.DELHIVERY_TOKEN}` };
+                const pinApi = `${process.env.DELHIVERY_PIN_API_URL || 'https://track.delhivery.com/c/api/pin-codes/json/?filter_codes='}${encodeURIComponent(destinationPincode)}`;
+
+                const pinResp = await axios.get(pinApi, { headers, httpsAgent: agent });
+                const data = pinResp?.data || {};
+
+                // Support multiple possible response shapes. Primary shape: data.delivery_codes[0].postal_code
+                const postal = (data.delivery_codes && data.delivery_codes[0] && data.delivery_codes[0].postal_code) || (data.data && data.data[0]) || data.delivery_codes && data.delivery_codes[0] || null;
+                if (!postal) continue;
+
+                const isOda = (postal.is_oda || postal.oda || '').toString().toUpperCase() === 'Y';
+                const codAvailable = (postal.cod || postal.cash || '').toString().toUpperCase() === 'Y';
+                const prepaidAvailable = (postal.pre_paid || postal.prepaid || '').toString().toUpperCase() === 'Y';
+                const pickupAvailable = (postal.pickup || '').toString().toUpperCase() === 'Y';
+
+                // Skip if ODA
+                if (isOda) continue;
+
+                // Check payment-mode specific availability
+                if (paymentMode === 'COD' && !codAvailable) continue;
+                if (paymentMode !== 'COD' && !prepaidAvailable) continue;
+
+                // At this point Delhivery reports the pin as serviceable for required payment mode
+                // Call existing createShipment - pass the shipping object as the 3rd param (createDelhiveryShipment expects shipping info)
+                try {
+                  const resp = await this.createShipment(order, "DELHIVERY", sh);
+                  if (resp && resp.success) {
+                    bookingResult = { shipping: sh, serviceCode: null, resp };
+
+                    //update isShipmentBooked to true in order
+                    await this.orderRepository.updateOrder(order._id, { isShipmentBooked: true });
+                    break; // stop trying further shippings
+                  }
+                } catch (err) {
+                  // failed to book with this shipping, continue to next shipping
+                  continue;
+                }
+              } catch (err) {
+                // if pin API or parsing fails for this shipping, skip to next
+                continue;
+              }
+            }
+
+            // otherwise, unsupported carrier for auto-booking in this flow
+          } catch (err) {
+            console.log(`Error processing shipping method ${sh._id} (${sh.name}):`, err.message);
+            // swallow per-shipping errors and continue to next shipping method
+            continue;
+          }
+        }
+      } catch (err) {
+        // if anything here fails, we continue silently and return success without booking
+      }
+
+        if (bookingResult) {
+      return {
+         success: true,
+         carrier: bookingResult.shipping?.carrier || bookingResult.shipping?.name,
+         data: bookingResult
+      };
+   }
+
+   return { success: false };
+
+    }
+
   async createOrder(data, conn, tenant) {
     try {
       const {
@@ -678,6 +975,197 @@ class OrderService {
       if (!adminEmailResult.success) {
         //consolle.error("Failed to send admin email:", adminEmailResult.message);
       }
+
+
+      //fetch shipping base on priority (we already have `shippingMethods` applicable to this postal code)
+      const ShippingModel =
+        conn.models.Shipping ||
+        conn.model("Shipping", require("../models/Shipping.js").shippingSchema);
+
+      // Attempt automatic shipment booking across available shipping methods (highest priority first)
+      let bookingResult = null;
+
+      //fetch shipping method priority wise and status active
+      const activeShippingMethods = await ShippingModel.find({
+        status: "active",
+      })
+        .sort({ priority: 1 })
+        .lean();
+
+        // console.log("Active shipping methods to attempt booking:", activeShippingMethods);
+
+      try {
+        const ShippingServiceModel =
+          conn.models.ShippingService ||
+          conn.model("ShippingService", require("../models/ShippingService.js").shippingServiceSchema);
+
+        for (const sh of activeShippingMethods) {
+          try {
+            const carrier = (sh.carrier || sh.name || "").toString().toLowerCase();
+            console.log(`Attempting shipment booking with carrier: ${carrier} (Shipping ID: ${sh._id})`);
+            // 1) DTDC: existing flow (use default services + availability)
+            if (carrier.includes("dtdc")) {
+              // Get default services for this shipping sorted by servicePriority (ascending)
+              const defaultServices = await ShippingServiceModel.find({
+                shippingId: sh._id,
+                status: "active",
+                isDefaultService: true,
+              })
+                .sort({ servicePriority: 1 })
+                .lean();
+
+              // console.log(`Default DTDC services for shipping ${sh._id}:`, defaultServices);  
+                
+             // if (!defaultServices || defaultServices.length === 0) continue;
+
+              // Call DTDC pincode availability / services API for this order
+              
+                // getDtdcServices expects an order shaped like: { data: { shippingAddress: { postalCode } } }
+                const dtdcOrder = {
+                data: order.toObject ? order.toObject() : order, // in case order is a Mongoose document, convert to plain object
+                };
+                const available = await this.getDtdcServices(dtdcOrder);
+              // console.log(`DTDC services available for shipping ${sh._id}:`, available);
+              const availableCodes = (available || []).map((a) => (a.code || a.name || "").toString());
+              // console.log(`Available DTDC services for shipping ${sh._id}:`, availableCodes);
+
+              // Match available services in order of priority and try creating shipment
+              let shipped = false;
+              for (const ds of defaultServices) {
+                const code = (ds.serviceCode || ds.serviceName || "").toString();
+                // console.log(`Trying DTDC service code ${code} for shipping ${sh._id}`);
+                if (!code) continue;
+                if (!availableCodes.includes(code)) continue;
+
+                // Try to create shipment using existing createShipment function
+                try {
+                  const resp = await this.createShipment(order, "DTDC", code);
+                  // console.log(`DTDC createShipment response for service code ${code} and shipping ${sh._id}:`, resp);
+                  if (resp && resp.success) {
+                    bookingResult = { shipping: sh, serviceCode: code, resp };
+                    shipped = true;
+                    //update isShipmentBooked to true in order
+                    await this.orderRepository.updateOrder(order._id, { isShipmentBooked: true });
+                    break;
+                  }
+                } catch (err) {
+                  // try next default service
+                  console.log(`Failed to book DTDC with service code ${code} for shipping ${sh._id}:`, err.message);
+                  continue;
+                }
+              }
+              // console.log(`DTDC booking result for shipping ${sh._id}:`, bookingResult);
+              // console.log(`DTDC shipped status for shipping ${sh._id}:`, shipped);
+
+              if (shipped) break; // stop trying further shippings
+              continue; // go to next shipping method if DTDC attempts failed
+            }
+
+            // 1.b) Bluedart: don't fetch services from DB — call Bluedart API and try available services
+            if (carrier.includes("bluedart")) {
+              try {
+                // Call Bluedart service availability function for this order
+                const bluedartOrder = {
+                  data: order.toObject ? order.toObject() : order, // in case order is a Mongoose document, convert to plain object
+                };
+                const availableBD = await this.getBluedartServices(bluedartOrder);
+                const availableCodesBD = (availableBD || []).map((a) => (a.code || a.name || "").toString());
+
+                if (!availableCodesBD || !availableCodesBD.length) continue;
+
+                // Try available Bluedart service codes in the order returned (priority order expected from API)
+                let shippedBD = false;
+                for (const code of availableCodesBD) {
+                  if (!code) continue;
+                  try {
+                    const resp = await this.createShipment(order, "BLUEDART", code);
+                    if (resp && resp.success) {
+                      bookingResult = { shipping: sh, serviceCode: code, resp };
+                      shippedBD = true;
+                      //update isShipmentBooked to true in order
+                      await this.orderRepository.updateOrder(order._id, { isShipmentBooked: true });
+                      break;
+                    }
+                  } catch (err) {
+                    // try next available service
+                    continue;
+                  }
+                }
+
+                if (shippedBD) break; // stop trying further shippings
+                continue;
+              } catch (err) {
+                // swallow bluedart errors and continue to next shipping
+                continue;
+              }
+            }
+
+            // 2) Delhivery (when shipping name or carrier contains "delivery")
+            if (carrier.includes("delivery")) {
+              try {
+                const destinationPincode = order?.shippingAddress?.postalCode || shippingAddress?.postalCode;
+                if (!destinationPincode) continue;
+
+                const agent = new https.Agent({ rejectUnauthorized: false });
+                const headers = { Authorization: `Token ${process.env.DELHIVERY_TOKEN}` };
+                const pinApi = `${process.env.DELHIVERY_PIN_API_URL || 'https://track.delhivery.com/c/api/pin-codes/json/?filter_codes='}${encodeURIComponent(destinationPincode)}`;
+
+                const pinResp = await axios.get(pinApi, { headers, httpsAgent: agent });
+                const data = pinResp?.data || {};
+
+                // Support multiple possible response shapes. Primary shape: data.delivery_codes[0].postal_code
+                const postal = (data.delivery_codes && data.delivery_codes[0] && data.delivery_codes[0].postal_code) || (data.data && data.data[0]) || data.delivery_codes && data.delivery_codes[0] || null;
+                if (!postal) continue;
+
+                const isOda = (postal.is_oda || postal.oda || '').toString().toUpperCase() === 'Y';
+                const codAvailable = (postal.cod || postal.cash || '').toString().toUpperCase() === 'Y';
+                const prepaidAvailable = (postal.pre_paid || postal.prepaid || '').toString().toUpperCase() === 'Y';
+                const pickupAvailable = (postal.pickup || '').toString().toUpperCase() === 'Y';
+
+                // Skip if ODA
+                if (isOda) continue;
+
+                // Check payment-mode specific availability
+                if (paymentMode === 'COD' && !codAvailable) continue;
+                if (paymentMode !== 'COD' && !prepaidAvailable) continue;
+
+                // At this point Delhivery reports the pin as serviceable for required payment mode
+                // Call existing createShipment - pass the shipping object as the 3rd param (createDelhiveryShipment expects shipping info)
+                try {
+                  const resp = await this.createShipment(order, "DELHIVERY", sh);
+                  if (resp && resp.success) {
+                    bookingResult = { shipping: sh, serviceCode: null, resp };
+
+                    //update isShipmentBooked to true in order
+                    await this.orderRepository.updateOrder(order._id, { isShipmentBooked: true });
+                    break; // stop trying further shippings
+                  }
+                } catch (err) {
+                  // failed to book with this shipping, continue to next shipping
+                  continue;
+                }
+              } catch (err) {
+                // if pin API or parsing fails for this shipping, skip to next
+                continue;
+              }
+            }
+
+            // otherwise, unsupported carrier for auto-booking in this flow
+          } catch (err) {
+            console.log(`Error processing shipping method ${sh._id} (${sh.name}):`, err.message);
+            // swallow per-shipping errors and continue to next shipping method
+            continue;
+          }
+        }
+      } catch (err) {
+        // if anything here fails, we continue silently and return success without booking
+      }
+
+
+
+
+
+
       try {
         // Only trigger auto-call for COD orders if enabled in settings
         //consolle.log("Triggering auto-call for COD order", settings);
@@ -717,10 +1205,17 @@ class OrderService {
         //consolle.error("Auto-call order confirm error:", err.message);
       }
 
+      const responseData = { order };
+      if (typeof bookingResult !== 'undefined' && bookingResult && bookingResult.resp) {
+        responseData.shipment = bookingResult.resp;
+        responseData.shippedWith = bookingResult.shipping;
+        responseData.shippedServiceCode = bookingResult.serviceCode;
+      }
+
       return {
         success: true,
         message: "Order placed successfully",
-        data: { order },
+        data: responseData,
       };
     } catch (error) {
       return {
@@ -861,7 +1356,7 @@ class OrderService {
         "items.product",
         "items.variant",
         "user",
-      ]);
+      ]);      z
       return orders;
     } catch (error) {
       throw new Error(`Failed to fetch recent orders: ${error.message}`);

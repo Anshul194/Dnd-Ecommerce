@@ -34,6 +34,30 @@ class ShippingController {
     }
   }
 
+  //getServicesByShippingId
+  async getServicesByShippingId(req, _res, id, conn) {
+    try {
+      //consolle.log(
+      //   "[ShippingController.getServicesByShippingId] Fetching services for shipping:",
+      //   id,
+      //   "Connection:",
+      //   conn.name || "global mongoose"
+      // );
+      const services = await shippingService.getServicesByShippingId(id, conn);
+      return NextResponse.json(
+        { message: "Services fetched successfully", services },
+        { status: 200 }
+      );
+    } catch (err) {
+      //consolle.error(
+      //   "[ShippingController.getServicesByShippingId] Error:",
+      //   err.message,
+      //   err.stack
+      // );
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
+  }
+
   async getShippingById(req, _res, id, conn) {
     try {
       //consolle.log(

@@ -6,6 +6,22 @@ class OrderController {
     this.orderService = orderService;
   }
 
+  //createBulkShipment
+  async createBulkShipment(req, conn, tenant) {
+    //consolle.log("Controller received create bulk shipment data:", req.body);
+    //consolle.log("Controller tenant:", tenant);
+    try {
+      const result = await this.orderService.createBulkShipment(req.body, conn, tenant);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message,
+        data: null,
+      };
+    }
+  }
+
   async create(req, conn, tenant) {
     //consolle.log("Controller received create order data:", req.body);
     //consolle.log("Controller tenant:", tenant);
@@ -81,6 +97,18 @@ class OrderController {
       const filterConditions = {};
       if (filters.status) {
         filterConditions.status = filters.status;
+      }
+
+      if (filters.bookedParam) {
+        if (filters.bookedParam === "true") {
+          filterConditions.isShipmentBooked = true;
+        } else if (filters.bookedParam === "false") {
+          // Match documents where isShipmentBooked is false OR the field doesn't exist
+          filterConditions.$or = [
+        { isShipmentBooked: false },
+        { isShipmentBooked: { $exists: false } },
+          ];
+        }
       }
 
       // Parse pagination and sorting

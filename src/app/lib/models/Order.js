@@ -126,6 +126,10 @@ const orderSchema = new mongoose.Schema(
       required: false,
       default: 0,
     },
+    isShipmentBooked: {
+      type: Boolean,
+      default: false,
+    },
     shipping_details: {
       platform: { type: String, enum: ['dtdc', 'delhivery', 'bluedart', null], default: null },
       reference_number: { type: String, default: null }, // e.g., AWB, order_ref, consignment_no

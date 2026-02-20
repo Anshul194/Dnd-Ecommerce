@@ -42,6 +42,8 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const sortByRaw = searchParams.get("sortBy");
     const sortOrder = searchParams.get("sortOrder") || "desc";
+    //bookedParam
+    const bookedParam = searchParams.get("isShipmentBooked");
 
     let sortBy = { createdAt: -1 };
     if (sortByRaw) {
@@ -56,7 +58,7 @@ export async function GET(request) {
     const result = await orderController.getAllOrders(
       request,
       conn,
-      { status, page, limit, sortBy, sortOrder }
+      { status, page, limit, sortBy, sortOrder, bookedParam }
     );
 
     return NextResponse.json(

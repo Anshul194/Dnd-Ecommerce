@@ -106,7 +106,7 @@ export default class NextelWhatsapp {
           "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
         },
       });
-      console.log("Webhook response:", res.data);
+      // console.log("Webhook response:", res.data);
       return { success: true, data: res.data };
     } catch (err) {
       console.log("error in webhook call:", err.message);
