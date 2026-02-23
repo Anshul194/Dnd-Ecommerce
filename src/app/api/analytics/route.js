@@ -128,8 +128,8 @@ export const GET = withUserAuth(async function (request) {
       Category.countDocuments({ deletedAt: null }),
       Variant.countDocuments({ deletedAt: null }),
 
-      // All operational orders
-      Order.find({ ...dateFilter }).select("status total createdAt"),
+      // All operational orders (include shipping cancellation flags)
+      Order.find({ ...dateFilter }).select("status total createdAt shipping_details.cancelled shipping_details.normalized_status"),
 
       // Tickets
       Ticket.find({ ...dateFilter, isDeleted: { $ne: true } }).select("status createdAt"),
@@ -279,17 +279,28 @@ export const GET = withUserAuth(async function (request) {
 
     // OPERATIONS DASHBOARD
     const totalOrders = allOrders.length;
-    const pendingOrders = allOrders.filter((o) => o.status === "pending").length;
-    const shippedOrders = allOrders.filter((o) => o.status === "shipped").length;
-    const cancelledOrders = allOrders.filter(
-      (o) => o.status === "cancelled"
-    ).length;
+    // Compute operations counts, treating orders as 'cancelled' if either
+    // order.status === 'cancelled' OR shipping_details.cancelled flag is true
+    let pendingOrders = 0;
+    let shippedOrders = 0;
+    let cancelledOrders = 0;
+    const ordersByStatus = { pending: 0, paid: 0, shipped: 0, completed: 0, cancelled: 0 };
 
-    const orderStatuses = ["pending", "paid", "shipped", "completed", "cancelled"];
-    const ordersByStatus = {};
-    orderStatuses.forEach(
-      (s) => (ordersByStatus[s] = allOrders.filter((o) => o.status === s).length)
-    );
+    for (const o of allOrders) {
+      const isShippingCancelled = o.shipping_details && (o.shipping_details.cancelled === true || (o.shipping_details.normalized_status || '').toUpperCase() === 'CANCELLED');
+      if (o.status === 'cancelled' || isShippingCancelled) {
+        cancelledOrders++;
+        ordersByStatus['cancelled'] = (ordersByStatus['cancelled'] || 0) + 1;
+        continue;
+      }
+
+      // otherwise increment by actual status
+      const st = o.status || 'pending';
+      if (!ordersByStatus[st]) ordersByStatus[st] = 0;
+      ordersByStatus[st]++;
+      if (st === 'pending') pendingOrders++;
+      if (st === 'shipped') shippedOrders++;
+    }
 
     const ticketStatuses = ["open", "in_progress", "resolved", "closed"];
     const ticketsByStatus = {};
