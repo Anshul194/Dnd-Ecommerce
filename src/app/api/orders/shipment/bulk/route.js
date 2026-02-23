@@ -45,11 +45,19 @@ export async function GET(req) {
             emailService
         );
         const orderController = new OrderController(orderService);
-        const result = await orderController.createBulkShipment(req, conn, tenant);
-        if (!result.success) {
-            return NextResponse.json(result, { status: 400 });
-        }
-        return NextResponse.json(result, { status: 201 });
+        // Trigger bulk shipment processing asynchronously to avoid request timeouts.
+        // The controller/service will handle fetching orders when req.body is empty.
+        orderController.createBulkShipment(req, conn, tenant)
+            .then((res) => {
+                // eslint-disable-next-line no-console
+                console.log("Bulk shipment completed:", res && res.summary ? res.summary : res);
+            })
+            .catch((err) => {
+                // eslint-disable-next-line no-console
+                console.error("Bulk shipment async error:", err && err.message ? err.message : err);
+            });
+
+        return NextResponse.json({ success: true, message: "Processing started" }, { status: 202 });
     } catch (error) {
         //consolle.error("Route POST order error:", error.message);
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });

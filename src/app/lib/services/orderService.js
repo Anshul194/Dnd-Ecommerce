@@ -387,36 +387,44 @@ class OrderService {
         summary.total = data.length;
 
 
-        for (const order of data) {
-          try {
-            console.log(`Processing Order: ${order._id}`);
-
-            // Call your existing priority shipment logic
-            const bookingResult = await this.autoBookSingleOrder(order, conn, tenant);
-
-            if (bookingResult && bookingResult.success) {
-              summary.booked++;
-              summary.details.push({
-                orderId: order._id,
-                status: "BOOKED",
-                carrier: bookingResult.carrier,
-              });
-            } else {
-              summary.failed++;
-              summary.details.push({
-                orderId: order._id,
-                status: "FAILED",
-              });
+        // Process orders in limited-concurrency batches to avoid long-running request timeouts.
+        const CONCURRENCY = parseInt(process.env.BULK_SHIPMENT_CONCURRENCY, 10) || 5;
+        for (let i = 0; i < data.length; i += CONCURRENCY) {
+          const chunk = data.slice(i, i + CONCURRENCY);
+          const promises = chunk.map((order) => (async () => {
+            try {
+              // eslint-disable-next-line no-console
+              console.log(`Processing Order: ${order._id}`);
+              const bookingResult = await this.autoBookSingleOrder(order, conn, tenant);
+              return { order, bookingResult, error: null };
+            } catch (error) {
+              return { order, bookingResult: null, error };
             }
+          })());
 
-          } catch (err) {
-            summary.failed++;
-            summary.details.push({
-              orderId: order._id,
-              status: "ERROR",
-              message: err.message,
-            });
-            continue;
+          const settled = await Promise.allSettled(promises);
+          for (const r of settled) {
+            if (r.status === 'fulfilled') {
+              const { order, bookingResult, error } = r.value;
+              if (error) {
+                summary.failed++;
+                summary.details.push({ orderId: order._id, status: 'ERROR', message: error.message || String(error) });
+                continue;
+              }
+              if (bookingResult && bookingResult.success) {
+                summary.booked++;
+                summary.details.push({ orderId: order._id, status: 'BOOKED', carrier: bookingResult.carrier });
+              } else {
+                summary.failed++;
+                summary.details.push({ orderId: order._id, status: 'FAILED' });
+              }
+            } else {
+              // Unexpected rejection
+              const maybe = r.reason || {};
+              const oid = maybe.order && maybe.order._id ? maybe.order._id : null;
+              summary.failed++;
+              summary.details.push({ orderId: oid, status: 'ERROR', message: maybe.message || String(maybe) });
+            }
           }
         }
 
