@@ -64,19 +64,32 @@ const nextConfig = {
   },
 
   async rewrites() {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL;
+    const isVercel = process.env.VERCEL === "1" || process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined;
+
+    const beforeFiles = [
+      {
+        source: "/uploads/invoices/:id.html",
+        destination: "/api/invoice/:id",
+      },
+      // Serve uploaded files through API route for standalone mode compatibility
+      // This ensures runtime-uploaded files in public/uploads/ are accessible
+      {
+        source: "/uploads/:path*",
+        destination: "/api/uploads/:path*",
+      },
+    ];
+
+    if (isVercel && backendUrl) {
+      const cleanBackendUrl = backendUrl.replace(/\/$/, "");
+      beforeFiles.push({
+        source: "/api/:path*",
+        destination: `${cleanBackendUrl}/api/:path*`,
+      });
+    }
+
     return {
-      beforeFiles: [
-        {
-          source: "/uploads/invoices/:id.html",
-          destination: "/api/invoice/:id",
-        },
-        // Serve uploaded files through API route for standalone mode compatibility
-        // This ensures runtime-uploaded files in public/uploads/ are accessible
-        {
-          source: "/uploads/:path*",
-          destination: "/api/uploads/:path*",
-        },
-      ],
+      beforeFiles,
     };
   },
 

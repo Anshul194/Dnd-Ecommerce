@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: dnd-ecommerce-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: ACCESS_TOKEN_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_SECRET
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: DTDC_API_KEY
+        sync: false
+      - key: DTDC_CUSTOMER_CODE
+        sync: false
+      - key: DELHIVERY_TOKEN
+        sync: false
+      - key: DELHIVERY_API_TOKEN
+        sync: false
