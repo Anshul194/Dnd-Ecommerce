@@ -5,11 +5,6 @@ import influencerVideoController from '../../../lib/controllers/InfluencerVideoC
 import { withUserAuth } from '../../../middleware/commonAuth.js';
 import mongoose from 'mongoose';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 export async function GET(request, { params }) {
   try {

@@ -4,11 +4,6 @@ import { getSubdomain, getDbConnection } from '../../lib/tenantDb.js';
 import influencerVideoController from '../../lib/controllers/InfluencerVideoController.js';
 import { withUserAuth } from '../../middleware/commonAuth.js';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 export async function GET(request) {
   try {
