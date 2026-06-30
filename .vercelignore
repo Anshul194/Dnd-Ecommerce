@@ -1,0 +1,12 @@
+# Ignore API routes to stay within Vercel's Hobby plan limit of 12 serverless functions
+# (The API routes are deployed and handled on Render instead)
+src/app/api
+
+# Ignore database seeder and test scripts
+tenantSeeder.js
+tenantSeeder copy.js
+test-delhivery-integration.js
+test-phone-auth.js
+test-shipping-api.js
+fixInvoices.js
+db.js
